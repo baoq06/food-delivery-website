@@ -16,7 +16,9 @@ public class EncodingFilter implements Filter {
             throws IOException, ServletException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
-        response.setContentType("text/html; charset=UTF-8");
+        
+        // Không ép Content-Type text/html cho file tĩnh (css, js, ảnh)
+        // để trình duyệt không chặn stylesheet theo chính sách bảo mật MIME
         chain.doFilter(request, response);
     }
 

@@ -50,6 +50,20 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
             }
+        } else if ("register".equalsIgnoreCase(action)) {
+            String username = req.getParameter("username");
+            String password = req.getParameter("password");
+            String fullName = req.getParameter("fullName");
+            String phone = req.getParameter("phone");
+            String address = req.getParameter("address");
+
+            User newUser = new User(0, username, password, fullName, username + "@gmail.com", phone, address, "CUSTOMER");
+            userService.register(newUser);
+
+            // Đăng nhập luôn cho user sau khi đăng ký
+            HttpSession session = req.getSession();
+            session.setAttribute("currentUser", newUser);
+            resp.sendRedirect(req.getContextPath() + "/home");
         }
     }
 }
