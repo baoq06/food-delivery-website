@@ -1,7 +1,7 @@
 package com.ute.fooddelivery.filter;
 
-import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.WebFilter;
 import java.io.IOException;
 
 @WebFilter(filterName = "EncodingFilter", urlPatterns = {"/*"})
