@@ -16,5 +16,7 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
-<jsp:include page="/WEB-INF/views/common/navbar.jsp" />
+<jsp:include page="/WEB-INF/views/common/navbar.jsp">
+    <jsp:param name="isAuthPage" value="${param.isAuthPage}" />
+</jsp:include>
 <main class="main-content">

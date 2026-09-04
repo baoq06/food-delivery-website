@@ -240,6 +240,59 @@ button, input, select, textarea {
     gap: 24px;
 }
 
+/* Auth Header - Clean & Minimalist (UI/UX Pro Max) */
+.navbar-auth {
+    background: #ffffff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-container-auth {
+    max-width: 1200px;
+    padding: 14px 24px;
+    justify-content: space-between;
+}
+
+.nav-auth-actions {
+    display: flex;
+    align-items: center;
+}
+
+.btn-auth-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1.5px solid var(--primary-tint);
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-auth-back:hover {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 4px 14px var(--primary-glow);
+    transform: translateY(-2px);
+}
+
+.btn-auth-back i {
+    transition: transform 0.2s ease;
+}
+
+.btn-auth-back:hover i {
+    transform: translateX(-3px);
+}
+
+.btn-auth-back:active {
+    transform: translateY(0);
+}
+
 /* Brand Logo Redesign */
 .brand-logo {
     display: flex;

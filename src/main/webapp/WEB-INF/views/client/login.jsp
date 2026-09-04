@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
     <jsp:param name="title" value="Đăng Nhập & Đăng Ký - VinDelivery" />
+    <jsp:param name="isAuthPage" value="true" />
 </jsp:include>
 
 <div class="auth-page-wrapper">
