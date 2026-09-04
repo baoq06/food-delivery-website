@@ -126,6 +126,40 @@
             </div>
         </c:otherwise>
     </c:choose>
+
+    <!-- Recently Viewed Section -->
+    <c:if test="${not empty recentFoods}">
+        <div class="recent-foods-section" style="margin-top: 50px; border-top: 1px dashed #e2e8f0; padding-top: 35px;">
+            <div class="section-header" style="margin-bottom: 25px;">
+                <span class="sub-heading"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Duyệt Món</span>
+                <h2 class="section-title" style="font-size: 1.5rem; margin-top: 5px;">Món Bạn Đã Xem Gần Đây</h2>
+            </div>
+            <div class="food-grid">
+                <c:forEach items="${recentFoods}" var="rFood">
+                    <div class="food-card">
+                        <div class="food-card-img-wrap">
+                            <span class="food-tag">${not empty rFood.categoryName ? rFood.categoryName : 'Gợi ý'}</span>
+                            <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}">
+                                <img src="${rFood.image}" alt="${rFood.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                            </a>
+                        </div>
+                        <div class="food-body">
+                            <div class="food-meta">
+                                <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty rFood.restaurantName ? rFood.restaurantName : 'Quán đối tác'}</span>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="food-title-link">
+                                <h3 class="food-title" style="font-size: 1.05rem;">${rFood.name}</h3>
+                            </a>
+                            <div class="food-footer">
+                                <span class="food-price">${String.format("%,.0f", rFood.price)} đ</span>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="btn btn-outline btn-sm">Xem lại</a>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+            </div>
+        </div>
+    </c:if>
 </div>
 
 <script>

@@ -7,6 +7,7 @@ import com.ute.fooddelivery.model.OrderItem;
 import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.FoodService;
 import com.ute.fooddelivery.service.OrderService;
+import com.ute.fooddelivery.utils.CookieUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -23,10 +24,20 @@ import java.util.Map;
 public class CartController extends HttpServlet {
     private final FoodService foodService = new FoodService();
     private final OrderService orderService = new OrderService();
+    private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        // Đọc thông tin nhận hàng đã lưu từ Cookie (nếu có)
+        String deliName = CookieUtils.getCookieValue(req, "deli_name");
+        String deliPhone = CookieUtils.getCookieValue(req, "deli_phone");
+        String deliAddress = CookieUtils.getCookieValue(req, "deli_address");
+
+        if (deliName != null) req.setAttribute("cookieDeliName", deliName);
+        if (deliPhone != null) req.setAttribute("cookieDeliPhone", deliPhone);
+        if (deliAddress != null) req.setAttribute("cookieDeliAddress", deliAddress);
+
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
 
@@ -84,6 +95,28 @@ public class CartController extends HttpServlet {
                 String receiverNote = req.getParameter("receiverNote");
                 String paymentMethod = req.getParameter("paymentMethod");
 
+                // Sticky Form Validation
+                String validationError = null;
+                if (receiverName == null || receiverName.trim().isEmpty() ||
+                    receiverPhone == null || receiverPhone.trim().isEmpty() ||
+                    receiverAddress == null || receiverAddress.trim().isEmpty()) {
+                    validationError = "Vui lòng nhập đầy đủ: Họ tên, Số điện thoại và Địa chỉ giao hàng!";
+                } else if (!receiverPhone.trim().matches("^0[0-9]{9,10}$")) {
+                    validationError = "Số điện thoại nhận hàng không hợp lệ! Vui lòng nhập số điện thoại Việt Nam (10-11 chữ số bắt đầu bằng số 0).";
+                }
+
+                if (validationError != null) {
+                    req.setAttribute("checkoutError", validationError);
+                    // Giữ lại dữ liệu vừa nhập (Sticky Form)
+                    req.setAttribute("stickyReceiverName", receiverName);
+                    req.setAttribute("stickyReceiverPhone", receiverPhone);
+                    req.setAttribute("stickyReceiverAddress", receiverAddress);
+                    req.setAttribute("stickyReceiverNote", receiverNote);
+                    req.setAttribute("stickyPaymentMethod", paymentMethod);
+                    req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
+                    return;
+                }
+
                 double subtotalBill = 0;
                 List<OrderItem> items = new ArrayList<>();
                 for (CartItem ci : cart.values()) {
@@ -106,15 +139,20 @@ public class CartController extends HttpServlet {
 
                 Order order = new Order();
                 order.setUserId(userId);
-                order.setCustomerName(receiverName);
-                order.setPhone(receiverPhone);
-                order.setAddress(receiverAddress);
-                order.setNote(receiverNote);
+                order.setCustomerName(receiverName.trim());
+                order.setPhone(receiverPhone.trim());
+                order.setAddress(receiverAddress.trim());
+                order.setNote(receiverNote != null ? receiverNote.trim() : "");
                 order.setTotalAmount(totalBill);
                 order.setPaymentMethod(paymentMethod != null ? paymentMethod : "COD");
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
+                    // Lưu thông tin nhận hàng vào Cookie (30 ngày) để lần sau tự điền
+                    CookieUtils.addCookie(resp, "deli_name", receiverName.trim(), DELI_COOKIE_AGE);
+                    CookieUtils.addCookie(resp, "deli_phone", receiverPhone.trim(), DELI_COOKIE_AGE);
+                    CookieUtils.addCookie(resp, "deli_address", receiverAddress.trim(), DELI_COOKIE_AGE);
+
                     session.removeAttribute("cart");
                     req.setAttribute("placedOrderId", "#FZ-" + orderId);
                     req.setAttribute("orderSuccess", true);

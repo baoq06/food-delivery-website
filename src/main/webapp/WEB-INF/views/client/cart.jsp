@@ -78,26 +78,37 @@
                     <div class="checkout-box summary-card">
                         <h3 class="box-title"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Thông Tin Giao Hàng</h3>
                         
+                        <c:if test="${not empty checkoutError}">
+                            <div class="alert-box-danger" style="margin-bottom: 16px; padding: 12px 16px; background-color: #ffeaa7; border-left: 4px solid #d63031; border-radius: 6px; color: #d63031; display: flex; align-items: center; gap: 10px; font-weight: 500;">
+                                <i class="fa-solid fa-circle-exclamation"></i>
+                                <span>${checkoutError}</span>
+                            </div>
+                        </c:if>
+
                         <form id="orderForm" action="${pageContext.request.contextPath}/cart" method="POST">
                             <input type="hidden" name="action" value="checkout">
                             <div class="form-group">
                                 <label for="receiverName">Họ và tên người nhận *</label>
-                                <input type="text" id="receiverName" name="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : ''}">
+                                <input type="text" id="receiverName" name="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." 
+                                       value="<c:out value='${not empty stickyReceiverName ? stickyReceiverName : (sessionScope.currentUser != null ? sessionScope.currentUser.fullName : (not empty cookieDeliName ? cookieDeliName : \"\"))}' />">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverPhone">Số điện thoại nhận hàng *</label>
-                                <input type="tel" id="receiverPhone" name="receiverPhone" class="form-control" required placeholder="Ví dụ: 0912 345 678" value="${sessionScope.currentUser != null ? sessionScope.currentUser.phone : ''}">
+                                <input type="tel" id="receiverPhone" name="receiverPhone" class="form-control" required placeholder="Ví dụ: 0912 345 678" 
+                                       value="<c:out value='${not empty stickyReceiverPhone ? stickyReceiverPhone : (sessionScope.currentUser != null ? sessionScope.currentUser.phone : (not empty cookieDeliPhone ? cookieDeliPhone : \"\"))}' />">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverAddress">Địa chỉ giao hàng chi tiết *</label>
-                                <input type="text" id="receiverAddress" name="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.address : ''}">
+                                <input type="text" id="receiverAddress" name="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." 
+                                       value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : (sessionScope.currentUser != null ? sessionScope.currentUser.address : (not empty cookieDeliAddress ? cookieDeliAddress : \"\"))}' />">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverNote">Ghi chú cho tài xế (nếu có)</label>
-                                <input type="text" id="receiverNote" name="receiverNote" class="form-control" placeholder="Giao trước 12h, gọi trước khi đến...">
+                                <input type="text" id="receiverNote" name="receiverNote" class="form-control" placeholder="Giao trước 12h, gọi trước khi đến..."
+                                       value="<c:out value='${stickyReceiverNote}' />">
                             </div>
 
                             <!-- Payment Method -->
@@ -105,13 +116,13 @@
                                 <label class="option-label">Phương thức thanh toán:</label>
                                 <div class="payment-options">
                                     <label class="payment-radio">
-                                        <input type="radio" name="paymentMethod" value="COD" checked>
+                                        <input type="radio" name="paymentMethod" value="COD" ${empty stickyPaymentMethod or stickyPaymentMethod eq 'COD' ? 'checked' : ''}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-hand-holding-dollar text-primary"></i>
                                         <span>Tiền mặt khi nhận (COD)</span>
                                     </label>
                                     <label class="payment-radio">
-                                        <input type="radio" name="paymentMethod" value="QR">
+                                        <input type="radio" name="paymentMethod" value="QR" ${stickyPaymentMethod eq 'QR' ? 'checked' : ''}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-qrcode text-primary"></i>
                                         <span>Chuyển khoản mã VietQR</span>

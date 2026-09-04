@@ -180,6 +180,49 @@
     </div>
 </section>
 
+<!-- Recently Viewed Section -->
+<c:if test="${not empty recentFoods}">
+    <section class="section">
+        <div class="container">
+            <div class="section-header-flex">
+                <div>
+                    <span class="sub-heading"><i class="fa-solid fa-clock-rotate-left"></i> Dành Riêng Cho Bạn</span>
+                    <h2 class="section-title">Món Bạn Đã Xem Gần Đây</h2>
+                </div>
+            </div>
+
+            <div class="food-grid">
+                <c:forEach items="${recentFoods}" var="rFood">
+                    <div class="food-card">
+                        <div class="food-card-img-wrap">
+                            <span class="food-tag">${not empty rFood.categoryName ? rFood.categoryName : 'Vừa xem'}</span>
+                            <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}">
+                                <img src="${rFood.image}" alt="${rFood.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                            </a>
+                        </div>
+                        <div class="food-body">
+                            <div class="food-meta">
+                                <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                                <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty rFood.restaurantName ? rFood.restaurantName : 'Quán đối tác'}</span>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="food-title-link">
+                                <h3 class="food-title">${rFood.name}</h3>
+                            </a>
+                            <div class="food-footer">
+                                <div class="price-box">
+                                    <span class="price-label">Giá</span>
+                                    <span class="food-price">${String.format("%,.0f", rFood.price)} đ</span>
+                                </div>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="btn btn-outline btn-sm">Xem lại</a>
+                            </div>
+                        </div>
+                    </div>
+                </c:forEach>
+            </div>
+        </div>
+    </section>
+</c:if>
+
 <!-- Promotional Banner -->
 <section class="section">
     <div class="container">

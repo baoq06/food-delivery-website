@@ -41,7 +41,9 @@
                     <label for="loginUsername">Tên đăng nhập</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="loginUsername" name="username" class="form-control" required placeholder="Nhập username (ví dụ: admin, user1...)">
+                        <input type="text" id="loginUsername" name="username" class="form-control" required 
+                               value="<c:out value='${not empty stickyUsername ? stickyUsername : (not empty cookieUsername ? cookieUsername : \"\")}' />"
+                               placeholder="Nhập username (ví dụ: admin, user1...)">
                     </div>
                 </div>
 
@@ -55,7 +57,7 @@
 
                 <div class="auth-helpers">
                     <label class="remember-checkbox">
-                        <input type="checkbox" name="remember">
+                        <input type="checkbox" name="remember" ${(not empty stickyRemember and stickyRemember) or (empty stickyUsername and not empty cookieRemember and cookieRemember) ? 'checked' : ''}>
                         <span>Ghi nhớ đăng nhập</span>
                     </label>
                     <a href="#" class="forgot-link">Quên mật khẩu?</a>
@@ -82,7 +84,9 @@
                     <label for="regFullName">Họ và tên của bạn *</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-id-card"></i>
-                        <input type="text" id="regFullName" name="fullName" class="form-control" required placeholder="Nguyễn Văn A">
+                        <input type="text" id="regFullName" name="fullName" class="form-control" required 
+                               value="<c:out value='${stickyRegFullName}' />"
+                               placeholder="Nguyễn Văn A">
                     </div>
                 </div>
 
@@ -90,12 +94,14 @@
                     <label for="regUsername">Tên đăng nhập mới *</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" id="regUsername" name="username" class="form-control" required placeholder="Chọn tên đăng nhập...">
+                        <input type="text" id="regUsername" name="username" class="form-control" required 
+                               value="<c:out value='${stickyRegUsername}' />"
+                               placeholder="Chọn tên đăng nhập...">
                     </div>
                 </div>
 
                 <div class="form-group-icon">
-                    <label for="regPassword">Mật khẩu *</label>
+                    <label for="regPassword">Mật khẩu * (Tối thiểu 6 ký tự)</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="regPassword" name="password" class="form-control" required placeholder="Tạo mật khẩu an toàn...">
@@ -106,7 +112,9 @@
                     <label for="regPhone">Số điện thoại *</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-phone"></i>
-                        <input type="tel" id="regPhone" name="phone" class="form-control" required placeholder="0912345678">
+                        <input type="tel" id="regPhone" name="phone" class="form-control" required 
+                               value="<c:out value='${stickyRegPhone}' />"
+                               placeholder="0912345678">
                     </div>
                 </div>
 
@@ -114,7 +122,9 @@
                     <label for="regAddress">Địa chỉ nhận món *</label>
                     <div class="input-with-icon">
                         <i class="fa-solid fa-location-dot"></i>
-                        <input type="text" id="regAddress" name="address" class="form-control" required placeholder="Số nhà, tên đường...">
+                        <input type="text" id="regAddress" name="address" class="form-control" required 
+                               value="<c:out value='${stickyRegAddress}' />"
+                               placeholder="Số nhà, tên đường...">
                     </div>
                 </div>
 
@@ -140,10 +150,17 @@ function switchAuthTab(tabId) {
     }
 }
 
-// Tự động chuyển sang tab register nếu URL có hash #register
-if (window.location.hash === '#register') {
-    switchAuthTab('registerTab');
-}
+// Tự động chuyển sang tab register nếu URL có hash #register hoặc do sticky form lỗi đăng ký
+<c:choose>
+    <c:when test="${activeTab eq 'registerTab'}">
+        switchAuthTab('registerTab');
+    </c:when>
+    <c:otherwise>
+        if (window.location.hash === '#register') {
+            switchAuthTab('registerTab');
+        }
+    </c:otherwise>
+</c:choose>
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
