@@ -116,6 +116,106 @@ public class FoodDAO {
         return list;
     }
 
+    public List<Food> getFoodsByRestaurantId(int restaurantId) {
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.restaurant_id = ? ORDER BY f.food_id DESC";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, restaurantId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(mapResultSetToFood(rs));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy món ăn theo nhà hàng: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public boolean insertFood(Food food) {
+        String query = "INSERT INTO foods (name, description, price, image_url, category_id, restaurant_id, is_available) " +
+                       "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, food.getName());
+                    ps.setString(2, food.getDescription());
+                    ps.setDouble(3, food.getPrice());
+                    ps.setString(4, food.getImageUrl() != null && !food.getImageUrl().trim().isEmpty() ? 
+                                    food.getImageUrl() : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&auto=format&fit=crop&q=80");
+                    ps.setInt(5, food.getCategoryId());
+                    ps.setInt(6, food.getRestaurantId());
+                    ps.setInt(7, food.isAvailable() ? 1 : 0);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi thêm món ăn mới: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean updateFood(Food food) {
+        String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ? " +
+                       "WHERE food_id = ? AND restaurant_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, food.getName());
+                    ps.setString(2, food.getDescription());
+                    ps.setDouble(3, food.getPrice());
+                    ps.setString(4, food.getImageUrl());
+                    ps.setInt(5, food.getCategoryId());
+                    ps.setInt(6, food.isAvailable() ? 1 : 0);
+                    ps.setInt(7, food.getId());
+                    ps.setInt(8, food.getRestaurantId());
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật món ăn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean deleteFood(int foodId, int restaurantId) {
+        String query = "DELETE FROM foods WHERE food_id = ? AND restaurant_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, foodId);
+                    ps.setInt(2, restaurantId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            // Nếu ràng buộc khóa ngoại với order_items, chuyển sang tắt món (soft delete)
+            return toggleAvailability(foodId, restaurantId, false);
+        }
+        return false;
+    }
+
+    public boolean toggleAvailability(int foodId, int restaurantId, boolean isAvailable) {
+        String query = "UPDATE foods SET is_available = ? WHERE food_id = ? AND restaurant_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, isAvailable ? 1 : 0);
+                    ps.setInt(2, foodId);
+                    ps.setInt(3, restaurantId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi chuyển trạng thái món: " + e.getMessage());
+        }
+        return false;
+    }
+
     private Food mapResultSetToFood(ResultSet rs) throws Exception {
         return new Food(
             rs.getInt("food_id"),

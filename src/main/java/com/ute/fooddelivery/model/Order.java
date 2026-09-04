@@ -16,6 +16,8 @@ public class Order implements Serializable {
     private String paymentMethod;
     private String status;
     private Integer driverId;
+    private String driverName;
+    private String driverPhone;
     private Timestamp createdAt;
     private List<OrderItem> items = new ArrayList<>();
 
@@ -132,5 +134,21 @@ public class Order implements Serializable {
 
     public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getDriverPhone() {
+        return driverPhone;
+    }
+
+    public void setDriverPhone(String driverPhone) {
+        this.driverPhone = driverPhone;
     }
 }

@@ -72,10 +72,22 @@
                             <c:if test="${sessionScope.currentUser.role eq 'ADMIN'}">
                                 <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-chart-line"></i> Quản trị hệ thống</a>
                             </c:if>
+                            <c:if test="${sessionScope.currentUser.seller}">
+                                <a href="${pageContext.request.contextPath}/merchant/dashboard" class="text-primary font-weight-bold"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn</a>
+                                <a href="${pageContext.request.contextPath}/merchant/foods"><i class="fa-solid fa-bowl-food"></i> Thực đơn món ăn</a>
+                                <a href="${pageContext.request.contextPath}/merchant/revenue"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a>
+                                <a href="${pageContext.request.contextPath}/merchant/shippers"><i class="fa-solid fa-motorcycle"></i> Danh sách shipper</a>
+                                <a href="${pageContext.request.contextPath}/merchant/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng của quán</a>
+                            </c:if>
                             <a href="${pageContext.request.contextPath}/cart"><i class="fa-solid fa-receipt"></i> Đơn hàng của tôi</a>
                             <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
                         </div>
                     </div>
+                    <c:if test="${sessionScope.currentUser.seller}">
+                        <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-primary btn-sm btn-nav-auth" title="Vào Kênh Quản Lý Quán Ăn">
+                            <i class="fa-solid fa-store"></i> Kênh Quán Ăn
+                        </a>
+                    </c:if>
                 </c:when>
                 <c:otherwise>
                     <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>

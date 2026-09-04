@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class Restaurant implements Serializable {
     private int id;
+    private Integer userId; // ID chủ quán (user role SELLER)
     private String name;
     private String description;
     private String phone;
@@ -15,13 +16,26 @@ public class Restaurant implements Serializable {
     }
 
     public Restaurant(int id, String name, String description, String phone, String address, String imageUrl, String status) {
+        this(id, null, name, description, phone, address, imageUrl, status);
+    }
+
+    public Restaurant(int id, Integer userId, String name, String description, String phone, String address, String imageUrl, String status) {
         this.id = id;
+        this.userId = userId;
         this.name = name;
         this.description = description;
         this.phone = phone;
         this.address = address;
         this.imageUrl = imageUrl;
         this.status = status;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public int getId() {
