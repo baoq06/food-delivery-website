@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="${food != null ? food.name : 'Chi tiết món ăn'} - VinDelivery" />
+    <jsp:param name="title" value="${food != null ? food.name : 'Chi tiết món ăn'} - Utee" />
 </jsp:include>
 
 <div class="page-banner">

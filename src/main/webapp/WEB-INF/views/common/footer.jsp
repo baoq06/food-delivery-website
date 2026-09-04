@@ -5,12 +5,11 @@
         <div class="container footer-grid">
             <!-- Col 1: About -->
             <div class="footer-col">
-                <a href="${pageContext.request.contextPath}/home" class="brand-logo footer-logo">
-                    <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
-                    <span class="logo-text">Vin<span>Delivery</span></span>
+                <a href="${pageContext.request.contextPath}/home" class="footer-brand-logo" title="Utee">
+                    <img src="${pageContext.request.contextPath}/assets/images/logo/logo-light-transparent.png" alt="Utee" class="footer-logo-img">
                 </a>
                 <p class="footer-desc">
-                    VinDelivery - Nền tảng đặt món ăn trực tuyến siêu tốc, tiện lợi với hàng ngàn món ăn nóng hổi từ các nhà hàng uy tín hàng đầu.
+                    Utee - Nền tảng đặt món ăn trực tuyến siêu tốc, tiện lợi với hàng ngàn món ăn nóng hổi từ các nhà hàng uy tín hàng đầu.
                 </p>
                 <div class="footer-socials">
                     <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
@@ -40,17 +39,17 @@
                     <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết món ăn nóng hổi</a></li>
                     <li><a href="#"><i class="fa-solid fa-angle-right"></i> Quy định thanh toán & hoàn tiền</a></li>
                     <li><a href="#"><i class="fa-solid fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại VinDelivery</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại Utee</a></li>
                 </ul>
             </div>
 
             <!-- Col 4: Contact -->
             <div class="footer-col">
-                <h4 class="footer-title">Liên Hệ Với VinDelivery</h4>
+                <h4 class="footer-title">Liên Hệ Với Utee</h4>
                 <ul class="footer-contact">
                     <li><i class="fa-solid fa-location-dot"></i> <span>Số 01 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh</span></li>
                     <li><i class="fa-solid fa-phone"></i> <span>Hotline: <strong>1900 6868</strong> (24/7)</span></li>
-                    <li><i class="fa-solid fa-envelope"></i> <span>hotro@vindelivery.vn</span></li>
+                    <li><i class="fa-solid fa-envelope"></i> <span>hotro@utee.vn</span></li>
                     <li><i class="fa-solid fa-clock"></i> <span>Mở cửa: 07:00 - 23:00 tất cả các ngày</span></li>
                 </ul>
                 <div class="payment-methods">
@@ -64,7 +63,7 @@
     
     <div class="footer-bottom">
         <div class="container footer-bottom-content">
-            <p>&copy; 2026 VinDelivery - Nền tảng đặt đồ ăn trực tuyến chuẩn vị hàng đầu.</p>
+            <p>&copy; 2026 Utee - Nền tảng đặt đồ ăn trực tuyến chuẩn vị hàng đầu.</p>
             <p class="footer-tagline">Giao nhanh 30 phút • Món ngon nóng hổi • Đảm bảo vệ sinh an toàn</p>
         </div>
     </div>

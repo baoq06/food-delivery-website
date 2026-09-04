@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Giỏ Hàng Của Bạn - VinDelivery" />
+    <jsp:param name="title" value="Giỏ Hàng Của Bạn - Utee" />
 </jsp:include>
 
 <div class="page-banner">
@@ -165,7 +165,7 @@
                     <i class="fa-solid fa-cart-shopping"></i>
                 </div>
                 <h2>Giỏ Hàng Của Bạn Đang Trống!</h2>
-                <p>Bạn chưa thêm món ăn nào vào giỏ hàng. Hãy lướt qua thực đơn món ngon phong phú của VinDelivery và đặt ngay nhé.</p>
+                <p>Bạn chưa thêm món ăn nào vào giỏ hàng. Hãy lướt qua thực đơn món ngon phong phú của Utee và đặt ngay nhé.</p>
                 <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-lg mt-3">
                     <i class="fa-solid fa-utensils"></i> Khám Phá Thực Đơn Ngay
                 </a>
@@ -181,7 +181,7 @@
             <i class="fa-solid fa-circle-check"></i>
         </div>
         <h2>Đặt Hàng Thành Công!</h2>
-        <p class="modal-sub">Cảm ơn bạn đã lựa chọn VinDelivery. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.</p>
+        <p class="modal-sub">Cảm ơn bạn đã lựa chọn Utee. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.</p>
         
         <div class="order-info-card">
             <div class="info-row">

@@ -6,7 +6,7 @@
         <!-- Header Box đồng bộ giao diện Admin / Portal -->
         <div class="admin-header-box merchant-header-box">
             <div>
-                <span class="admin-badge"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn • Đối Tác VinDelivery</span>
+                <span class="admin-badge"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn • Đối Tác Utee</span>
                 <h1 class="admin-main-title">${currentRestaurant.name}</h1>
                 <p class="admin-sub">
                     <i class="fa-solid fa-location-dot text-primary"></i> ${currentRestaurant.address}

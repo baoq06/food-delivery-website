@@ -1,10 +1,10 @@
 // ==========================================================================
-// VinDelivery - JavaScript Tương Tác Giao Diện Người Dùng
+// Utee - JavaScript Tương Tác Giao Diện Người Dùng
 // Design Intelligence: ui-ux-pro-max (Micro-interactions, Fast Feedback)
 // ==========================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🚀 VinDelivery - Hệ thống đặt đồ ăn siêu tốc đã khởi chạy thành công!");
+    console.log("🚀 Utee - Hệ thống đặt đồ ăn siêu tốc đã khởi chạy thành công!");
 
     // 1. Hiệu ứng làm nổi bật Navbar khi cuộn trang
     const navbar = document.querySelector(".navbar");

@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Đăng Nhập & Đăng Ký - VinDelivery" />
+    <jsp:param name="title" value="Đăng Nhập & Đăng Ký - Utee" />
     <jsp:param name="isAuthPage" value="true" />
 </jsp:include>
 
@@ -9,11 +9,10 @@
     <div class="auth-card-modern">
         <!-- Auth Header with Logo -->
         <div class="auth-header">
-            <div class="auth-logo">
-                <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
-                <span class="logo-text">Vin<span>Delivery</span></span>
-            </div>
-            <p class="auth-tagline">Đăng nhập để nhận ngay voucher giảm 30k cho đơn hàng đầu tiên cùng VinDelivery!</p>
+            <a href="${pageContext.request.contextPath}/home" class="auth-logo-link" title="Utee">
+                <img src="${pageContext.request.contextPath}/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="auth-logo-img">
+            </a>
+            <p class="auth-tagline">Đăng nhập để nhận ngay voucher giảm 30k cho đơn hàng đầu tiên cùng Utee!</p>
         </div>
 
         <!-- Auth Tabs -->

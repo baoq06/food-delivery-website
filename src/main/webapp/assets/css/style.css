@@ -301,6 +301,59 @@ button, input, select, textarea {
     text-decoration: none;
 }
 
+.brand-logo-img {
+    height: 40px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.brand-logo:hover .brand-logo-img {
+    transform: scale(1.05);
+}
+
+.auth-logo-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    text-decoration: none;
+}
+
+.auth-logo-img {
+    height: 48px;
+    width: auto;
+    max-width: 160px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-logo-link:hover .auth-logo-img {
+    transform: scale(1.05);
+}
+
+.footer-brand-logo {
+    display: inline-block;
+    margin-bottom: 8px;
+    text-decoration: none;
+}
+
+.footer-logo-img {
+    height: 38px;
+    width: auto;
+    max-width: 130px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-brand-logo:hover .footer-logo-img {
+    transform: scale(1.05);
+}
+
 .logo-icon-box {
     width: 44px;
     height: 44px;

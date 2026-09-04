@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Cài Đặt Quán Ăn - VinDelivery Merchant" />
+    <jsp:param name="title" value="Cài Đặt Quán Ăn - Utee Merchant" />
 </jsp:include>
 
 <div class="admin-dashboard-container">
@@ -86,7 +86,7 @@
                         <div class="preview-meta">
                             <span><i class="fa-solid fa-location-dot text-primary"></i> ${currentRestaurant.address}</span>
                             <span><i class="fa-solid fa-phone text-success"></i> ${currentRestaurant.phone}</span>
-                            <span><i class="fa-solid fa-shield-halved text-warning"></i> Quán đối tác chính thức VinDelivery</span>
+                            <span><i class="fa-solid fa-shield-halved text-warning"></i> Quán đối tác chính thức Utee</span>
                         </div>
                     </div>
                 </div>

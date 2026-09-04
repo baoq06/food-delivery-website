@@ -81,6 +81,14 @@ public class Food implements Serializable {
         this.image = image;
     }
 
+    public String getImageUrl() {
+        return image;
+    }
+
+    public void setImageUrl(String image) {
+        this.image = image;
+    }
+
     public int getCategoryId() {
         return categoryId;
     }

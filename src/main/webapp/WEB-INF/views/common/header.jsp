@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${param.title != null ? param.title : "VinDelivery - Đặt món ngon giao tận nơi trong 30 phút"}</title>
+    <title>${param.title != null ? param.title : "Utee - Đặt món ngon giao tận nơi trong 30 phút"}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png">
     <!-- Google Fonts: Outfit (Heading/Brand) + Be Vietnam Pro (Body/Tiếng Việt chuẩn) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

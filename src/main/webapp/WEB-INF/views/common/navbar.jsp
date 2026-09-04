@@ -11,7 +11,7 @@
                 <span><i class="fa-solid fa-bolt text-primary"></i> <strong>Hotline:</strong> 1900 6868 | <strong>Giao siêu tốc:</strong> 07:00 - 23:00</span>
             </div>
             <div class="topbar-right">
-                <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>VINDELI15</strong> giảm 15k cho đơn từ 99k</span>
+                <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>UTEE15</strong> giảm 15k cho đơn từ 99k</span>
             </div>
         </div>
     </div>
@@ -21,21 +21,16 @@
 <nav class="navbar ${isAuth ? 'navbar-auth' : ''}">
     <div class="nav-container ${isAuth ? 'nav-container-auth' : ''}">
         <!-- Logo -->
-        <a href="${pageContext.request.contextPath}/home" class="brand-logo">
-            <div class="logo-icon-box">
-                <i class="fa-solid fa-utensils"></i>
-            </div>
-            <div class="logo-text-group">
-                <span class="brand-title">Vin<span class="text-gradient">Delivery</span></span>
-                <c:choose>
-                    <c:when test="${isAuth}">
-                        <span class="brand-badge"><i class="fa-solid fa-shield-halved"></i> Đăng Nhập & Đăng Ký</span>
-                    </c:when>
-                    <c:otherwise>
-                        <span class="brand-badge"><i class="fa-solid fa-bolt"></i> 30m Express</span>
-                    </c:otherwise>
-                </c:choose>
-            </div>
+        <a href="${pageContext.request.contextPath}/home" class="brand-logo" title="Utee - Đặt món ngon giao tận nơi">
+            <img src="${pageContext.request.contextPath}/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="brand-logo-img">
+            <c:choose>
+                <c:when test="${isAuth}">
+                    <span class="brand-badge"><i class="fa-solid fa-shield-halved"></i> Đăng Nhập & Đăng Ký</span>
+                </c:when>
+                <c:otherwise>
+                    <span class="brand-badge"><i class="fa-solid fa-bolt"></i> 30m Express</span>
+                </c:otherwise>
+            </c:choose>
         </a>
 
         <c:choose>

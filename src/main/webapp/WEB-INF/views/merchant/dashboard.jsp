@@ -4,7 +4,7 @@
 <fmt:setLocale value="vi_VN" />
 
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Kênh Quán Ăn - Tổng Quan | VinDelivery" />
+    <jsp:param name="title" value="Kênh Quán Ăn - Tổng Quan | Utee" />
 </jsp:include>
 
 <div class="admin-dashboard-container">

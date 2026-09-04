@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="VinDelivery - Đặt món ngon giao tận nơi trong 30 phút" />
+    <jsp:param name="title" value="Utee - Đặt món ngon giao tận nơi trong 30 phút" />
 </jsp:include>
 
 <!-- Hero Section -->
@@ -14,7 +14,7 @@
             </div>
             <h1 class="hero-title">
                 Thèm Món Ngon Gì, <br>
-                <span class="hero-gradient-text">VinDelivery</span> Giao Nóng Tận Cửa!
+                <span class="hero-gradient-text">Utee</span> Giao Nóng Tận Cửa!
             </h1>
             <p class="hero-subtitle">
                 Thưởng thức hàng trăm món ăn nóng hổi, chuẩn vị từ các nhà hàng uy tín hàng đầu. Giao siêu tốc 20-30 phút, bảo đảm chất lượng với ngập tràn ưu đãi mỗi ngày.
@@ -79,7 +79,7 @@
         <div class="hero-image-wrap">
             <div class="hero-circle-bg"></div>
             <div class="hero-img-container">
-                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80" alt="Món ngon VinDelivery" class="hero-main-img">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80" alt="Món ngon Utee" class="hero-main-img">
             </div>
             
             <!-- Floating Driver Tracker Card -->
@@ -278,16 +278,16 @@
     <div class="container">
         <div class="promo-banner">
             <div class="promo-content">
-                <span class="promo-pill"><i class="fa-solid fa-gift"></i> ƯU ĐÃI ĐỘC QUYỀN VINDELIVERY</span>
+                <span class="promo-pill"><i class="fa-solid fa-gift"></i> ƯU ĐÃI ĐỘC QUYỀN UTEE</span>
                 <h2>Giảm Ngay 30.000đ Cho Đơn Hàng Từ 150.000đ</h2>
                 <p>Thỏa sức đặt món ngon Á - Âu nóng hổi mỗi ngày. Nhập mã voucher độc quyền bên dưới khi thanh toán để được giảm ngay 30K!</p>
                 
                 <div class="voucher-copy-card">
                     <div class="voucher-code-tag">
                         <i class="fa-solid fa-ticket"></i>
-                        <span id="voucherHomeCode">VINDELI30</span>
+                        <span id="voucherHomeCode">UTEE30</span>
                     </div>
-                    <button type="button" class="btn-copy-voucher" onclick="navigator.clipboard.writeText('VINDELI30'); window.showToast('✨ Đã sao chép mã VINDELI30! Dán vào giỏ hàng ngay.');">
+                    <button type="button" class="btn-copy-voucher" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30! Dán vào giỏ hàng ngay.');">
                         <i class="fa-regular fa-copy"></i> Sao Chép Mã
                     </button>
                 </div>
@@ -297,7 +297,7 @@
                 </div>
             </div>
             <div class="promo-graphic">
-                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&auto=format&fit=crop&q=80" alt="Ưu đãi pizza VinDelivery" class="promo-img">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&auto=format&fit=crop&q=80" alt="Ưu đãi pizza Utee" class="promo-img">
             </div>
         </div>
     </div>
@@ -308,7 +308,7 @@
     <div class="container">
         <div class="section-header text-center">
             <span class="sub-heading">Cam Kết Chất Lượng</span>
-            <h2 class="section-title">Tại Sao Nên Chọn VinDelivery?</h2>
+            <h2 class="section-title">Tại Sao Nên Chọn Utee?</h2>
             <p class="section-desc">Chúng tôi nỗ lực mỗi ngày để đem đến trải nghiệm ẩm thực trọn vẹn nhất</p>
         </div>
 

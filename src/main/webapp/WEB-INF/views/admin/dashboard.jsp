@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Bảng Điều Khiển Quản Trị - VinDelivery Admin" />
+    <jsp:param name="title" value="Bảng Điều Khiển Quản Trị - Utee Admin" />
 </jsp:include>
 
 <div class="admin-dashboard-container">
