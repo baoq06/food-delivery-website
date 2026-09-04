@@ -39,7 +39,7 @@ public class UserDAO {
 
         // Fallback test nếu CSDL chưa khởi tạo
         if ("admin".equalsIgnoreCase(account) && "123456".equals(password)) {
-            return new User(1, "admin", "123456", "Quản Trị Viên (Admin)", "admin@foodzone.vn", "0909123456", "Văn phòng FoodZone Q1", "ADMIN");
+            return new User(1, "admin", "123456", "Quản Trị Viên (Admin)", "admin@vindelivery.vn", "0909123456", "Văn phòng VinDelivery Q1", "ADMIN");
         }
         if ("customer".equalsIgnoreCase(account) && "123456".equals(password)) {
             return new User(2, "customer", "123456", "Nguyễn Văn Khách", "khach@gmail.com", "0987654321", "123 Lê Lợi, P. Bến Nghé, Q.1", "CUSTOMER");

@@ -5,10 +5,10 @@
 <div class="topbar">
     <div class="topbar-container">
         <div class="topbar-left">
-            <span><i class="fa-solid fa-fire text-primary"></i> <strong>Hotline:</strong> 1900 6886 | <strong>Giao hàng:</strong> 07:00 - 23:00</span>
+            <span><i class="fa-solid fa-bolt text-primary"></i> <strong>Hotline:</strong> 1900 6868 | <strong>Giao siêu tốc:</strong> 07:00 - 23:00</span>
         </div>
         <div class="topbar-right">
-            <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>DELI15</strong> giảm 15k cho đơn từ 99k</span>
+            <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>VINDELI15</strong> giảm 15k cho đơn từ 99k</span>
         </div>
     </div>
 </div>
@@ -18,8 +18,13 @@
     <div class="nav-container">
         <!-- Logo -->
         <a href="${pageContext.request.contextPath}/home" class="brand-logo">
-            <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
-            <span class="logo-text">Food<span>Zone</span></span>
+            <div class="logo-icon-box">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div class="logo-text-group">
+                <span class="brand-title">Vin<span class="text-gradient">Delivery</span></span>
+                <span class="brand-badge"><i class="fa-solid fa-bolt"></i> 30m Express</span>
+            </div>
         </a>
 
         <!-- Search Bar -->

@@ -7,3 +7,6 @@ target/
 *.iml
 *.log
 .DS_Store
+# AI Agent & Local Design Tokens
+.agents/
+design-system/

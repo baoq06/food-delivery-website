@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Thực Đơn Đa Dạng - FoodZone" />
+    <jsp:param name="title" value="Thực Đơn Đa Dạng - VinDelivery" />
 </jsp:include>
 
 <!-- Page Header Banner -->
@@ -13,7 +13,7 @@
             <span>Thực đơn</span>
         </div>
         <h1 class="page-title">Khám Phá Toàn Bộ Thực Đơn</h1>
-        <p class="page-desc">Hơn 100+ món ăn ngon từ ẩm thực Á - Âu, trà sữa và thức ăn nhanh giao nhanh trong 30 phút</p>
+        <p class="page-desc">Hơn 100+ món ăn ngon từ ẩm thực Á - Âu, trà sữa và thức ăn nhanh giao siêu tốc 30 phút cùng VinDelivery</p>
     </div>
 </div>
 
@@ -28,22 +28,29 @@
                 <c:when test="${not empty categories}">
                     <c:forEach items="${categories}" var="cat">
                         <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-tab ${param.cat eq cat.id ? 'active' : ''}">
-                            ${cat.imageIcon} ${cat.name}
+                            <c:choose>
+                                <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
+                                <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
+                                <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
+                                <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
+                                <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
+                            </c:choose>
+                            ${cat.name}
                         </a>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
                     <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-tab ${param.cat eq '1' ? 'active' : ''}">
-                        🍚 Cơm & Món Mặn
+                        <i class="fa-solid fa-bowl-rice"></i> Cơm & Món Mặn
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-tab ${param.cat eq '2' ? 'active' : ''}">
-                        🍜 Phở & Bún Mì
+                        <i class="fa-solid fa-bowl-food"></i> Phở & Bún Mì
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-tab ${param.cat eq '3' ? 'active' : ''}">
-                        🧋 Trà Sữa & Đồ Uống
+                        <i class="fa-solid fa-mug-hot"></i> Trà Sữa & Đồ Uống
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-tab ${param.cat eq '4' ? 'active' : ''}">
-                        🍔 Fastfood & Ăn Vặt
+                        <i class="fa-solid fa-burger"></i> Fastfood & Ăn Vặt
                     </a>
                 </c:otherwise>
             </c:choose>

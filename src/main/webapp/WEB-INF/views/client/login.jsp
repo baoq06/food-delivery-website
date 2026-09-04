@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Đăng Nhập & Đăng Ký - FoodZone" />
+    <jsp:param name="title" value="Đăng Nhập & Đăng Ký - VinDelivery" />
 </jsp:include>
 
 <div class="auth-page-wrapper">
@@ -10,9 +10,9 @@
         <div class="auth-header">
             <div class="auth-logo">
                 <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
-                <span class="logo-text">Food<span>Zone</span></span>
+                <span class="logo-text">Vin<span>Delivery</span></span>
             </div>
-            <p class="auth-tagline">Đăng nhập để nhận ngay voucher giảm 30% cho đơn hàng đầu tiên!</p>
+            <p class="auth-tagline">Đăng nhập để nhận ngay voucher giảm 30k cho đơn hàng đầu tiên cùng VinDelivery!</p>
         </div>
 
         <!-- Auth Tabs -->
