@@ -31,18 +31,7 @@ CREATE TABLE `categories` (
     `description` VARCHAR(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 2. Bảng nhà hàng / quán ăn (restaurants)
-CREATE TABLE `restaurants` (
-    `restaurant_id` INT AUTO_INCREMENT PRIMARY KEY,
-    `name` VARCHAR(150) NOT NULL,
-    `description` TEXT,
-    `phone` VARCHAR(20),
-    `address` VARCHAR(255) DEFAULT 'TP. Hồ Chí Minh',
-    `image_url` VARCHAR(500) DEFAULT NULL,
-    `status` VARCHAR(20) DEFAULT 'OPEN' -- 'OPEN', 'CLOSED'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 3. Bảng người dùng (users)
+-- 2. Bảng người dùng (users)
 CREATE TABLE `users` (
     `user_id` INT AUTO_INCREMENT PRIMARY KEY,
     `username` VARCHAR(50) UNIQUE NOT NULL,
@@ -51,8 +40,24 @@ CREATE TABLE `users` (
     `email` VARCHAR(100) UNIQUE,
     `phone` VARCHAR(20),
     `address` VARCHAR(255),
-    `role` VARCHAR(20) DEFAULT 'CUSTOMER', -- 'ADMIN', 'CUSTOMER'
+    `role` VARCHAR(20) DEFAULT 'CUSTOMER', -- 'ADMIN', 'CUSTOMER', 'SELLER'
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. Bảng nhà hàng / quán ăn (restaurants)
+-- Mối quan hệ: Mỗi nhà hàng do 1 chủ doanh nghiệp (user có role SELLER) quản lý
+CREATE TABLE `restaurants` (
+    `restaurant_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT DEFAULT NULL,
+    `name` VARCHAR(150) NOT NULL,
+    `description` TEXT,
+    `phone` VARCHAR(20),
+    `address` VARCHAR(255) DEFAULT 'TP. Hồ Chí Minh',
+    `image_url` VARCHAR(500) DEFAULT NULL,
+    `status` VARCHAR(20) DEFAULT 'OPEN', -- 'OPEN', 'CLOSED'
+    CONSTRAINT `fk_restaurants_users`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. Bảng địa chỉ nhận hàng của người dùng (addresses)

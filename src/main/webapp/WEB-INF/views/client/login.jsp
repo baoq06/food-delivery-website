@@ -129,6 +129,36 @@
                     </div>
                 </div>
 
+                <div class="form-group-icon">
+                    <label>Loại tài khoản đăng ký *</label>
+                    <div class="account-type-toggle-group" style="display: flex; gap: 12px; margin-top: 6px;">
+                        <label class="account-type-card ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'selected' : ''}" style="flex: 1; border: 1px solid #ddd; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                            <input type="radio" name="accountType" id="typeCustomer" value="CUSTOMER" ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'checked' : ''} onchange="toggleSellerFields()" />
+                            <div>
+                                <strong style="display:block; font-size: 0.95rem;">👤 Khách Hàng</strong>
+                                <span style="font-size: 0.8rem; color: #666;">Đặt món giao tận nơi</span>
+                            </div>
+                        </label>
+                        <label class="account-type-card ${stickyAccountType eq 'SELLER' ? 'selected' : ''}" style="flex: 1; border: 1px solid #ddd; padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s;">
+                            <input type="radio" name="accountType" id="typeSeller" value="SELLER" ${stickyAccountType eq 'SELLER' ? 'checked' : ''} onchange="toggleSellerFields()" />
+                            <div>
+                                <strong style="display:block; font-size: 0.95rem;">🏪 Chủ Quán Ăn</strong>
+                                <span style="font-size: 0.8rem; color: #666;">Đăng món &amp; bán hàng</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group-icon" id="sellerFields" style="display: ${stickyAccountType eq 'SELLER' ? 'block' : 'none'}; background: #fff8f5; border: 1px dashed #ff4757; padding: 12px; border-radius: 8px; margin-top: 10px;">
+                    <label for="restaurantName" class="text-primary font-weight-bold">Tên quán ăn / Nhà hàng của bạn *</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-store text-primary"></i>
+                        <input type="text" id="restaurantName" name="restaurantName" class="form-control" 
+                               value="<c:out value='${stickyRestaurantName}' />"
+                               placeholder="Ví dụ: Bếp Việt Quán, Cơm Tấm Sài Gòn...">
+                    </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">
                     Đăng Ký Tài Khoản Mới <i class="fa-solid fa-check"></i>
                 </button>
@@ -162,6 +192,24 @@ function switchAuthTab(tabId) {
         }
     </c:otherwise>
 </c:choose>
+
+function toggleSellerFields() {
+    const isSeller = document.getElementById('typeSeller').checked;
+    const sellerBox = document.getElementById('sellerFields');
+    const restNameInput = document.getElementById('restaurantName');
+    const cards = document.querySelectorAll('.account-type-card');
+
+    cards.forEach(c => c.classList.remove('selected'));
+    if (isSeller) {
+        cards[1].classList.add('selected');
+        sellerBox.style.display = 'block';
+        restNameInput.required = true;
+    } else {
+        cards[0].classList.add('selected');
+        sellerBox.style.display = 'none';
+        restNameInput.required = false;
+    }
+}
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

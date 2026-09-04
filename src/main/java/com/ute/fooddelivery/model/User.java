@@ -89,4 +89,16 @@ public class User implements Serializable {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public boolean isAdmin() {
+        return "ADMIN".equalsIgnoreCase(this.role);
+    }
+
+    public boolean isSeller() {
+        return "SELLER".equalsIgnoreCase(this.role) || "MERCHANT".equalsIgnoreCase(this.role) || "RESTAURANT_OWNER".equalsIgnoreCase(this.role);
+    }
+
+    public boolean isCustomer() {
+        return "CUSTOMER".equalsIgnoreCase(this.role);
+    }
 }

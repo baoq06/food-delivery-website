@@ -44,6 +44,12 @@ public class UserDAO {
         if ("customer".equalsIgnoreCase(account) && "123456".equals(password)) {
             return new User(2, "customer", "123456", "Nguyễn Văn Khách", "khach@gmail.com", "0987654321", "123 Lê Lợi, P. Bến Nghé, Q.1", "CUSTOMER");
         }
+        if ("bepviet".equalsIgnoreCase(account) && "123456".equals(password)) {
+            return new User(5, "bepviet", "123456", "Chủ Quán Bếp Việt", "bepviet@foodzone.vn", "0901234567", "45 Lê Lợi, P. Bến Nghé, Q.1, TP. HCM", "SELLER");
+        }
+        if ("pho1985".equalsIgnoreCase(account) && "123456".equals(password)) {
+            return new User(6, "pho1985", "123456", "Chủ Quán Phở 1985", "pho1985@foodzone.vn", "0902345678", "128 Võ Văn Tần, Q.3, TP. HCM", "SELLER");
+        }
 
         return null;
     }
@@ -64,5 +70,63 @@ public class UserDAO {
             System.err.println("Lỗi khi đăng ký User: " + e.getMessage());
         }
         return false;
+    }
+
+    public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
+        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'SELLER')";
+        String insertRestSql = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status) VALUES (?, ?, ?, ?, ?, ?, 'OPEN')";
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+
+            int userId = -1;
+            try (PreparedStatement psUser = conn.prepareStatement(insertUserSql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, user.getUsername());
+                psUser.setString(2, user.getPassword());
+                psUser.setString(3, user.getFullName());
+                psUser.setString(4, user.getEmail());
+                psUser.setString(5, user.getPhone());
+                psUser.setString(6, user.getAddress());
+
+                int affected = psUser.executeUpdate();
+                if (affected > 0) {
+                    try (ResultSet rs = psUser.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            userId = rs.getInt(1);
+                        }
+                    }
+                }
+            }
+
+            if (userId > 0) {
+                try (PreparedStatement psRest = conn.prepareStatement(insertRestSql)) {
+                    psRest.setInt(1, userId);
+                    psRest.setString(2, restaurantName != null && !restaurantName.trim().isEmpty() ? restaurantName.trim() : "Quán Ăn của " + user.getFullName());
+                    psRest.setString(3, "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc VinDelivery.");
+                    psRest.setString(4, user.getPhone());
+                    psRest.setString(5, restaurantAddress != null && !restaurantAddress.trim().isEmpty() ? restaurantAddress.trim() : user.getAddress());
+                    psRest.setString(6, "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60");
+                    psRest.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ignored) {}
+            }
+            System.err.println("Lỗi khi đăng ký tài khoản chủ quán: " + e.getMessage());
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ignored) {}
+            }
+        }
     }
 }

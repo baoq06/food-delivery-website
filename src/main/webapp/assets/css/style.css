@@ -2852,3 +2852,440 @@ a,
 .cat-tab {
     cursor: pointer;
 }
+
+/* ==========================================================================
+   VinDelivery Merchant Portal Styles (Đồng bộ chuẩn giao diện hệ thống)
+   ========================================================================== */
+
+.merchant-portal-header {
+    padding-top: 28px;
+}
+
+.merchant-header-box {
+    margin-bottom: 20px;
+}
+
+.merchant-tabs-bar {
+    display: flex;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+}
+
+.merchant-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.merchant-tab-btn:hover {
+    color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.merchant-tab-btn.active {
+    color: #ffffff;
+    background: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.25);
+}
+
+/* Split Grid for Dashboard and Profile */
+.merchant-grid-split {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 22px;
+}
+
+@media (max-width: 992px) {
+    .merchant-grid-split {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Pulse animation for available status */
+.dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2ed573;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7);
+    animation: pulse 1.6s infinite;
+    vertical-align: middle;
+    margin-right: 3px;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 7px rgba(46, 213, 115, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(46, 213, 115, 0);
+    }
+}
+
+/* Top Foods List */
+.top-foods-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.top-food-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid #f1f5f9;
+    transition: var(--transition);
+}
+
+.top-food-item:hover {
+    background: #f8fafc;
+    border-color: var(--border-color);
+}
+
+.top-food-rank {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.rank-1 { background: #ffeaa7; color: #d63031; }
+.rank-2 { background: #dfe6e9; color: #2d3436; }
+.rank-3 { background: #fab1a0; color: #d63031; }
+.rank-4 { background: #f1f2f6; color: #636e72; }
+
+.top-food-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.top-food-details {
+    flex: 1;
+}
+
+.top-food-name {
+    font-size: 0.9rem;
+    margin: 0 0 2px 0;
+}
+
+.top-food-price {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.top-food-stats {
+    text-align: right;
+}
+
+.badge-qty {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #00b894;
+}
+
+.total-rev {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Quick Action Box */
+.merchant-quick-box {
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+}
+
+.merchant-quick-box h4 {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+.quick-btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.quick-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.quick-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* Revenue CSS Bar Chart */
+.revenue-chart-container {
+    padding: 24px 14px 14px 14px;
+    background: #fafbfc;
+    border-radius: var(--radius-md);
+    border: 1px solid #f1f5f9;
+}
+
+.chart-bars-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 220px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+}
+
+.chart-col {
+    flex: 1;
+    min-width: 32px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+
+.chart-bar-outer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: #f1f5f9;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
+}
+
+.chart-bar-fill {
+    width: 100%;
+    background: linear-gradient(180deg, var(--primary-color) 0%, #ff7675 100%);
+    border-radius: 6px 6px 0 0;
+    transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chart-bar-label {
+    margin-top: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #64748b;
+}
+
+.chart-bar-tooltip {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 8px;
+    background: #2d3436;
+    color: #ffffff;
+    font-size: 0.76rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.chart-col:hover .chart-bar-tooltip {
+    opacity: 1;
+}
+
+.chart-col:hover .chart-bar-fill {
+    filter: brightness(1.1);
+}
+
+/* Progress bar in table */
+.progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 140px;
+}
+
+.progress-fill {
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+/* Modals */
+.merchant-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.merchant-modal-box {
+    background: #ffffff;
+    width: 92%;
+    max-width: 560px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.6rem;
+    color: #64748b;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 22px;
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--border-color);
+    background: #f8fafc;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.row-fields {
+    display: flex;
+    gap: 14px;
+}
+
+.col-half {
+    flex: 1;
+}
+
+/* Store Preview Card */
+.store-preview-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.preview-banner {
+    position: relative;
+    height: 180px;
+}
+
+.preview-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.status-open {
+    background: #e6f9ed;
+    color: #1e7e34;
+}
+
+.status-closed {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.preview-content {
+    padding: 20px;
+}
+
+.preview-name {
+    font-size: 1.3rem;
+    margin: 0 0 6px 0;
+}
+
+.preview-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 0.86rem;
+    color: #475569;
+}
+

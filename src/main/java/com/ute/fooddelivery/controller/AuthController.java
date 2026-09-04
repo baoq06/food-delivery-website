@@ -62,8 +62,10 @@ public class AuthController extends HttpServlet {
                     CookieUtils.deleteCookie(resp, "remember_user");
                 }
 
-                if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                if (user.isAdmin()) {
                     resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+                } else if (user.isSeller()) {
+                    resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/home");
                 }
@@ -80,6 +82,10 @@ public class AuthController extends HttpServlet {
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
             String address = req.getParameter("address");
+            String accountType = req.getParameter("accountType"); // "CUSTOMER" hoặc "SELLER"
+            String restaurantName = req.getParameter("restaurantName");
+
+            boolean isSellerReg = "SELLER".equalsIgnoreCase(accountType);
 
             // Sticky Form & Validation khi đăng ký
             String validationError = null;
@@ -89,6 +95,8 @@ public class AuthController extends HttpServlet {
                 phone == null || phone.trim().isEmpty() ||
                 address == null || address.trim().isEmpty()) {
                 validationError = "Vui lòng điền đầy đủ các thông tin bắt buộc (*)!";
+            } else if (isSellerReg && (restaurantName == null || restaurantName.trim().isEmpty())) {
+                validationError = "Chủ quán vui lòng nhập Tên quán ăn / Nhà hàng của bạn!";
             } else if (password.trim().length() < 6) {
                 validationError = "Mật khẩu bảo mật phải có ít nhất 6 ký tự!";
             } else if (!phone.trim().matches("^0[0-9]{9,10}$")) {
@@ -102,28 +110,43 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("stickyRegUsername", username);
                 req.setAttribute("stickyRegPhone", phone);
                 req.setAttribute("stickyRegAddress", address);
+                req.setAttribute("stickyAccountType", accountType);
+                req.setAttribute("stickyRestaurantName", restaurantName);
                 req.setAttribute("activeTab", "registerTab");
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
 
-            User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), "CUSTOMER");
-            boolean created = userService.register(newUser);
+            User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), isSellerReg ? "SELLER" : "CUSTOMER");
+            boolean created;
+            if (isSellerReg) {
+                created = userService.registerSeller(newUser, restaurantName.trim(), address.trim());
+            } else {
+                created = userService.register(newUser);
+            }
 
             if (!created) {
                 req.setAttribute("errorMessage", "Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
                 req.setAttribute("stickyRegFullName", fullName);
                 req.setAttribute("stickyRegPhone", phone);
                 req.setAttribute("stickyRegAddress", address);
+                req.setAttribute("stickyAccountType", accountType);
+                req.setAttribute("stickyRestaurantName", restaurantName);
                 req.setAttribute("activeTab", "registerTab");
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
 
             // Đăng nhập luôn cho user sau khi đăng ký thành công
+            User loggedUser = userService.login(username.trim(), password);
             HttpSession session = req.getSession();
-            session.setAttribute("currentUser", newUser);
-            resp.sendRedirect(req.getContextPath() + "/home");
+            session.setAttribute("currentUser", loggedUser != null ? loggedUser : newUser);
+
+            if (isSellerReg) {
+                resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/home");
+            }
         }
     }
 }
