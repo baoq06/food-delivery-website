@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="Giỏ Hàng Của Bạn - FoodZone" />
+    <jsp:param name="title" value="Giỏ Hàng Của Bạn - VinDelivery" />
 </jsp:include>
 
 <div class="page-banner">
@@ -65,7 +65,7 @@
                         <div class="voucher-box">
                             <div class="voucher-input-wrap">
                                 <i class="fa-solid fa-ticket text-primary"></i>
-                                <input type="text" id="couponCode" placeholder="Nhập mã ưu đãi (Ví dụ: DELI15)" class="form-control">
+                                <input type="text" id="couponCode" placeholder="Nhập mã ưu đãi (Ví dụ: VINDELI15, VINDELI30)" class="form-control">
                                 <button type="button" class="btn btn-outline btn-sm" onclick="applyCoupon()">Áp dụng</button>
                             </div>
                             <span id="couponMsg" class="coupon-feedback"></span>
@@ -165,7 +165,7 @@
                     <i class="fa-solid fa-cart-shopping"></i>
                 </div>
                 <h2>Giỏ Hàng Của Bạn Đang Trống!</h2>
-                <p>Bạn chưa thêm món ăn nào vào giỏ hàng. Hãy lướt qua thực đơn món ngon phong phú của FoodZone và đặt ngay nhé.</p>
+                <p>Bạn chưa thêm món ăn nào vào giỏ hàng. Hãy lướt qua thực đơn món ngon phong phú của VinDelivery và đặt ngay nhé.</p>
                 <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-lg mt-3">
                     <i class="fa-solid fa-utensils"></i> Khám Phá Thực Đơn Ngay
                 </a>
@@ -181,12 +181,12 @@
             <i class="fa-solid fa-circle-check"></i>
         </div>
         <h2>Đặt Hàng Thành Công!</h2>
-        <p class="modal-sub">Cảm ơn bạn đã lựa chọn FoodZone. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.</p>
+        <p class="modal-sub">Cảm ơn bạn đã lựa chọn VinDelivery. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.</p>
         
         <div class="order-info-card">
             <div class="info-row">
                 <span>Mã đơn hàng:</span>
-                <strong id="modalOrderId"><c:out value="${not empty placedOrderId ? placedOrderId : '#FZ-89241'}" /></strong>
+                <strong id="modalOrderId"><c:out value="${not empty placedOrderId ? placedOrderId : '#VD-89241'}" /></strong>
             </div>
             <div class="info-row">
                 <span>Dự kiến giao hàng:</span>
@@ -214,14 +214,14 @@ function applyCoupon() {
     const discountRow = document.getElementById('discountRow');
     const finalTotalDisplay = document.getElementById('finalTotalDisplay');
 
-    if (code === 'DELI15' || code === 'WELCOME' || code === 'FOODZONE30') {
+    if (code === 'VINDELI15' || code === 'VINDELI30' || code === 'WELCOME' || code === 'DELI15' || code === 'FOODZONE30') {
         hasDiscount = true;
-        msg.innerHTML = '<span style="color: #2ed573;">Áp dụng mã thành công! Giảm 15.000đ.</span>';
+        msg.innerHTML = '<span style="color: #10ac84; font-weight: 600;"><i class="fa-solid fa-check"></i> Áp dụng mã thành công! Giảm 15.000đ phí giao hàng.</span>';
         discountRow.style.display = 'flex';
         let newTotal = baseTotal; // 15000 shipping - 15000 discount = 0
         finalTotalDisplay.innerText = newTotal.toLocaleString('vi-VN') + ' đ';
     } else {
-        msg.innerHTML = '<span style="color: #ff4757;">Mã ưu đãi không hợp lệ hoặc đã hết hạn!</span>';
+        msg.innerHTML = '<span style="color: #ee5253; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> Mã ưu đãi không hợp lệ hoặc đã hết hạn!</span>';
     }
 }
 

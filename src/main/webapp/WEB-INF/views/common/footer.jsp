@@ -7,10 +7,10 @@
             <div class="footer-col">
                 <a href="${pageContext.request.contextPath}/home" class="brand-logo footer-logo">
                     <span class="logo-icon"><i class="fa-solid fa-utensils"></i></span>
-                    <span class="logo-text">Food<span>Zone</span></span>
+                    <span class="logo-text">Vin<span>Delivery</span></span>
                 </a>
                 <p class="footer-desc">
-                    Hệ thống đặt món ăn trực tuyến nhanh chóng, tiện lợi với hàng ngàn món ăn nóng hổi từ các đầu bếp uy tín hàng đầu.
+                    VinDelivery - Nền tảng đặt món ăn trực tuyến siêu tốc, tiện lợi với hàng ngàn món ăn nóng hổi từ các nhà hàng uy tín hàng đầu.
                 </p>
                 <div class="footer-socials">
                     <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
@@ -36,21 +36,21 @@
             <div class="footer-col">
                 <h4 class="footer-title">Chính Sách & Hỗ Trợ</h4>
                 <ul class="footer-links">
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Chính sách giao hàng</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết chất lượng an toàn</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Chính sách giao hàng 30 phút</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết món ăn nóng hổi</a></li>
                     <li><a href="#"><i class="fa-solid fa-angle-right"></i> Quy định thanh toán & hoàn tiền</a></li>
                     <li><a href="#"><i class="fa-solid fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại VinDelivery</a></li>
                 </ul>
             </div>
 
             <!-- Col 4: Contact -->
             <div class="footer-col">
-                <h4 class="footer-title">Liên Hệ Với Chúng Tôi</h4>
+                <h4 class="footer-title">Liên Hệ Với VinDelivery</h4>
                 <ul class="footer-contact">
                     <li><i class="fa-solid fa-location-dot"></i> <span>Số 01 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh</span></li>
-                    <li><i class="fa-solid fa-phone"></i> <span>Hotline: <strong>1900 6886</strong> (24/7)</span></li>
-                    <li><i class="fa-solid fa-envelope"></i> <span>hotro@foodzone.vn</span></li>
+                    <li><i class="fa-solid fa-phone"></i> <span>Hotline: <strong>1900 6868</strong> (24/7)</span></li>
+                    <li><i class="fa-solid fa-envelope"></i> <span>hotro@vindelivery.vn</span></li>
                     <li><i class="fa-solid fa-clock"></i> <span>Mở cửa: 07:00 - 23:00 tất cả các ngày</span></li>
                 </ul>
                 <div class="payment-methods">
@@ -64,12 +64,12 @@
     
     <div class="footer-bottom">
         <div class="container footer-bottom-content">
-            <p>&copy; 2026 FoodZone - Nền tảng đặt đồ ăn trực tuyến. Thiết kế cho đồ án Lập trình Web.</p>
-            <p class="footer-tagline">Giao nhanh 30 phút • Món ngon nóng hổi • Đảm bảo vệ sinh</p>
+            <p>&copy; 2026 VinDelivery - Nền tảng đặt đồ ăn trực tuyến chuẩn vị hàng đầu.</p>
+            <p class="footer-tagline">Giao nhanh 30 phút • Món ngon nóng hổi • Đảm bảo vệ sinh an toàn</p>
         </div>
     </div>
 </footer>
 
-<script src="${pageContext.request.contextPath}/assets/js/main.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/main.js?v=<%= System.currentTimeMillis() %>"></script>
 </body>
 </html>
