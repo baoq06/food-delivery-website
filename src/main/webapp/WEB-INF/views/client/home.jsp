@@ -89,36 +89,39 @@
         </div>
 
         <div class="category-grid">
-            <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
-                <div class="cat-icon-box">🍔</div>
-                <h3>Burger & Bánh Mì</h3>
-                <span>12+ món</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
-                <div class="cat-icon-box">🍕</div>
-                <h3>Pizza Nướng Củi</h3>
-                <span>8+ món</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-card">
-                <div class="cat-icon-box">🍗</div>
-                <h3>Gà Rán Giòn Cay</h3>
-                <span>10+ món</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
-                <div class="cat-icon-box">🍝</div>
-                <h3>Mì Ý & Pasta</h3>
-                <span>6+ món</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-card">
-                <div class="cat-icon-box">🧋</div>
-                <h3>Trà Sữa & Cafe</h3>
-                <span>15+ món</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card">
-                <div class="cat-icon-box">🍚</div>
-                <h3>Cơm & Phở Nóng</h3>
-                <span>14+ món</span>
-            </a>
+            <c:choose>
+                <c:when test="${not empty categories}">
+                    <c:forEach items="${categories}" var="cat">
+                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card">
+                            <div class="cat-icon-box">${cat.imageIcon}</div>
+                            <h3>${cat.name}</h3>
+                            <span>${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</span>
+                        </a>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
+                        <div class="cat-icon-box">🍚</div>
+                        <h3>Cơm & Món Mặn</h3>
+                        <span>Món Việt chuẩn vị</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-card">
+                        <div class="cat-icon-box">🍜</div>
+                        <h3>Phở & Bún Mì</h3>
+                        <span>Hương vị truyền thống</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-card">
+                        <div class="cat-icon-box">🧋</div>
+                        <h3>Trà Sữa & Đồ Uống</h3>
+                        <span>Tươi mát sảng khoái</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card">
+                        <div class="cat-icon-box">🍔</div>
+                        <h3>Fastfood & Ăn Vặt</h3>
+                        <span>Giòn ngon hấp dẫn</span>
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 </section>
@@ -138,7 +141,7 @@
             <c:forEach items="${featuredFoods}" var="food">
                 <div class="food-card">
                     <div class="food-card-img-wrap">
-                        <span class="food-tag">Bán chạy</span>
+                        <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Bán chạy'}" /></span>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
                             <img src="${food.image}" alt="${food.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
                         </a>
@@ -149,7 +152,7 @@
                     <div class="food-body">
                         <div class="food-meta">
                             <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9 (120+)</span>
-                            <span class="food-distance"><i class="fa-solid fa-motorcycle"></i> Giao nhanh</span>
+                            <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}</span>
                         </div>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-title-link">
                             <h3 class="food-title">${food.name}</h3>

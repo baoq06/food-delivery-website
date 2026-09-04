@@ -78,25 +78,26 @@
                     <div class="checkout-box summary-card">
                         <h3 class="box-title"><i class="fa-solid fa-truck-ramp-box text-primary"></i> Thông Tin Giao Hàng</h3>
                         
-                        <form id="orderForm" onsubmit="handlePlaceOrder(event)">
+                        <form id="orderForm" action="${pageContext.request.contextPath}/cart" method="POST">
+                            <input type="hidden" name="action" value="checkout">
                             <div class="form-group">
                                 <label for="receiverName">Họ và tên người nhận *</label>
-                                <input type="text" id="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : ''}">
+                                <input type="text" id="receiverName" name="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : ''}">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverPhone">Số điện thoại nhận hàng *</label>
-                                <input type="tel" id="receiverPhone" class="form-control" required placeholder="Ví dụ: 0912 345 678" value="${sessionScope.currentUser != null ? sessionScope.currentUser.phone : ''}">
+                                <input type="tel" id="receiverPhone" name="receiverPhone" class="form-control" required placeholder="Ví dụ: 0912 345 678" value="${sessionScope.currentUser != null ? sessionScope.currentUser.phone : ''}">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverAddress">Địa chỉ giao hàng chi tiết *</label>
-                                <input type="text" id="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.address : ''}">
+                                <input type="text" id="receiverAddress" name="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." value="${sessionScope.currentUser != null ? sessionScope.currentUser.address : ''}">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverNote">Ghi chú cho tài xế (nếu có)</label>
-                                <input type="text" id="receiverNote" class="form-control" placeholder="Giao trước 12h, gọi trước khi đến...">
+                                <input type="text" id="receiverNote" name="receiverNote" class="form-control" placeholder="Giao trước 12h, gọi trước khi đến...">
                             </div>
 
                             <!-- Payment Method -->
@@ -174,7 +175,7 @@
         <div class="order-info-card">
             <div class="info-row">
                 <span>Mã đơn hàng:</span>
-                <strong id="modalOrderId">#FZ-89241</strong>
+                <strong id="modalOrderId"><c:out value="${not empty placedOrderId ? placedOrderId : '#FZ-89241'}" /></strong>
             </div>
             <div class="info-row">
                 <span>Dự kiến giao hàng:</span>
@@ -213,12 +214,14 @@ function applyCoupon() {
     }
 }
 
-function handlePlaceOrder(e) {
-    e.preventDefault();
-    const randomId = '#FZ-' + Math.floor(10000 + Math.random() * 90000);
-    document.getElementById('modalOrderId').innerText = randomId;
-    document.getElementById('orderSuccessModal').classList.add('active');
-}
+<c:if test="${orderSuccess}">
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('orderSuccessModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+});
+</c:if>
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

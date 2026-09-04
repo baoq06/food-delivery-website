@@ -24,21 +24,29 @@
             <a href="${pageContext.request.contextPath}/foods" class="cat-tab ${empty param.cat ? 'active' : ''}">
                 <i class="fa-solid fa-utensils"></i> Tất Cả
             </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-tab ${param.cat eq '1' ? 'active' : ''}">
-                🍔 Burger & Pizza
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-tab ${param.cat eq '2' ? 'active' : ''}">
-                🍗 Gà Rán Giòn
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-tab ${param.cat eq '3' ? 'active' : ''}">
-                🧋 Trà Sữa & Đồ Uống
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-tab ${param.cat eq '4' ? 'active' : ''}">
-                🍚 Cơm & Phở
-            </a>
-            <a href="${pageContext.request.contextPath}/foods?cat=5" class="cat-tab ${param.cat eq '5' ? 'active' : ''}">
-                🥗 Salad & Ăn Vặt
-            </a>
+            <c:choose>
+                <c:when test="${not empty categories}">
+                    <c:forEach items="${categories}" var="cat">
+                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-tab ${param.cat eq cat.id ? 'active' : ''}">
+                            ${cat.imageIcon} ${cat.name}
+                        </a>
+                    </c:forEach>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-tab ${param.cat eq '1' ? 'active' : ''}">
+                        🍚 Cơm & Món Mặn
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-tab ${param.cat eq '2' ? 'active' : ''}">
+                        🍜 Phở & Bún Mì
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-tab ${param.cat eq '3' ? 'active' : ''}">
+                        🧋 Trà Sữa & Đồ Uống
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-tab ${param.cat eq '4' ? 'active' : ''}">
+                        🍔 Fastfood & Ăn Vặt
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="menu-search-bar">
@@ -57,7 +65,7 @@
                 <c:forEach items="${foods}" var="food">
                     <div class="food-card">
                         <div class="food-card-img-wrap">
-                            <span class="food-tag">Món ngon</span>
+                            <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Món ngon'}" /></span>
                             <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
                                 <img src="${food.image}" alt="${food.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
                             </a>
@@ -68,7 +76,7 @@
                         <div class="food-body">
                             <div class="food-meta">
                                 <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9 (100+)</span>
-                                <span class="food-distance"><i class="fa-solid fa-fire text-primary"></i> Đang bán chạy</span>
+                                <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}</span>
                             </div>
                             <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-title-link">
                                 <h3 class="food-title">${food.name}</h3>

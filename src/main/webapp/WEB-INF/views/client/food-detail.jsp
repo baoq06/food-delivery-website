@@ -59,6 +59,17 @@
 
                     <h1 class="detail-food-name">${food.name}</h1>
 
+                    <c:if test="${not empty food.restaurantName or not empty food.categoryName}">
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin: 8px 0 16px; font-size: 0.95rem; color: #666;">
+                            <c:if test="${not empty food.restaurantName}">
+                                <span><i class="fa-solid fa-store text-primary"></i> <strong>Nhà hàng:</strong> ${food.restaurantName}</span>
+                            </c:if>
+                            <c:if test="${not empty food.categoryName}">
+                                <span><i class="fa-solid fa-utensils text-primary"></i> <strong>Danh mục:</strong> ${food.categoryName}</span>
+                            </c:if>
+                        </div>
+                    </c:if>
+
                     <div class="detail-price-box">
                         <span class="detail-currency">${String.format("%,.0f", food.price)}</span>
                         <span class="currency-symbol">VNĐ</span>

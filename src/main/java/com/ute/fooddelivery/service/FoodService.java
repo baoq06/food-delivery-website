@@ -11,7 +11,22 @@ public class FoodService {
         return foodDAO.getAllFoods();
     }
 
+    public List<Food> getFoodsByCategory(int categoryId) {
+        return foodDAO.getFoodsByCategory(categoryId);
+    }
+
+    public List<Food> searchFoods(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllFoods();
+        }
+        return foodDAO.searchFoods(keyword.trim());
+    }
+
     public Food getFoodById(int id) {
         return foodDAO.getFoodById(id);
+    }
+
+    public List<Food> getFeaturedFoods(int limit) {
+        return foodDAO.getFeaturedFoods(limit);
     }
 }

@@ -5,15 +5,23 @@ import java.io.Serializable;
 public class Category implements Serializable {
     private int id;
     private String name;
-    private String image;
+    private String imageIcon;
+    private String description;
 
     public Category() {
     }
 
-    public Category(int id, String name, String image) {
+    public Category(int id, String name, String imageIcon) {
         this.id = id;
         this.name = name;
-        this.image = image;
+        this.imageIcon = imageIcon;
+    }
+
+    public Category(int id, String name, String imageIcon, String description) {
+        this.id = id;
+        this.name = name;
+        this.imageIcon = imageIcon;
+        this.description = description;
     }
 
     public int getId() {
@@ -32,11 +40,28 @@ public class Category implements Serializable {
         this.name = name;
     }
 
+    public String getImageIcon() {
+        return imageIcon != null ? imageIcon : "🍔";
+    }
+
+    public void setImageIcon(String imageIcon) {
+        this.imageIcon = imageIcon;
+    }
+
+    // Tương thích ngược với thuộc tính image cũ
     public String getImage() {
-        return image;
+        return getImageIcon();
     }
 
     public void setImage(String image) {
-        this.image = image;
+        this.imageIcon = image;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

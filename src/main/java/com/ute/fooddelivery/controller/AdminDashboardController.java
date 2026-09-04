@@ -9,16 +9,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@WebServlet(name = "HomeController", urlPatterns = {"", "/home"})
-public class HomeController extends HttpServlet {
+@WebServlet(name = "AdminDashboardController", urlPatterns = {"/admin/dashboard"})
+public class AdminDashboardController extends HttpServlet {
     private final FoodService foodService = new FoodService();
     private final CategoryService categoryService = new CategoryService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        req.setAttribute("categories", categoryService.getAllCategories());
-        req.setAttribute("featuredFoods", foodService.getFeaturedFoods(8));
-        req.getRequestDispatcher("/WEB-INF/views/client/home.jsp").forward(req, resp);
+        req.setAttribute("foodCount", foodService.getAllFoods().size());
+        req.setAttribute("categoryCount", categoryService.getAllCategories().size());
+        req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);
     }
 }

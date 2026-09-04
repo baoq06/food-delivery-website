@@ -9,6 +9,9 @@ public class Food implements Serializable {
     private double price;
     private String image;
     private int categoryId;
+    private String categoryName;
+    private int restaurantId;
+    private String restaurantName;
     private boolean available;
 
     public Food() {
@@ -21,6 +24,20 @@ public class Food implements Serializable {
         this.price = price;
         this.image = image;
         this.categoryId = categoryId;
+        this.available = available;
+    }
+
+    public Food(int id, String name, String description, double price, String image, 
+                int categoryId, String categoryName, int restaurantId, String restaurantName, boolean available) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.image = image;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.restaurantId = restaurantId;
+        this.restaurantName = restaurantName;
         this.available = available;
     }
 
@@ -70,6 +87,30 @@ public class Food implements Serializable {
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public int getRestaurantId() {
+        return restaurantId;
+    }
+
+    public void setRestaurantId(int restaurantId) {
+        this.restaurantId = restaurantId;
+    }
+
+    public String getRestaurantName() {
+        return restaurantName;
+    }
+
+    public void setRestaurantName(String restaurantName) {
+        this.restaurantName = restaurantName;
     }
 
     public boolean isAvailable() {
