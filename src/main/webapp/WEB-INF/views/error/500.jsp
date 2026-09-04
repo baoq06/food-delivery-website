@@ -22,14 +22,20 @@
             </a>
         </div>
 
-        <c:if test="${not empty pageContext.errorData.throwable or not empty pageContext.errorData.requestURI}">
+        <c:set var="errCode" value="${pageContext.errorData != null ? pageContext.errorData.statusCode : requestScope['jakarta.servlet.error.status_code']}" />
+        <c:set var="errUri" value="${pageContext.errorData != null ? pageContext.errorData.requestURI : requestScope['jakarta.servlet.error.request_uri']}" />
+        <c:set var="errMessage" value="${pageContext.errorData != null and pageContext.errorData.throwable != null ? pageContext.errorData.throwable.message : (exception != null ? exception.message : requestScope['jakarta.servlet.error.message'])}" />
+
+        <c:if test="${not empty errCode or not empty errUri or not empty errMessage}">
             <details class="error-debug-details">
                 <summary class="error-debug-summary"><i class="fa-solid fa-bug"></i> Thông tin kỹ thuật (Dành cho nhà phát triển)</summary>
                 <div class="error-debug-content">
-                    <p><strong>Status Code:</strong> ${pageContext.errorData.statusCode}</p>
-                    <p><strong>Request URI:</strong> ${pageContext.errorData.requestURI}</p>
-                    <c:if test="${not empty pageContext.errorData.throwable}">
-                        <p><strong>Exception:</strong> ${pageContext.errorData.throwable.class.name}: ${pageContext.errorData.throwable.message}</p>
+                    <p><strong>Mã lỗi:</strong> ${not empty errCode ? errCode : '500'}</p>
+                    <c:if test="${not empty errUri}">
+                        <p><strong>Đường dẫn (URI):</strong> ${errUri}</p>
+                    </c:if>
+                    <c:if test="${not empty errMessage}">
+                        <p><strong>Chi tiết lỗi:</strong> ${errMessage}</p>
                     </c:if>
                 </div>
             </details>
