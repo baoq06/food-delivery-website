@@ -66,6 +66,7 @@
                         <div class="user-avatar-pill">
                             <i class="fa-solid fa-circle-user"></i>
                             <span>${sessionScope.currentUser.fullName}</span>
+                            <i class="fa-solid fa-chevron-down user-caret"></i>
                         </div>
                         <div class="user-dropdown">
                             <c:if test="${sessionScope.currentUser.role eq 'ADMIN'}">
@@ -77,8 +78,8 @@
                     </div>
                 </c:when>
                 <c:otherwise>
-                    <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm">Đăng nhập</a>
-                    <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-primary btn-sm">Đăng ký</a>
+                    <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>
+                    <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-primary btn-sm btn-nav-auth">Đăng ký</a>
                 </c:otherwise>
             </c:choose>
         </div>

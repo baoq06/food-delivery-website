@@ -81,4 +81,21 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Gán hàm showToast ra window để các trang JSP khác có thể gọi nếu cần
     window.showToast = showToast;
+
+    // 5. Hỗ trợ Click Toggle cho User Menu & đóng khi click ra ngoài
+    const userMenu = document.querySelector(".user-menu");
+    if (userMenu) {
+        userMenu.addEventListener("click", (e) => {
+            // Không can thiệp nếu click vào các liên kết bên trong dropdown
+            if (!e.target.closest(".user-dropdown a")) {
+                userMenu.classList.toggle("open");
+            }
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!userMenu.contains(e.target)) {
+                userMenu.classList.remove("open");
+            }
+        });
+    }
 });
