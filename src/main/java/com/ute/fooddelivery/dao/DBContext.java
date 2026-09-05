@@ -1,35 +1,50 @@
 package com.ute.fooddelivery.dao;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
 public class DBContext {
-    private static String url;
-    private static String user;
-    private static String password;
-    private static String driver;
+    private static HikariDataSource dataSource;
 
     static {
         try (InputStream input = DBContext.class.getClassLoader().getResourceAsStream("db.properties")) {
             Properties prop = new Properties();
+            HikariConfig config = new HikariConfig();
+
             if (input != null) {
                 prop.load(input);
-                driver = resolveProperty(prop.getProperty("db.driver"));
-                url = resolveProperty(prop.getProperty("db.url"));
-                user = resolveProperty(prop.getProperty("db.username"));
-                password = resolveProperty(prop.getProperty("db.password"));
-                Class.forName(driver);
+                config.setDriverClassName(resolveProperty(prop.getProperty("db.driver", "com.mysql.cj.jdbc.Driver")));
+                config.setJdbcUrl(resolveProperty(prop.getProperty("db.url")));
+                config.setUsername(resolveProperty(prop.getProperty("db.username")));
+                config.setPassword(resolveProperty(prop.getProperty("db.password")));
             } else {
                 // Fallback nếu không tìm thấy file cấu hình
-                driver = "com.mysql.cj.jdbc.Driver";
-                url = "jdbc:mysql://localhost:3306/food_delivery_db";
-                user = "root";
-                password = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "";
-                Class.forName(driver);
+                config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+                config.setJdbcUrl("jdbc:mysql://localhost:3306/food_delivery_db?useSSL=false");
+                config.setUsername("root");
+                config.setPassword(System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "");
             }
+
+            // === Cấu hình Pool tối ưu cho Cloud Database ===
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(3);
+            config.setIdleTimeout(60000);          // 60 giây
+            config.setConnectionTimeout(15000);    // 15 giây
+            config.setMaxLifetime(1800000);        // 30 phút tự làm mới connection tránh bị Cloud timeout
+
+            // Tối ưu MySQL JDBC Driver
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+            dataSource = new HikariDataSource(config);
+            System.out.println(">> [DBContext] Khởi tạo HikariCP DataSource thành công!");
         } catch (Exception e) {
+            System.err.println(">> [DBContext] Lỗi khởi tạo DataSource: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -63,10 +78,18 @@ public class DBContext {
 
     public static Connection getConnection() {
         try {
-            return DriverManager.getConnection(url, user, password);
-        } catch (Exception e) {
-            System.err.println("Lỗi kết nối cơ sở dữ liệu: " + e.getMessage());
-            return null;
+            if (dataSource != null) {
+                return dataSource.getConnection();
+            }
+        } catch (SQLException e) {
+            System.err.println(">> [DBContext] Lỗi kết nối cơ sở dữ liệu: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public static void close() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
         }
     }
 }

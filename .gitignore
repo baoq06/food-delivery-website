@@ -10,3 +10,6 @@ target/
 # AI Agent & Local Design Tokens
 .agents/
 design-system/
+
+# Database configuration with real credentials
+src/main/resources/db.properties
