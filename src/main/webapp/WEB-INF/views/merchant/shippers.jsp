@@ -33,6 +33,9 @@
                 <span class="badge badge-done" style="font-size: 0.88rem; padding: 6px 14px;">
                     <i class="fa-solid fa-motorcycle"></i> ${availableCount} tài xế sẵn sàng nhận đơn
                 </span>
+                <span class="badge bg-light text-dark border" style="font-size: 0.88rem; padding: 6px 14px;">
+                    <i class="fa-solid fa-receipt text-success"></i> Đã trả shipper: <strong class="text-success"><fmt:formatNumber value="${totalPaidFees}" type="number" /> đ</strong>
+                </span>
             </div>
         </div>
 
@@ -41,7 +44,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-motorcycle text-primary"></i> Đội Ngũ Tài Xế Giao Vận Khả Dụng</h3>
-                    <span class="table-card-sub">Theo dõi danh sách tài xế trực tuyến và điều phối đơn hàng nhanh chóng</span>
+                    <span class="table-card-sub">Theo dõi danh sách tài xế trực tuyến, điều phối đơn hàng và thanh toán phí giao hàng</span>
                 </div>
             </div>
 
@@ -101,8 +104,8 @@
                                             <small class="text-muted">(120+ đơn)</small>
                                         </td>
                                         <td class="text-end">
-                                            <c:choose>
-                                                <c:when test="${driver.status eq 'AVAILABLE'}">
+                                            <div class="d-inline-flex gap-2">
+                                                <c:if test="${driver.status eq 'AVAILABLE'}">
                                                     <c:choose>
                                                         <c:when test="${not empty unassignedOrders}">
                                                             <button type="button" class="btn btn-primary btn-sm" onclick="openDispatchModal(${driver.id}, '${driver.name}')">
@@ -110,17 +113,14 @@
                                                             </button>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-check text-success"></i> Chưa có đơn chờ</span>
+                                                            <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-check text-success"></i> Hết đơn chờ</span>
                                                         </c:otherwise>
                                                     </c:choose>
-                                                </c:when>
-                                                <c:when test="${driver.status eq 'BUSY'}">
-                                                    <span class="badge badge-shipping">Đang có đơn</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="text-muted" style="font-size: 0.85rem;">Offline</span>
-                                                </c:otherwise>
-                                            </c:choose>
+                                                </c:if>
+                                                <button type="button" class="btn btn-outline-success btn-sm" onclick="openPayModal(${driver.id}, '${driver.name}')">
+                                                    <i class="fa-solid fa-money-bill-wave"></i> Trả Phí
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 </c:forEach>
@@ -180,6 +180,57 @@
     </div>
 </div>
 
+<!-- Modal Trả Phí Cho Tài Xế Shipper -->
+<div id="payModal" class="merchant-modal-backdrop" style="display: none;">
+    <div class="merchant-modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-money-bill-wave text-success"></i> Trả Phí Giao Vận Cho Shipper</h3>
+            <button type="button" class="modal-close-btn" onclick="closePayModal()">&times;</button>
+        </div>
+        <form action="${pageContext.request.contextPath}/merchant/shippers" method="POST">
+            <input type="hidden" name="action" value="payShipper" />
+            <input type="hidden" name="driverId" id="payDriverId" value="" />
+
+            <div class="modal-body">
+                <p>Thanh toán chi phí vận chuyển cho tài xế: <strong id="payDriverName" class="text-primary fs-5"></strong></p>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Số tiền thanh toán (VNĐ): <span class="text-danger">*</span></label>
+                    <input type="number" name="amount" class="form-control" value="25000" min="1000" step="1000" required />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Hình thức thanh toán:</label>
+                    <select name="paymentMethod" class="form-select">
+                        <option value="CASH">Tiền mặt trực tiếp (Cash)</option>
+                        <option value="BANK_TRANSFER">Chuyển khoản nhanh VietQR</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Gắn với đơn hàng (tùy chọn):</label>
+                    <select name="orderId" class="form-select">
+                        <option value="">-- Không gắn cụ thể (Thanh toán chung) --</option>
+                        <c:forEach var="ord" items="${unassignedOrders}">
+                            <option value="${ord.id}">Đơn #${ord.id} - ${ord.customerName} (<fmt:formatNumber value="${ord.totalAmount}" type="number" /> đ)</option>
+                        </c:forEach>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Ghi chú giao dịch:</label>
+                    <input type="text" name="note" class="form-control" placeholder="VD: Trả phí giao hàng theo cuốc, phụ phí giờ cao điểm..." />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closePayModal()">Đóng</button>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-paper-plane"></i> Hoàn Tất Thanh Toán</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openDispatchModal(driverId, driverName) {
         document.getElementById('dispatchDriverId').value = driverId;
@@ -189,6 +240,16 @@
 
     function closeDispatchModal() {
         document.getElementById('dispatchModal').style.display = 'none';
+    }
+
+    function openPayModal(driverId, driverName) {
+        document.getElementById('payDriverId').value = driverId;
+        document.getElementById('payDriverName').innerText = driverName;
+        document.getElementById('payModal').style.display = 'flex';
+    }
+
+    function closePayModal() {
+        document.getElementById('payModal').style.display = 'none';
     }
 </script>
 

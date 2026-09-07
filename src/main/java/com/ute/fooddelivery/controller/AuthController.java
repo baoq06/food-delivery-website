@@ -1,6 +1,9 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.model.CartItem;
+import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.User;
+import com.ute.fooddelivery.service.FoodService;
 import com.ute.fooddelivery.service.UserService;
 import com.ute.fooddelivery.utils.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -10,10 +13,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @WebServlet(name = "AuthController", urlPatterns = {"/auth"})
 public class AuthController extends HttpServlet {
     private final UserService userService = new UserService();
+    private final FoodService foodService = new FoodService();
     private static final int REMEMBER_ME_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
     @Override
@@ -25,6 +31,9 @@ public class AuthController extends HttpServlet {
             if (session != null) {
                 session.invalidate();
             }
+            CookieUtils.deleteCookie(resp, "deli_name");
+            CookieUtils.deleteCookie(resp, "deli_phone");
+            CookieUtils.deleteCookie(resp, "deli_address");
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
         }
@@ -54,6 +63,9 @@ public class AuthController extends HttpServlet {
             if (user != null) {
                 HttpSession session = req.getSession();
                 session.setAttribute("currentUser", user);
+
+                // Thêm món ăn chờ (nếu trước đó khách chưa đăng nhập đã bấm đặt món)
+                processPendingFood(session);
 
                 // Xử lý Cookie Remember Me
                 if (remember != null) {
@@ -106,6 +118,8 @@ public class AuthController extends HttpServlet {
                 validationError = "Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam 10-11 chữ số bắt đầu bằng số 0.";
             }
 
+            String redirect = req.getParameter("redirect");
+
             if (validationError != null) {
                 req.setAttribute("errorMessage", validationError);
                 // Giữ lại dữ liệu đã nhập (Sticky Form)
@@ -115,6 +129,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("stickyRegAddress", address);
                 req.setAttribute("stickyAccountType", accountType);
                 req.setAttribute("stickyRestaurantName", restaurantName);
+                req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
@@ -135,6 +150,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("stickyRegAddress", address);
                 req.setAttribute("stickyAccountType", accountType);
                 req.setAttribute("stickyRestaurantName", restaurantName);
+                req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
@@ -145,11 +161,46 @@ public class AuthController extends HttpServlet {
             HttpSession session = req.getSession();
             session.setAttribute("currentUser", loggedUser != null ? loggedUser : newUser);
 
+            // Thêm món ăn chờ (nếu trước đó khách chưa đăng nhập đã bấm đặt món)
+            processPendingFood(session);
+
             if (isSellerReg) {
                 resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
+            } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
+                resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
             } else {
                 resp.sendRedirect(req.getContextPath() + "/home");
             }
+        }
+    }
+
+    private void processPendingFood(HttpSession session) {
+        if (session == null) return;
+        Integer pendingFoodId = (Integer) session.getAttribute("pendingFoodId");
+        if (pendingFoodId != null) {
+            int qty = 1;
+            Integer pendingQty = (Integer) session.getAttribute("pendingQuantity");
+            if (pendingQty != null && pendingQty > 0) {
+                qty = pendingQty;
+            }
+
+            Food food = foodService.getFoodById(pendingFoodId);
+            if (food != null) {
+                @SuppressWarnings("unchecked")
+                Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+                if (cart == null) {
+                    cart = new HashMap<>();
+                }
+                if (cart.containsKey(pendingFoodId)) {
+                    CartItem item = cart.get(pendingFoodId);
+                    item.setQuantity(item.getQuantity() + qty);
+                } else {
+                    cart.put(pendingFoodId, new CartItem(food, qty));
+                }
+                session.setAttribute("cart", cart);
+            }
+            session.removeAttribute("pendingFoodId");
+            session.removeAttribute("pendingQuantity");
         }
     }
 }

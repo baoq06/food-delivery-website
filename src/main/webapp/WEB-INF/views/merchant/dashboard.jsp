@@ -117,6 +117,9 @@
                                                     <c:when test="${not empty order.driverName}">
                                                         <span class="text-success font-weight-bold"><i class="fa-solid fa-motorcycle"></i> ${order.driverName}</span>
                                                     </c:when>
+                                                    <c:when test="${order.status eq 'CANCELLED'}">
+                                                        <span class="text-muted">Chưa gán shipper</span>
+                                                    </c:when>
                                                     <c:otherwise>
                                                         <a href="${pageContext.request.contextPath}/merchant/shippers" class="text-muted"><i class="fa-solid fa-plus-circle"></i> Gán shipper</a>
                                                     </c:otherwise>

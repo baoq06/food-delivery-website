@@ -51,6 +51,16 @@ public class MerchantOrderController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String newStatus = req.getParameter("newStatus");
 
+                // Nếu chuyển sang CONFIRMED (Nhận chế biến), bắt buộc phải có shipper được gán
+                if ("CONFIRMED".equalsIgnoreCase(newStatus)) {
+                    Order currentOrder = merchantService.getOrderById(orderId);
+                    if (currentOrder == null || currentOrder.getDriverId() <= 0) {
+                        req.getSession().setAttribute("flashError", "Không thể cập nhật trạng thái đơn: Vui lòng gán tài xế shipper trước khi nhận chế biến!");
+                        resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                        return;
+                    }
+                }
+
                 boolean success = merchantService.updateOrderStatus(orderId, newStatus);
                 if (success) {
                     req.getSession().setAttribute("flashMessage", "Đã cập nhật đơn hàng #" + orderId + " sang trạng thái: " + newStatus);
@@ -61,11 +71,36 @@ public class MerchantOrderController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 int driverId = Integer.parseInt(req.getParameter("driverId"));
 
+                // Chặn gán shipper nếu đơn đã bị khách hủy (CANCELLED)
+                Order currentOrder = merchantService.getOrderById(orderId);
+                if (currentOrder != null && "CANCELLED".equalsIgnoreCase(currentOrder.getStatus())) {
+                    req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn hàng đã bị hủy!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    return;
+                }
+
                 boolean success = merchantService.assignDriver(orderId, driverId);
                 if (success) {
                     req.getSession().setAttribute("flashMessage", "Đã gán tài xế cho đơn hàng #" + orderId + " thành công!");
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
+                }
+            } else if ("payShipper".equalsIgnoreCase(action)) {
+                Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
+                if (restaurant != null) {
+                    int driverId = Integer.parseInt(req.getParameter("driverId"));
+                    String orderIdStr = req.getParameter("orderId");
+                    Integer orderId = (orderIdStr != null && !orderIdStr.trim().isEmpty()) ? Integer.parseInt(orderIdStr) : null;
+                    double amount = Double.parseDouble(req.getParameter("amount"));
+                    String paymentMethod = req.getParameter("paymentMethod");
+                    String note = req.getParameter("note");
+
+                    boolean success = merchantService.payDriverFee(restaurant.getId(), driverId, orderId, amount, paymentMethod, note);
+                    if (success) {
+                        req.getSession().setAttribute("flashMessage", "Đã ghi nhận thanh toán phí shipper thành công!");
+                    } else {
+                        req.getSession().setAttribute("flashError", "Không thể ghi nhận thanh toán phí shipper!");
+                    }
                 }
             }
         } catch (Exception e) {

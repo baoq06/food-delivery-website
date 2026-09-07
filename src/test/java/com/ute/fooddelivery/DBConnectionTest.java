@@ -14,10 +14,9 @@ public class DBConnectionTest {
         try (Connection conn = DBContext.getConnection()) {
             assertNotNull("Connection should not be null", conn);
             try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT count(*) FROM foods")) {
+                 ResultSet rs = stmt.executeQuery("SELECT count(*) FROM drivers")) {
                 assertTrue(rs.next());
-                int count = rs.getInt(1);
-                assertTrue(count >= 0);
+                assertTrue(rs.getInt(1) >= 1);
             }
         } catch (Exception e) {
             e.printStackTrace();

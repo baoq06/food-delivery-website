@@ -84,5 +84,7 @@ INSERT INTO `addresses` (`address_id`, `user_id`, `receiver_phone`, `ward`, `dis
 (3, 4, '0987654322', 'Phường 22', 'Quận Bình Thạnh', 'TP. Hồ Chí Minh', 1),
 (4, 2, '0987654321', 'Phường Bến Thành', 'Quận 1', 'TP. Hồ Chí Minh', 1);
 
--- Lưu ý: Không gán trước drivers, orders và foods cho tài khoản merchant (bepviet, pho1985)
--- để đảm bảo tính toàn vẹn khi người dùng thiết lập thực tế.
+-- 6. Thêm duy nhất 1 tài xế shipper mẫu để thử nghiệm tính năng điều phối & duyệt đơn
+INSERT INTO `drivers` (`driver_id`, `name`, `phone`, `status`) VALUES
+(1, 'Nguyễn Văn Giao (Shipper Utee)', '0909888999', 'AVAILABLE');
+

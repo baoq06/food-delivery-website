@@ -102,7 +102,16 @@
                                                     <small class="text-muted">${order.driverPhone}</small>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="text-muted">Chưa gán</span>
+                                                    <c:choose>
+                                                        <c:when test="${order.status eq 'CANCELLED'}">
+                                                            <span class="text-muted">Chưa gán shipper</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 0.8rem;" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')">
+                                                                <i class="fa-solid fa-user-plus"></i> Gán shipper
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
@@ -132,9 +141,23 @@
                                                 </c:if>
 
                                                 <c:if test="${order.status eq 'CONFIRMED'}">
-                                                    <button type="button" class="btn btn-success btn-sm" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')">
-                                                        <i class="fa-solid fa-motorcycle"></i> Giao Cho Shipper
-                                                    </button>
+                                                    <c:choose>
+                                                        <c:when test="${empty order.driverName}">
+                                                            <button type="button" class="btn btn-warning btn-sm" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')">
+                                                                <i class="fa-solid fa-motorcycle"></i> Gán Shipper
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
+                                                                <input type="hidden" name="action" value="updateStatus" />
+                                                                <input type="hidden" name="orderId" value="${order.id}" />
+                                                                <input type="hidden" name="newStatus" value="SHIPPING" />
+                                                                <button type="submit" class="btn btn-success btn-sm">
+                                                                    <i class="fa-solid fa-truck-fast"></i> Giao Cho Shipper
+                                                                </button>
+                                                            </form>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:if>
 
                                                 <c:if test="${order.status eq 'SHIPPING'}">
@@ -148,6 +171,12 @@
                                                     </form>
                                                 </c:if>
 
+                                                <c:if test="${order.status eq 'DELIVERED' and not empty order.driverName}">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openPayShipperModal(${order.driverId}, '${order.driverName}', ${order.id})">
+                                                        <i class="fa-solid fa-money-bill-wave"></i> Trả Phí Shipper
+                                                    </button>
+                                                </c:if>
+
                                                 <c:if test="${order.status eq 'PENDING' || order.status eq 'CONFIRMED'}">
                                                     <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
                                                         <input type="hidden" name="action" value="updateStatus" />
@@ -155,6 +184,10 @@
                                                         <input type="hidden" name="newStatus" value="CANCELLED" />
                                                         <button type="submit" class="btn btn-danger btn-sm" title="Hủy đơn"><i class="fa-solid fa-ban"></i></button>
                                                     </form>
+                                                </c:if>
+
+                                                <c:if test="${order.status eq 'CANCELLED'}">
+                                                    <span class="text-muted small">Đơn đã hủy</span>
                                                 </c:if>
                                             </div>
                                         </td>
@@ -210,6 +243,49 @@
     </div>
 </div>
 
+<!-- Modal Trả Phí Cho Shipper -->
+<div id="payShipperModal" class="merchant-modal-backdrop" style="display: none;">
+    <div class="merchant-modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-money-bill-wave text-success"></i> Trả Phí Giao Hàng Cho Shipper</h3>
+            <button type="button" class="modal-close-btn" onclick="closePayShipperModal()">&times;</button>
+        </div>
+        <form action="${pageContext.request.contextPath}/merchant/orders" method="POST">
+            <input type="hidden" name="action" value="payShipper" />
+            <input type="hidden" name="driverId" id="payDriverId" value="" />
+            <input type="hidden" name="orderId" id="payOrderId" value="" />
+
+            <div class="modal-body">
+                <p>Thanh toán phí cho tài xế: <strong id="payDriverName" class="text-primary fs-5"></strong></p>
+                <div id="payOrderInfo" class="mb-3 text-muted small"></div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Số tiền thanh toán (VNĐ): <span class="text-danger">*</span></label>
+                    <input type="number" name="amount" class="form-control" value="25000" min="1000" step="1000" required />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Hình thức chi trả:</label>
+                    <select name="paymentMethod" class="form-select">
+                        <option value="CASH">Tiền mặt trực tiếp (Cash)</option>
+                        <option value="BANK_TRANSFER">Chuyển khoản VietQR</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label font-weight-bold">Ghi chú:</label>
+                    <input type="text" name="note" class="form-control" placeholder="VD: Phí ship đơn hoàn tất + thưởng thêm..." />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closePayShipperModal()">Đóng</button>
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-paper-plane"></i> Xác Nhận Thanh Toán</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openOrderDispatchModal(orderId, customerName) {
         document.getElementById('modalOrderId').value = orderId;
@@ -219,6 +295,18 @@
 
     function closeOrderDispatchModal() {
         document.getElementById('orderDispatchModal').style.display = 'none';
+    }
+
+    function openPayShipperModal(driverId, driverName, orderId) {
+        document.getElementById('payDriverId').value = driverId;
+        document.getElementById('payDriverName').innerText = driverName;
+        document.getElementById('payOrderId').value = orderId || '';
+        document.getElementById('payOrderInfo').innerText = orderId ? ('Gắn liền với đơn hàng #' + orderId) : '';
+        document.getElementById('payShipperModal').style.display = 'flex';
+    }
+
+    function closePayShipperModal() {
+        document.getElementById('payShipperModal').style.display = 'none';
     }
 </script>
 

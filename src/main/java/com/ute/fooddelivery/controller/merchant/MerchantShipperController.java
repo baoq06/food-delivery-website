@@ -58,6 +58,7 @@ public class MerchantShipperController extends HttpServlet {
         req.setAttribute("busyCount", busyCount);
         req.setAttribute("offlineCount", offlineCount);
         req.setAttribute("unassignedOrders", unassignedOrders);
+        req.setAttribute("totalPaidFees", merchantService.getTotalPaidToDrivers(restaurantId));
 
         req.getRequestDispatcher("/WEB-INF/views/merchant/shippers.jsp").forward(req, resp);
     }
@@ -65,6 +66,12 @@ public class MerchantShipperController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
+        if (restaurant == null) {
+            resp.sendRedirect(req.getContextPath() + "/auth?action=login");
+            return;
+        }
+
         String action = req.getParameter("action");
 
         try {
@@ -77,6 +84,20 @@ public class MerchantShipperController extends HttpServlet {
                     req.getSession().setAttribute("flashMessage", "Đã điều phối đơn hàng #" + orderId + " cho tài xế thành công! Trạng thái đơn chuyển sang 'Đang giao'.");
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế, vui lòng thử lại!");
+                }
+            } else if ("payShipper".equalsIgnoreCase(action)) {
+                int driverId = Integer.parseInt(req.getParameter("driverId"));
+                String orderIdStr = req.getParameter("orderId");
+                Integer orderId = (orderIdStr != null && !orderIdStr.trim().isEmpty()) ? Integer.parseInt(orderIdStr) : null;
+                double amount = Double.parseDouble(req.getParameter("amount"));
+                String paymentMethod = req.getParameter("paymentMethod");
+                String note = req.getParameter("note");
+
+                boolean success = merchantService.payDriverFee(restaurant.getId(), driverId, orderId, amount, paymentMethod, note);
+                if (success) {
+                    req.getSession().setAttribute("flashMessage", "Đã chi trả phí cho shipper thành công!");
+                } else {
+                    req.getSession().setAttribute("flashError", "Không thể ghi nhận thanh toán phí cho shipper!");
                 }
             }
         } catch (Exception e) {

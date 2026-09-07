@@ -191,7 +191,17 @@ public class OrderDAO {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, status);
-                    return ps.executeUpdate() > 0;
+                    ps.setInt(2, orderId);
+                    int updated = ps.executeUpdate();
+                    if (updated > 0 && ("DELIVERED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+                        // Khi đơn hoàn tất hoặc hủy, giải phóng tài xế về trạng thái AVAILABLE
+                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
+                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                            psDriver.setInt(1, orderId);
+                            psDriver.executeUpdate();
+                        } catch (Exception ignored) {}
+                    }
+                    return updated > 0;
                 }
             }
         } catch (Exception e) {
@@ -201,7 +211,7 @@ public class OrderDAO {
     }
 
     public boolean assignDriver(int orderId, int driverId) {
-        String sqlOrder = "UPDATE orders SET driver_id = ?, status = 'SHIPPING' WHERE order_id = ?";
+        String sqlOrder = "UPDATE orders SET driver_id = ?, status = CASE WHEN status = 'PENDING' THEN 'CONFIRMED' ELSE 'SHIPPING' END WHERE order_id = ? AND status != 'CANCELLED'";
         String sqlDriver = "UPDATE drivers SET status = 'BUSY' WHERE driver_id = ?";
         Connection conn = null;
         try {
@@ -213,7 +223,11 @@ public class OrderDAO {
                  PreparedStatement ps2 = conn.prepareStatement(sqlDriver)) {
                 ps1.setInt(1, driverId);
                 ps1.setInt(2, orderId);
-                ps1.executeUpdate();
+                int orderUpdated = ps1.executeUpdate();
+                if (orderUpdated <= 0) {
+                    conn.rollback();
+                    return false;
+                }
 
                 ps2.setInt(1, driverId);
                 ps2.executeUpdate();
@@ -237,6 +251,37 @@ public class OrderDAO {
         }
     }
 
+    public Order getOrderById(int orderId) {
+        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, payment_method, status, driver_id, created_at FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at")
+                            );
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm đơn hàng theo ID: " + e.getMessage());
+        }
+        return null;
+    }
+
     // =========================================================================
     // THỐNG KÊ DOANH THU THỰC TẾ THEO NGÀY / THÁNG / NĂM
     // =========================================================================
@@ -254,7 +299,7 @@ public class OrderDAO {
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
             "  AND MONTH(o.created_at) = ? " +
-            "  AND o.status != 'CANCELLED' " +
+            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
             "GROUP BY DAY(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -297,7 +342,7 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
-            "  AND o.status != 'CANCELLED' " +
+            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
             "GROUP BY MONTH(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -338,7 +383,7 @@ public class OrderDAO {
             "JOIN order_items oi ON o.order_id = oi.order_id " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
-            "  AND o.status != 'CANCELLED' " +
+            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
             "GROUP BY YEAR(o.created_at) " +
             "ORDER BY period_key DESC";
 
@@ -377,7 +422,7 @@ public class OrderDAO {
             "JOIN order_items oi ON o.order_id = oi.order_id " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
-            "WHERE f.restaurant_id = ? AND o.status != 'CANCELLED' "
+            "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') "
         );
 
         if ("DAY".equalsIgnoreCase(type) && month != null && day != null) {
@@ -441,7 +486,7 @@ public class OrderDAO {
             "FROM order_items oi " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "JOIN orders o ON oi.order_id = o.order_id " +
-            "WHERE f.restaurant_id = ? AND o.status != 'CANCELLED' " +
+            "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
             "GROUP BY f.food_id, f.name, f.image_url, f.price " +
             "ORDER BY total_qty DESC " +
             "LIMIT ?";
@@ -481,8 +526,8 @@ public class OrderDAO {
 
         String sql = 
             "SELECT " +
-            "  COALESCE(SUM(CASE WHEN o.status != 'CANCELLED' THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
-            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND o.status != 'CANCELLED' THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
+            "  COALESCE(SUM(CASE WHEN o.status NOT IN ('CANCELLED', 'PENDING') THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
+            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND o.status NOT IN ('CANCELLED', 'PENDING') THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
             "  COUNT(DISTINCT o.order_id) AS total_orders, " +
             "  COUNT(DISTINCT CASE WHEN o.status = 'DELIVERED' THEN o.order_id END) AS delivered_orders, " +
             "  COUNT(DISTINCT CASE WHEN o.status = 'PENDING' THEN o.order_id END) AS pending_orders " +

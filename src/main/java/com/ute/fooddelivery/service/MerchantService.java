@@ -74,6 +74,18 @@ public class MerchantService {
         return driverDAO.getAvailableDrivers();
     }
 
+    public Order getOrderById(int orderId) {
+        return orderDAO.getOrderById(orderId);
+    }
+
+    public boolean payDriverFee(int restaurantId, int driverId, Integer orderId, double amount, String paymentMethod, String note) {
+        return driverDAO.recordDriverPayment(restaurantId, driverId, orderId, amount, paymentMethod, note);
+    }
+
+    public double getTotalPaidToDrivers(int restaurantId) {
+        return driverDAO.getTotalPaidToDrivers(restaurantId);
+    }
+
     // Báo Cáo Doanh Thu Theo Ngày / Tháng / Năm
     public List<RevenueStat> getDailyRevenue(int restaurantId, int year, int month) {
         return orderDAO.getDailyRevenue(restaurantId, year, month);

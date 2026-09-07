@@ -79,6 +79,49 @@ public class DriverDAO {
         return false;
     }
 
+    public boolean recordDriverPayment(int restaurantId, int driverId, Integer orderId, double amount, String paymentMethod, String note) {
+        String query = "INSERT INTO driver_payments (restaurant_id, driver_id, order_id, amount, payment_method, note) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, restaurantId);
+                    ps.setInt(2, driverId);
+                    if (orderId != null && orderId > 0) {
+                        ps.setInt(3, orderId);
+                    } else {
+                        ps.setNull(3, java.sql.Types.INTEGER);
+                    }
+                    ps.setDouble(4, amount);
+                    ps.setString(5, paymentMethod != null ? paymentMethod : "CASH");
+                    ps.setString(6, note);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi ghi nhận thanh toán phí shipper: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public double getTotalPaidToDrivers(int restaurantId) {
+        String query = "SELECT COALESCE(SUM(amount), 0) FROM driver_payments WHERE restaurant_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, restaurantId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getDouble(1);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính tổng phí đã trả shipper: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
     private Driver mapResultSetToDriver(ResultSet rs) throws Exception {
         return new Driver(
             rs.getInt("driver_id"),
@@ -88,3 +131,4 @@ public class DriverDAO {
         );
     }
 }
+

@@ -90,19 +90,19 @@
                             <div class="form-group">
                                 <label for="receiverName">Họ và tên người nhận *</label>
                                 <input type="text" id="receiverName" name="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." 
-                                       value="<c:out value='${not empty stickyReceiverName ? stickyReceiverName : (sessionScope.currentUser != null ? sessionScope.currentUser.fullName : (not empty cookieDeliName ? cookieDeliName : \"\"))}' />">
+                                       value="<c:out value='${not empty stickyReceiverName ? stickyReceiverName : sessionScope.currentUser.fullName}' />">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverPhone">Số điện thoại nhận hàng *</label>
                                 <input type="tel" id="receiverPhone" name="receiverPhone" class="form-control" required placeholder="Ví dụ: 0912 345 678" 
-                                       value="<c:out value='${not empty stickyReceiverPhone ? stickyReceiverPhone : (sessionScope.currentUser != null ? sessionScope.currentUser.phone : (not empty cookieDeliPhone ? cookieDeliPhone : \"\"))}' />">
+                                       value="<c:out value='${not empty stickyReceiverPhone ? stickyReceiverPhone : sessionScope.currentUser.phone}' />">
                             </div>
 
                             <div class="form-group">
                                 <label for="receiverAddress">Địa chỉ giao hàng chi tiết *</label>
                                 <input type="text" id="receiverAddress" name="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." 
-                                       value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : (sessionScope.currentUser != null ? sessionScope.currentUser.address : (not empty cookieDeliAddress ? cookieDeliAddress : \"\"))}' />">
+                                       value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : sessionScope.currentUser.address}' />">
                             </div>
 
                             <div class="form-group">
@@ -186,7 +186,7 @@
         <div class="order-info-card">
             <div class="info-row">
                 <span>Mã đơn hàng:</span>
-                <strong id="modalOrderId"><c:out value="${not empty placedOrderId ? placedOrderId : '#VD-89241'}" /></strong>
+                <strong id="modalOrderId"><c:out value="${placedOrderId}" /></strong>
             </div>
             <div class="info-row">
                 <span>Dự kiến giao hàng:</span>

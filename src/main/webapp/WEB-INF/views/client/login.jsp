@@ -25,6 +25,7 @@
             </button>
         </div>
 
+
         <c:if test="${not empty errorMessage}">
             <div class="alert-box-danger">
                 <i class="fa-solid fa-circle-exclamation"></i>
@@ -36,7 +37,7 @@
         <div id="loginTab" class="auth-tab-content active">
             <form action="${pageContext.request.contextPath}/auth" method="POST" class="auth-form">
                 <input type="hidden" name="action" value="login">
-                <input type="hidden" name="redirect" value="<c:out value='${param.redirect}' />">
+                <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
                 
                 <div class="form-group-icon">
                     <label for="loginUsername">Tên đăng nhập</label>
@@ -80,6 +81,7 @@
         <div id="registerTab" class="auth-tab-content">
             <form action="${pageContext.request.contextPath}/auth" method="POST" class="auth-form">
                 <input type="hidden" name="action" value="register">
+                <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
                 
                 <div class="form-group-icon">
                     <label for="regFullName">Họ và tên của bạn *</label>

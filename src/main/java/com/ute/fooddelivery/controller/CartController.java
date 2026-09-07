@@ -37,14 +37,15 @@ public class CartController extends HttpServlet {
             return;
         }
 
-        // Đọc thông tin nhận hàng đã lưu từ Cookie (nếu có)
-        String deliName = CookieUtils.getCookieValue(req, "deli_name");
-        String deliPhone = CookieUtils.getCookieValue(req, "deli_phone");
-        String deliAddress = CookieUtils.getCookieValue(req, "deli_address");
-
-        if (deliName != null) req.setAttribute("cookieDeliName", deliName);
-        if (deliPhone != null) req.setAttribute("cookieDeliPhone", deliPhone);
-        if (deliAddress != null) req.setAttribute("cookieDeliAddress", deliAddress);
+        // Bắt buộc đăng nhập khi xem giỏ hàng / thông tin đặt hàng
+        if (currentUser == null) {
+            // Xóa triệt để các cookie thông tin giao hàng cũ trên trình duyệt nếu có
+            CookieUtils.deleteCookie(resp, "deli_name");
+            CookieUtils.deleteCookie(resp, "deli_phone");
+            CookieUtils.deleteCookie(resp, "deli_address");
+            resp.sendRedirect(req.getContextPath() + "/auth?action=login");
+            return;
+        }
 
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
@@ -61,6 +62,25 @@ public class CartController extends HttpServlet {
         }
 
         String action = req.getParameter("action");
+
+        // Nếu chưa đăng nhập: chặn mọi thao tác liên quan tới đơn hàng và yêu cầu đăng nhập/đăng ký
+        if (currentUser == null) {
+            session = req.getSession(true);
+            if ("add".equalsIgnoreCase(action)) {
+                try {
+                    int foodId = Integer.parseInt(req.getParameter("foodId"));
+                    int quantity = 1;
+                    String qtyParam = req.getParameter("quantity");
+                    if (qtyParam != null && !qtyParam.trim().isEmpty()) {
+                        quantity = Integer.parseInt(qtyParam.trim());
+                    }
+                    session.setAttribute("pendingFoodId", foodId);
+                    session.setAttribute("pendingQuantity", quantity);
+                } catch (Exception ignored) {}
+            }
+            resp.sendRedirect(req.getContextPath() + "/auth?action=login");
+            return;
+        }
         session = req.getSession();
 
         @SuppressWarnings("unchecked")
@@ -150,7 +170,7 @@ public class CartController extends HttpServlet {
                 double shippingFee = 15000;
                 double totalBill = subtotalBill + shippingFee;
 
-                Integer userId = (currentUser != null) ? currentUser.getId() : null;
+                Integer userId = currentUser.getId();
 
                 Order order = new Order();
                 order.setUserId(userId);
@@ -163,13 +183,13 @@ public class CartController extends HttpServlet {
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
-                    // Lưu thông tin nhận hàng vào Cookie (30 ngày) để lần sau tự điền
-                    CookieUtils.addCookie(resp, "deli_name", receiverName.trim(), DELI_COOKIE_AGE);
-                    CookieUtils.addCookie(resp, "deli_phone", receiverPhone.trim(), DELI_COOKIE_AGE);
-                    CookieUtils.addCookie(resp, "deli_address", receiverAddress.trim(), DELI_COOKIE_AGE);
+                    // Xóa các cookie giao hàng cũ (nếu có) để bảo mật thông tin tài khoản
+                    CookieUtils.deleteCookie(resp, "deli_name");
+                    CookieUtils.deleteCookie(resp, "deli_phone");
+                    CookieUtils.deleteCookie(resp, "deli_address");
 
                     session.removeAttribute("cart");
-                    req.setAttribute("placedOrderId", "#FZ-" + orderId);
+                    req.setAttribute("placedOrderId", "#DH-" + orderId);
                     req.setAttribute("orderSuccess", true);
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
                     return;
