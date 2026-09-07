@@ -22,7 +22,7 @@
                     <select name="categoryId" class="form-select" onchange="this.form.submit()">
                         <option value="ALL">-- Tất cả danh mục --</option>
                         <c:forEach var="cat" items="${categories}">
-                            <option value="${cat.id}" ${selectedCategoryId == cat.id ? 'selected' : ''}>${cat.icon} ${cat.name}</option>
+                            <option value="${cat.id}" ${selectedCategoryId == cat.id ? 'selected' : ''}>${cat.imageIcon} ${cat.name}</option>
                         </c:forEach>
                     </select>
                 </div>
@@ -43,7 +43,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-bowl-food text-primary"></i> Danh Sách Món Ăn Của Quán</h3>
-                    <span class="table-card-sub">Tổng cộng có <strong>${foods.size()}</strong> món ăn trong thực đơn</span>
+                    <span class="table-card-sub">Tổng cộng có <strong>${empty foods ? 0 : foods.size()}</strong> món ăn trong thực đơn</span>
                 </div>
             </div>
 
@@ -107,13 +107,25 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-box-open fs-1 text-muted mb-2"></i>
-                                        <p>Không tìm thấy món ăn nào phù hợp với bộ lọc!</p>
-                                        <button class="btn btn-primary btn-sm mt-2" onclick="openAddFoodModal()">+ Thêm món đầu tiên</button>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <div style="font-size: 2.5rem; margin-bottom: 12px;">🍲</div>
+                                            <c:choose>
+                                                <c:when test="${not empty keyword || not empty selectedCategoryId}">
+                                                    <h4 style="font-size: 1.1rem; color: #444; margin-bottom: 6px;">Không tìm thấy món ăn nào phù hợp với bộ lọc!</h4>
+                                                    <p class="text-muted small">Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác.</p>
+                                                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-outline btn-sm mt-2">Xóa bộ lọc</a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <h4 style="font-size: 1.15rem; color: #444; margin-bottom: 6px;">Thực đơn của quán hiện đang trống!</h4>
+                                                    <p class="text-muted small">Hãy thêm các món ăn thơm ngon đầu tiên của quán để bắt đầu phục vụ khách hàng.</p>
+                                                    <button class="btn btn-primary btn-sm mt-2" onclick="openAddFoodModal()">
+                                                        <i class="fa-solid fa-plus-circle"></i> + Đăng Món Đầu Tiên
+                                                    </button>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+                                    </tr>
                             </c:otherwise>
                         </c:choose>
                     </tbody>
@@ -149,7 +161,7 @@
                         <label class="form-label font-weight-bold">Danh mục ẩm thực <span class="text-danger">*</span></label>
                         <select name="categoryId" id="foodCategoryId" class="form-select" required>
                             <c:forEach var="cat" items="${categories}">
-                                <option value="${cat.id}">${cat.icon} ${cat.name}</option>
+                                <option value="${cat.id}">${cat.imageIcon} ${cat.name}</option>
                             </c:forEach>
                         </select>
                     </div>
@@ -226,6 +238,13 @@
             previewContainer.style.display = 'none';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('action') === 'add') {
+            openAddFoodModal();
+        }
+    });
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

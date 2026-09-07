@@ -18,8 +18,8 @@
                 </p>
             </div>
             <div class="admin-actions">
-                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-sm" target="_blank">
-                    <i class="fa-solid fa-eye"></i> Xem Website Khách
+                <a href="${pageContext.request.contextPath}/merchant/profile" class="btn btn-outline btn-sm">
+                    <i class="fa-solid fa-store"></i> Thiết Lập Quán
                 </a>
                 <a href="${pageContext.request.contextPath}/auth?action=logout" class="btn btn-danger btn-sm">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng Xuất

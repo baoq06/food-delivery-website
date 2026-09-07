@@ -127,7 +127,11 @@
                                 </c:when>
                                 <c:otherwise>
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">Chưa có đơn hàng nào phát sinh!</td>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <div style="font-size: 2rem; margin-bottom: 8px;">📦</div>
+                                            <strong style="color: #666;">Chưa có đơn đặt hàng nào phát sinh!</strong>
+                                            <p class="small text-muted mb-0 mt-1">Khi khách hàng đặt món từ quán của bạn, danh sách và trạng thái giao hàng sẽ hiển thị tại đây.</p>
+                                        </td>
                                     </tr>
                                 </c:otherwise>
                             </c:choose>
@@ -165,7 +169,14 @@
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <div class="text-center py-4 text-muted">Chưa có dữ liệu món bán chạy!</div>
+                            <div class="text-center py-5 text-muted">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">🔥</div>
+                                <strong style="color: #666;">Chưa có dữ liệu món bán chạy!</strong>
+                                <p class="small text-muted mb-3 mt-1">Các món ăn được khách hàng ưa chuộng sẽ được tự động xếp hạng sau khi đơn hoàn tất.</p>
+                                <a href="${pageContext.request.contextPath}/merchant/foods?action=add" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-plus-circle"></i> Đăng Món Mới
+                                </a>
+                            </div>
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -174,7 +185,7 @@
                 <div class="merchant-quick-box mt-4">
                     <h4><i class="fa-solid fa-bolt text-warning"></i> Thao Tác Nhanh</h4>
                     <div class="quick-btn-row">
-                        <a href="${pageContext.request.contextPath}/merchant/foods" class="quick-btn">
+                        <a href="${pageContext.request.contextPath}/merchant/foods?action=add" class="quick-btn">
                             <i class="fa-solid fa-plus-circle text-primary"></i>
                             <span>Đăng món mới</span>
                         </a>

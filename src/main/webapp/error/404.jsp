@@ -17,9 +17,18 @@
             <a href="${pageContext.request.contextPath}/home" class="btn btn-primary btn-lg">
                 <i class="fa-solid fa-house"></i> Về Trang Chủ
             </a>
-            <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
-                <i class="fa-solid fa-utensils"></i> Khám Phá Thực Đơn
-            </a>
+            <c:choose>
+                <c:when test="${sessionScope.currentUser != null and sessionScope.currentUser.seller}">
+                    <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-outline btn-lg">
+                        <i class="fa-solid fa-store"></i> Về Kênh Quán Ăn
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
+                        <i class="fa-solid fa-utensils"></i> Khám Phá Thực Đơn
+                    </a>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="error-support-info">

@@ -22,6 +22,14 @@ public class FoodController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        com.ute.fooddelivery.model.User currentUser = (req.getSession(false) != null) ?
+                (com.ute.fooddelivery.model.User) req.getSession(false).getAttribute("currentUser") : null;
+        if (currentUser != null && currentUser.isSeller()) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
+            return;
+        }
+
         String path = req.getServletPath();
 
         if ("/food-detail".equals(path)) {

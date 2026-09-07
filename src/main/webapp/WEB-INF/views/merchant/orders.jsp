@@ -164,8 +164,9 @@
                             <c:otherwise>
                                 <tr>
                                     <td colspan="8" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-receipt fs-1 text-muted mb-2"></i>
-                                        <p>Không có đơn hàng nào trong danh mục này!</p>
+                                        <div style="font-size: 2.2rem; margin-bottom: 8px;">🧾</div>
+                                        <strong style="color: #666;">Chưa có đơn hàng nào theo bộ lọc đã chọn!</strong>
+                                        <p class="small text-muted mb-0 mt-1">Các đơn hàng mới của khách sẽ xuất hiện tại đây để quán tiếp nhận và chế biến.</p>
                                     </td>
                                 </tr>
                             </c:otherwise>

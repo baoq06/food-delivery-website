@@ -24,14 +24,6 @@ public class DriverDAO {
         } catch (Exception e) {
             System.err.println("Lỗi khi lấy danh sách tài xế: " + e.getMessage());
         }
-
-        // Fallback test nếu CSDL trống
-        if (list.isEmpty()) {
-            list.add(new Driver(1, "Tài xế Lê Văn Hùng", "0933112233", "AVAILABLE"));
-            list.add(new Driver(2, "Tài xế Phạm Tuấn Kiệt", "0933445566", "AVAILABLE"));
-            list.add(new Driver(3, "Tài xế Nguyễn Văn Long", "0933778899", "BUSY"));
-            list.add(new Driver(4, "Tài xế Trần Minh Trí", "0933221100", "OFFLINE"));
-        }
         return list;
     }
 
@@ -49,12 +41,6 @@ public class DriverDAO {
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi lấy danh sách tài xế khả dụng: " + e.getMessage());
-        }
-
-        // Fallback
-        if (list.isEmpty()) {
-            list.add(new Driver(1, "Tài xế Lê Văn Hùng", "0933112233", "AVAILABLE"));
-            list.add(new Driver(2, "Tài xế Phạm Tuấn Kiệt", "0933445566", "AVAILABLE"));
         }
         return list;
     }

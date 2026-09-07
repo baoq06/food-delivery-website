@@ -48,6 +48,10 @@ public class Category implements Serializable {
         this.imageIcon = imageIcon;
     }
 
+    public String getIcon() {
+        return getImageIcon();
+    }
+
     // Tương thích ngược với thuộc tính image cũ
     public String getImage() {
         return getImageIcon();

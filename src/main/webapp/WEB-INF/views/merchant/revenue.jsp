@@ -141,8 +141,9 @@
                     </c:when>
                     <c:otherwise>
                         <div class="text-center py-5 text-muted">
-                            <i class="fa-solid fa-chart-line fs-1 mb-2"></i>
-                            <p>Chưa có dữ liệu đơn hàng nào phát sinh doanh thu trong khoảng thời gian này.</p>
+                            <div style="font-size: 2.2rem; margin-bottom: 8px;">📈</div>
+                            <strong style="color: #666;">Chưa có dữ liệu đơn hàng nào phát sinh doanh thu trong kỳ này.</strong>
+                            <p class="small text-muted mb-0 mt-1">Khi quán hoàn tất các đơn giao hàng thành công, biểu đồ doanh thu sẽ được vẽ chi tiết.</p>
                         </div>
                     </c:otherwise>
                 </c:choose>
@@ -199,7 +200,10 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu thống kê trong kỳ này.</td>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <div style="font-size: 1.8rem; margin-bottom: 6px;">📊</div>
+                                        <span>Không có dữ liệu bảng kê doanh thu trong khoảng thời gian đã chọn.</span>
+                                    </td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>
@@ -213,7 +217,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-file-invoice-dollar text-success"></i> Đơn Hàng Thực Tế Cấu Thành Doanh Thu</h3>
-                    <span class="table-card-sub">Danh sách đơn hàng thực tế từ cơ sở dữ liệu</span>
+                    <span class="table-card-sub">Minh bạch từng đơn hàng và phương thức thanh toán</span>
                 </div>
             </div>
 
@@ -225,7 +229,7 @@
                             <th>Thời Gian</th>
                             <th>Khách Hàng</th>
                             <th>Món Đặt Của Quán</th>
-                            <th>Tiền Món Của Quán</th>
+                            <th>Tiền Món</th>
                             <th>Trạng Thái</th>
                             <th>Thanh Toán</th>
                         </tr>
@@ -264,7 +268,10 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="7" class="text-center py-4 text-muted">Không có đơn hàng nào trong khoảng thời gian này.</td>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <div style="font-size: 1.8rem; margin-bottom: 6px;">🧾</div>
+                                        <span>Không có đơn hàng nào phát sinh trong khoảng thời gian này.</span>
+                                    </td>
                                 </tr>
                             </c:otherwise>
                         </c:choose>

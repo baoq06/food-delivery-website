@@ -128,8 +128,9 @@
                             <c:otherwise>
                                 <tr>
                                     <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-motorcycle fs-1 text-muted mb-2"></i>
-                                        <p>Không tìm thấy tài xế nào theo tiêu chí đã chọn!</p>
+                                        <div style="font-size: 2.2rem; margin-bottom: 8px;">🛵</div>
+                                        <strong style="color: #666;">Hiện tại chưa có tài xế nào trực tuyến trong hệ thống!</strong>
+                                        <p class="small text-muted mb-0 mt-1">Danh sách tài xế sẽ tự động cập nhật ngay khi shipper đăng nhập và bật trạng thái nhận đơn.</p>
                                     </td>
                                 </tr>
                             </c:otherwise>

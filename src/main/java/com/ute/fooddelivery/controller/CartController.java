@@ -29,6 +29,14 @@ public class CartController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
+        if (currentUser != null && currentUser.isSeller()) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
+            return;
+        }
+
         // Đọc thông tin nhận hàng đã lưu từ Cookie (nếu có)
         String deliName = CookieUtils.getCookieValue(req, "deli_name");
         String deliPhone = CookieUtils.getCookieValue(req, "deli_phone");
@@ -44,8 +52,16 @@ public class CartController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+        HttpSession session = req.getSession(false);
+        User currentUser = (session != null) ? (User) session.getAttribute("currentUser") : null;
+        if (currentUser != null && currentUser.isSeller()) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
+            return;
+        }
+
         String action = req.getParameter("action");
-        HttpSession session = req.getSession();
+        session = req.getSession();
 
         @SuppressWarnings("unchecked")
         Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
@@ -134,7 +150,6 @@ public class CartController extends HttpServlet {
                 double shippingFee = 15000;
                 double totalBill = subtotalBill + shippingFee;
 
-                User currentUser = (User) session.getAttribute("currentUser");
                 Integer userId = (currentUser != null) ? currentUser.getId() : null;
 
                 Order order = new Order();
