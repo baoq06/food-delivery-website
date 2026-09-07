@@ -36,6 +36,7 @@
         <div id="loginTab" class="auth-tab-content active">
             <form action="${pageContext.request.contextPath}/auth" method="POST" class="auth-form">
                 <input type="hidden" name="action" value="login">
+                <input type="hidden" name="redirect" value="<c:out value='${param.redirect}' />">
                 
                 <div class="form-group-icon">
                     <label for="loginUsername">Tên đăng nhập</label>

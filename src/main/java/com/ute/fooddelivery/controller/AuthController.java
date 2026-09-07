@@ -62,10 +62,13 @@ public class AuthController extends HttpServlet {
                     CookieUtils.deleteCookie(resp, "remember_user");
                 }
 
+                String redirect = req.getParameter("redirect");
                 if (user.isAdmin()) {
                     resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
                 } else if (user.isSeller()) {
                     resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
+                } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
+                    resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/home");
                 }
