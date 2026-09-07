@@ -11,4 +11,12 @@ public class OrderService {
     public int createOrder(Order order, List<OrderItem> items) {
         return orderDAO.createOrder(order, items);
     }
+
+    public List<Order> getOrdersByUserId(int userId) {
+        return orderDAO.getOrdersByUserId(userId);
+    }
+
+    public boolean cancelOrderByCustomer(int orderId, int userId) {
+        return orderDAO.cancelOrderByCustomer(orderId, userId);
+    }
 }

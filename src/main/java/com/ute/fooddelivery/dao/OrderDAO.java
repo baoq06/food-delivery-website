@@ -511,4 +511,107 @@ public class OrderDAO {
         }
         return kpis;
     }
+
+    // =========================================================================
+    // QUẢN LÝ ĐƠN HÀNG DÀNH CHO KHÁCH HÀNG (CUSTOMER)
+    // =========================================================================
+
+    public List<Order> getOrdersByUserId(int userId) {
+        List<Order> list = new ArrayList<>();
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       d.name AS driver_name, d.phone AS driver_phone " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "WHERE o.user_id = ? " +
+            "ORDER BY o.created_at DESC";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at")
+                            );
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+
+                            // Lấy danh sách tất cả các món trong đơn hàng này
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            list.add(order);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách đơn của khách hàng: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<OrderItem> getOrderItemsByOrderId(int orderId) {
+        List<OrderItem> items = new ArrayList<>();
+        String sql = 
+            "SELECT oi.order_item_id, oi.order_id, oi.food_id, oi.quantity, oi.unit_price, oi.subtotal, " +
+            "       f.name AS food_name, f.image_url AS food_image " +
+            "FROM order_items oi " +
+            "JOIN foods f ON oi.food_id = f.food_id " +
+            "WHERE oi.order_id = ? " +
+            "ORDER BY oi.order_item_id ASC";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            OrderItem item = new OrderItem(
+                                rs.getInt("order_item_id"),
+                                rs.getInt("order_id"),
+                                rs.getInt("food_id"),
+                                rs.getInt("quantity"),
+                                rs.getDouble("unit_price"),
+                                rs.getDouble("subtotal")
+                            );
+                            item.setFoodName(rs.getString("food_name"));
+                            item.setFoodImage(rs.getString("food_image"));
+                            items.add(item);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy chi tiết các món của đơn hàng: " + e.getMessage());
+        }
+        return items;
+    }
+
+    public boolean cancelOrderByCustomer(int orderId, int userId) {
+        String sql = "UPDATE orders SET status = 'CANCELLED' WHERE order_id = ? AND user_id = ? AND status IN ('PENDING', 'CONFIRMED')";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, userId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi khách hàng hủy đơn: " + e.getMessage());
+        }
+        return false;
+    }
 }

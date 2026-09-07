@@ -17,4 +17,16 @@ public class UserService {
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
         return userDAO.registerSeller(user, restaurantName, restaurantAddress);
     }
+
+    public User getUserById(int id) {
+        return userDAO.getUserById(id);
+    }
+
+    public boolean updateProfile(int userId, String fullName, String phone, String address, String email) {
+        return userDAO.updateProfile(userId, fullName, phone, address, email);
+    }
+
+    public boolean changePassword(int userId, String oldPassword, String newPassword) {
+        return userDAO.changePassword(userId, oldPassword, newPassword);
+    }
 }
