@@ -78,6 +78,41 @@ public class DriverDAO {
         return null;
     }
 
+    public Driver getDriverByUserId(int userId) {
+        String query = "SELECT driver_id, name, phone, status FROM drivers WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return mapResultSetToDriver(rs);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm tài xế theo User ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean updateStatusByUserId(int userId, String status) {
+        String query = "UPDATE drivers SET status = ? WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, status);
+                    ps.setInt(2, userId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái tài xế qua User ID: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean updateStatus(int driverId, String status) {
         String query = "UPDATE drivers SET status = ? WHERE driver_id = ?";
         try (Connection conn = DBContext.getConnection()) {

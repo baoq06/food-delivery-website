@@ -17,4 +17,8 @@ public class UserService {
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
         return userDAO.registerSeller(user, restaurantName, restaurantAddress);
     }
+
+    public boolean registerShipper(User user) {
+        return userDAO.registerShipper(user);
+    }
 }

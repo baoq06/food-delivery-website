@@ -2,16 +2,31 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 
 <c:set var="isAuth" value="${param.isAuthPage eq 'true' or pageContext.request.servletPath eq '/auth'}" />
+<c:set var="isShipper" value="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper}" />
 
 <c:if test="${not isAuth}">
     <!-- Top Info Bar -->
     <div class="topbar">
         <div class="topbar-container">
             <div class="topbar-left">
-                <span><i class="fa-solid fa-bolt text-primary"></i> <strong>Hotline:</strong> 1900 6868 | <strong>Giao siêu tốc:</strong> 07:00 - 23:00</span>
+                <c:choose>
+                    <c:when test="${isShipper}">
+                        <span><i class="fa-solid fa-motorcycle text-primary"></i> <strong>Kênh Tài Xế:</strong> Giao hàng siêu tốc cùng Utee</span>
+                    </c:when>
+                    <c:otherwise>
+                        <span><i class="fa-solid fa-bolt text-primary"></i> <strong>Hotline:</strong> 1900 6868 | <strong>Giao siêu tốc:</strong> 07:00 - 23:00</span>
+                    </c:otherwise>
+                </c:choose>
             </div>
             <div class="topbar-right">
-                <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>UTEE15</strong> giảm 15k cho đơn từ 99k</span>
+                <c:choose>
+                    <c:when test="${isShipper}">
+                        <span><i class="fa-solid fa-headset text-primary"></i> Hotline hỗ trợ tài xế: <strong>1900 6869</strong> (24/7)</span>
+                    </c:when>
+                    <c:otherwise>
+                        <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>UTEE15</strong> giảm 15k cho đơn từ 99k</span>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
     </div>
@@ -60,6 +75,13 @@
                             Trang chủ
                         </a>
                     </li>
+                    <c:if test="${isShipper}">
+                        <li>
+                            <a href="${pageContext.request.contextPath}/shipper/dashboard" class="${pageContext.request.servletPath eq '/shipper/dashboard' ? 'active' : ''}">
+                                Kênh Tài Xế
+                            </a>
+                        </li>
+                    </c:if>
                     <li>
                         <a href="${pageContext.request.contextPath}/foods" class="${pageContext.request.servletPath eq '/foods' ? 'active' : ''}">
                             Thực đơn
@@ -86,9 +108,15 @@
                                     <i class="fa-solid fa-chevron-down user-caret"></i>
                                 </div>
                                 <div class="user-dropdown">
-                                    <c:if test="${sessionScope.currentUser.role eq 'ADMIN'}">
-                                        <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-chart-line"></i> Quản trị hệ thống</a>
-                                    </c:if>
+                                    <c:choose>
+                                        <c:when test="${sessionScope.currentUser.role eq 'ADMIN'}">
+                                            <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-chart-line"></i> Quản trị hệ thống</a>
+                                        </c:when>
+                                        <c:when test="${isShipper}">
+                                            <a href="${pageContext.request.contextPath}/shipper/dashboard" class="text-primary font-weight-bold"><i class="fa-solid fa-motorcycle"></i> Bảng điều khiển tài xế</a>
+                                            <a href="${pageContext.request.contextPath}/shipper/history"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử giao hàng</a>
+                                        </c:when>
+                                    </c:choose>
                                     <c:if test="${sessionScope.currentUser.seller}">
                                         <a href="${pageContext.request.contextPath}/merchant/dashboard" class="text-primary font-weight-bold"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn</a>
                                         <a href="${pageContext.request.contextPath}/merchant/foods"><i class="fa-solid fa-bowl-food"></i> Thực đơn món ăn</a>
