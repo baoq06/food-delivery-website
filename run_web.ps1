@@ -33,7 +33,7 @@ if (Test-Path $sourceWar) {
 Write-Host "4. Khoi dong vu tru Tomcat 11..." -ForegroundColor Cyan
 $startupScript = Join-Path $tomcatDir "bin\startup.bat"
 if (Test-Path $startupScript) {
-    Start-Process "cmd.exe" -ArgumentList "/c `"$startupScript`""
+    Start-Process "cmd.exe" -ArgumentList "/c `"$startupScript`"" -WorkingDirectory "$tomcatDir\bin"
     Write-Host "Tuyet voi! He thong dang duoc khoi dong tren cua so rieng biet." -ForegroundColor Green
     Write-Host "Truy cap vao: http://localhost:8080/$projectName" -ForegroundColor Yellow
 } else {

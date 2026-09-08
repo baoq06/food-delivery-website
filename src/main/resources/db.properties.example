@@ -1,0 +1,5 @@
+# Database Configuration Template (Copy this file to db.properties and fill in your credentials)
+db.driver=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://<TIDB_HOST>:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC
+db.username=<TIDB_USERNAME>
+db.password=${DB_PASSWORD:<TIDB_PASSWORD>}
