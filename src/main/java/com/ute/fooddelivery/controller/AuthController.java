@@ -34,6 +34,8 @@ public class AuthController extends HttpServlet {
             CookieUtils.deleteCookie(resp, "deli_name");
             CookieUtils.deleteCookie(resp, "deli_phone");
             CookieUtils.deleteCookie(resp, "deli_address");
+            CookieUtils.deleteCookie(resp, "recent_foods");
+            CookieUtils.deleteCookie(resp, "recent_foods_guest");
             resp.sendRedirect(req.getContextPath() + "/home");
             return;
         }

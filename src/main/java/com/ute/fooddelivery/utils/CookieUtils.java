@@ -92,4 +92,35 @@ public class CookieUtils {
         }
         return sb.toString();
     }
+
+    /**
+     * Xác định tên Cookie lưu lịch sử món xem gần đây riêng biệt cho từng tài khoản:
+     * - Nếu đã đăng nhập: "recent_foods_u" + user.getId() (mỗi user có 1 cookie riêng, không bị trùng nhau)
+     * - Nếu là khách vãng lai (chưa đăng nhập): "recent_foods_guest"
+     */
+    public static String getRecentFoodsCookieName(HttpServletRequest req) {
+        if (req != null) {
+            jakarta.servlet.http.HttpSession session = req.getSession(false);
+            if (session != null) {
+                com.ute.fooddelivery.model.User user = (com.ute.fooddelivery.model.User) session.getAttribute("currentUser");
+                if (user != null) {
+                    if (user.getId() > 0) {
+                        return "recent_foods_u" + user.getId();
+                    } else if (user.getUsername() != null && !user.getUsername().trim().isEmpty()) {
+                        return "recent_foods_u_" + user.getUsername().trim().toLowerCase().replaceAll("[^a-zA-Z0-9_]", "");
+                    }
+                }
+            }
+        }
+        return "recent_foods_guest";
+    }
+
+    /**
+     * Dọn dẹp cookie dùng chung cũ "recent_foods" nếu còn sót lại từ các phiên trước
+     */
+    public static void cleanLegacyRecentFoods(HttpServletRequest req, HttpServletResponse resp) {
+        if (req != null && resp != null && getCookieValue(req, "recent_foods") != null) {
+            deleteCookie(resp, "recent_foods");
+        }
+    }
 }

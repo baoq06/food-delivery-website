@@ -23,8 +23,12 @@ public class HomeController extends HttpServlet {
         req.setAttribute("categories", categoryService.getAllCategories());
         req.setAttribute("featuredFoods", foodService.getFeaturedFoods(8));
 
-        // Lấy danh sách món vừa xem gần đây từ Cookie (nếu có)
-        String recentCookie = CookieUtils.getCookieValue(req, "recent_foods");
+        // Dọn dẹp cookie dùng chung cũ nếu còn sót
+        CookieUtils.cleanLegacyRecentFoods(req, resp);
+
+        // Lấy danh sách món vừa xem gần đây theo từng tài khoản (hoặc khách vãng lai riêng)
+        String cookieName = CookieUtils.getRecentFoodsCookieName(req);
+        String recentCookie = CookieUtils.getCookieValue(req, cookieName);
         List<Integer> idList = CookieUtils.parseIdList(recentCookie);
         if (!idList.isEmpty()) {
             List<Food> recentFoods = foodService.getFoodsByIds(idList);

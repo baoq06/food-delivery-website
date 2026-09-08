@@ -41,15 +41,19 @@ public class FoodController extends HttpServlet {
                     req.setAttribute("food", food);
 
                     if (food != null) {
-                        // Cập nhật Cookie danh sách ID món ăn xem gần đây
-                        String recentCookie = CookieUtils.getCookieValue(req, "recent_foods");
+                        // Dọn dẹp cookie dùng chung cũ nếu còn sót
+                        CookieUtils.cleanLegacyRecentFoods(req, resp);
+
+                        // Cập nhật Cookie danh sách ID món ăn xem gần đây theo từng tài khoản riêng biệt
+                        String cookieName = CookieUtils.getRecentFoodsCookieName(req);
+                        String recentCookie = CookieUtils.getCookieValue(req, cookieName);
                         List<Integer> idList = CookieUtils.parseIdList(recentCookie);
                         idList.remove(Integer.valueOf(id)); // Đưa món hiện tại lên đầu
                         idList.add(0, id);
                         if (idList.size() > 6) {
                             idList = idList.subList(0, 6);
                         }
-                        CookieUtils.addCookie(resp, "recent_foods", CookieUtils.formatIdList(idList), RECENT_COOKIE_AGE);
+                        CookieUtils.addCookie(resp, cookieName, CookieUtils.formatIdList(idList), RECENT_COOKIE_AGE);
 
                         // Lấy danh sách các món xem gần đây khác để hiển thị gợi ý
                         List<Integer> otherIds = new ArrayList<>(idList);
