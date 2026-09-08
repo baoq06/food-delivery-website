@@ -14,16 +14,20 @@
 
 <div class="auth-fullscreen-split">
     <!-- ===================================================================
-         LEFT COLUMN (FULL BLEED / FULL HEIGHT): Hero Image & Brand Showcase
+         LEFT COLUMN (FULL BLEED): Cinematic Visual & Sleek Ambient Brand
          =================================================================== -->
     <div class="auth-split-visual">
-        <!-- Full-bleed background image covering entire left half -->
+        <!-- Ambient subtle glow accents -->
+        <div class="auth-visual-glow auth-glow-1"></div>
+        <div class="auth-visual-glow auth-glow-2"></div>
+
+        <!-- Full-bleed background image -->
         <img src="${pageContext.request.contextPath}/assets/images/log_sign_in_image.jpg" 
              alt="Utee Food Delivery" 
              class="auth-split-bg-img" 
              loading="eager">
         
-        <!-- Gradient overlay ensuring contrast, cinematic atmosphere, and text clarity -->
+        <!-- Deep cinematic gradient overlay with warm undertones -->
         <div class="auth-split-overlay"></div>
 
         <!-- Top branding over image -->
@@ -32,94 +36,80 @@
                 <img src="${pageContext.request.contextPath}/assets/images/logo/logo-light-transparent.png" alt="Utee" class="auth-visual-logo-img">
                 <span class="auth-visual-tagline-badge">
                     <span class="auth-pulse-dot"></span>
-                    <span>Giao siêu tốc 30m</span>
+                    <span>Ăn ngon mỗi ngày</span>
                 </span>
             </a>
         </div>
 
-        <!-- Bottom brand story & perks over image -->
+        <!-- Bottom brand story: Simplified, inspiring, no text fatigue -->
         <div class="auth-visual-bottom-content">
-            <div class="auth-social-proof-pill">
-                <div class="auth-stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                </div>
-                <span>Hơn <strong>50.000+</strong> tín đồ ẩm thực tin chọn</span>
+            <div class="auth-visual-chip">
+                <i class="fa-solid fa-bolt-lightning"></i>
+                <span>Giao nhanh 30 phút</span>
             </div>
 
             <h1 class="auth-visual-headline">
-                Vạn Món Ăn Ngon,<br>
-                Giao Tận Nơi Trong 30 Phút.
+                Món ngon tận nơi,<br>
+                <span class="auth-gradient-text">trọn vị từng bữa.</span>
             </h1>
             <p class="auth-visual-subheadline">
-                Thưởng thức tinh hoa ẩm thực từ hàng trăm quán ăn chất lượng, ưu đãi ngập tràn mỗi ngày cùng Utee.
+                Khám phá hàng ngàn món ăn hấp dẫn cùng ngập tràn ưu đãi mỗi ngày.
             </p>
 
-            <div class="auth-visual-features-grid">
-                <div class="auth-feature-glass-card">
-                    <div class="feature-glass-icon"><i class="fa-solid fa-bolt"></i></div>
-                    <div class="feature-glass-info">
-                        <strong>Giao Siêu Tốc 30 Phút</strong>
-                        <span>Món ăn luôn nóng hổi chuẩn vị</span>
-                    </div>
+            <!-- Minimalist Stats / Feature Pill Strip -->
+            <div class="auth-mini-perks">
+                <div class="auth-perk-pill">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Voucher 30K</span>
                 </div>
-                <div class="auth-feature-glass-card">
-                    <div class="feature-glass-icon"><i class="fa-solid fa-ticket"></i></div>
-                    <div class="feature-glass-info">
-                        <strong>Voucher Giảm 30.000đ</strong>
-                        <span>Tặng ngay cho tài khoản thành viên mới</span>
-                    </div>
+                <div class="auth-perk-pill">
+                    <i class="fa-solid fa-star"></i>
+                    <span>4.9/5 đánh giá</span>
                 </div>
-                <div class="auth-feature-glass-card">
-                    <div class="feature-glass-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                    <div class="feature-glass-info">
-                        <strong>Đảm Bảo Chất Lượng</strong>
-                        <span>100% quán ăn chọn lọc, an toàn vệ sinh</span>
-                    </div>
+                <div class="auth-perk-pill">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Quán chọn lọc</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- ===================================================================
-         RIGHT COLUMN: Authentication Form (Login / Register)
+         RIGHT COLUMN: Streamlined Authentication Form (Login / Register)
          =================================================================== -->
     <div class="auth-split-form-panel">
         <!-- Top header action bar inside form panel -->
         <div class="auth-form-topbar">
             <a href="${pageContext.request.contextPath}/home" class="auth-back-home-btn" title="Quay lại trang chủ">
                 <i class="fa-solid fa-arrow-left"></i>
-                <span>Về trang chủ</span>
+                <span>Trang chủ</span>
             </a>
             <a href="tel:19006868" class="auth-support-pill">
                 <i class="fa-solid fa-headset text-primary"></i>
-                <span>Hotline: <strong>1900 6868</strong></span>
+                <span>1900 6868</span>
             </a>
         </div>
 
-        <!-- Centered Interactive Form Card (Unified Dimensions) -->
+        <!-- Centered Interactive Form Card -->
         <div class="auth-form-central-card">
             <!-- Brand header for right panel -->
             <div class="auth-form-heading">
                 <a href="${pageContext.request.contextPath}/home" class="auth-mobile-logo-link">
                     <img src="${pageContext.request.contextPath}/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="auth-form-logo-img">
                 </a>
-                <h2 class="auth-form-main-title" id="authTitleText">Chào mừng bạn trở lại!</h2>
-                <p class="auth-form-desc" id="authDescText">Đăng nhập tài khoản để nhận voucher 30K và theo dõi đơn hàng</p>
+                <h2 class="auth-form-main-title" id="authTitleText">Đăng nhập</h2>
+                <p class="auth-form-desc" id="authDescText">Mừng bạn quay lại với Utee</p>
             </div>
 
             <!-- Segmented Pill Tabs Switcher -->
             <div class="auth-segmented-tabs" role="tablist">
                 <button type="button" class="auth-segmented-tab active" id="tabLoginBtn" onclick="switchAuthTab('loginTab')">
                     <i class="fa-solid fa-right-to-bracket"></i>
-                    <span>Đăng Nhập</span>
+                    <span>Đăng nhập</span>
                 </button>
                 <button type="button" class="auth-segmented-tab" id="tabRegisterBtn" onclick="switchAuthTab('registerTab')">
                     <i class="fa-solid fa-user-plus"></i>
-                    <span>Đăng Ký</span>
+                    <span>Đăng ký</span>
                 </button>
             </div>
 
@@ -147,18 +137,18 @@
                             <span class="auth-field-icon"><i class="fa-solid fa-user"></i></span>
                             <input type="text" id="loginUsername" name="username" class="auth-field-input" required 
                                    value="<c:out value='${not empty stickyUsername ? stickyUsername : (not empty cookieUsername ? cookieUsername : \"\")}' />"
-                                   placeholder="Nhập username (ví dụ: customer, admin...)">
+                                   placeholder="Nhập tên đăng nhập">
                         </div>
                     </div>
 
                     <div class="auth-field-group">
                         <div class="auth-field-label-row">
                             <label for="loginPassword" class="auth-field-label">Mật khẩu</label>
-                            <a href="javascript:void(0)" class="auth-forgot-link" onclick="alert('Vui lòng liên hệ hotline 1900 6868 hoặc đăng nhập nhanh với tài khoản thử nghiệm bên dưới.'); return false;">Quên mật khẩu?</a>
+                            <a href="javascript:void(0)" class="auth-forgot-link" onclick="alert('Vui lòng liên hệ hotline 1900 6868 hoặc dùng tài khoản thử bên dưới.'); return false;">Quên mật khẩu?</a>
                         </div>
                         <div class="auth-field-control">
                             <span class="auth-field-icon"><i class="fa-solid fa-lock"></i></span>
-                            <input type="password" id="loginPassword" name="password" class="auth-field-input" required placeholder="Nhập mật khẩu...">
+                            <input type="password" id="loginPassword" name="password" class="auth-field-input" required placeholder="Nhập mật khẩu">
                             <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('loginPassword', this)" title="Ẩn/hiện mật khẩu">
                                 <i class="fa-regular fa-eye"></i>
                             </button>
@@ -168,42 +158,35 @@
                     <div class="auth-options-bar">
                         <label class="auth-checkbox-container">
                             <input type="checkbox" name="remember" ${(not empty stickyRemember and stickyRemember) or (empty stickyUsername and not empty cookieRemember and cookieRemember) ? 'checked' : ''}>
-                            <span class="auth-checkbox-text">Ghi nhớ đăng nhập trên thiết bị này</span>
+                            <span class="auth-checkbox-text">Ghi nhớ đăng nhập</span>
                         </label>
                     </div>
 
                     <button type="submit" class="auth-primary-submit-btn">
-                        <span>Đăng Nhập Ngay</span>
+                        <span>Đăng nhập ngay</span>
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </form>
 
-                <!-- Quick Fill Demo Accounts -->
-                <div class="auth-demo-accounts-card">
-                    <div class="auth-demo-card-head">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span>Tài khoản dùng thử nhanh:</span>
-                    </div>
-                    <div class="auth-demo-pills-row">
-                        <button type="button" class="auth-demo-pill" onclick="fillDemo('customer', '123456')">
-                            <span class="demo-pill-tag">👤 Khách hàng:</span>
-                            <code>customer</code> / <code>123456</code>
-                        </button>
-                        <button type="button" class="auth-demo-pill" onclick="fillDemo('admin', '123456')">
-                            <span class="demo-pill-tag">⚡ Quản trị:</span>
-                            <code>admin</code> / <code>123456</code>
-                        </button>
-                    </div>
+                <!-- Minimalist Inline Demo Quick Chips -->
+                <div class="auth-demo-inline">
+                    <span class="auth-demo-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Thử nhanh:</span>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('customer', '123456')">
+                        <span>👤 Khách hàng</span>
+                    </button>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('admin', '123456')">
+                        <span>⚡ Quản trị</span>
+                    </button>
                 </div>
 
                 <div class="auth-tab-switch-footer">
-                    <span>Chưa có tài khoản Utee?</span>
-                    <a href="javascript:void(0)" onclick="switchAuthTab('registerTab')" class="auth-switch-link">Đăng ký thành viên mới</a>
+                    <span>Chưa có tài khoản?</span>
+                    <a href="javascript:void(0)" onclick="switchAuthTab('registerTab')" class="auth-switch-link">Đăng ký ngay</a>
                 </div>
             </div>
 
             <!-- ==============================
-                 FORM 2: ĐĂNG KÝ (REGISTER) - BỐ CỤC ĐỒNG BỘ KÍCH THƯỚC
+                 FORM 2: ĐĂNG KÝ (REGISTER)
                  ============================== -->
             <div id="registerTab" class="auth-tab-view">
                 <form action="${pageContext.request.contextPath}/auth" method="POST" class="auth-form-body" id="registerForm">
@@ -213,7 +196,7 @@
                     <!-- Row 1: Họ tên & Tên đăng nhập (2 Cột cân xứng) -->
                     <div class="auth-fields-row-2">
                         <div class="auth-field-group">
-                            <label for="regFullName" class="auth-field-label">Họ và tên của bạn *</label>
+                            <label for="regFullName" class="auth-field-label">Họ và tên *</label>
                             <div class="auth-field-control">
                                 <span class="auth-field-icon"><i class="fa-solid fa-id-card"></i></span>
                                 <input type="text" id="regFullName" name="fullName" class="auth-field-input" required 
@@ -223,12 +206,12 @@
                         </div>
 
                         <div class="auth-field-group">
-                            <label for="regUsername" class="auth-field-label">Tên đăng nhập mới *</label>
+                            <label for="regUsername" class="auth-field-label">Tên đăng nhập *</label>
                             <div class="auth-field-control">
                                 <span class="auth-field-icon"><i class="fa-solid fa-user"></i></span>
                                 <input type="text" id="regUsername" name="username" class="auth-field-input" required 
                                        value="<c:out value='${stickyRegUsername}' />"
-                                       placeholder="Chọn username...">
+                                       placeholder="Chọn username">
                             </div>
                         </div>
                     </div>
@@ -239,7 +222,7 @@
                             <label for="regPassword" class="auth-field-label">Mật khẩu *</label>
                             <div class="auth-field-control">
                                 <span class="auth-field-icon"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" id="regPassword" name="password" class="auth-field-input" required placeholder="Tối thiểu 6 ký tự...">
+                                <input type="password" id="regPassword" name="password" class="auth-field-input" required placeholder="Tối thiểu 6 ký tự">
                                 <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('regPassword', this)" title="Ẩn/hiện mật khẩu">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
@@ -252,7 +235,7 @@
                                 <span class="auth-field-icon"><i class="fa-solid fa-phone"></i></span>
                                 <input type="tel" id="regPhone" name="phone" class="auth-field-input" required 
                                        value="<c:out value='${stickyRegPhone}' />"
-                                       placeholder="0912345678">
+                                       placeholder="0912 345 678">
                             </div>
                         </div>
                     </div>
@@ -268,17 +251,17 @@
                         </div>
                     </div>
 
-                    <!-- Row 4: Loại tài khoản -->
+                    <!-- Row 4: Loại tài khoản - Clean & Compact -->
                     <div class="auth-field-group" style="margin-bottom: 12px;">
-                        <label class="auth-field-label">Loại tài khoản đăng ký *</label>
+                        <label class="auth-field-label">Loại tài khoản</label>
                         <div class="auth-account-type-grid">
                             <label class="auth-type-radio-card ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'selected' : ''}">
                                 <input type="radio" name="accountType" id="typeCustomer" value="CUSTOMER" ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'checked' : ''} onchange="toggleSellerFields()" />
                                 <div class="type-radio-content">
                                     <div class="type-radio-icon">👤</div>
                                     <div class="type-radio-texts">
-                                        <strong>Khách Hàng</strong>
-                                        <span>Đặt món giao tận nơi</span>
+                                        <strong>Khách hàng</strong>
+                                        <span>Đặt món ăn</span>
                                     </div>
                                 </div>
                             </label>
@@ -287,8 +270,8 @@
                                 <div class="type-radio-content">
                                     <div class="type-radio-icon">🏪</div>
                                     <div class="type-radio-texts">
-                                        <strong>Chủ Quán Ăn</strong>
-                                        <span>Đăng món &amp; bán hàng</span>
+                                        <strong>Chủ quán ăn</strong>
+                                        <span>Bán hàng</span>
                                     </div>
                                 </div>
                             </label>
@@ -298,7 +281,7 @@
                     <!-- Extra Dynamic Field for Seller Mode -->
                     <div class="auth-seller-input-box" id="sellerFields" style="display: ${stickyAccountType eq 'SELLER' ? 'block' : 'none'};">
                         <label for="restaurantName" class="auth-field-label text-primary font-weight-bold">
-                            <i class="fa-solid fa-store mr-1"></i> Tên quán ăn / Nhà hàng của bạn *
+                            <i class="fa-solid fa-store mr-1"></i> Tên quán ăn / Nhà hàng *
                         </label>
                         <div class="auth-field-control">
                             <span class="auth-field-icon"><i class="fa-solid fa-utensils text-primary"></i></span>
@@ -309,13 +292,13 @@
                     </div>
 
                     <button type="submit" class="auth-primary-submit-btn" style="margin-top: 6px;">
-                        <span>Đăng Ký Tài Khoản Mới</span>
-                        <i class="fa-solid fa-user-check"></i>
+                        <span>Tạo tài khoản ngay</span>
+                        <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </form>
 
                 <div class="auth-tab-switch-footer">
-                    <span>Đã có tài khoản Utee?</span>
+                    <span>Đã có tài khoản?</span>
                     <a href="javascript:void(0)" onclick="switchAuthTab('loginTab')" class="auth-switch-link">Đăng nhập ngay</a>
                 </div>
             </div>
@@ -323,7 +306,7 @@
 
         <!-- Form Panel Footer Copyright -->
         <div class="auth-form-bottom-info">
-            <p>© 2026 Utee Food Delivery. Nền tảng đặt đồ ăn trực tuyến siêu tốc & an toàn.</p>
+            <p>© 2026 Utee Food Delivery. Nhanh chóng • Chuẩn vị • Tiện lợi.</p>
         </div>
     </div>
 </div>
@@ -342,15 +325,15 @@ function switchAuthTab(tabId) {
         btnRegister.classList.remove('active');
         tabLogin.classList.add('active');
         tabRegister.classList.remove('active');
-        if (title) title.innerText = 'Chào mừng bạn trở lại!';
-        if (desc) desc.innerText = 'Đăng nhập tài khoản để nhận voucher 30K và theo dõi đơn hàng';
+        if (title) title.innerText = 'Đăng nhập';
+        if (desc) desc.innerText = 'Mừng bạn quay lại với Utee';
     } else {
         btnRegister.classList.add('active');
         btnLogin.classList.remove('active');
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
-        if (title) title.innerText = 'Tạo tài khoản Utee';
-        if (desc) desc.innerText = 'Gia nhập Utee để nhận ngay voucher 30.000đ cho đơn hàng đầu tiên';
+        if (title) title.innerText = 'Tạo tài khoản';
+        if (desc) desc.innerText = 'Nhận ngay ưu đãi cho đơn hàng đầu tiên';
     }
 }
 
@@ -411,3 +394,4 @@ function toggleSellerFields() {
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
+
