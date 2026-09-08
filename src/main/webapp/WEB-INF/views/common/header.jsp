@@ -7,7 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${param.title != null ? param.title : "Utee - Đặt món ngon giao tận nơi trong 30 phút"}</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="shortcut icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
     <!-- Google Fonts: Be Vietnam Pro (Font chuẩn 100% tiếng Việt từ font-weight 300 đến 900, không bị lỗi dấu hay nhảy font) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

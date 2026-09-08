@@ -36,7 +36,13 @@ public class NotFoundServlet extends HttpServlet {
             return;
         }
 
-        // 2. Nếu là tài nguyên tĩnh thực tế có trên đĩa (CSS, JS, Hình ảnh, JSP...)
+        // 2. Nếu là request favicon.ico mặc định của trình duyệt
+        if ("/favicon.ico".equals(path)) {
+            req.getRequestDispatcher("/assets/images/logo/logo-favicon.png").forward(req, resp);
+            return;
+        }
+
+        // 3. Nếu là tài nguyên tĩnh thực tế có trên đĩa (CSS, JS, Hình ảnh, JSP...)
         try {
             if (getServletContext().getResource(path) != null) {
                 // Nhường lại cho DefaultServlet gốc của container phục vụ
