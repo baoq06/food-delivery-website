@@ -10,3 +10,5 @@ target/
 # AI Agent & Local Design Tokens
 .agents/
 design-system/
+
+src/main/resources/db.properties

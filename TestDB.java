@@ -15,26 +15,15 @@ public class TestDB {
             System.out.println("Connecting to TiDB...");
             Connection conn = DriverManager.getConnection(url, user, password);
             System.out.println("Connected successfully!");
-
             System.out.println("Running user registration test...");
             try { 
-                int userId = -1;
-                // Insert User
-                String insertUser = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES ('shippertest', '123456', 'Test Shipper', 'a@a.com', '0123456789', 'HCM', 'SHIPPER')";
-                java.sql.PreparedStatement ps = conn.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS);
-                ps.executeUpdate();
-                ResultSet generatedKeys = ps.getGeneratedKeys();
-                if (generatedKeys.next()) userId = generatedKeys.getInt(1);
-                
-                // Insert Driver
-                String insertDriver = "INSERT INTO drivers (user_id, name, phone, status) VALUES (" + userId + ", 'Test Shipper', '0123456789', 'OFFLINE')";
-                stmt.executeUpdate(insertDriver);
-                
-                System.out.println("Shipper user created perfectly!");
+                String insertOrder = "INSERT INTO orders (customer_name, phone, address, note, total_amount, payment_method, status) VALUES ('Khách Test Nổ Đơn', '0999999999', '123 Đường Test, HCM', 'Gọi khi tới', 150000, 'COD', 'CONFIRMED')";
+                Statement stmt = conn.createStatement();
+                stmt.executeUpdate(insertOrder);
+                System.out.println("Order CONFIRMED created perfectly for dispatch testing!");
             } catch(Exception e) { 
                 e.printStackTrace(); 
             }
-
 
             conn.close();
         } catch (Exception e) {
