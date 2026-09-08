@@ -19,6 +19,10 @@ public class Order implements Serializable {
     private String driverName;
     private String driverPhone;
     private Timestamp createdAt;
+    private Review review;
+
+    public Review getReview() { return review; }
+    public void setReview(Review review) { this.review = review; }
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {

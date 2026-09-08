@@ -7,6 +7,7 @@ import com.ute.fooddelivery.model.TopFoodStat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -191,6 +192,7 @@ public class OrderDAO {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, status);
+                    ps.setInt(2, orderId);
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -296,6 +298,57 @@ public class OrderDAO {
         }
         return null;
     }
+
+    public List<Order> getOrdersByUser(int userId) {
+        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
+                     "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
+                     "r.review_id, r.rating, r.comment " +
+                     "FROM orders o " +
+                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+                     "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+                     "WHERE o.user_id = ? " +
+                     "ORDER BY o.created_at DESC";
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setId(rs.getInt("order_id"));
+                    order.setCustomerName(rs.getString("customer_name"));
+                    order.setAddress(rs.getString("address"));
+                    order.setPhone(rs.getString("phone"));
+                    order.setTotalAmount(rs.getDouble("total_amount"));
+                    order.setStatus(rs.getString("status"));
+                    order.setCreatedAt(rs.getTimestamp("created_at"));
+                    order.setDriverId(rs.getInt("driver_id"));
+                    if (rs.wasNull()) {
+                         order.setDriverId(null);
+                    } else {
+                         order.setDriverName(rs.getString("driver_name"));
+                         order.setDriverPhone(rs.getString("driver_phone"));
+                    }
+                    
+                    int reviewId = rs.getInt("review_id");
+                    if (!rs.wasNull()) {
+                        com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                        review.setReviewId(reviewId);
+                        review.setOrderId(order.getId());
+                        review.setRating(rs.getInt("rating"));
+                        review.setComment(rs.getString("comment"));
+                        order.setReview(review);
+                    }
+                    
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
 
     public List<Order> getOrdersByDriver(int driverId, String statusFilter) {
         List<Order> list = new ArrayList<>();

@@ -124,7 +124,7 @@
                                         <a href="${pageContext.request.contextPath}/merchant/shippers"><i class="fa-solid fa-motorcycle"></i> Danh sách shipper</a>
                                         <a href="${pageContext.request.contextPath}/merchant/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng của quán</a>
                                     </c:if>
-                                    <a href="${pageContext.request.contextPath}/cart"><i class="fa-solid fa-receipt"></i> Đơn hàng của tôi</a>
+                                    <a href="${pageContext.request.contextPath}/client/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng của tôi</a>
                                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
                                 </div>
                             </div>
