@@ -19,4 +19,13 @@ public class OrderService {
     public boolean cancelOrderByCustomer(int orderId, int userId) {
         return orderDAO.cancelOrderByCustomer(orderId, userId);
     }
+
+    public boolean confirmCustomerOrder(int orderId, int userId) {
+        return orderDAO.confirmCustomerOrder(orderId, userId);
+    }
+
+    public boolean confirmMerchantOrder(int orderId) {
+        return orderDAO.confirmMerchantOrder(orderId);
+    }
 }
+

@@ -62,6 +62,10 @@ public class MerchantService {
         return orderDAO.updateOrderStatus(orderId, status);
     }
 
+    public boolean confirmMerchantOrder(int orderId) {
+        return orderDAO.confirmMerchantOrder(orderId);
+    }
+
     public boolean assignDriver(int orderId, int driverId) {
         return orderDAO.assignDriver(orderId, driverId);
     }

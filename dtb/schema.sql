@@ -116,6 +116,8 @@ CREATE TABLE `orders` (
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `customer_confirmed` TINYINT(1) DEFAULT 0, -- Người dùng xác nhận đã nhận/đặt được hàng
+    `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý xong đơn hàng
     CONSTRAINT `fk_orders_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE,

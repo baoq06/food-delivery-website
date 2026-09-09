@@ -116,19 +116,42 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <span class="badge ${order.status eq 'DELIVERED' ? 'badge-done' : (order.status eq 'SHIPPING' ? 'badge-shipping' : (order.status eq 'PENDING' ? 'badge-pending' : (order.status eq 'CANCELLED' ? 'badge-cod' : 'badge-qr')))}">
-                                                <c:choose>
-                                                    <c:when test="${order.status eq 'PENDING'}">Chờ nhận đơn</c:when>
-                                                    <c:when test="${order.status eq 'CONFIRMED'}">Đang chế biến</c:when>
-                                                    <c:when test="${order.status eq 'SHIPPING'}">Đang giao</c:when>
-                                                    <c:when test="${order.status eq 'DELIVERED'}">Hoàn tất</c:when>
-                                                    <c:when test="${order.status eq 'CANCELLED'}">Đã hủy</c:when>
-                                                    <c:otherwise>${order.status}</c:otherwise>
-                                                </c:choose>
-                                            </span>
+                                            <div>
+                                                <span class="badge ${order.status eq 'DELIVERED' ? 'badge-done' : (order.status eq 'SHIPPING' ? 'badge-shipping' : (order.status eq 'PENDING' ? 'badge-pending' : (order.status eq 'CANCELLED' ? 'badge-cod' : 'badge-qr')))}">
+                                                    <c:choose>
+                                                        <c:when test="${order.status eq 'PENDING'}">Chờ nhận đơn</c:when>
+                                                        <c:when test="${order.status eq 'CONFIRMED'}">Đang chế biến</c:when>
+                                                        <c:when test="${order.status eq 'SHIPPING'}">Đang giao</c:when>
+                                                        <c:when test="${order.status eq 'DELIVERED'}">Hoàn tất</c:when>
+                                                        <c:when test="${order.status eq 'CANCELLED'}">Đã hủy</c:when>
+                                                        <c:otherwise>${order.status}</c:otherwise>
+                                                    </c:choose>
+                                                </span>
+                                            </div>
+                                            <c:if test="${order.status ne 'CANCELLED'}">
+                                                <div class="mt-1" style="font-size: 0.75rem; line-height: 1.3;">
+                                                    <c:choose>
+                                                        <c:when test="${order.fullyConfirmed}">
+                                                            <span style="color: #2ed573; font-weight: 600;">
+                                                                <i class="fa-solid fa-circle-check"></i> Khách đã nhận (Tính doanh thu)
+                                                            </span>
+                                                        </c:when>
+                                                        <c:when test="${order.merchantConfirmed and not order.customerConfirmed}">
+                                                            <span style="color: #ffa502; font-weight: 500;">
+                                                                <i class="fa-solid fa-clock"></i> Đang giao - Chờ khách nhận hàng
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span style="color: #a4b0be;">
+                                                                <i class="fa-solid fa-circle-dot"></i> Chưa gán shipper
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </c:if>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-inline-flex gap-2">
+                                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
                                                 <c:if test="${order.status eq 'PENDING'}">
                                                     <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
                                                         <input type="hidden" name="action" value="updateStatus" />
@@ -160,13 +183,21 @@
                                                     </c:choose>
                                                 </c:if>
 
+                                                <c:if test="${order.status eq 'SHIPPING' or (order.status eq 'CONFIRMED' and not empty order.driverName)}">
+                                                    <c:if test="${order.merchantConfirmed and not order.customerConfirmed}">
+                                                        <span class="badge bg-warning text-dark" style="font-size: 0.78rem;">
+                                                            <i class="fa-solid fa-clock"></i> Đợi khách nhận hàng
+                                                        </span>
+                                                    </c:if>
+                                                </c:if>
+
                                                 <c:if test="${order.status eq 'SHIPPING'}">
                                                     <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
                                                         <input type="hidden" name="action" value="updateStatus" />
                                                         <input type="hidden" name="orderId" value="${order.id}" />
                                                         <input type="hidden" name="newStatus" value="DELIVERED" />
                                                         <button type="submit" class="btn btn-outline btn-sm text-success border-success">
-                                                            <i class="fa-solid fa-circle-check"></i> Đã Giao Xong
+                                                            <i class="fa-solid fa-truck-ramp-box"></i> Đã Giao Xong
                                                         </button>
                                                     </form>
                                                 </c:if>

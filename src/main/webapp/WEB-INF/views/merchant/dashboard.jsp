@@ -111,6 +111,21 @@
                                                         <c:otherwise>${order.status}</c:otherwise>
                                                     </c:choose>
                                                 </span>
+                                                <c:if test="${order.status ne 'CANCELLED'}">
+                                                    <div style="font-size: 0.72rem; color: #666; margin-top: 3px;">
+                                                        <c:choose>
+                                                            <c:when test="${order.fullyConfirmed}">
+                                                                <span class="text-success font-weight-bold"><i class="fa-solid fa-circle-check"></i> Khách đã nhận (Tính doanh thu)</span>
+                                                            </c:when>
+                                                            <c:when test="${order.merchantConfirmed and not order.customerConfirmed}">
+                                                                <span class="text-warning font-weight-bold"><i class="fa-solid fa-clock"></i> Đợi khách nhận hàng</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted"><i class="fa-solid fa-hourglass"></i> Chờ xử lý</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </c:if>
                                             </td>
                                             <td>
                                                 <c:choose>

@@ -73,11 +73,15 @@ public class ProfileController extends HttpServlet {
             req.setAttribute("successMessage", "Đổi mật khẩu thành công! Hãy ghi nhớ mật khẩu mới của bạn.");
         } else if ("order_cancelled".equals(success)) {
             req.setAttribute("successMessage", "Đã hủy đơn hàng thành công!");
+        } else if ("order_confirmed".equals(success)) {
+            req.setAttribute("successMessage", "Bạn đã xác nhận nhận hàng thành công! Cảm ơn bạn đã sử dụng dịch vụ.");
         }
 
         String error = req.getParameter("error");
         if ("cancel_failed".equals(error)) {
             req.setAttribute("errorMessage", "Không thể hủy đơn hàng này (đơn đã được giao hoặc không hợp lệ).");
+        } else if ("confirm_failed".equals(error)) {
+            req.setAttribute("errorMessage", "Không thể xác nhận đơn hàng lúc này.");
         }
 
         req.setAttribute("user", currentUser);
@@ -186,6 +190,20 @@ public class ProfileController extends HttpServlet {
                 return;
             } catch (Exception e) {
                 resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
+                return;
+            }
+        } else if ("confirm_received".equalsIgnoreCase(action)) {
+            try {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
+                if (confirmed) {
+                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                }
+                return;
+            } catch (Exception e) {
+                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
                 return;
             }
         }

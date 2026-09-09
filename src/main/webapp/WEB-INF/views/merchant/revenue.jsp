@@ -70,7 +70,7 @@
                 <div class="stat-info">
                     <span class="stat-title">Tổng Doanh Thu Kỳ Này</span>
                     <h3 class="stat-val text-primary"><fmt:formatNumber value="${totalRevenue}" type="number" /> đ</h3>
-                    <span class="stat-trend trend-up"><i class="fa-solid fa-check"></i> Đơn hoàn thành &amp; đang giao</span>
+                    <span class="stat-trend trend-up"><i class="fa-solid fa-circle-check"></i> Đã duyệt xác nhận 2 bên</span>
                 </div>
             </div>
 
@@ -217,7 +217,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-file-invoice-dollar text-success"></i> Đơn Hàng Thực Tế Cấu Thành Doanh Thu</h3>
-                    <span class="table-card-sub">Minh bạch từng đơn hàng và phương thức thanh toán</span>
+                    <span class="table-card-sub">Minh bạch từng đơn hàng đã được cả hai bên (khách &amp; quán) xác nhận</span>
                 </div>
             </div>
 

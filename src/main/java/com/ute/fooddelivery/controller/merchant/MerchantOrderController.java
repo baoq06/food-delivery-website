@@ -67,6 +67,14 @@ public class MerchantOrderController extends HttpServlet {
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể cập nhật trạng thái đơn!");
                 }
+            } else if ("merchantConfirm".equalsIgnoreCase(action)) {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                boolean success = merchantService.confirmMerchantOrder(orderId);
+                if (success) {
+                    req.getSession().setAttribute("flashMessage", "Đã xác nhận xử lý xong đơn hàng #" + orderId + "! Khi cả khách hàng và quán cùng xác nhận, đơn sẽ được tính vào doanh thu.");
+                } else {
+                    req.getSession().setAttribute("flashError", "Không thể xác nhận xử lý đơn hàng!");
+                }
             } else if ("assignDriver".equalsIgnoreCase(action)) {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 int driverId = Integer.parseInt(req.getParameter("driverId"));

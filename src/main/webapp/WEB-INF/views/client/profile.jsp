@@ -321,7 +321,7 @@
                                         </c:when>
                                         <c:when test="${order.status eq 'DELIVERED'}">
                                             <span class="order-status-badge status-delivered">
-                                                <i class="fa-solid fa-circle-check"></i> Giao thành công
+                                                <i class="fa-solid fa-circle-check"></i> Đã hoàn tất
                                             </span>
                                         </c:when>
                                         <c:when test="${order.status eq 'CANCELLED'}">
@@ -333,14 +333,35 @@
                                             <span class="order-status-badge">${order.status}</span>
                                         </c:otherwise>
                                     </c:choose>
+                                    <c:if test="${order.status ne 'CANCELLED'}">
+                                        <div style="font-size: 0.78rem; margin-top: 4px; text-align: right;">
+                                            <c:choose>
+                                                <c:when test="${order.customerConfirmed}">
+                                                    <span class="text-success font-weight-bold">
+                                                        <i class="fa-solid fa-circle-check"></i> Bạn đã nhận hàng thành công
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed}">
+                                                    <span class="text-warning font-weight-bold">
+                                                        <i class="fa-solid fa-motorcycle"></i> Quán đã giao shipper - Chờ bạn xác nhận nhận món
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="text-muted">
+                                                        <i class="fa-solid fa-clock"></i> Đang chờ quán tiếp nhận &amp; gán shipper
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </div>
+                                    </c:if>
                                 </div>
                             </div>
 
                             <!-- Driver Info (nếu có tài xế nhận giao) -->
                             <c:if test="${not empty order.driverName}">
-                                <div class="order-driver-banner">
+                                <div class="order-driver-banner ${(order.customerConfirmed or order.status eq 'DELIVERED') ? 'banner-delivered' : ''}">
                                     <div class="driver-banner-left">
-                                        <i class="fa-solid fa-helmet-safety text-primary"></i>
+                                        <i class="fa-solid ${(order.customerConfirmed or order.status eq 'DELIVERED') ? 'fa-circle-check text-success' : 'fa-helmet-safety text-primary'}"></i>
                                         <span>Tài xế phụ trách: <strong>${order.driverName}</strong></span>
                                         <c:if test="${not empty order.driverPhone}">
                                             <a href="tel:${order.driverPhone}" class="driver-phone-link" title="Gọi cho tài xế">
@@ -348,7 +369,28 @@
                                             </a>
                                         </c:if>
                                     </div>
-                                    <span class="driver-banner-tag"><i class="fa-solid fa-location-dot"></i> Đang di chuyển</span>
+                                    <c:choose>
+                                        <c:when test="${order.customerConfirmed or order.status eq 'DELIVERED'}">
+                                            <span class="driver-banner-tag" style="color: #16a34a;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã giao thành công
+                                            </span>
+                                        </c:when>
+                                        <c:when test="${order.status eq 'CANCELLED'}">
+                                            <span class="driver-banner-tag text-muted">
+                                                <i class="fa-solid fa-ban"></i> Đơn đã hủy
+                                            </span>
+                                        </c:when>
+                                        <c:when test="${order.status eq 'SHIPPING'}">
+                                            <span class="driver-banner-tag" style="color: var(--primary-color);">
+                                                <i class="fa-solid fa-location-dot"></i> Đang di chuyển giao hàng
+                                            </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="driver-banner-tag" style="color: #0284c7;">
+                                                <i class="fa-solid fa-motorcycle"></i> Đã nhận đơn
+                                            </span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                             </c:if>
 
@@ -414,7 +456,16 @@
                                     </div>
 
                                     <div class="order-actions">
-                                        <c:if test="${order.status eq 'PENDING' or order.status eq 'CONFIRMED'}">
+                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed)}">
+                                            <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline;">
+                                                <input type="hidden" name="action" value="confirm_received">
+                                                <input type="hidden" name="orderId" value="${order.id}">
+                                                <button type="submit" class="btn btn-success btn-sm" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                                    <i class="fa-solid fa-circle-check"></i> Đã nhận được hàng
+                                                </button>
+                                            </form>
+                                        </c:if>
+                                        <c:if test="${order.status eq 'PENDING'}">
                                             <form action="${pageContext.request.contextPath}/profile" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #FZ-${order.id} không?');" style="display:inline;">
                                                 <input type="hidden" name="action" value="cancel_order">
                                                 <input type="hidden" name="orderId" value="${order.id}">

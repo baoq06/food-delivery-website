@@ -19,6 +19,8 @@ public class Order implements Serializable {
     private String driverName;
     private String driverPhone;
     private Timestamp createdAt;
+    private boolean customerConfirmed;
+    private boolean merchantConfirmed;
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {
@@ -27,6 +29,12 @@ public class Order implements Serializable {
     public Order(int id, Integer userId, String customerName, String phone, String address, 
                  String note, double totalAmount, String paymentMethod, String status, 
                  Integer driverId, Timestamp createdAt) {
+        this(id, userId, customerName, phone, address, note, totalAmount, paymentMethod, status, driverId, createdAt, false, false);
+    }
+
+    public Order(int id, Integer userId, String customerName, String phone, String address, 
+                 String note, double totalAmount, String paymentMethod, String status, 
+                 Integer driverId, Timestamp createdAt, boolean customerConfirmed, boolean merchantConfirmed) {
         this.id = id;
         this.userId = userId;
         this.customerName = customerName;
@@ -38,6 +46,8 @@ public class Order implements Serializable {
         this.status = status;
         this.driverId = driverId;
         this.createdAt = createdAt;
+        this.customerConfirmed = customerConfirmed;
+        this.merchantConfirmed = merchantConfirmed;
     }
 
     public int getId() {
@@ -150,5 +160,25 @@ public class Order implements Serializable {
 
     public void setDriverPhone(String driverPhone) {
         this.driverPhone = driverPhone;
+    }
+
+    public boolean isCustomerConfirmed() {
+        return customerConfirmed;
+    }
+
+    public void setCustomerConfirmed(boolean customerConfirmed) {
+        this.customerConfirmed = customerConfirmed;
+    }
+
+    public boolean isMerchantConfirmed() {
+        return merchantConfirmed;
+    }
+
+    public void setMerchantConfirmed(boolean merchantConfirmed) {
+        this.merchantConfirmed = merchantConfirmed;
+    }
+
+    public boolean isFullyConfirmed() {
+        return customerConfirmed && merchantConfirmed;
     }
 }
