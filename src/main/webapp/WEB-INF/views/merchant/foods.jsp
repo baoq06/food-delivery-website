@@ -10,30 +10,34 @@
 <div class="admin-dashboard-container">
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
 
-    <div class="container section pt-0">
-        <!-- Toolbar Tìm Kiếm & Nút Đăng Món Mới -->
-        <div class="admin-header-box mb-3 py-3">
-            <form action="${pageContext.request.contextPath}/merchant/foods" method="GET" class="d-flex align-items-center gap-3 flex-wrap flex-grow-1">
-                <div style="position: relative; flex: 1; min-width: 240px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 12px; color: #999;"></i>
-                    <input type="text" name="keyword" value="${keyword}" placeholder="Tìm theo tên món hoặc mô tả..." class="form-control" style="padding-left: 38px;" />
+    <div class="container pb-5">
+        <!-- Toolbar Tìm Kiếm, Lọc Danh Mục & Nút Đăng Món Mới -->
+        <div class="merchant-food-toolbar">
+            <form action="${pageContext.request.contextPath}/merchant/foods" method="GET" class="merchant-food-search-form">
+                <div class="merchant-search-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="keyword" value="${keyword}" placeholder="Tìm theo tên món hoặc mô tả món ăn..." />
                 </div>
-                <div style="min-width: 200px;">
-                    <select name="categoryId" class="form-select" onchange="this.form.submit()">
+                <div class="merchant-category-select-wrap">
+                    <select name="categoryId" onchange="this.form.submit()">
                         <option value="ALL">-- Tất cả danh mục --</option>
                         <c:forEach var="cat" items="${categories}">
                             <option value="${cat.id}" ${selectedCategoryId == cat.id ? 'selected' : ''}>${cat.imageIcon} ${cat.name}</option>
                         </c:forEach>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Lọc Món</button>
+                <button type="submit" class="merchant-filter-submit-btn">
+                    <i class="fa-solid fa-filter"></i> <span>Lọc Món</span>
+                </button>
                 <c:if test="${not empty keyword || not empty selectedCategoryId}">
-                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-outline btn-sm">Xóa Lọc</a>
+                    <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-filter-clear-btn" title="Xóa bộ lọc tìm kiếm">
+                        <i class="fa-solid fa-xmark"></i> <span>Xóa lọc</span>
+                    </a>
                 </c:if>
             </form>
             <div>
-                <button type="button" class="btn btn-primary" onclick="openAddFoodModal()">
-                    <i class="fa-solid fa-plus-circle"></i> <span>+ Đăng Món Mới</span>
+                <button type="button" class="merchant-add-food-btn" onclick="openAddFoodModal()">
+                    <i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>
                 </button>
             </div>
         </div>
@@ -43,7 +47,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-bowl-food text-primary"></i> Danh Sách Món Ăn Của Quán</h3>
-                    <span class="table-card-sub">Tổng cộng có <strong>${empty foods ? 0 : foods.size()}</strong> món ăn trong thực đơn</span>
+                    <span class="table-card-sub">Tổng cộng có <strong>${empty foods ? 0 : foods.size()}</strong> món ăn trong thực đơn của quán</span>
                 </div>
             </div>
 
@@ -51,12 +55,12 @@
                 <table class="admin-data-table">
                     <thead>
                         <tr>
-                            <th>Ảnh</th>
-                            <th>Tên Món Ăn</th>
-                            <th>Danh Mục</th>
-                            <th>Giá Bán</th>
-                            <th>Trạng Thái</th>
-                            <th class="text-end">Thao Tác</th>
+                            <th style="width: 80px;">Hình Ảnh</th>
+                            <th>Tên Món Ăn &amp; Mô Tả</th>
+                            <th style="width: 170px;">Danh Mục</th>
+                            <th style="width: 140px;">Giá Bán</th>
+                            <th style="width: 140px;">Trạng Thái</th>
+                            <th class="text-end" style="width: 130px;">Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,42 +68,49 @@
                             <c:when test="${not empty foods}">
                                 <c:forEach var="food" items="${foods}">
                                     <tr>
-                                        <td style="width: 70px;">
-                                            <img src="${food.imageUrl}" alt="${food.name}" style="width: 54px; height: 54px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fit=crop'" />
+                                        <td>
+                                            <img src="${food.imageUrl}" alt="${food.name}" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 2px 6px rgba(0,0,0,0.06);" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fit=crop'" />
                                         </td>
                                         <td>
-                                            <strong style="font-size: 1rem; display: block;">${food.name}</strong>
-                                            <small class="text-muted" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 320px;">
-                                                ${food.description}
+                                            <div class="fw-bold text-dark" style="font-size: 0.98rem;">${food.name}</div>
+                                            <small class="text-muted mt-1" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 360px; line-height: 1.35;">
+                                                ${empty food.description ? 'Chưa có mô tả chi tiết' : food.description}
                                             </small>
                                         </td>
                                         <td>
-                                            <span class="badge badge-cod">${food.categoryName}</span>
+                                            <span class="badge badge-cod" style="font-size: 0.8rem;">
+                                                <i class="fa-solid fa-tag me-1 text-muted"></i> ${food.categoryName}
+                                            </span>
                                         </td>
-                                        <td class="font-weight-bold text-primary fs-6">
-                                            <fmt:formatNumber value="${food.price}" type="number" /> đ
+                                        <td>
+                                            <span class="fw-bold text-primary" style="font-size: 1.05rem;">
+                                                <fmt:formatNumber value="${food.price}" type="number" /> đ
+                                            </span>
                                         </td>
                                         <td>
                                             <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" style="display:inline;">
                                                 <input type="hidden" name="action" value="toggle" />
                                                 <input type="hidden" name="foodId" value="${food.id}" />
                                                 <input type="hidden" name="status" value="${!food.available}" />
-                                                <button type="submit" class="btn btn-sm ${food.available ? 'btn-outline border-success text-success' : 'btn-outline border-warning text-warning'}" style="border-radius: 20px; font-weight: 600; padding: 4px 12px;" title="Bấm để bật/tắt còn món">
-                                                    <i class="fa-solid ${food.available ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                                                <button type="submit" class="btn btn-sm ${food.available ? 'btn-outline border-success text-success' : 'btn-outline border-secondary text-muted'}" style="border-radius: 20px; font-weight: 600; padding: 4px 12px; font-size: 0.8rem;" title="Bấm để chuyển trạng thái còn món / hết món">
+                                                    <i class="fa-solid ${food.available ? 'fa-circle-check text-success' : 'fa-circle-xmark text-danger'} me-1"></i>
                                                     ${food.available ? 'Đang Bán' : 'Tạm Hết'}
                                                 </button>
                                             </form>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-inline-flex gap-2">
-                                                <button type="button" class="btn btn-outline btn-sm" 
-                                                        onclick="openEditFoodModal(${food.id}, '${food.name}', ${food.price}, ${food.categoryId}, '${food.imageUrl}', '${food.description}', ${food.available})">
-                                                    <i class="fa-solid fa-pen-to-square"></i> Sửa
+                                            <div class="d-inline-flex gap-2 align-items-center">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" style="border-radius: 8px;"
+                                                        onclick="openEditFoodModal(${food.id}, '${food.name}', ${food.price}, ${food.categoryId}, '${food.imageUrl}', '${food.description}', ${food.available})"
+                                                        title="Chỉnh sửa món">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
-                                                <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa món này không?');">
+                                                <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa món này khỏi thực đơn?');">
                                                     <input type="hidden" name="action" value="delete" />
                                                     <input type="hidden" name="foodId" value="${food.id}" />
-                                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px;" title="Xóa món ăn">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
                                                 </form>
                                             </div>
                                         </td>
@@ -107,25 +118,27 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <div style="font-size: 2.5rem; margin-bottom: 12px;">🍲</div>
-                                            <c:choose>
-                                                <c:when test="${not empty keyword || not empty selectedCategoryId}">
-                                                    <h4 style="font-size: 1.1rem; color: #444; margin-bottom: 6px;">Không tìm thấy món ăn nào phù hợp với bộ lọc!</h4>
-                                                    <p class="text-muted small">Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác.</p>
-                                                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-outline btn-sm mt-2">Xóa bộ lọc</a>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <h4 style="font-size: 1.15rem; color: #444; margin-bottom: 6px;">Thực đơn của quán hiện đang trống!</h4>
-                                                    <p class="text-muted small">Hãy thêm các món ăn thơm ngon đầu tiên của quán để bắt đầu phục vụ khách hàng.</p>
-                                                    <button class="btn btn-primary btn-sm mt-2" onclick="openAddFoodModal()">
-                                                        <i class="fa-solid fa-plus-circle"></i> + Đăng Món Đầu Tiên
-                                                    </button>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <div style="font-size: 2.5rem; margin-bottom: 12px; color: #bdc3c7;">
+                                            <i class="fa-solid fa-utensils"></i>
+                                        </div>
+                                        <c:choose>
+                                            <c:when test="${not empty keyword || not empty selectedCategoryId}">
+                                                <div class="fw-bold fs-6 text-dark mb-1">Không tìm thấy món ăn nào phù hợp với bộ lọc!</div>
+                                                <p class="text-muted small">Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác.</p>
+                                                <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-outline btn-sm mt-2">Xóa bộ lọc</a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="fw-bold fs-6 text-dark mb-1">Thực đơn của quán hiện đang trống</div>
+                                                <p class="text-muted small">Hãy thêm các món ăn thơm ngon đầu tiên của quán để bắt đầu phục vụ thực khách.</p>
+                                                <button class="btn btn-primary btn-sm mt-2" onclick="openAddFoodModal()">
+                                                    <i class="fa-solid fa-plus"></i> Đăng Món Đầu Tiên
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                </tr>
                             </c:otherwise>
                         </c:choose>
                     </tbody>
@@ -138,28 +151,30 @@
 <!-- Modal Thêm / Chỉnh Sửa Món Ăn -->
 <div id="foodModal" class="merchant-modal-backdrop" style="display: none;">
     <div class="merchant-modal-box">
-        <div class="modal-header">
-            <h3 id="modalTitle"><i class="fa-solid fa-plus-circle text-primary"></i> Đăng Món Ăn Mới</h3>
-            <button type="button" class="modal-close-btn" onclick="closeFoodModal()">&times;</button>
+        <div class="merchant-modal-header">
+            <h3 class="merchant-modal-title" id="modalTitle">
+                <i class="fa-solid fa-plus-circle text-primary"></i> Đăng Món Ăn Mới
+            </h3>
+            <button type="button" class="merchant-modal-close" onclick="closeFoodModal()">&times;</button>
         </div>
         <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" id="foodForm">
             <input type="hidden" name="action" id="formAction" value="add" />
             <input type="hidden" name="foodId" id="foodId" value="" />
 
-            <div class="modal-body">
+            <div class="merchant-modal-body">
                 <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Tên món ăn <span class="text-danger">*</span></label>
-                    <input type="text" name="name" id="foodName" required placeholder="Ví dụ: Cơm sườn nướng mật ong" class="form-control" />
+                    <label class="form-label fw-bold mb-1">Tên món ăn <span class="text-danger">*</span></label>
+                    <input type="text" name="name" id="foodName" required placeholder="Ví dụ: Cơm sườn nướng mật ong" class="form-control" style="border-radius: 10px;" />
                 </div>
 
-                <div class="row-fields mb-3">
-                    <div class="form-group col-half">
-                        <label class="form-label font-weight-bold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
-                        <input type="number" name="price" id="foodPrice" required min="1000" step="1000" placeholder="Ví dụ: 55000" class="form-control" />
+                <div class="row mb-3">
+                    <div class="col-md-6 form-group">
+                        <label class="form-label fw-bold mb-1">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                        <input type="number" name="price" id="foodPrice" required min="1000" step="1000" placeholder="Ví dụ: 55000" class="form-control" style="border-radius: 10px;" />
                     </div>
-                    <div class="form-group col-half">
-                        <label class="form-label font-weight-bold">Danh mục ẩm thực <span class="text-danger">*</span></label>
-                        <select name="categoryId" id="foodCategoryId" class="form-select" required>
+                    <div class="col-md-6 form-group">
+                        <label class="form-label fw-bold mb-1">Danh mục món <span class="text-danger">*</span></label>
+                        <select name="categoryId" id="foodCategoryId" class="form-select form-control" required style="border-radius: 10px; height: 44px;">
                             <c:forEach var="cat" items="${categories}">
                                 <option value="${cat.id}">${cat.imageIcon} ${cat.name}</option>
                             </c:forEach>
@@ -168,27 +183,31 @@
                 </div>
 
                 <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Link hình ảnh món ăn (URL)</label>
-                    <input type="url" name="imageUrl" id="foodImageUrl" placeholder="https://..." class="form-control" oninput="previewImage(this.value)" />
+                    <label class="form-label fw-bold mb-1">Link hình ảnh món ăn (URL)</label>
+                    <input type="url" name="imageUrl" id="foodImageUrl" placeholder="https://..." class="form-control" oninput="previewImage(this.value)" style="border-radius: 10px;" />
                     <div class="image-preview-box mt-2" id="imagePreviewContainer" style="display: none;">
-                        <img id="imagePreview" src="" alt="Xem trước ảnh" style="max-height: 120px; border-radius: 8px; border: 1px solid #ddd;" />
+                        <img id="imagePreview" src="" alt="Xem trước ảnh" style="max-height: 120px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.05);" />
                     </div>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Mô tả món ăn</label>
-                    <textarea name="description" id="foodDescription" rows="3" placeholder="Thành phần, hương vị đặc trưng..." class="form-control"></textarea>
+                    <label class="form-label fw-bold mb-1">Mô tả món ăn</label>
+                    <textarea name="description" id="foodDescription" rows="3" placeholder="Thành phần dinh dưỡng, hương vị đặc trưng..." class="form-control" style="border-radius: 10px;"></textarea>
                 </div>
 
-                <div class="form-check">
-                    <input type="checkbox" name="isAvailable" id="foodIsAvailable" value="true" checked class="form-check-input" />
-                    <label for="foodIsAvailable" class="form-check-label">Mở bán món ăn ngay sau khi lưu</label>
+                <div class="form-check d-flex align-items-center gap-2 p-2 rounded-2" style="background: var(--surface-light); border: 1px solid var(--border-color);">
+                    <input type="checkbox" name="isAvailable" id="foodIsAvailable" value="true" checked class="form-check-input ms-1" />
+                    <label for="foodIsAvailable" class="form-check-label fw-medium text-dark cursor-pointer mb-0" style="font-size: 0.88rem;">
+                        Mở bán món ăn ngay sau khi lưu
+                    </label>
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="merchant-modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeFoodModal()">Hủy bỏ</button>
-                <button type="submit" class="btn btn-primary" id="btnSubmitForm">Lưu Món Ăn</button>
+                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1" id="btnSubmitForm">
+                    <i class="fa-solid fa-check"></i> Lưu Món Ăn
+                </button>
             </div>
         </form>
     </div>
@@ -205,7 +224,7 @@
         document.getElementById('foodDescription').value = '';
         document.getElementById('foodIsAvailable').checked = true;
         document.getElementById('imagePreviewContainer').style.display = 'none';
-        document.getElementById('btnSubmitForm').innerText = 'Đăng Món Mới';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-plus"></i> Đăng Món Mới';
         document.getElementById('foodModal').style.display = 'flex';
     }
 
@@ -220,7 +239,7 @@
         document.getElementById('foodDescription').value = desc;
         document.getElementById('foodIsAvailable').checked = isAvailable;
         previewImage(imageUrl);
-        document.getElementById('btnSubmitForm').innerText = 'Cập Nhật Món';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-check"></i> Cập Nhật Món';
         document.getElementById('foodModal').style.display = 'flex';
     }
 

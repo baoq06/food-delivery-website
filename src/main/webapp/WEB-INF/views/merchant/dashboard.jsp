@@ -10,17 +10,17 @@
 <div class="admin-dashboard-container">
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
 
-    <div class="container section pt-0">
-        <!-- Metric Stat Cards Đồng Bộ Với Trang Admin -->
-        <div class="admin-stats-grid">
+    <div class="container pb-5">
+        <!-- 4 Metric KPI Stat Cards -->
+        <div class="admin-stats-grid merchant-stats-top">
             <div class="admin-stat-card card-revenue">
                 <div class="stat-icon-wrap icon-red">
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-title">Doanh Thu Toàn Thời Gian</span>
+                    <span class="stat-title">Doanh Thu Tích Lũy</span>
                     <h3 class="stat-val text-primary"><fmt:formatNumber value="${kpis.totalRevenue}" type="number" /> đ</h3>
-                    <span class="stat-trend trend-up"><i class="fa-solid fa-clock"></i> Hôm nay: <fmt:formatNumber value="${kpis.todayRevenue}" type="number" /> đ</span>
+                    <span class="stat-sub text-success"><i class="fa-solid fa-calendar-day"></i> Hôm nay: <strong><fmt:formatNumber value="${kpis.todayRevenue}" type="number" /> đ</strong></span>
                 </div>
             </div>
 
@@ -29,9 +29,9 @@
                     <i class="fa-solid fa-receipt"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-title">Tổng Đơn Hàng</span>
+                    <span class="stat-title">Tổng Số Đơn Hàng</span>
                     <h3 class="stat-val">${kpis.totalOrders} đơn</h3>
-                    <span class="stat-sub text-success"><i class="fa-solid fa-circle-check"></i> Đã giao: ${kpis.deliveredOrders} đơn</span>
+                    <span class="stat-sub text-success"><i class="fa-solid fa-circle-check"></i> Đã giao thành công: <strong>${kpis.deliveredOrders}</strong></span>
                 </div>
             </div>
 
@@ -41,8 +41,8 @@
                 </div>
                 <div class="stat-info">
                     <span class="stat-title">Đơn Cần Chế Biến</span>
-                    <h3 class="stat-val text-warning">${kpis.pendingOrders} đơn</h3>
-                    <span class="stat-sub"><a href="${pageContext.request.contextPath}/merchant/orders?status=PENDING" class="text-primary font-weight-bold">Xử lý ngay &rarr;</a></span>
+                    <h3 class="stat-val" style="color: #d97706;">${kpis.pendingOrders} đơn</h3>
+                    <span class="stat-sub"><a href="${pageContext.request.contextPath}/merchant/orders?status=PENDING" class="text-primary font-weight-bold">Xử lý nhận đơn &rarr;</a></span>
                 </div>
             </div>
 
@@ -51,35 +51,38 @@
                     <i class="fa-solid fa-motorcycle"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-title">Shipper Đang Sẵn Sàng</span>
-                    <h3 class="stat-val text-info">${availableShipperCount} tài xế</h3>
-                    <span class="stat-sub"><a href="${pageContext.request.contextPath}/merchant/shippers" class="text-primary font-weight-bold">Xem danh sách &rarr;</a></span>
+                    <span class="stat-title">Tài Xế Đang Sẵn Sàng</span>
+                    <h3 class="stat-val" style="color: #2563eb;">${availableShipperCount} tài xế</h3>
+                    <span class="stat-sub"><a href="${pageContext.request.contextPath}/merchant/shippers" class="text-primary font-weight-bold">Xem đội ngũ shipper &rarr;</a></span>
                 </div>
             </div>
         </div>
 
-        <!-- 2 Cột: Bảng Đơn Gần Đây & Top Món Bán Chạy -->
-        <div class="merchant-grid-split mt-4">
+        <!-- Bento Grid: Bảng Đơn Gần Đây (Rộng hơn) & Top Món Bán Chạy (Gọn hơn) -->
+        <div class="merchant-dashboard-grid">
             <!-- Cột Trái: Đơn Gần Đây -->
             <div class="admin-table-card">
                 <div class="admin-table-header">
                     <div>
-                        <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Đặt Hàng Gần Đây Của Quán</h3>
-                        <span class="table-card-sub">Theo dõi tiến trình chế biến và giao hàng thực tế</span>
+                        <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Hàng Gần Đây Của Quán</h3>
+                        <span class="table-card-sub">Theo dõi tiến độ nhận đơn, chế biến và bàn giao shipper</span>
                     </div>
-                    <a href="${pageContext.request.contextPath}/merchant/orders" class="btn btn-outline btn-sm">Xem Tất Cả &rarr;</a>
+                    <a href="${pageContext.request.contextPath}/merchant/orders" class="btn-merchant-quick">
+                        <span>Xem tất cả</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
 
                 <div class="table-responsive">
                     <table class="admin-data-table">
                         <thead>
                             <tr>
-                                <th>Mã Đơn</th>
-                                <th>Khách Hàng</th>
+                                <th style="width: 90px;">Mã Đơn</th>
+                                <th style="width: 160px;">Khách Hàng</th>
                                 <th>Món Đặt</th>
-                                <th>Tổng Tiền</th>
-                                <th>Trạng Thái</th>
-                                <th>Tài Xế</th>
+                                <th style="width: 120px;">Tổng Tiền</th>
+                                <th style="width: 130px;">Trạng Thái</th>
+                                <th style="width: 130px;">Tài Xế</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,23 +90,25 @@
                                 <c:when test="${not empty recentOrders}">
                                     <c:forEach var="order" items="${recentOrders}">
                                         <tr>
-                                            <td><strong>#DH-${order.id}</strong></td>
+                                            <td><strong style="color: #0f172a;">#DH-${order.id}</strong></td>
                                             <td>
-                                                <strong>${order.customerName}</strong><br/>
-                                                <small class="text-muted">${order.phone}</small>
+                                                <strong style="color: #1e293b;">${order.customerName}</strong><br/>
+                                                <small class="text-muted"><i class="fa-solid fa-phone"></i> ${order.phone}</small>
                                             </td>
                                             <td>
-                                                <div style="max-width: 200px; font-size: 0.88rem;">
+                                                <div style="font-size: 0.86rem; line-height: 1.4;">
                                                     <c:forEach var="item" items="${order.items}" varStatus="loop">
-                                                        <span>${item.foodName} (x${item.quantity})<c:if test="${not loop.last}">, </c:if></span>
+                                                        <span>${item.foodName} &times; <strong>${item.quantity}</strong><c:if test="${not loop.last}">, </c:if></span>
                                                     </c:forEach>
                                                 </div>
                                             </td>
-                                            <td class="font-weight-bold text-primary"><fmt:formatNumber value="${order.totalAmount}" type="number" /> đ</td>
+                                            <td class="font-weight-bold text-primary">
+                                                <fmt:formatNumber value="${order.totalAmount}" type="number" /> đ
+                                            </td>
                                             <td>
-                                                <span class="badge ${order.status eq 'DELIVERED' ? 'badge-done' : (order.status eq 'SHIPPING' ? 'badge-shipping' : (order.status eq 'PENDING' ? 'badge-pending' : 'badge-qr'))}">
+                                                <span class="badge ${order.status eq 'DELIVERED' ? 'badge-done' : (order.status eq 'SHIPPING' ? 'badge-shipping' : (order.status eq 'PENDING' ? 'badge-pending' : (order.status eq 'CANCELLED' ? 'badge-cancelled' : 'badge-confirmed')))}">
                                                     <c:choose>
-                                                        <c:when test="${order.status eq 'PENDING'}">Chờ xác nhận</c:when>
+                                                        <c:when test="${order.status eq 'PENDING'}">Chờ nhận đơn</c:when>
                                                         <c:when test="${order.status eq 'CONFIRMED'}">Đang chế biến</c:when>
                                                         <c:when test="${order.status eq 'SHIPPING'}">Đang giao</c:when>
                                                         <c:when test="${order.status eq 'DELIVERED'}">Hoàn tất</c:when>
@@ -111,32 +116,21 @@
                                                         <c:otherwise>${order.status}</c:otherwise>
                                                     </c:choose>
                                                 </span>
-                                                <c:if test="${order.status ne 'CANCELLED'}">
-                                                    <div style="font-size: 0.72rem; color: #666; margin-top: 3px;">
-                                                        <c:choose>
-                                                            <c:when test="${order.fullyConfirmed}">
-                                                                <span class="text-success font-weight-bold"><i class="fa-solid fa-circle-check"></i> Khách đã nhận (Tính doanh thu)</span>
-                                                            </c:when>
-                                                            <c:when test="${order.merchantConfirmed and not order.customerConfirmed}">
-                                                                <span class="text-warning font-weight-bold"><i class="fa-solid fa-clock"></i> Đợi khách nhận hàng</span>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="text-muted"><i class="fa-solid fa-hourglass"></i> Chờ xử lý</span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                </c:if>
                                             </td>
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${not empty order.driverName}">
-                                                        <span class="text-success font-weight-bold"><i class="fa-solid fa-motorcycle"></i> ${order.driverName}</span>
+                                                        <span class="text-success font-weight-bold" style="font-size: 0.85rem;">
+                                                            <i class="fa-solid fa-motorcycle"></i> ${order.driverName}
+                                                        </span>
                                                     </c:when>
                                                     <c:when test="${order.status eq 'CANCELLED'}">
-                                                        <span class="text-muted">Chưa gán shipper</span>
+                                                        <span class="text-muted small">Đã hủy</span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <a href="${pageContext.request.contextPath}/merchant/shippers" class="text-muted"><i class="fa-solid fa-plus-circle"></i> Gán shipper</a>
+                                                        <a href="${pageContext.request.contextPath}/merchant/orders" class="text-primary font-weight-bold" style="font-size: 0.82rem;">
+                                                            <i class="fa-solid fa-user-plus"></i> Gán shipper
+                                                        </a>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
@@ -146,9 +140,9 @@
                                 <c:otherwise>
                                     <tr>
                                         <td colspan="6" class="text-center py-5 text-muted">
-                                            <div style="font-size: 2rem; margin-bottom: 8px;">📦</div>
-                                            <strong style="color: #666;">Chưa có đơn đặt hàng nào phát sinh!</strong>
-                                            <p class="small text-muted mb-0 mt-1">Khi khách hàng đặt món từ quán của bạn, danh sách và trạng thái giao hàng sẽ hiển thị tại đây.</p>
+                                            <div style="font-size: 2.2rem; margin-bottom: 8px;">📦</div>
+                                            <strong style="color: #334155;">Chưa có đơn đặt hàng nào phát sinh!</strong>
+                                            <p class="small text-muted mb-0 mt-1">Khi khách đặt món từ quán của bạn, danh sách đơn hàng sẽ xuất hiện trực tiếp tại đây.</p>
                                         </td>
                                     </tr>
                                 </c:otherwise>
@@ -158,14 +152,16 @@
                 </div>
             </div>
 
-            <!-- Cột Phải: Top Món Bán Chạy -->
+            <!-- Cột Phải: Top Món Bán Chạy & Thao Tác Nhanh -->
             <div class="admin-table-card">
                 <div class="admin-table-header">
                     <div>
-                        <h3 class="table-card-title"><i class="fa-solid fa-fire text-danger"></i> Top Món Bán Chạy</h3>
-                        <span class="table-card-sub">Món được khách đặt nhiều nhất</span>
+                        <h3 class="table-card-title"><i class="fa-solid fa-fire text-danger"></i> Món Bán Chạy Nhất</h3>
+                        <span class="table-card-sub">Top món ăn được yêu thích nhất</span>
                     </div>
-                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-outline btn-sm">Quản Lý Món</a>
+                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn-merchant-quick">
+                        <span>Xem menu</span>
+                    </a>
                 </div>
 
                 <div class="top-foods-list">
@@ -187,35 +183,16 @@
                             </c:forEach>
                         </c:when>
                         <c:otherwise>
-                            <div class="text-center py-5 text-muted">
+                            <div class="text-center py-4 text-muted">
                                 <div style="font-size: 2rem; margin-bottom: 8px;">🔥</div>
-                                <strong style="color: #666;">Chưa có dữ liệu món bán chạy!</strong>
-                                <p class="small text-muted mb-3 mt-1">Các món ăn được khách hàng ưa chuộng sẽ được tự động xếp hạng sau khi đơn hoàn tất.</p>
-                                <a href="${pageContext.request.contextPath}/merchant/foods?action=add" class="btn btn-primary btn-sm">
+                                <strong style="color: #334155;">Chưa có dữ liệu món bán chạy!</strong>
+                                <p class="small text-muted mb-3 mt-1">Các món ăn sẽ được tự động xếp hạng ngay sau khi đơn giao thành công.</p>
+                                <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-primary btn-sm">
                                     <i class="fa-solid fa-plus-circle"></i> Đăng Món Mới
                                 </a>
                             </div>
                         </c:otherwise>
                     </c:choose>
-                </div>
-
-                <!-- Phím tắt nhanh -->
-                <div class="merchant-quick-box mt-4">
-                    <h4><i class="fa-solid fa-bolt text-warning"></i> Thao Tác Nhanh</h4>
-                    <div class="quick-btn-row">
-                        <a href="${pageContext.request.contextPath}/merchant/foods?action=add" class="quick-btn">
-                            <i class="fa-solid fa-plus-circle text-primary"></i>
-                            <span>Đăng món mới</span>
-                        </a>
-                        <a href="${pageContext.request.contextPath}/merchant/revenue?view=DAY" class="quick-btn">
-                            <i class="fa-solid fa-calendar-day text-success"></i>
-                            <span>Doanh thu ngày</span>
-                        </a>
-                        <a href="${pageContext.request.contextPath}/merchant/shippers?status=AVAILABLE" class="quick-btn">
-                            <i class="fa-solid fa-motorcycle text-info"></i>
-                            <span>Shipper sẵn sàng</span>
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>

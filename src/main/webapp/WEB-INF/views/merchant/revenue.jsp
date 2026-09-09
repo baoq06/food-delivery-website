@@ -10,55 +10,61 @@
 <div class="admin-dashboard-container">
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
 
-    <div class="container section pt-0">
+    <div class="container pb-5">
         <!-- Toolbar Bộ Lọc & Chuyển Đổi Tab Chế Độ Xem -->
-        <div class="admin-header-box mb-4 py-3">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="text-muted font-weight-bold" style="font-size: 0.9rem;">Chế độ xem:</span>
-                <div class="d-inline-flex gap-2">
+        <div class="merchant-filter-bar">
+            <div class="merchant-filter-left">
+                <span class="merchant-filter-label">
+                    <i class="fa-solid fa-chart-pie text-primary"></i> Chế độ xem:
+                </span>
+                <div class="merchant-filter-group">
                     <a href="${pageContext.request.contextPath}/merchant/revenue?view=DAY&year=${selectedYear}&month=${selectedMonth}" 
-                       class="btn btn-sm ${selectedView eq 'DAY' ? 'btn-primary' : 'btn-outline'}">
-                        <i class="fa-solid fa-calendar-day"></i> Theo Ngày
+                       class="merchant-filter-pill ${selectedView eq 'DAY' ? 'active' : ''}">
+                        <i class="fa-solid fa-calendar-day"></i> <span>Theo Ngày</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/merchant/revenue?view=MONTH&year=${selectedYear}" 
-                       class="btn btn-sm ${selectedView eq 'MONTH' ? 'btn-primary' : 'btn-outline'}">
-                        <i class="fa-solid fa-calendar-alt"></i> Theo Tháng
+                       class="merchant-filter-pill ${selectedView eq 'MONTH' ? 'active' : ''}">
+                        <i class="fa-solid fa-calendar-alt"></i> <span>Theo Tháng</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/merchant/revenue?view=YEAR" 
-                       class="btn btn-sm ${selectedView eq 'YEAR' ? 'btn-primary' : 'btn-outline'}">
-                        <i class="fa-solid fa-calendar"></i> Theo Năm
+                       class="merchant-filter-pill ${selectedView eq 'YEAR' ? 'active' : ''}">
+                        <i class="fa-solid fa-calendar"></i> <span>Theo Năm</span>
                     </a>
                 </div>
             </div>
 
             <!-- Filter Controls -->
-            <form action="${pageContext.request.contextPath}/merchant/revenue" method="GET" class="d-flex align-items-center gap-3 flex-wrap">
-                <input type="hidden" name="view" value="${selectedView}" />
-                
-                <c:if test="${selectedView eq 'DAY'}">
-                    <div class="d-flex align-items-center gap-2">
-                        <label style="font-size: 0.88rem; font-weight: 600; margin: 0;">Tháng:</label>
-                        <select name="month" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 110px;">
-                            <c:forEach var="m" begin="1" end="12">
-                                <option value="${m}" ${selectedMonth == m ? 'selected' : ''}>Tháng ${m}</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </c:if>
+            <div class="merchant-filter-right">
+                <form action="${pageContext.request.contextPath}/merchant/revenue" method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+                    <input type="hidden" name="view" value="${selectedView}" />
+                    
+                    <c:if test="${selectedView eq 'DAY'}">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="text-muted small fw-bold mb-0">Tháng:</label>
+                            <select name="month" class="form-select form-control" onchange="this.form.submit()" style="width: 120px; height: 38px; border-radius: 8px;">
+                                <c:forEach var="m" begin="1" end="12">
+                                    <option value="${m}" ${selectedMonth == m ? 'selected' : ''}>Tháng ${m}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </c:if>
 
-                <c:if test="${selectedView eq 'DAY' || selectedView eq 'MONTH'}">
-                    <div class="d-flex align-items-center gap-2">
-                        <label style="font-size: 0.88rem; font-weight: 600; margin: 0;">Năm:</label>
-                        <select name="year" class="form-select form-select-sm" onchange="this.form.submit()" style="width: 110px;">
-                            <c:forEach var="y" begin="2024" end="2027">
-                                <option value="${y}" ${selectedYear == y ? 'selected' : ''}>Năm ${y}</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                </c:if>
+                    <c:if test="${selectedView eq 'DAY' || selectedView eq 'MONTH'}">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="text-muted small fw-bold mb-0">Năm:</label>
+                            <select name="year" class="form-select form-control" onchange="this.form.submit()" style="width: 110px; height: 38px; border-radius: 8px;">
+                                <c:forEach var="y" begin="2024" end="2027">
+                                    <option value="${y}" ${selectedYear == y ? 'selected' : ''}>Năm ${y}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </c:if>
 
-                <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-filter"></i> Lọc Dữ Liệu</button>
-            </form>
+                    <button type="submit" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" style="height: 38px; border-radius: 8px; padding: 0 14px;">
+                        <i class="fa-solid fa-rotate"></i> <span>Áp dụng</span>
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Metric Stat Cards (Đồng bộ chuẩn Admin Dashboard) -->
@@ -240,29 +246,44 @@
                                 <c:forEach var="ord" items="${detailedOrders}">
                                     <c:set var="restTotal" value="0" />
                                     <tr>
-                                        <td><strong>#DH-${ord.id}</strong></td>
+                                        <td><span class="fw-bold font-monospace text-dark">#DH-${ord.id}</span></td>
                                         <td>
-                                            <span class="text-muted"><fmt:formatDate value="${ord.createdAt}" pattern="dd/MM/yyyy HH:mm" /></span>
+                                            <div class="text-dark fw-medium" style="font-size: 0.88rem;">
+                                                <fmt:formatDate value="${ord.createdAt}" pattern="HH:mm" />
+                                            </div>
+                                            <div class="text-muted" style="font-size: 0.78rem;">
+                                                <fmt:formatDate value="${ord.createdAt}" pattern="dd/MM/yyyy" />
+                                            </div>
                                         </td>
                                         <td>
-                                            <strong>${ord.customerName}</strong><br/>
-                                            <small class="text-muted">${ord.phone}</small>
+                                            <div class="fw-bold text-dark" style="font-size: 0.92rem;">${ord.customerName}</div>
+                                            <div class="text-muted small">
+                                                <i class="fa-solid fa-phone text-primary" style="font-size: 0.75rem;"></i> ${ord.phone}
+                                            </div>
                                         </td>
                                         <td>
-                                            <div style="font-size: 0.88rem;">
+                                            <div style="font-size: 0.85rem; max-width: 260px;">
                                                 <c:forEach var="it" items="${ord.items}" varStatus="loop">
-                                                    <span>${it.foodName} &times; ${it.quantity}<c:if test="${not loop.last}">, </c:if></span>
+                                                    <span class="text-dark">${it.foodName} <strong class="text-primary">&times; ${it.quantity}</strong><c:if test="${not loop.last}">, </c:if></span>
                                                     <c:set var="restTotal" value="${restTotal + it.subtotal}" />
                                                 </c:forEach>
                                             </div>
                                         </td>
-                                        <td class="font-weight-bold text-primary"><fmt:formatNumber value="${restTotal}" type="number" /> đ</td>
                                         <td>
-                                            <span class="badge ${ord.status eq 'DELIVERED' ? 'badge-done' : (ord.status eq 'SHIPPING' ? 'badge-shipping' : 'badge-pending')}">
-                                                ${ord.status}
+                                            <span class="fw-bold text-primary" style="font-size: 0.98rem;">
+                                                <fmt:formatNumber value="${restTotal}" type="number" /> đ
                                             </span>
                                         </td>
-                                        <td><span class="badge badge-cod">${ord.paymentMethod}</span></td>
+                                        <td>
+                                            <span class="badge ${ord.status eq 'DELIVERED' ? 'badge-done' : (ord.status eq 'SHIPPING' ? 'badge-shipping' : 'badge-pending')}">
+                                                <c:choose>
+                                                    <c:when test="${ord.status eq 'DELIVERED'}"><i class="fa-solid fa-circle-check me-1"></i> Hoàn tất</c:when>
+                                                    <c:when test="${ord.status eq 'SHIPPING'}"><i class="fa-solid fa-truck-fast me-1"></i> Đang giao</c:when>
+                                                    <c:otherwise><i class="fa-solid fa-clock me-1"></i> Chờ xử lý</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                        </td>
+                                        <td><span class="badge badge-cod" style="font-size: 0.75rem; text-transform: uppercase;">${ord.paymentMethod}</span></td>
                                     </tr>
                                 </c:forEach>
                             </c:when>

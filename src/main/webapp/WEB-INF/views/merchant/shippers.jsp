@@ -10,31 +10,35 @@
 <div class="admin-dashboard-container">
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
 
-    <div class="container section pt-0">
+    <div class="container pb-5">
         <!-- Toolbar Bộ Lọc Shipper -->
-        <div class="admin-header-box mb-4 py-3">
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="text-muted font-weight-bold" style="font-size: 0.9rem;">Lọc trạng thái:</span>
-                <a href="${pageContext.request.contextPath}/merchant/shippers?status=ALL" class="btn btn-sm ${selectedStatus eq 'ALL' ? 'btn-primary' : 'btn-outline'}">
-                    Tất cả (${availableCount + busyCount + offlineCount})
-                </a>
-                <a href="${pageContext.request.contextPath}/merchant/shippers?status=AVAILABLE" class="btn btn-sm ${selectedStatus eq 'AVAILABLE' ? 'btn-primary' : 'btn-outline'}">
-                    <span class="dot-pulse"></span> Sẵn sàng nhận đơn (${availableCount})
-                </a>
-                <a href="${pageContext.request.contextPath}/merchant/shippers?status=BUSY" class="btn btn-sm ${selectedStatus eq 'BUSY' ? 'btn-primary' : 'btn-outline'}">
-                    <i class="fa-solid fa-road"></i> Đang giao hàng (${busyCount})
-                </a>
-                <a href="${pageContext.request.contextPath}/merchant/shippers?status=OFFLINE" class="btn btn-sm ${selectedStatus eq 'OFFLINE' ? 'btn-primary' : 'btn-outline'}">
-                    <i class="fa-solid fa-moon"></i> Ngoại tuyến (${offlineCount})
-                </a>
+        <div class="merchant-filter-bar">
+            <div class="merchant-filter-left">
+                <span class="merchant-filter-label">
+                    <i class="fa-solid fa-motorcycle text-primary"></i> Trạng thái:
+                </span>
+                <div class="merchant-filter-group">
+                    <a href="${pageContext.request.contextPath}/merchant/shippers?status=ALL" class="merchant-filter-pill ${selectedStatus eq 'ALL' ? 'active' : ''}">
+                        <span>Tất cả</span> <span class="badge ms-1">${availableCount + busyCount + offlineCount}</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/shippers?status=AVAILABLE" class="merchant-filter-pill ${selectedStatus eq 'AVAILABLE' ? 'active' : ''}">
+                        <span class="dot-pulse"></span> <span>Sẵn sàng</span> <span class="badge ms-1">${availableCount}</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/shippers?status=BUSY" class="merchant-filter-pill ${selectedStatus eq 'BUSY' ? 'active' : ''}">
+                        <i class="fa-solid fa-road"></i> <span>Đang giao</span> <span class="badge ms-1">${busyCount}</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/shippers?status=OFFLINE" class="merchant-filter-pill ${selectedStatus eq 'OFFLINE' ? 'active' : ''}">
+                        <i class="fa-solid fa-moon"></i> <span>Ngoại tuyến</span> <span class="badge ms-1">${offlineCount}</span>
+                    </a>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <span class="badge badge-done" style="font-size: 0.88rem; padding: 6px 14px;">
-                    <i class="fa-solid fa-motorcycle"></i> ${availableCount} tài xế sẵn sàng nhận đơn
+            <div class="merchant-filter-right">
+                <span class="badge badge-done" style="font-size: 0.82rem; padding: 7px 14px;">
+                    <i class="fa-solid fa-motorcycle me-1"></i> ${availableCount} tài xế sẵn sàng
                 </span>
-                <span class="badge bg-light text-dark border" style="font-size: 0.88rem; padding: 6px 14px;">
-                    <i class="fa-solid fa-receipt text-success"></i> Đã trả shipper: <strong class="text-success"><fmt:formatNumber value="${totalPaidFees}" type="number" /> đ</strong>
+                <span class="badge bg-light text-dark border" style="font-size: 0.82rem; padding: 7px 14px;">
+                    <i class="fa-solid fa-receipt text-success me-1"></i> Đã trả: <strong class="text-success ms-1"><fmt:formatNumber value="${totalPaidFees}" type="number" /> đ</strong>
                 </span>
             </div>
         </div>
@@ -44,7 +48,7 @@
             <div class="admin-table-header">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-motorcycle text-primary"></i> Đội Ngũ Tài Xế Giao Vận Khả Dụng</h3>
-                    <span class="table-card-sub">Theo dõi danh sách tài xế trực tuyến, điều phối đơn hàng và thanh toán phí giao hàng</span>
+                    <span class="table-card-sub">Theo dõi danh sách tài xế trực tuyến, điều phối đơn hàng và chi trả phí giao hàng</span>
                 </div>
             </div>
 
@@ -52,13 +56,13 @@
                 <table class="admin-data-table">
                     <thead>
                         <tr>
-                            <th>Mã Tài Xế</th>
-                            <th>Họ &amp; Tên</th>
+                            <th style="width: 100px;">Mã Tài Xế</th>
+                            <th>Họ &amp; Tên Tài Xế</th>
                             <th>Số Điện Thoại</th>
                             <th>Khu Vực Hoạt Động</th>
-                            <th>Trạng Thái</th>
-                            <th>Đánh Giá</th>
-                            <th class="text-end">Hành Động</th>
+                            <th style="width: 160px;">Trạng Thái</th>
+                            <th style="width: 140px;">Đánh Giá</th>
+                            <th class="text-end" style="width: 200px;">Hành Động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,58 +70,65 @@
                             <c:when test="${not empty drivers}">
                                 <c:forEach var="driver" items="${drivers}">
                                     <tr>
-                                        <td><strong>#TX-${driver.id}</strong></td>
+                                        <td><span class="fw-bold font-monospace text-dark">#TX-${driver.id}</span></td>
                                         <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div style="width: 36px; height: 36px; border-radius: 8px; background: #ffebee; color: #ff4757; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div style="width: 40px; height: 40px; border-radius: 12px; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.15);">
                                                     <i class="fa-solid fa-helmet-safety"></i>
                                                 </div>
-                                                <strong style="font-size: 0.95rem;">${driver.name}</strong>
+                                                <div>
+                                                    <div class="fw-bold text-dark" style="font-size: 0.96rem;">${driver.name}</div>
+                                                    <small class="text-muted">Đối tác giao nhận Utee</small>
+                                                </div>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="d-flex align-items-center gap-2">
-                                                <span>${driver.phone}</span>
-                                                <a href="tel:${driver.phone}" class="btn btn-sm btn-outline text-success border-success" style="padding: 2px 8px; border-radius: 20px;" title="Gọi điện">
-                                                    <i class="fa-solid fa-phone"></i> Gọi
+                                                <span class="fw-medium text-dark">${driver.phone}</span>
+                                                <a href="tel:${driver.phone}" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1" style="padding: 2px 10px; border-radius: 20px; font-size: 0.78rem;" title="Gọi điện">
+                                                    <i class="fa-solid fa-phone"></i> <span>Gọi</span>
                                                 </a>
                                             </div>
                                         </td>
-                                        <td>TP. Hồ Chí Minh (Q.1, Q.3, Bình Thạnh)</td>
+                                        <td>
+                                            <span class="text-muted small">
+                                                <i class="fa-solid fa-location-dot text-danger me-1"></i> TP. Hồ Chí Minh (Q.1, Q.3, Bình Thạnh)
+                                            </span>
+                                        </td>
                                         <td>
                                             <c:choose>
                                                 <c:when test="${driver.status eq 'AVAILABLE'}">
-                                                    <span class="badge badge-done"><span class="dot-pulse"></span> Sẵn Sàng</span>
+                                                    <span class="badge badge-done"><span class="dot-pulse"></span> Sẵn Sàng Nhận</span>
                                                 </c:when>
                                                 <c:when test="${driver.status eq 'BUSY'}">
-                                                    <span class="badge badge-shipping"><i class="fa-solid fa-clock"></i> Đang Bận Giao</span>
+                                                    <span class="badge badge-shipping"><i class="fa-solid fa-clock me-1"></i> Đang Bận Giao</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="badge badge-cod"><i class="fa-solid fa-moon"></i> Nghỉ</span>
+                                                    <span class="badge badge-cod"><i class="fa-solid fa-moon me-1"></i> Ngoại Tuyến</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <span class="text-warning font-weight-bold">
-                                                <i class="fa-solid fa-star"></i> 4.9
-                                            </span>
-                                            <small class="text-muted">(120+ đơn)</small>
+                                            <div class="d-flex align-items-center gap-1">
+                                                <span class="text-warning fw-bold"><i class="fa-solid fa-star"></i> 4.9</span>
+                                                <small class="text-muted">(120+ đơn)</small>
+                                            </div>
                                         </td>
                                         <td class="text-end">
-                                            <div class="d-inline-flex gap-2">
+                                            <div class="d-inline-flex gap-2 justify-content-end align-items-center">
                                                 <c:if test="${driver.status eq 'AVAILABLE'}">
                                                     <c:choose>
                                                         <c:when test="${not empty unassignedOrders}">
-                                                            <button type="button" class="btn btn-primary btn-sm" onclick="openDispatchModal(${driver.id}, '${driver.name}')">
+                                                            <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" onclick="openDispatchModal(${driver.id}, '${driver.name}')">
                                                                 <i class="fa-solid fa-paper-plane"></i> Giao Đơn
                                                             </button>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-check text-success"></i> Hết đơn chờ</span>
+                                                            <span class="text-muted small"><i class="fa-solid fa-check text-success me-1"></i> Hết đơn chờ</span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </c:if>
-                                                <button type="button" class="btn btn-outline-success btn-sm" onclick="openPayModal(${driver.id}, '${driver.name}')">
+                                                <button type="button" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-1" onclick="openPayModal(${driver.id}, '${driver.name}')">
                                                     <i class="fa-solid fa-money-bill-wave"></i> Trả Phí
                                                 </button>
                                             </div>
@@ -128,9 +139,11 @@
                             <c:otherwise>
                                 <tr>
                                     <td colspan="7" class="text-center py-5 text-muted">
-                                        <div style="font-size: 2.2rem; margin-bottom: 8px;">🛵</div>
-                                        <strong style="color: #666;">Hiện tại chưa có tài xế nào trực tuyến trong hệ thống!</strong>
-                                        <p class="small text-muted mb-0 mt-1">Danh sách tài xế sẽ tự động cập nhật ngay khi shipper đăng nhập và bật trạng thái nhận đơn.</p>
+                                        <div style="font-size: 2.5rem; margin-bottom: 12px; color: #bdc3c7;">
+                                            <i class="fa-solid fa-motorcycle"></i>
+                                        </div>
+                                        <div class="fw-bold fs-6 text-dark mb-1">Hiện tại chưa có tài xế nào theo bộ lọc</div>
+                                        <p class="small text-muted mb-0">Danh sách tài xế sẽ tự động cập nhật ngay khi shipper đăng nhập và bật trạng thái nhận đơn.</p>
                                     </td>
                                 </tr>
                             </c:otherwise>
@@ -145,20 +158,25 @@
 <!-- Modal Điều Phối Đơn Hàng Cho Tài Xế -->
 <div id="dispatchModal" class="merchant-modal-backdrop" style="display: none;">
     <div class="merchant-modal-box">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-paper-plane text-primary"></i> Điều Phối Đơn Cho Tài Xế</h3>
-            <button type="button" class="modal-close-btn" onclick="closeDispatchModal()">&times;</button>
+        <div class="merchant-modal-header">
+            <h3 class="merchant-modal-title">
+                <i class="fa-solid fa-paper-plane text-primary"></i> Điều Phối Đơn Cho Tài Xế
+            </h3>
+            <button type="button" class="merchant-modal-close" onclick="closeDispatchModal()">&times;</button>
         </div>
         <form action="${pageContext.request.contextPath}/merchant/shippers" method="POST">
             <input type="hidden" name="action" value="assign" />
             <input type="hidden" name="driverId" id="dispatchDriverId" value="" />
 
-            <div class="modal-body">
-                <p>Bạn đang gán đơn hàng cho tài xế: <strong id="dispatchDriverName" class="text-primary fs-5"></strong></p>
+            <div class="merchant-modal-body">
+                <div class="p-3 mb-3 rounded-3" style="background: var(--surface-light); border: 1px solid var(--border-color);">
+                    <div class="text-muted small">Tài xế giao hàng:</div>
+                    <div id="dispatchDriverName" class="fw-bold text-primary fs-6 mt-1"></div>
+                </div>
 
-                <div class="form-group mt-3">
-                    <label class="form-label font-weight-bold">Chọn đơn hàng chờ giao của quán:</label>
-                    <select name="orderId" class="form-select" required>
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold mb-1">Chọn đơn hàng chờ giao của quán: <span class="text-danger">*</span></label>
+                    <select name="orderId" class="form-select form-control" required style="border-radius: 10px; height: 44px;">
                         <c:forEach var="ord" items="${unassignedOrders}">
                             <option value="${ord.id}">
                                 #DH-${ord.id} - ${ord.customerName} (${ord.phone}) - <fmt:formatNumber value="${ord.totalAmount}" type="number" /> đ
@@ -167,14 +185,17 @@
                     </select>
                 </div>
 
-                <div class="alert alert-info mt-3 p-2" style="font-size: 0.9rem;">
-                    <i class="fa-solid fa-circle-info"></i> Sau khi gán, tài xế sẽ chuyển sang trạng thái <strong>ĐANG BẬN</strong> và đơn hàng chuyển sang <strong>ĐANG GIAO</strong>.
+                <div class="alert alert-info d-flex align-items-center gap-2 p-2 rounded-2 mb-0" style="font-size: 0.85rem; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Sau khi gán, tài xế sẽ chuyển sang trạng thái <strong>ĐANG BẬN</strong> và đơn hàng chuyển sang <strong>ĐANG GIAO</strong>.</span>
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="merchant-modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closeDispatchModal()">Đóng</button>
-                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Xác Nhận Giao Đơn</button>
+                <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-1">
+                    <i class="fa-solid fa-check"></i> Xác Nhận Giao Đơn
+                </button>
             </div>
         </form>
     </div>
@@ -183,33 +204,38 @@
 <!-- Modal Trả Phí Cho Tài Xế Shipper -->
 <div id="payModal" class="merchant-modal-backdrop" style="display: none;">
     <div class="merchant-modal-box">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-money-bill-wave text-success"></i> Trả Phí Giao Vận Cho Shipper</h3>
-            <button type="button" class="modal-close-btn" onclick="closePayModal()">&times;</button>
+        <div class="merchant-modal-header">
+            <h3 class="merchant-modal-title">
+                <i class="fa-solid fa-money-bill-wave text-success"></i> Trả Phí Giao Cho Shipper
+            </h3>
+            <button type="button" class="merchant-modal-close" onclick="closePayModal()">&times;</button>
         </div>
         <form action="${pageContext.request.contextPath}/merchant/shippers" method="POST">
             <input type="hidden" name="action" value="payShipper" />
             <input type="hidden" name="driverId" id="payDriverId" value="" />
 
-            <div class="modal-body">
-                <p>Thanh toán chi phí vận chuyển cho tài xế: <strong id="payDriverName" class="text-primary fs-5"></strong></p>
-
-                <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Số tiền thanh toán (VNĐ): <span class="text-danger">*</span></label>
-                    <input type="number" name="amount" class="form-control" value="25000" min="1000" step="1000" required />
+            <div class="merchant-modal-body">
+                <div class="p-3 mb-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                    <div class="text-muted small">Tài xế thụ hưởng:</div>
+                    <div id="payDriverName" class="fw-bold text-success fs-6 mt-1"></div>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Hình thức thanh toán:</label>
-                    <select name="paymentMethod" class="form-select">
+                    <label class="form-label fw-bold mb-1">Số tiền thanh toán (VNĐ) <span class="text-danger">*</span></label>
+                    <input type="number" name="amount" class="form-control" value="25000" min="1000" step="1000" required style="border-radius: 10px;" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label class="form-label fw-bold mb-1">Hình thức thanh toán</label>
+                    <select name="paymentMethod" class="form-select form-control" style="border-radius: 10px; height: 44px;">
                         <option value="CASH">Tiền mặt trực tiếp (Cash)</option>
                         <option value="BANK_TRANSFER">Chuyển khoản nhanh VietQR</option>
                     </select>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Gắn với đơn hàng (tùy chọn):</label>
-                    <select name="orderId" class="form-select">
+                    <label class="form-label fw-bold mb-1">Gắn với đơn hàng (tùy chọn)</label>
+                    <select name="orderId" class="form-select form-control" style="border-radius: 10px; height: 44px;">
                         <option value="">-- Không gắn cụ thể (Thanh toán chung) --</option>
                         <c:forEach var="ord" items="${unassignedOrders}">
                             <option value="${ord.id}">Đơn #${ord.id} - ${ord.customerName} (<fmt:formatNumber value="${ord.totalAmount}" type="number" /> đ)</option>
@@ -217,15 +243,17 @@
                     </select>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label class="form-label font-weight-bold">Ghi chú giao dịch:</label>
-                    <input type="text" name="note" class="form-control" placeholder="VD: Trả phí giao hàng theo cuốc, phụ phí giờ cao điểm..." />
+                <div class="form-group mb-2">
+                    <label class="form-label fw-bold mb-1">Ghi chú giao dịch</label>
+                    <input type="text" name="note" class="form-control" placeholder="VD: Trả phí giao hàng theo cuốc, phụ phí giờ cao điểm..." style="border-radius: 10px;" />
                 </div>
             </div>
 
-            <div class="modal-footer">
+            <div class="merchant-modal-footer">
                 <button type="button" class="btn btn-outline" onclick="closePayModal()">Đóng</button>
-                <button type="submit" class="btn btn-success"><i class="fa-solid fa-paper-plane"></i> Hoàn Tất Thanh Toán</button>
+                <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-1">
+                    <i class="fa-solid fa-paper-plane"></i> Hoàn Tất Thanh Toán
+                </button>
             </div>
         </form>
     </div>
