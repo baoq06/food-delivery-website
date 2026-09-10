@@ -22,10 +22,10 @@ public class DBContext {
                 config.setUsername(resolveProperty(prop.getProperty("db.username")));
                 config.setPassword(resolveProperty(prop.getProperty("db.password")));
             } else {
-                // Fallback nếu không tìm thấy file cấu hình
+                // Fallback nếu không tìm thấy file cấu hình (dùng trên Cloud như Render hoặc Docker)
                 config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-                config.setJdbcUrl("jdbc:mysql://localhost:3306/food_delivery_db?useSSL=false");
-                config.setUsername("root");
+                config.setJdbcUrl(System.getenv("DB_URL") != null ? System.getenv("DB_URL") : "jdbc:mysql://localhost:3306/food_delivery_db?useSSL=false");
+                config.setUsername(System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : "root");
                 config.setPassword(System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "");
             }
 
