@@ -14,7 +14,7 @@
             </div>
             <h1 class="hero-title">
                 Thèm Món Ngon Gì, <br>
-                <span class="hero-gradient-text">Utee</span> Giao Nóng Tận Cửa!
+                <span class="hero-title-nowrap"><span class="hero-gradient-text">Utee</span> Giao Nóng Tận Cửa!</span>
             </h1>
             <p class="hero-subtitle">
                 Thưởng thức hàng trăm món ăn nóng hổi, chuẩn vị từ các nhà hàng uy tín hàng đầu. Giao siêu tốc 20-30 phút, bảo đảm chất lượng với ngập tràn ưu đãi mỗi ngày.
@@ -134,41 +134,94 @@
             <c:choose>
                 <c:when test="${not empty categories}">
                     <c:forEach items="${categories}" var="cat">
+                        <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                        <c:choose>
+                            <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}">
+                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                            </c:when>
+                            <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}">
+                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" />
+                            </c:when>
+                            <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}">
+                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" />
+                            </c:when>
+                            <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}">
+                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" />
+                            </c:when>
+                            <c:otherwise>
+                                <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
+                            </c:otherwise>
+                        </c:choose>
                         <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card">
-                            <div class="cat-icon-box">
-                                <c:choose>
-                                    <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
-                                    <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
-                                    <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
-                                    <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
-                                    <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
-                                </c:choose>
+                            <div class="cat-img-box">
+                                <img src="${catImg}" alt="${cat.name}" class="cat-food-img" loading="lazy">
+                                <div class="cat-img-badge">
+                                    <c:choose>
+                                        <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
+                                        <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
+                                        <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
+                                        <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
+                                        <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
-                            <h3>${cat.name}</h3>
-                            <span>${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</span>
+                            <h3 class="cat-card-title">${cat.name}</h3>
+                            <p class="cat-card-desc">${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</p>
+                            <div class="cat-card-action">
+                                <span>Khám phá</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
                         </a>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
                     <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
-                        <div class="cat-icon-box"><i class="fa-solid fa-bowl-rice"></i></div>
-                        <h3>Cơm & Món Mặn</h3>
-                        <span>Món Việt chuẩn vị</span>
+                        <div class="cat-img-box">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" alt="Cơm & Món Mặn" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-bowl-rice"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Cơm & Món Mặn</h3>
+                        <p class="cat-card-desc">Món Việt chuẩn vị</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-card">
-                        <div class="cat-icon-box"><i class="fa-solid fa-bowl-food"></i></div>
-                        <h3>Phở & Bún Mì</h3>
-                        <span>Hương vị truyền thống</span>
+                        <div class="cat-img-box">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" alt="Phở & Bún Mì" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-bowl-food"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Phở & Bún Mì</h3>
+                        <p class="cat-card-desc">Hương vị truyền thống</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-card">
-                        <div class="cat-icon-box"><i class="fa-solid fa-mug-hot"></i></div>
-                        <h3>Trà Sữa & Đồ Uống</h3>
-                        <span>Tươi mát sảng khoái</span>
+                        <div class="cat-img-box">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" alt="Trà Sữa & Đồ Uống" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-mug-hot"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Trà Sữa & Đồ Uống</h3>
+                        <p class="cat-card-desc">Tươi mát sảng khoái</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
                     </a>
                     <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card">
-                        <div class="cat-icon-box"><i class="fa-solid fa-burger"></i></div>
-                        <h3>Fastfood & Ăn Vặt</h3>
-                        <span>Giòn ngon hấp dẫn</span>
+                        <div class="cat-img-box">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Ăn Vặt" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-burger"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Fastfood & Ăn Vặt</h3>
+                        <p class="cat-card-desc">Giòn ngon hấp dẫn</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
                     </a>
                 </c:otherwise>
             </c:choose>

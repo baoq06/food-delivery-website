@@ -22,7 +22,7 @@
         <div class="auth-visual-glow auth-glow-2"></div>
 
         <!-- Full-bleed background image -->
-        <img src="${pageContext.request.contextPath}/assets/images/log_sign_in_image_kirk.jpg" 
+        <img src="${pageContext.request.contextPath}/assets/images/log_sign_in_image_food.jpg" 
              alt="Utee Food Delivery" 
              class="auth-split-bg-img" 
              loading="eager">

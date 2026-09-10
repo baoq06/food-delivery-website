@@ -778,9 +778,9 @@ button, input, select, textarea {
 
 .hero-wrapper {
     display: grid;
-    grid-template-columns: 1.18fr 0.82fr;
+    grid-template-columns: 1.25fr 0.75fr;
     align-items: center;
-    gap: 50px;
+    gap: 40px;
 }
 
 .hero-badge-wrap {
@@ -804,12 +804,17 @@ button, input, select, textarea {
 
 .hero-title {
     font-family: var(--font-heading);
-    font-size: 3.5rem;
+    font-size: clamp(2.35rem, 3.4vw, 3.15rem);
     font-weight: 800;
-    line-height: 1.16;
+    line-height: 1.2;
     color: var(--text-main);
     margin-bottom: 18px;
-    letter-spacing: -1.2px;
+    letter-spacing: -0.8px;
+}
+
+.hero-title-nowrap {
+    white-space: nowrap;
+    display: inline-block;
 }
 
 .hero-gradient-text {
@@ -821,11 +826,11 @@ button, input, select, textarea {
 }
 
 .hero-subtitle {
-    font-size: 1.15rem;
+    font-size: 0.98rem;
     color: var(--text-muted);
-    line-height: 1.75;
+    line-height: 1.68;
     margin-bottom: 28px;
-    max-width: 580px;
+    max-width: 540px;
 }
 
 /* Hero Search Box Redesign */
@@ -1185,24 +1190,56 @@ button, input, select, textarea {
 }
 
 /* ==========================================================================
-   Category Cards - Bento Modern Design
+   Category Cards - Bento Modern Design (Centered & Balanced Layout)
    ========================================================================== */
 .category-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    max-width: 1120px;
+    margin: 0 auto;
+    justify-content: center;
+    width: 100%;
+}
+
+@media (max-width: 992px) {
+    .category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 580px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 380px) {
+    .category-grid {
+        grid-template-columns: 1fr;
+        max-width: 290px;
+    }
 }
 
 .cat-card {
     background: #ffffff;
-    border: 1.5px solid rgba(240, 84, 84, 0.1);
-    border-radius: 20px;
-    padding: 26px 18px;
+    border: 1.5px solid rgba(240, 84, 84, 0.12);
+    border-radius: 24px;
+    padding: 26px 18px 22px;
     text-align: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-    transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
 }
 
 .cat-card::before {
@@ -1219,46 +1256,145 @@ button, input, select, textarea {
 
 .cat-card:hover {
     border-color: var(--primary-tint);
-    transform: translateY(-6px);
-    box-shadow: 0 16px 32px rgba(240, 84, 84, 0.12);
+    transform: translateY(-7px);
+    box-shadow: 0 16px 36px rgba(240, 84, 84, 0.14);
 }
 
 .cat-card:hover::before {
     opacity: 1;
 }
 
-.cat-icon-box {
-    width: 66px;
-    height: 66px;
-    margin: 0 auto 16px;
+/* Appetizing Food Photo Container with Ambient Halo */
+.cat-img-box {
+    position: relative;
+    width: 104px;
+    height: 104px;
+    margin: 0 auto 14px;
     border-radius: 50%;
-    background: var(--primary-light);
+    padding: 4px;
+    background: linear-gradient(135deg, rgba(240, 84, 84, 0.3) 0%, rgba(249, 115, 22, 0.12) 100%);
+    box-shadow: 0 8px 22px rgba(240, 84, 84, 0.18);
+    transition: all 0.35s ease;
+    flex-shrink: 0;
+}
+
+.cat-food-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    display: block;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cat-card:hover .cat-img-box {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 12px 28px rgba(240, 84, 84, 0.3);
+    background: var(--primary-gradient);
+}
+
+.cat-card:hover .cat-food-img {
+    transform: scale(1.08);
+}
+
+/* Floating Category Icon Badge */
+.cat-img-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ffffff;
     color: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
-    transition: all 0.28s ease;
+    font-size: 0.95rem;
+    border: 2.5px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease;
 }
 
-.cat-card:hover .cat-icon-box {
+.cat-card:hover .cat-img-badge {
     background: var(--primary-gradient);
     color: #ffffff;
-    transform: scale(1.1) rotate(6deg);
-    box-shadow: 0 8px 20px var(--primary-glow);
+    transform: scale(1.12);
+    box-shadow: 0 4px 12px var(--primary-glow);
 }
 
+/* Typography & Interactive CTA */
+.cat-card-title,
 .cat-card h3 {
     font-family: var(--font-heading);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 700;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     color: var(--text-main);
+    transition: color 0.25s ease;
 }
 
-.cat-card span {
-    font-size: 0.8rem;
+.cat-card:hover .cat-card-title,
+.cat-card:hover h3 {
+    color: var(--primary-color);
+}
+
+.cat-card-desc,
+.cat-card > span {
+    font-size: 0.84rem;
     color: var(--text-muted);
+    line-height: 1.48;
+    margin-bottom: 14px;
+    flex-grow: 1;
+}
+
+.cat-card-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary-color) !important;
+    background: var(--primary-light);
+    padding: 7px 16px;
+    border-radius: var(--radius-full);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: auto;
+    line-height: 1;
+}
+
+.cat-card-action span {
+    color: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    margin: 0 !important;
+    flex-grow: 0 !important;
+    line-height: 1 !important;
+    transition: color 0.25s ease;
+}
+
+.cat-card-action i {
+    font-size: 0.74rem;
+    color: inherit !important;
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.cat-card:hover .cat-card-action {
+    background: var(--primary-gradient) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 16px var(--primary-glow);
+    transform: translateY(-2px);
+}
+
+.cat-card:hover .cat-card-action span,
+.cat-card:hover .cat-card-action i {
+    color: #ffffff !important;
+}
+
+.cat-card:hover .cat-card-action i {
+    transform: translateX(3px);
 }
 
 /* ==========================================================================
@@ -2232,7 +2368,7 @@ button, input, select, textarea {
 
 /* ==========================================================================
    Auth (Login / Register) Page - Full-Screen Split Layout UI/UX Pro Max
-   Left: 100% Full-bleed Image (log_sign_in_image_kirk.jpg) with Rich Overlays
+   Left: 100% Full-bleed Image (log_sign_in_image_food.jpg) with Rich Overlays
    Right: Matching Equal-Dimension Form Container (width & height unified)
    ========================================================================== */
 
@@ -3407,6 +3543,16 @@ button, input, select, textarea {
 }
 
 @media (max-width: 576px) {
+    .hero-title-nowrap {
+        white-space: normal;
+        text-wrap: balance;
+    }
+    .hero-title {
+        font-size: 2.05rem;
+    }
+    .hero-subtitle {
+        font-size: 0.92rem;
+    }
     .btn-nav-auth,
     .nav-actions .btn {
         width: 88px;
