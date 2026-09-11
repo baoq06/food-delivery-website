@@ -1,0 +1,32 @@
+package com.ute.fooddelivery.model;
+
+import java.sql.Timestamp;
+
+public class Review {
+    private int reviewId;
+    private int orderId;
+    private int customerId;
+    private Integer driverId;
+    private Integer restaurantId;
+    private int rating;
+    private String comment;
+    private Timestamp createdAt;
+
+    // Getters and setters
+    public int getReviewId() { return reviewId; }
+    public void setReviewId(int reviewId) { this.reviewId = reviewId; }
+    public int getOrderId() { return orderId; }
+    public void setOrderId(int orderId) { this.orderId = orderId; }
+    public int getCustomerId() { return customerId; }
+    public void setCustomerId(int customerId) { this.customerId = customerId; }
+    public Integer getDriverId() { return driverId; }
+    public void setDriverId(Integer driverId) { this.driverId = driverId; }
+    public Integer getRestaurantId() { return restaurantId; }
+    public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+}

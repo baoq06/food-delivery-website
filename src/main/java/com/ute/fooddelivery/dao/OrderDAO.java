@@ -7,6 +7,7 @@ import com.ute.fooddelivery.model.TopFoodStat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -286,6 +287,157 @@ public class OrderDAO {
             System.err.println("Lỗi khi tìm đơn hàng theo ID: " + e.getMessage());
         }
         return null;
+    }
+
+    public Map<String, Object> getDriverEarnings(int driverId) {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalTrips", 0);
+        stats.put("totalEarnings", 0.0);
+        stats.put("todayTrips", 0);
+        stats.put("todayEarnings", 0.0);
+        // Giả sử mỗi chuyến hoàn thành được 15,000 VND tiền ship
+        double feePerTrip = 15000.0;
+        
+        String sql = "SELECT DATE(created_at) as order_date, COUNT(order_id) as trips " +
+                     "FROM orders WHERE driver_id = ? AND status = 'DELIVERED' GROUP BY DATE(created_at)";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                int totalTrips = 0;
+                int todayTrips = 0;
+                String todayStr = new java.sql.Date(System.currentTimeMillis()).toString();
+                
+                while (rs.next()) {
+                    int trips = rs.getInt("trips");
+                    String oDate = rs.getString("order_date");
+                    totalTrips += trips;
+                    if (todayStr.equals(oDate)) {
+                        todayTrips += trips;
+                    }
+                }
+                stats.put("totalTrips", totalTrips);
+                stats.put("totalEarnings", totalTrips * feePerTrip);
+                stats.put("todayTrips", todayTrips);
+                stats.put("todayEarnings", todayTrips * feePerTrip);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stats;
+    }
+
+    public Order getPendingDispatchOrder() {
+        // Tìm 1 đơn hàng trạng thái CONFIRMED (quán đã nấu xong) chưa có tài xế
+        String sql = "SELECT order_id, customer_name, address, total_amount, phone FROM orders " +
+                     "WHERE status = 'CONFIRMED' AND driver_id IS NULL ORDER BY created_at ASC LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Order order = new Order();
+                order.setId(rs.getInt("order_id"));
+                order.setCustomerName(rs.getString("customer_name"));
+                order.setAddress(rs.getString("address"));
+                order.setTotalAmount(rs.getDouble("total_amount"));
+                order.setPhone(rs.getString("phone"));
+                return order;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Order> getOrdersByUser(int userId) {
+        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
+                     "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
+                     "r.review_id, r.rating, r.comment " +
+                     "FROM orders o " +
+                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+                     "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+                     "WHERE o.user_id = ? " +
+                     "ORDER BY o.created_at DESC";
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setId(rs.getInt("order_id"));
+                    order.setCustomerName(rs.getString("customer_name"));
+                    order.setAddress(rs.getString("address"));
+                    order.setPhone(rs.getString("phone"));
+                    order.setTotalAmount(rs.getDouble("total_amount"));
+                    order.setStatus(rs.getString("status"));
+                    order.setCreatedAt(rs.getTimestamp("created_at"));
+                    order.setDriverId(rs.getInt("driver_id"));
+                    if (rs.wasNull()) {
+                         order.setDriverId(null);
+                    } else {
+                         order.setDriverName(rs.getString("driver_name"));
+                         order.setDriverPhone(rs.getString("driver_phone"));
+                    }
+                    
+                    int reviewId = rs.getInt("review_id");
+                    if (!rs.wasNull()) {
+                        com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                        review.setReviewId(reviewId);
+                        review.setOrderId(order.getId());
+                        review.setRating(rs.getInt("rating"));
+                        review.setComment(rs.getString("comment"));
+                        order.setReview(review);
+                    }
+                    
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public List<Order> getOrdersByDriver(int driverId, String statusFilter) {
+        List<Order> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at " +
+            "FROM orders o " +
+            "WHERE o.driver_id = ? "
+        );
+        if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
+            sql.append("AND o.status = ? ");
+        }
+        sql.append("ORDER BY o.created_at DESC");
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                    ps.setInt(1, driverId);
+                    if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
+                        ps.setString(2, statusFilter.trim().toUpperCase());
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"), rs.getInt("user_id"),
+                                rs.getString("customer_name"), rs.getString("phone"),
+                                rs.getString("address"), rs.getString("note"),
+                                rs.getDouble("total_amount"), rs.getString("payment_method"),
+                                rs.getString("status"), rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at")
+                            );
+                            list.add(order);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi filter order driver: " + e.getMessage());
+        }
+        return list;
     }
 
     // =========================================================================

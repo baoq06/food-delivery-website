@@ -168,11 +168,13 @@
                     </button>
                 </form>
 
-                <!-- Minimalist Inline Demo Quick Chips -->
                 <div class="auth-demo-inline">
                     <span class="auth-demo-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Thử nhanh:</span>
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('customer', '123456')">
                         <span>👤 Khách hàng</span>
+                    </button>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('shipper1', '123456')">
+                        <span>🛵 Tài xế</span>
                     </button>
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('admin', '123456')">
                         <span>⚡ Quản trị</span>
@@ -275,6 +277,16 @@
                                     </div>
                                 </div>
                             </label>
+                            <label class="auth-type-radio-card ${stickyAccountType eq 'SHIPPER' ? 'selected' : ''}">
+                                <input type="radio" name="accountType" id="typeShipper" value="SHIPPER" ${stickyAccountType eq 'SHIPPER' ? 'checked' : ''} onchange="toggleSellerFields()" />
+                                <div class="type-radio-content">
+                                    <div class="type-radio-icon">🛵</div>
+                                    <div class="type-radio-texts">
+                                        <strong>Shipper</strong>
+                                        <span>Giao hàng</span>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
@@ -307,6 +319,7 @@
         <!-- Form Panel Footer Copyright -->
         <div class="auth-form-bottom-info">
             <p>© 2026 Utee Food Delivery. Nhanh chóng • Chuẩn vị • Tiện lợi.</p>
+        </div>
         </div>
     </div>
 </div>
@@ -363,7 +376,8 @@ function fillDemo(user, pass) {
 }
 
 function toggleSellerFields() {
-    const isSeller = document.getElementById('typeSeller').checked;
+    const isSeller = document.getElementById('typeSeller') ? document.getElementById('typeSeller').checked : false;
+    const isShipper = document.getElementById('typeShipper') ? document.getElementById('typeShipper').checked : false;
     const sellerBox = document.getElementById('sellerFields');
     const restNameInput = document.getElementById('restaurantName');
     const cards = document.querySelectorAll('.auth-type-radio-card');
@@ -373,14 +387,17 @@ function toggleSellerFields() {
         if (cards[1]) cards[1].classList.add('selected');
         if (sellerBox) sellerBox.style.display = 'block';
         if (restNameInput) restNameInput.required = true;
+    } else if (isShipper) {
+        if (cards[2]) cards[2].classList.add('selected');
+        if (sellerBox) sellerBox.style.display = 'none';
+        if (restNameInput) restNameInput.required = false;
     } else {
         if (cards[0]) cards[0].classList.add('selected');
         if (sellerBox) sellerBox.style.display = 'none';
-        if (restNameInput) restNameInput.required = false;
     }
 }
 
-// Auto select tab if hash is #register or validation error redirected to register
+// Tự động chuyển sang tab Đăng ký nếu URL có hash #register hoặc đang có lỗi đăng ký
 <c:choose>
     <c:when test="${activeTab eq 'registerTab'}">
         switchAuthTab('registerTab');

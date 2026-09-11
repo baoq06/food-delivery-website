@@ -81,6 +81,8 @@ public class AuthController extends HttpServlet {
                     resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
                 } else if (user.isSeller()) {
                     resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
+                } else if (user.isShipper()) {
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
                 } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
                     resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
                 } else {
@@ -99,10 +101,11 @@ public class AuthController extends HttpServlet {
             String fullName = req.getParameter("fullName");
             String phone = req.getParameter("phone");
             String address = req.getParameter("address");
-            String accountType = req.getParameter("accountType"); // "CUSTOMER" hoặc "SELLER"
+            String accountType = req.getParameter("accountType"); // "CUSTOMER", "SELLER" hoặc "SHIPPER"
             String restaurantName = req.getParameter("restaurantName");
 
             boolean isSellerReg = "SELLER".equalsIgnoreCase(accountType);
+            boolean isShipperReg = "SHIPPER".equalsIgnoreCase(accountType);
 
             // Sticky Form & Validation khi đăng ký
             String validationError = null;
@@ -137,10 +140,16 @@ public class AuthController extends HttpServlet {
                 return;
             }
 
-            User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), isSellerReg ? "SELLER" : "CUSTOMER");
+            String role = "CUSTOMER";
+            if (isSellerReg) role = "SELLER";
+            if (isShipperReg) role = "SHIPPER";
+
+            User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), role);
             boolean created;
             if (isSellerReg) {
                 created = userService.registerSeller(newUser, restaurantName.trim(), address.trim());
+            } else if (isShipperReg) {
+                created = userService.registerShipper(newUser);
             } else {
                 created = userService.register(newUser);
             }
@@ -168,6 +177,8 @@ public class AuthController extends HttpServlet {
 
             if (isSellerReg) {
                 resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
+            } else if (isShipperReg || "DRIVER".equalsIgnoreCase(role)) {
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
             } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
                 resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
             } else {

@@ -21,6 +21,10 @@ public class Order implements Serializable {
     private Timestamp createdAt;
     private boolean customerConfirmed;
     private boolean merchantConfirmed;
+    private Review review;
+
+    public Review getReview() { return review; }
+    public void setReview(Review review) { this.review = review; }
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {
