@@ -123,8 +123,11 @@ CREATE TABLE `orders` (
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `customer_confirmed` TINYINT(1) DEFAULT 0, -- Người dùng xác nhận đã nhận/đặt được hàng
-    `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý xong đơn hàng
+    `customer_confirmed` TINYINT(1) DEFAULT 0, -- Khách hàng xác nhận đã nhận được món
+    `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý đơn
+    `shipper_accepted` TINYINT(1) DEFAULT 0,   -- Shipper xác nhận nhận giao đơn
+    `shipper_delivered` TINYINT(1) DEFAULT 0,  -- Shipper xác nhận đã giao tận tay khách
+    `merchant_completed` TINYINT(1) DEFAULT 0, -- Merchant duyệt hoàn thành đơn cuối cùng (để tính doanh thu)
     CONSTRAINT `fk_orders_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE,
@@ -165,6 +168,20 @@ CREATE TABLE IF NOT EXISTS `order_reviews` (
     CONSTRAINT `fk_reviews_drivers` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`driver_id`) ON DELETE SET NULL,
     CONSTRAINT `fk_reviews_restaurants` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`restaurant_id`) ON DELETE CASCADE,
     UNIQUE (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. Bảng thông báo chung cho cả 3 vai trò (notifications)
+CREATE TABLE IF NOT EXISTS `notifications` (
+    `notification_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `order_id` INT DEFAULT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
+    `type` VARCHAR(50) DEFAULT 'ORDER', -- 'ORDER_NEW', 'ORDER_ASSIGNED', 'SHIPPER_ACCEPTED', 'ORDER_SHIPPING', 'SHIPPER_DELIVERED', 'CUSTOMER_CONFIRMED', 'ORDER_COMPLETED', 'ORDER_CANCELLED'
+    `link` VARCHAR(255) DEFAULT NULL,
+    `is_read` TINYINT(1) DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_notif_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ====================================================================

@@ -21,6 +21,9 @@ public class Order implements Serializable {
     private Timestamp createdAt;
     private boolean customerConfirmed;
     private boolean merchantConfirmed;
+    private boolean shipperAccepted;
+    private boolean shipperDelivered;
+    private boolean merchantCompleted;
     private Review review;
 
     public Review getReview() { return review; }
@@ -33,12 +36,19 @@ public class Order implements Serializable {
     public Order(int id, Integer userId, String customerName, String phone, String address, 
                  String note, double totalAmount, String paymentMethod, String status, 
                  Integer driverId, Timestamp createdAt) {
-        this(id, userId, customerName, phone, address, note, totalAmount, paymentMethod, status, driverId, createdAt, false, false);
+        this(id, userId, customerName, phone, address, note, totalAmount, paymentMethod, status, driverId, createdAt, false, false, false, false, false);
     }
 
     public Order(int id, Integer userId, String customerName, String phone, String address, 
                  String note, double totalAmount, String paymentMethod, String status, 
                  Integer driverId, Timestamp createdAt, boolean customerConfirmed, boolean merchantConfirmed) {
+        this(id, userId, customerName, phone, address, note, totalAmount, paymentMethod, status, driverId, createdAt, customerConfirmed, merchantConfirmed, false, false, merchantConfirmed);
+    }
+
+    public Order(int id, Integer userId, String customerName, String phone, String address, 
+                 String note, double totalAmount, String paymentMethod, String status, 
+                 Integer driverId, Timestamp createdAt, boolean customerConfirmed, boolean merchantConfirmed,
+                 boolean shipperAccepted, boolean shipperDelivered, boolean merchantCompleted) {
         this.id = id;
         this.userId = userId;
         this.customerName = customerName;
@@ -52,6 +62,9 @@ public class Order implements Serializable {
         this.createdAt = createdAt;
         this.customerConfirmed = customerConfirmed;
         this.merchantConfirmed = merchantConfirmed;
+        this.shipperAccepted = shipperAccepted;
+        this.shipperDelivered = shipperDelivered;
+        this.merchantCompleted = merchantCompleted;
     }
 
     public int getId() {
@@ -182,7 +195,47 @@ public class Order implements Serializable {
         this.merchantConfirmed = merchantConfirmed;
     }
 
+    public boolean isShipperAccepted() {
+        return shipperAccepted;
+    }
+
+    public void setShipperAccepted(boolean shipperAccepted) {
+        this.shipperAccepted = shipperAccepted;
+    }
+
+    public boolean isShipperDelivered() {
+        return shipperDelivered;
+    }
+
+    public void setShipperDelivered(boolean shipperDelivered) {
+        this.shipperDelivered = shipperDelivered;
+    }
+
+    public boolean isMerchantCompleted() {
+        return merchantCompleted;
+    }
+
+    public void setMerchantCompleted(boolean merchantCompleted) {
+        this.merchantCompleted = merchantCompleted;
+    }
+
     public boolean isFullyConfirmed() {
         return customerConfirmed && merchantConfirmed;
+    }
+
+    /**
+     * Kiểm tra đơn đã sẵn sàng để Chủ quán duyệt hoàn thành hay chưa:
+     * Cần cả Shipper xác nhận đã giao VÀ Khách hàng xác nhận đã nhận món.
+     */
+    public boolean isReadyForMerchantComplete() {
+        return shipperDelivered && customerConfirmed;
+    }
+
+    /**
+     * Kiểm tra Quán có thể bắt đầu nấu & giao hay chưa:
+     * Cần đã gán tài xế VÀ tài xế đó đã bấm chấp nhận giao đơn.
+     */
+    public boolean canStartCooking() {
+        return driverId != null && driverId > 0 && shipperAccepted;
     }
 }

@@ -457,18 +457,28 @@
                                         <div style="font-size: 0.78rem; margin-top: 4px; text-align: right;">
                                             <c:choose>
                                                 <c:when test="${order.customerConfirmed}">
-                                                    <span class="text-success font-weight-bold">
+                                                    <span class="text-success fw-bold">
                                                         <i class="fa-solid fa-circle-check"></i> Bạn đã nhận hàng thành công
                                                     </span>
                                                 </c:when>
-                                                <c:when test="${order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed}">
-                                                    <span class="text-warning font-weight-bold">
-                                                        <i class="fa-solid fa-motorcycle"></i> Quán đã giao shipper - Chờ bạn xác nhận nhận món
+                                                <c:when test="${order.shipperDelivered}">
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold" style="font-size: 0.76rem;">
+                                                        <i class="fa-solid fa-bell fa-shake me-1"></i> Shipper đã đến nơi - Vui lòng xác nhận nhận món!
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${order.status eq 'SHIPPING'}">
+                                                    <span class="text-warning fw-bold">
+                                                        <i class="fa-solid fa-motorcycle"></i> Shipper đang trên đường giao tới bạn
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${order.shipperAccepted}">
+                                                    <span class="text-info fw-bold">
+                                                        <i class="fa-solid fa-fire-burner"></i> Shipper đã nhận đơn - Quán đang nấu
                                                     </span>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span class="text-muted">
-                                                        <i class="fa-solid fa-clock"></i> Đang chờ quán tiếp nhận &amp; gán shipper
+                                                        <i class="fa-solid fa-clock"></i> Đang chờ quán tiếp nhận &amp; chọn shipper
                                                     </span>
                                                 </c:otherwise>
                                             </c:choose>
@@ -576,12 +586,12 @@
                                     </div>
 
                                     <div class="order-actions">
-                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed)}">
+                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or order.shipperDelivered or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed)}">
                                             <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline;">
                                                 <input type="hidden" name="action" value="confirm_received">
                                                 <input type="hidden" name="orderId" value="${order.id}">
-                                                <button type="submit" class="btn btn-success btn-sm" title="Xác nhận bạn đã nhận được món ăn từ shipper">
-                                                    <i class="fa-solid fa-circle-check"></i> Đã nhận được hàng
+                                                <button type="submit" class="btn btn-success btn-sm ${order.shipperDelivered ? 'shadow-sm' : ''}" style="border-radius: 50px; font-weight: 700; padding: 6px 16px; ${order.shipperDelivered ? 'background: #10ac84; border-color: #10ac84;' : ''}" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                                    <i class="fa-solid fa-circle-check me-1"></i> ${order.shipperDelivered ? 'Xác Nhận Đã Nhận Món' : 'Đã nhận được hàng'}
                                                 </button>
                                             </form>
                                         </c:if>

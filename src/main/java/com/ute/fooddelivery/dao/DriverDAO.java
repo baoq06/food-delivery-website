@@ -127,6 +127,7 @@ public class DriverDAO {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
                     ps.setString(1, status);
+                    ps.setInt(2, driverId);
                     return ps.executeUpdate() > 0;
                 }
             }

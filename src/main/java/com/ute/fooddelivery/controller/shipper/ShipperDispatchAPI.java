@@ -1,6 +1,8 @@
 package com.ute.fooddelivery.controller.shipper;
 
+import com.ute.fooddelivery.dao.DriverDAO;
 import com.ute.fooddelivery.dao.OrderDAO;
+import com.ute.fooddelivery.model.Driver;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.User;
 import jakarta.servlet.ServletException;
@@ -14,6 +16,7 @@ import java.io.IOException;
 @WebServlet("/shipper/api/dispatch")
 public class ShipperDispatchAPI extends HttpServlet {
     private final OrderDAO orderDAO = new OrderDAO();
+    private final DriverDAO driverDAO = new DriverDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -26,7 +29,15 @@ public class ShipperDispatchAPI extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        Order pendingOrder = orderDAO.getPendingDispatchOrder();
+        Driver driver = driverDAO.getDriverByUserId(user.getId());
+        Order pendingOrder = null;
+        if (driver != null) {
+            pendingOrder = orderDAO.getPendingAssignedOrderForDriver(driver.getId());
+        }
+        if (pendingOrder == null) {
+            pendingOrder = orderDAO.getPendingDispatchOrder();
+        }
+
         if (pendingOrder != null) {
             String json = String.format(
                 "{\"status\":\"found\", \"orderId\":%d, \"customer\":\"%s\", \"address\":\"%s\", \"amount\":%.0f}",

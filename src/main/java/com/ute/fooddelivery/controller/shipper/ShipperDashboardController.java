@@ -19,6 +19,7 @@ import java.util.List;
 public class ShipperDashboardController extends HttpServlet {
     private final DriverDAO driverDAO = new DriverDAO();
     private final OrderDAO orderDAO = new OrderDAO();
+    private final com.ute.fooddelivery.service.NotificationService notificationService = new com.ute.fooddelivery.service.NotificationService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -55,18 +56,26 @@ public class ShipperDashboardController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
                 return;
             }
-        } else if ("updateOrder".equals(action)) {
+        } else if ("updateOrder".equals(action) || "confirmDelivered".equals(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String status = req.getParameter("status");
-                orderDAO.updateOrderStatus(orderId, status);
-                // Nếu giao xong hoặc bom hàng, đổi tài xế về AVAILABLE
-                if ("DELIVERED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
+                if ("confirmDelivered".equals(action) || "DELIVERED".equalsIgnoreCase(status)) {
+                    // Shipper xác nhận đã giao hàng tận nơi cho khách
+                    if (driver != null) {
+                        orderDAO.shipperConfirmDelivered(orderId, driver.getId());
+                        Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        notificationService.notifyShipperDelivered(customerUserId, merchantUserId, orderId, driver.getName());
+                    }
+                } else if ("CANCELLED".equalsIgnoreCase(status)) {
+                    orderDAO.updateOrderStatus(orderId, "CANCELLED");
                     driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
                     if (driver != null) driver.setStatus("AVAILABLE");
                     session.setAttribute("shipperActive", true);
                     session.setAttribute("driverStatus", "AVAILABLE");
                 } else if ("SHIPPING".equalsIgnoreCase(status)) {
+                    orderDAO.updateOrderStatus(orderId, "SHIPPING");
                     driverDAO.updateStatusByUserId(user.getId(), "BUSY");
                     if (driver != null) driver.setStatus("BUSY");
                     session.setAttribute("shipperActive", true);
@@ -77,15 +86,23 @@ public class ShipperDashboardController extends HttpServlet {
             }
             resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
             return;
-        } else if ("acceptOrder".equals(action)) {
+        } else if ("acceptOrder".equals(action) || "acceptAssignedOrder".equals(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
-                if (driver != null && "AVAILABLE".equalsIgnoreCase(driver.getStatus())) {
-                    boolean success = orderDAO.assignDriver(orderId, driver.getId());
+                if (driver != null) {
+                    // Nếu đơn chưa gán driver này thì gán trước
+                    orderDAO.assignDriver(orderId, driver.getId());
+                    boolean success = orderDAO.shipperAcceptOrder(orderId, driver.getId());
                     if (success) {
                         driver.setStatus("BUSY");
                         session.setAttribute("shipperActive", true);
                         session.setAttribute("driverStatus", "BUSY");
+
+                        // Bắn thông báo cho Quán và Khách hàng
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
+                        notificationService.notifyShipperAccepted(merchantUserId, customerUserId, orderId, driver.getName(), driver.getPhone());
+
                         resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
                         return;
                     }
@@ -94,6 +111,17 @@ public class ShipperDashboardController extends HttpServlet {
                 e.printStackTrace();
             }
             resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=accept_failed");
+            return;
+        } else if ("declineOrder".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                if (driver != null) {
+                    orderDAO.shipperDeclineOrder(orderId, driver.getId());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
             return;
         }
 
@@ -115,7 +143,11 @@ public class ShipperDashboardController extends HttpServlet {
         }
 
         if (driver != null) {
-            // Đơn đang giao
+            // Đơn đang được gán chờ Shipper xác nhận nhận cuốc
+            Order pendingAssignedOrder = orderDAO.getPendingAssignedOrderForDriver(driver.getId());
+            req.setAttribute("pendingAssignedOrder", pendingAssignedOrder);
+
+            // Đơn đang giao (SHIPPING)
             List<Order> activeOrders = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
             if (!activeOrders.isEmpty()) {
                 req.setAttribute("activeOrder", activeOrders.get(0));

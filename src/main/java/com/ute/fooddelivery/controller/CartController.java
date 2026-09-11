@@ -1,6 +1,7 @@
 package com.ute.fooddelivery.controller;
 
 import com.ute.fooddelivery.dao.DriverDAO;
+import com.ute.fooddelivery.dao.OrderDAO;
 import com.ute.fooddelivery.model.CartItem;
 import com.ute.fooddelivery.model.Driver;
 import com.ute.fooddelivery.model.Food;
@@ -8,6 +9,7 @@ import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.OrderItem;
 import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.FoodService;
+import com.ute.fooddelivery.service.NotificationService;
 import com.ute.fooddelivery.service.OrderService;
 import com.ute.fooddelivery.utils.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -26,6 +28,8 @@ import java.util.Map;
 public class CartController extends HttpServlet {
     private final FoodService foodService = new FoodService();
     private final OrderService orderService = new OrderService();
+    private final OrderDAO orderDAO = new OrderDAO();
+    private final NotificationService notificationService = new NotificationService();
     private final DriverDAO driverDAO = new DriverDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
@@ -220,6 +224,16 @@ public class CartController extends HttpServlet {
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
+                    // Tự động gửi thông báo tức thì đến Chủ quán ăn (Merchant)
+                    try {
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        if (merchantUserId != null) {
+                            notificationService.notifyNewOrderToMerchant(merchantUserId, orderId, order.getCustomerName(), order.getTotalAmount());
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi gửi thông báo đơn mới đến chủ quán: " + e.getMessage());
+                    }
+
                     // Xóa các cookie giao hàng cũ (nếu có) để bảo mật thông tin tài khoản
                     CookieUtils.deleteCookie(resp, "deli_name");
                     CookieUtils.deleteCookie(resp, "deli_phone");

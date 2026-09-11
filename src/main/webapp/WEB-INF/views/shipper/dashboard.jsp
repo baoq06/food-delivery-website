@@ -480,6 +480,62 @@
             <!-- CONDITIONAL TAB 1: DISPATCH & ACTIVE ORDER (activeTab ne 'history') -->
             <!-- ============================================================= -->
             <c:if test="${activeTab ne 'history'}">
+                <!-- ĐƠN HÀNG QUÁN VỪA CHỈ ĐỊNH (CẦN SHIPPER XÁC NHẬN NHẬN CUỐC) -->
+                <c:if test="${not empty pendingAssignedOrder}">
+                    <div class="shipper-card mb-4" style="border: 2px solid #f59e0b; background: #fffdf5; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);">
+                        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                    <i class="fa-solid fa-bell fa-shake"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #fff;">QUÁN VỪA CHỈ ĐỊNH BẠN GIAO ĐƠN!</h4>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.82rem; opacity: 0.95;">Quán đang đợi bạn bấm đồng ý nhận để bắt đầu chế biến món ăn.</p>
+                                </div>
+                            </div>
+                            <span class="badge bg-white text-warning fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
+                                ⏳ Chờ bạn phản hồi
+                            </span>
+                        </div>
+                        <div style="padding: 24px;">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <span class="text-muted small">Mã đơn hàng:</span>
+                                    <div class="fw-bold fs-6 text-dark">#FZ-${pendingAssignedOrder.id}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted small">Khách nhận:</span>
+                                    <div class="fw-bold fs-6 text-dark">${pendingAssignedOrder.customerName} (${pendingAssignedOrder.phone})</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-muted small">Thu hộ COD:</span>
+                                    <div class="fw-bold fs-5 text-danger"><fmt:formatNumber value="${pendingAssignedOrder.totalAmount}" pattern="#,###" /> đ</div>
+                                </div>
+                                <div class="col-12">
+                                    <span class="text-muted small">Địa chỉ giao hàng:</span>
+                                    <div class="fw-semibold text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i> ${pendingAssignedOrder.address}</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 2; min-width: 220px;">
+                                    <input type="hidden" name="action" value="acceptOrder">
+                                    <input type="hidden" name="orderId" value="${pendingAssignedOrder.id}">
+                                    <button type="submit" class="btn btn-success btn-lg w-100 py-3" style="border-radius: 50px; font-weight: 800; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3);">
+                                        <i class="fa-solid fa-check-double me-2"></i> ĐỒNG Ý NHẬN GIAO ĐƠN NÀY
+                                    </button>
+                                </form>
+                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 1; min-width: 150px;" onsubmit="return confirm('Bạn có chắc muốn từ chối cuốc xe này? Quán sẽ gán tài xế khác.');">
+                                    <input type="hidden" name="action" value="declineOrder">
+                                    <input type="hidden" name="orderId" value="${pendingAssignedOrder.id}">
+                                    <button type="submit" class="btn btn-outline-danger btn-lg w-100 py-3" style="border-radius: 50px; font-weight: 700;">
+                                        <i class="fa-solid fa-xmark me-1"></i> Từ chối
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </c:if>
+
                 <c:choose>
                     <c:when test="${not empty activeOrder}">
                         <!-- CHI TIẾT ĐƠN HÀNG ĐANG GIAO & VÒNG ĐỜI -->
@@ -536,36 +592,48 @@
                                         <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 12px;">
                                             <i class="fa-solid fa-list-check me-1"></i> Cập nhật tiến độ giao hàng:
                                         </div>
-                                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                                            <!-- Button 1: Đã lấy món -->
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
-                                                <input type="hidden" name="action" value="updateOrder">
-                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                <input type="hidden" name="status" value="SHIPPING">
-                                                <button type="submit" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; padding: 10px 20px;" onclick="alert('Đã cập nhật trạng thái: Đã lấy món từ quán và đang trên đường giao!');">
-                                                    <i class="fa-solid fa-box text-primary me-1"></i> Đã lấy món
-                                                </button>
-                                            </form>
+                                        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                            <c:choose>
+                                                <c:when test="${activeOrder.shipperDelivered}">
+                                                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0 w-100" style="border-radius: 12px; padding: 12px 18px;">
+                                                        <i class="fa-solid fa-circle-check text-success fs-4"></i>
+                                                        <div>
+                                                            <div class="fw-bold">Bạn đã xác nhận giao hàng thành công!</div>
+                                                            <div class="small text-muted">Đang chờ khách hàng xác nhận nhận món và chủ quán duyệt hoàn tất đơn. Tiền ship sẽ cập nhật vào ví khi hoàn tất.</div>
+                                                        </div>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <!-- Button 1: Đã lấy món -->
+                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                                        <input type="hidden" name="action" value="updateOrder">
+                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                        <input type="hidden" name="status" value="SHIPPING">
+                                                        <button type="submit" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; padding: 10px 20px;" onclick="alert('Đã cập nhật trạng thái: Đã lấy món từ quán và đang trên đường giao!');">
+                                                            <i class="fa-solid fa-box text-primary me-1"></i> Đã lấy món
+                                                        </button>
+                                                    </form>
 
-                                            <!-- Button 2: Giao thành công -->
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
-                                                <input type="hidden" name="action" value="updateOrder">
-                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                <input type="hidden" name="status" value="DELIVERED">
-                                                <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận khách đã nhận món và thu đủ tiền COD? Tiền ship sẽ được cộng ngay vào ví của bạn.');">
-                                                    <i class="fa-solid fa-circle-check me-1"></i> Giao Thành Công & Nhận Tiền
-                                                </button>
-                                            </form>
+                                                    <!-- Button 2: Giao thành công & Xác nhận -->
+                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                                        <input type="hidden" name="action" value="confirmDelivered">
+                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                        <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận bạn đã giao món ăn tận nơi cho khách?');">
+                                                            <i class="fa-solid fa-circle-check me-1"></i> Tôi Đã Giao Hàng Thành Công
+                                                        </button>
+                                                    </form>
 
-                                            <!-- Button 3: Khách boom hàng / Hủy -->
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
-                                                <input type="hidden" name="action" value="updateOrder">
-                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                <input type="hidden" name="status" value="CANCELLED">
-                                                <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 10px 20px; background: #fff; color: #dc2626; border-color: #fca5a5;" onclick="return confirm('Bạn xác nhận báo cáo đơn hàng này bị bom/hủy? Hệ thống sẽ ghi nhận vi phạm của khách hàng.');">
-                                                    <i class="fa-solid fa-ban me-1"></i> Khách Bom Hàng
-                                                </button>
-                                            </form>
+                                                    <!-- Button 3: Khách boom hàng / Hủy -->
+                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                                        <input type="hidden" name="action" value="updateOrder">
+                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                        <input type="hidden" name="status" value="CANCELLED">
+                                                        <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 10px 20px; background: #fff; color: #dc2626; border-color: #fca5a5;" onclick="return confirm('Bạn xác nhận báo cáo đơn hàng này bị bom/hủy?');">
+                                                            <i class="fa-solid fa-ban me-1"></i> Báo Hủy Đơn
+                                                        </button>
+                                                    </form>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
                                     </div>
                                 </div>

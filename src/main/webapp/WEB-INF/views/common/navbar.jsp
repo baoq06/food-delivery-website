@@ -53,10 +53,56 @@
     .topbar-toggle-shipper-btn.offline .shipper-pulse-dot {
         background: #94a3b8;
     }
-    @keyframes pulseGreen {
-        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 172, 132, 0.7); }
-        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 172, 132, 0); }
-        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 172, 132, 0); }
+    /* Notification Bell UI/UX Pro Max */
+    .nav-notif-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-right: 6px;
+    }
+    .nav-notif-btn:hover {
+        background: #fff5f5;
+        border-color: #fca5a5;
+        color: #f05454;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(240, 84, 84, 0.2);
+    }
+    .nav-notif-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        background: #f05454;
+        color: #ffffff;
+        font-size: 0.68rem;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(240, 84, 84, 0.4);
+    }
+    .nav-notif-badge.has-unread {
+        animation: bellShake 2.8s infinite;
+    }
+    @keyframes bellShake {
+        0%, 100% { transform: rotate(0); }
+        10%, 30% { transform: rotate(-12deg) scale(1.08); }
+        20%, 40% { transform: rotate(12deg) scale(1.08); }
+        50% { transform: rotate(0); }
     }
 </style>
 
@@ -231,6 +277,12 @@
                 <div class="nav-actions">
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
+                            <!-- Chuông thông báo Realtime cho cả 3 vai trò -->
+                            <a href="${pageContext.request.contextPath}/notifications" class="nav-notif-btn" id="navNotifBtn" title="Xem thông báo của bạn">
+                                <i class="fa-solid fa-bell"></i>
+                                <span class="nav-notif-badge" id="navNotifBadge" style="display: none;">0</span>
+                            </a>
+
                             <div class="user-menu">
                                 <div class="user-avatar-pill">
                                     <i class="fa-solid fa-circle-user"></i>
@@ -271,6 +323,12 @@
                                         </a>
                                     </c:if>
 
+                                    <!-- Link tới Trang Thông Báo Chung -->
+                                    <a href="${pageContext.request.contextPath}/notifications" class="${pageContext.request.servletPath eq '/notifications' ? 'active-link' : ''}">
+                                        <i class="fa-solid fa-bell text-warning"></i> Thông báo của tôi
+                                        <span class="badge bg-danger ms-auto" id="dropdownNotifBadge" style="display:none; font-size: 0.7rem; border-radius: 50px;">0</span>
+                                    </a>
+
                                     <a href="${pageContext.request.contextPath}/profile" class="${pageContext.request.servletPath eq '/profile' and (empty param.tab or param.tab eq 'profile') ? 'active-link' : ''}">
                                         <i class="fa-solid fa-id-card text-primary"></i> Tài khoản của tôi
                                     </a>
@@ -307,6 +365,41 @@
                                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
                                 </div>
                             </div>
+
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    function updateUnreadNotifBadge() {
+                                        fetch('${pageContext.request.contextPath}/api/notifications/unread-count')
+                                            .then(function(res) { return res.json(); })
+                                            .then(function(data) {
+                                                var count = data.unreadCount || 0;
+                                                var badge = document.getElementById('navNotifBadge');
+                                                var dropBadge = document.getElementById('dropdownNotifBadge');
+                                                if (badge) {
+                                                    if (count > 0) {
+                                                        badge.innerText = count > 99 ? '99+' : count;
+                                                        badge.style.display = 'flex';
+                                                        badge.classList.add('has-unread');
+                                                    } else {
+                                                        badge.style.display = 'none';
+                                                        badge.classList.remove('has-unread');
+                                                    }
+                                                }
+                                                if (dropBadge) {
+                                                    if (count > 0) {
+                                                        dropBadge.innerText = count;
+                                                        dropBadge.style.display = 'inline-block';
+                                                    } else {
+                                                        dropBadge.style.display = 'none';
+                                                    }
+                                                }
+                                            })
+                                            .catch(function(err) {});
+                                    }
+                                    updateUnreadNotifBadge();
+                                    setInterval(updateUnreadNotifBadge, 5000);
+                                });
+                            </script>
                         </c:when>
                         <c:otherwise>
                             <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>

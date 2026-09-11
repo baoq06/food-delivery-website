@@ -202,6 +202,13 @@ public class ProfileController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 boolean cancelled = orderService.cancelOrderByCustomer(orderId, currentUser.getId());
                 if (cancelled) {
+                    try {
+                        com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                        com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
+                        Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
+                        Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
+                        notifSvc.notifyOrderCancelled(currentUser.getId(), shipperUserId, merchantUserId, orderId, "Khách hàng tự hủy đơn");
+                    } catch (Exception ignored) {}
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_cancelled");
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
@@ -216,6 +223,13 @@ public class ProfileController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
                 if (confirmed) {
+                    try {
+                        com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                        com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
+                        Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
+                        Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
+                        notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
+                    } catch (Exception ignored) {}
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
