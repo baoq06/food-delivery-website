@@ -174,6 +174,12 @@
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('customer', '123456')">
                         <span>👤 Khách hàng</span>
                     </button>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('bepviet', '123456')">
+                        <span>🏪 Người bán hàng</span>
+                    </button>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('kaitokid', '123456')">
+                        <span>🛵 Shipper</span>
+                    </button>
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('admin', '123456')">
                         <span>⚡ Quản trị</span>
                     </button>

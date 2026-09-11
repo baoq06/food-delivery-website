@@ -101,4 +101,8 @@ public class User implements Serializable {
     public boolean isCustomer() {
         return "CUSTOMER".equalsIgnoreCase(this.role);
     }
+
+    public boolean isShipper() {
+        return "SHIPPER".equalsIgnoreCase(this.role) || "DRIVER".equalsIgnoreCase(this.role);
+    }
 }

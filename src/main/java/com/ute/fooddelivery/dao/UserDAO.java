@@ -50,6 +50,9 @@ public class UserDAO {
         if ("pho1985".equalsIgnoreCase(account) && "123456".equals(password)) {
             return new User(6, "pho1985", "123456", "Chủ Quán Phở 1985", "pho1985@foodzone.vn", "0902345678", "128 Võ Văn Tần, Q.3, TP. HCM", "SELLER");
         }
+        if ("kaitokid".equalsIgnoreCase(account) && "123456".equals(password)) {
+            return new User(90005, "kaitokid", "123456", "Kiệt Gia", "kietgia@uteefood.vn", "0987654321", "TP. Hồ Chí Minh", "SHIPPER");
+        }
 
         return null;
     }
@@ -169,6 +172,9 @@ public class UserDAO {
         }
         if (id == 6) {
             return new User(6, "pho1985", "123456", "Chủ Quán Phở 1985", "pho1985@foodzone.vn", "0902345678", "128 Võ Văn Tần, Q.3, TP. HCM", "SELLER");
+        }
+        if (id == 90005) {
+            return new User(90005, "kaitokid", "123456", "Kiệt Gia", "kietgia@uteefood.vn", "0987654321", "TP. Hồ Chí Minh", "SHIPPER");
         }
 
         return null;

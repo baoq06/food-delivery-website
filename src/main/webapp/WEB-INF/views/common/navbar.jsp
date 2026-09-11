@@ -138,6 +138,7 @@
                                             <c:choose>
                                                 <c:when test="${sessionScope.currentUser.role eq 'ADMIN'}"><span class="role-badge role-admin"><i class="fa-solid fa-shield-halved"></i> Quản trị viên</span></c:when>
                                                 <c:when test="${sessionScope.currentUser.seller}"><span class="role-badge role-seller"><i class="fa-solid fa-store"></i> Đối tác Quán ăn</span></c:when>
+                                                <c:when test="${sessionScope.currentUser.role eq 'SHIPPER' or sessionScope.currentUser.shipper}"><span class="role-badge role-shipper"><i class="fa-solid fa-motorcycle"></i> Tài xế Shipper</span></c:when>
                                                 <c:otherwise><span class="role-badge role-customer"><i class="fa-solid fa-crown"></i> Khách hàng thân thiết</span></c:otherwise>
                                             </c:choose>
                                         </div>
