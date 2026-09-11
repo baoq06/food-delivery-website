@@ -82,6 +82,14 @@ public class AuthController extends HttpServlet {
                 } else if (user.isSeller()) {
                     resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
                 } else if (user.isShipper()) {
+                    com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
+                    com.ute.fooddelivery.model.Driver driver = driverDAO.getOrCreateDriverForUser(user);
+                    boolean isActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+                    session.setAttribute("shipperActive", isActive);
+                    session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+                    if (isActive) {
+                        session.removeAttribute("cart");
+                    }
                     resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
                 } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
                     resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
@@ -140,6 +148,9 @@ public class AuthController extends HttpServlet {
                 return;
             }
 
+            String licensePlate = req.getParameter("licensePlate");
+            String vehicleType = req.getParameter("vehicleType");
+
             String role = "CUSTOMER";
             if (isSellerReg) role = "SELLER";
             if (isShipperReg) role = "SHIPPER";
@@ -149,7 +160,7 @@ public class AuthController extends HttpServlet {
             if (isSellerReg) {
                 created = userService.registerSeller(newUser, restaurantName.trim(), address.trim());
             } else if (isShipperReg) {
-                created = userService.registerShipper(newUser);
+                created = userService.registerShipper(newUser, licensePlate, vehicleType);
             } else {
                 created = userService.register(newUser);
             }
@@ -178,6 +189,12 @@ public class AuthController extends HttpServlet {
             if (isSellerReg) {
                 resp.sendRedirect(req.getContextPath() + "/merchant/dashboard");
             } else if (isShipperReg || "DRIVER".equalsIgnoreCase(role)) {
+                com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
+                User targetUser = loggedUser != null ? loggedUser : newUser;
+                com.ute.fooddelivery.model.Driver driver = driverDAO.getOrCreateDriverForUser(targetUser);
+                boolean isActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+                session.setAttribute("shipperActive", isActive);
+                session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
                 resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
             } else if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
                 resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));

@@ -31,7 +31,20 @@ public class ClientOrderController extends HttpServlet {
             return;
         }
 
-        List<Order> orders = orderDAO.getOrdersByUser(currentUser.getId());
+        // Nếu là shipper và đang BẬT chế độ nhận đơn: chỉ xem lịch sử những đơn người đó giao
+        if (currentUser.isShipper()) {
+            com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
+            com.ute.fooddelivery.model.Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            session.setAttribute("shipperActive", isShipperActive);
+            session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            if (isShipperActive) {
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=history");
+                return;
+            }
+        }
+
+        List<Order> orders = orderDAO.getOrdersByUserId(currentUser.getId());
         req.setAttribute("orders", orders);
 
         req.getRequestDispatcher("/WEB-INF/views/client/order-history.jsp").forward(req, resp);

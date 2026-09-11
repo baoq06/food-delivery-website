@@ -1,6 +1,8 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.dao.DriverDAO;
 import com.ute.fooddelivery.model.CartItem;
+import com.ute.fooddelivery.model.Driver;
 import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.OrderItem;
@@ -24,6 +26,7 @@ import java.util.Map;
 public class CartController extends HttpServlet {
     private final FoodService foodService = new FoodService();
     private final OrderService orderService = new OrderService();
+    private final DriverDAO driverDAO = new DriverDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
     @Override
@@ -35,6 +38,23 @@ public class CartController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
             return;
+        }
+
+        // Chặn shipper đang BẬT chế độ nhận đơn (không thể đặt hàng)
+        if (currentUser != null && currentUser.isShipper()) {
+            Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            if (session != null) {
+                session.setAttribute("shipperActive", isShipperActive);
+                session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            }
+            if (isShipperActive) {
+                if (session != null) {
+                    session.removeAttribute("cart");
+                }
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?warning=shipper_mode_active");
+                return;
+            }
         }
 
         // Bắt buộc đăng nhập khi xem giỏ hàng / thông tin đặt hàng
@@ -59,6 +79,23 @@ public class CartController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
             return;
+        }
+
+        // Chặn shipper đang BẬT chế độ nhận đơn thêm món hoặc đặt hàng
+        if (currentUser != null && currentUser.isShipper()) {
+            Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            if (session != null) {
+                session.setAttribute("shipperActive", isShipperActive);
+                session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            }
+            if (isShipperActive) {
+                if (session != null) {
+                    session.removeAttribute("cart");
+                }
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?warning=shipper_mode_active");
+                return;
+            }
         }
 
         String action = req.getParameter("action");

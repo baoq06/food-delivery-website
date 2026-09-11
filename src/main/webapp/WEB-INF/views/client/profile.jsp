@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
     <jsp:param name="title" value="Tài Khoản Của Tôi - Utee Express" />
 </jsp:include>
@@ -37,6 +38,42 @@
         </div>
     </c:if>
 
+    <!-- Shipper Mode Status Banner -->
+    <c:if test="${user.isShipper()}">
+        <div class="alert ${sessionScope.shipperActive ? 'alert-success' : 'alert-info'}" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid ${sessionScope.shipperActive ? '#10ac84' : '#ff9f43'};">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${sessionScope.shipperActive ? '#e6f9ed' : '#f1f5f9'}; color: ${sessionScope.shipperActive ? '#10ac84' : '#64748b'}; font-size: 1.3rem;">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+                <div>
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem;">
+                        ${sessionScope.shipperActive ? 'Chế độ Shipper: ĐANG BẬT (Trực Tuyến)' : 'Chế độ Shipper: ĐANG TẮT (Ngoại Tuyến / Khách Hàng)'}
+                    </h5>
+                    <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-muted);">
+                        ${sessionScope.shipperActive ? 'Bạn đang trong ca trực sẵn sàng nhận cuốc xe. Giỏ hàng và tính năng đặt đồ ăn được tạm khóa để ưu tiên giao đơn.' : 'Bạn đang ngoại tuyến nhận đơn. Lúc này bạn có thể lướt thực đơn, đặt món ăn và xem lịch sử đơn đã đặt như khách bình thường.'}
+                    </p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <c:choose>
+                    <c:when test="${sessionScope.shipperActive}">
+                        <a href="${pageContext.request.contextPath}/shipper/history" class="btn btn-outline btn-sm" style="border-radius: 50px; font-weight: 600;">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Chuyến xe đã giao
+                        </a>
+                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile" class="btn btn-danger btn-sm" style="border-radius: 50px; font-weight: 600;">
+                            <i class="fa-solid fa-power-off"></i> Tắt nhận đơn (Làm khách)
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile" class="btn btn-success btn-sm" style="border-radius: 50px; font-weight: 600;">
+                            <i class="fa-solid fa-power-off"></i> Bật nhận đơn ngay
+                        </a>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </c:if>
+
     <!-- Profile Hero Card -->
     <div class="profile-hero-card">
         <div class="profile-hero-main">
@@ -63,6 +100,11 @@
                         <c:when test="${user.seller}">
                             <span class="profile-badge badge-seller"><i class="fa-solid fa-store"></i> Đối Tác Quán Ăn</span>
                         </c:when>
+                        <c:when test="${user.isShipper()}">
+                            <span class="profile-badge badge-shipper" style="background: ${sessionScope.shipperActive ? '#10ac84' : '#64748b'}; color: #fff;">
+                                <i class="fa-solid fa-motorcycle"></i> ${sessionScope.shipperActive ? 'Shipper Trực Tuyến' : 'Shipper Ngoại Tuyến'}
+                            </span>
+                        </c:when>
                         <c:otherwise>
                             <span class="profile-badge badge-customer"><i class="fa-solid fa-crown"></i> Khách Hàng Thân Thiết</span>
                         </c:otherwise>
@@ -76,48 +118,95 @@
             </div>
         </div>
 
-        <!-- KPI Stats Grid -->
-        <div class="profile-stats-grid">
-            <div class="profile-stat-box">
-                <div class="stat-icon-wrap stat-icon-primary">
-                    <i class="fa-solid fa-receipt"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${totalOrders}</div>
-                    <div class="stat-label">Tổng đơn đã đặt</div>
-                </div>
-            </div>
+        <!-- KPI Stats Grid: Linh hoạt theo chế độ Shipper hay Khách hàng -->
+        <c:choose>
+            <c:when test="${user.isShipper() and sessionScope.shipperActive}">
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-success">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${driverWallet.todayTrips != null ? driverWallet.todayTrips : 0} cuốc</div>
+                            <div class="stat-label">Chuyến giao hôm nay</div>
+                        </div>
+                    </div>
 
-            <div class="profile-stat-box">
-                <div class="stat-icon-wrap stat-icon-warning">
-                    <i class="fa-solid fa-motorcycle"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${activeOrders}</div>
-                    <div class="stat-label">Đơn đang xử lý / giao</div>
-                </div>
-            </div>
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-primary">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value"><fmt:formatNumber value="${driverWallet.todayEarnings != null ? driverWallet.todayEarnings : 0}" pattern="#,###" /> đ</div>
+                            <div class="stat-label">Thu nhập hôm nay</div>
+                        </div>
+                    </div>
 
-            <div class="profile-stat-box">
-                <div class="stat-icon-wrap stat-icon-success">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value">${completedOrders}</div>
-                    <div class="stat-label">Đơn đã hoàn tất</div>
-                </div>
-            </div>
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-info">
+                            <i class="fa-solid fa-route"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${driverWallet.totalTrips != null ? driverWallet.totalTrips : 0} cuốc</div>
+                            <div class="stat-label">Tổng chuyến hoàn thành</div>
+                        </div>
+                    </div>
 
-            <div class="profile-stat-box">
-                <div class="stat-icon-wrap stat-icon-info">
-                    <i class="fa-solid fa-coins"></i>
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-warning">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value"><fmt:formatNumber value="${driverWallet.totalEarnings != null ? driverWallet.totalEarnings : 0}" pattern="#,###" /> đ</div>
+                            <div class="stat-label">Tổng thu nhập tích lũy</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-value">${String.format("%,.0f", totalSpent)} đ</div>
-                    <div class="stat-label">Tổng chi tiêu</div>
+            </c:when>
+            <c:otherwise>
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-primary">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${totalOrders}</div>
+                            <div class="stat-label">Tổng đơn đã đặt</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-warning">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${activeOrders}</div>
+                            <div class="stat-label">Đơn đang xử lý / giao</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-success">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${completedOrders}</div>
+                            <div class="stat-label">Đơn đã hoàn tất</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-info">
+                            <i class="fa-solid fa-coins"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${String.format("%,.0f", totalSpent)} đ</div>
+                            <div class="stat-label">Tổng chi tiêu</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <!-- Navigation Tabs -->
@@ -127,11 +216,22 @@
                 <i class="fa-solid fa-id-card"></i>
                 <span>Thông tin cá nhân & Địa chỉ</span>
             </button>
-            <button type="button" class="profile-tab-btn ${activeTab eq 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-                <span>Lịch sử đơn hàng</span>
-                <span class="tab-count-badge">${totalOrders}</span>
-            </button>
+            <c:choose>
+                <c:when test="${user.isShipper() and sessionScope.shipperActive}">
+                    <a href="${pageContext.request.contextPath}/shipper/history" class="profile-tab-btn" style="text-decoration: none;">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Lịch sử chuyến giao (Tài xế)</span>
+                        <span class="tab-count-badge" style="background:#10ac84; color:#fff;">Shipper</span>
+                    </a>
+                </c:when>
+                <c:otherwise>
+                    <button type="button" class="profile-tab-btn ${activeTab eq 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span>Lịch sử đơn hàng đã đặt</span>
+                        <span class="tab-count-badge">${totalOrders}</span>
+                    </button>
+                </c:otherwise>
+            </c:choose>
             <button type="button" class="profile-tab-btn ${activeTab eq 'security' ? 'active' : ''}" onclick="switchTab('security')">
                 <i class="fa-solid fa-shield-halved"></i>
                 <span>Đổi mật khẩu & Bảo mật</span>
@@ -278,6 +378,26 @@
         </div>
 
         <c:choose>
+            <c:when test="${user.isShipper() and sessionScope.shipperActive}">
+                <!-- Shipper Active Notice in Orders Tab -->
+                <div class="empty-orders-card" style="border: 2px dashed #10ac84; background: #f0fdf9; padding: 48px 24px;">
+                    <div class="empty-icon-wrap" style="background: #e6f9ed; color: #10ac84;">
+                        <i class="fa-solid fa-motorcycle"></i>
+                    </div>
+                    <h3 class="empty-title" style="color: #065f46;">Chế độ Shipper đang BẬT</h3>
+                    <p class="empty-desc" style="max-width: 520px; margin: 0 auto 24px auto;">
+                        Bạn đang trực tuyến nhận đơn giao hàng. Lịch sử đơn đặt món cá nhân tạm ẩn. Bạn chỉ có thể xem <strong>lịch sử các cuốc xe bạn đi giao</strong> hoặc tắt chế độ shipper để xem đơn đặt.
+                    </p>
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <a href="${pageContext.request.contextPath}/shipper/history" class="btn btn-primary btn-order-now" style="background: #10ac84; border-color: #10ac84;">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Xem lịch sử các chuyến giao
+                        </a>
+                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile?tab=orders" class="btn btn-outline" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                            <i class="fa-solid fa-power-off"></i> Tắt chế độ shipper để xem đơn đặt
+                        </a>
+                    </div>
+                </div>
+            </c:when>
             <c:when test="${empty orders or orders.size() eq 0}">
                 <!-- Empty State -->
                 <div class="empty-orders-card">

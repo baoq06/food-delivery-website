@@ -94,15 +94,25 @@
                                     <span class="price-label">Giá</span>
                                     <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
                                 </div>
-                                <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
-                                    <input type="hidden" name="action" value="add">
-                                    <input type="hidden" name="foodId" value="${food.id}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="btn-add-cart" title="Thêm vào giỏ">
-                                        <i class="fa-solid fa-cart-plus"></i>
-                                        <span>Đặt món</span>
-                                    </button>
-                                </form>
+                                <c:choose>
+                                    <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                        <button type="button" class="btn-add-cart disabled" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở góc trên màn hình nếu muốn đặt món như khách hàng!');" style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;" title="Chế độ Shipper đang bật">
+                                            <i class="fa-solid fa-motorcycle"></i>
+                                            <span>Đang là Shipper</span>
+                                        </button>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="foodId" value="${food.id}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn-add-cart" title="Thêm vào giỏ">
+                                                <i class="fa-solid fa-cart-plus"></i>
+                                                <span>Đặt món</span>
+                                            </button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
                         </div>
                     </div>

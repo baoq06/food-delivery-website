@@ -403,8 +403,10 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at " +
+            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "                r.review_id, r.rating, r.comment " +
             "FROM orders o " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.driver_id = ? "
         );
         if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
@@ -429,6 +431,15 @@ public class OrderDAO {
                                 rs.getString("status"), rs.getInt("driver_id"),
                                 rs.getTimestamp("created_at")
                             );
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                order.setReview(review);
+                            }
                             list.add(order);
                         }
                     }

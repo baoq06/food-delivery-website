@@ -173,8 +173,8 @@
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('customer', '123456')">
                         <span>👤 Khách hàng</span>
                     </button>
-                    <button type="button" class="auth-demo-chip" onclick="fillDemo('shipper1', '123456')">
-                        <span>🛵 Tài xế</span>
+                    <button type="button" class="auth-demo-chip" onclick="fillDemo('kaitokid', '123456')">
+                        <span>🛵 Shipper (kaitokid)</span>
                     </button>
                     <button type="button" class="auth-demo-chip" onclick="fillDemo('admin', '123456')">
                         <span>⚡ Quản trị</span>
@@ -303,6 +303,34 @@
                         </div>
                     </div>
 
+                    <!-- Extra Dynamic Field for Shipper Mode -->
+                    <div class="auth-seller-input-box" id="shipperFields" style="display: ${stickyAccountType eq 'SHIPPER' ? 'block' : 'none'}; background: #f0fdf9; border-color: #a7f3d0; margin-bottom: 16px;">
+                        <div style="font-size: 0.88rem; color: #047857; margin-bottom: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-circle-check text-success" style="font-size: 1.1rem;"></i>
+                            <span>Đối tác giao hàng nhận 15.000đ/cuốc xe. Tự do Bật/Tắt nhận đơn bất cứ lúc nào!</span>
+                        </div>
+                        <div class="auth-fields-row-2">
+                            <div class="auth-field-group" style="margin-bottom: 0;">
+                                <label for="licensePlate" class="auth-field-label" style="color: #065f46;">Biển số xe máy</label>
+                                <div class="auth-field-control">
+                                    <span class="auth-field-icon"><i class="fa-solid fa-motorcycle" style="color: #10ac84;"></i></span>
+                                    <input type="text" id="licensePlate" name="licensePlate" class="auth-field-input"
+                                           value="<c:out value='${stickyLicensePlate != null ? stickyLicensePlate : "59-X3 999.99"}' />"
+                                           placeholder="Ví dụ: 59-X3 999.99">
+                                </div>
+                            </div>
+                            <div class="auth-field-group" style="margin-bottom: 0;">
+                                <label for="vehicleType" class="auth-field-label" style="color: #065f46;">Loại phương tiện</label>
+                                <div class="auth-field-control">
+                                    <span class="auth-field-icon"><i class="fa-solid fa-gauge" style="color: #10ac84;"></i></span>
+                                    <input type="text" id="vehicleType" name="vehicleType" class="auth-field-input"
+                                           value="<c:out value='${stickyVehicleType != null ? stickyVehicleType : "Honda Air Blade"}' />"
+                                           placeholder="Ví dụ: Honda Vision, Wave, Air Blade...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button type="submit" class="auth-primary-submit-btn" style="margin-top: 6px;">
                         <span>Tạo tài khoản ngay</span>
                         <i class="fa-solid fa-arrow-right"></i>
@@ -379,6 +407,7 @@ function toggleSellerFields() {
     const isSeller = document.getElementById('typeSeller') ? document.getElementById('typeSeller').checked : false;
     const isShipper = document.getElementById('typeShipper') ? document.getElementById('typeShipper').checked : false;
     const sellerBox = document.getElementById('sellerFields');
+    const shipperBox = document.getElementById('shipperFields');
     const restNameInput = document.getElementById('restaurantName');
     const cards = document.querySelectorAll('.auth-type-radio-card');
 
@@ -386,14 +415,18 @@ function toggleSellerFields() {
     if (isSeller) {
         if (cards[1]) cards[1].classList.add('selected');
         if (sellerBox) sellerBox.style.display = 'block';
+        if (shipperBox) shipperBox.style.display = 'none';
         if (restNameInput) restNameInput.required = true;
     } else if (isShipper) {
         if (cards[2]) cards[2].classList.add('selected');
         if (sellerBox) sellerBox.style.display = 'none';
+        if (shipperBox) shipperBox.style.display = 'block';
         if (restNameInput) restNameInput.required = false;
     } else {
         if (cards[0]) cards[0].classList.add('selected');
         if (sellerBox) sellerBox.style.display = 'none';
+        if (shipperBox) shipperBox.style.display = 'none';
+        if (restNameInput) restNameInput.required = false;
     }
 }
 

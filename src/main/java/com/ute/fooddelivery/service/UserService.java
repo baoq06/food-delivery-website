@@ -33,5 +33,9 @@ public class UserService {
     public boolean registerShipper(User user) {
         return userDAO.registerShipper(user);
     }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType) {
+        return userDAO.registerShipper(user, licensePlate, vehicleType);
+    }
 }
 

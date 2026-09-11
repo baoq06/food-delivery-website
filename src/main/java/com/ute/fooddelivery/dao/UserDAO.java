@@ -219,8 +219,12 @@ public class UserDAO {
     }
 
     public boolean registerShipper(User user) {
+        return registerShipper(user, "59-X3 999.99", "Xe máy");
+    }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType) {
         String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'SHIPPER')";
-        String insertDriverSql = "INSERT INTO drivers (user_id, name, phone, status) VALUES (?, ?, ?, 'OFFLINE')";
+        String insertDriverSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type) VALUES (?, ?, ?, 'AVAILABLE', ?, ?)";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
@@ -251,6 +255,8 @@ public class UserDAO {
                     psDriver.setInt(1, userId);
                     psDriver.setString(2, user.getFullName());
                     psDriver.setString(3, user.getPhone());
+                    psDriver.setString(4, licensePlate != null && !licensePlate.trim().isEmpty() ? licensePlate.trim() : "59-X3 999.99");
+                    psDriver.setString(5, vehicleType != null && !vehicleType.trim().isEmpty() ? vehicleType.trim() : "Xe máy");
                     psDriver.executeUpdate();
                 }
             }
