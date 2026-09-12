@@ -29,4 +29,13 @@ public class UserService {
     public boolean changePassword(int userId, String oldPassword, String newPassword) {
         return userDAO.changePassword(userId, oldPassword, newPassword);
     }
+
+    public boolean registerShipper(User user) {
+        return userDAO.registerShipper(user);
+    }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType) {
+        return userDAO.registerShipper(user, licensePlate, vehicleType);
+    }
 }
+

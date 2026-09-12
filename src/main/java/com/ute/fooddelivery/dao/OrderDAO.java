@@ -7,6 +7,7 @@ import com.ute.fooddelivery.model.TopFoodStat;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ public class OrderDAO {
 
     public int createOrder(Order order, List<OrderItem> items) {
         String insertOrderSql = 
-            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, payment_method, status, customer_confirmed, merchant_confirmed) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0)";
+            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_delivered, merchant_completed) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0)";
         String insertItemSql = 
             "INSERT INTO order_items (order_id, food_id, quantity, unit_price, subtotal) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -100,6 +101,7 @@ public class OrderDAO {
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
             "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
+            "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
             "                d.name AS driver_name, d.phone AS driver_phone " +
             "FROM orders o " +
             "JOIN order_items oi ON o.order_id = oi.order_id " +
@@ -135,7 +137,10 @@ public class OrderDAO {
                                 rs.getInt("driver_id"),
                                 rs.getTimestamp("created_at"),
                                 rs.getBoolean("customer_confirmed"),
-                                rs.getBoolean("merchant_confirmed")
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
                             );
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
@@ -214,49 +219,9 @@ public class OrderDAO {
         return false;
     }
 
-    public boolean assignDriver(int orderId, int driverId) {
-        String sqlOrder = "UPDATE orders SET driver_id = ?, status = CASE WHEN status = 'PENDING' THEN 'CONFIRMED' ELSE 'SHIPPING' END, merchant_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
-        String sqlDriver = "UPDATE drivers SET status = 'BUSY' WHERE driver_id = ?";
-        Connection conn = null;
-        try {
-            conn = DBContext.getConnection();
-            if (conn == null) return false;
-            conn.setAutoCommit(false);
-
-            try (PreparedStatement ps1 = conn.prepareStatement(sqlOrder);
-                 PreparedStatement ps2 = conn.prepareStatement(sqlDriver)) {
-                ps1.setInt(1, driverId);
-                ps1.setInt(2, orderId);
-                int orderUpdated = ps1.executeUpdate();
-                if (orderUpdated <= 0) {
-                    conn.rollback();
-                    return false;
-                }
-
-                ps2.setInt(1, driverId);
-                ps2.executeUpdate();
-            }
-
-            conn.commit();
-            return true;
-        } catch (Exception e) {
-            if (conn != null) {
-                try { conn.rollback(); } catch (Exception ignored) {}
-            }
-            System.err.println("Lỗi khi gán tài xế cho đơn: " + e.getMessage());
-            return false;
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (Exception ignored) {}
-            }
-        }
-    }
 
     public Order getOrderById(int orderId) {
-        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed FROM orders WHERE order_id = ?";
+        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -276,7 +241,10 @@ public class OrderDAO {
                                 rs.getInt("driver_id"),
                                 rs.getTimestamp("created_at"),
                                 rs.getBoolean("customer_confirmed"),
-                                rs.getBoolean("merchant_confirmed")
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
                             );
                         }
                     }
@@ -286,6 +254,206 @@ public class OrderDAO {
             System.err.println("Lỗi khi tìm đơn hàng theo ID: " + e.getMessage());
         }
         return null;
+    }
+
+    public Map<String, Object> getDriverEarnings(int driverId) {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalTrips", 0);
+        stats.put("totalEarnings", 0.0);
+        stats.put("todayTrips", 0);
+        stats.put("todayEarnings", 0.0);
+        // Giả sử mỗi chuyến hoàn thành được 15,000 VND tiền ship
+        double feePerTrip = 15000.0;
+        
+        String sql = "SELECT DATE(created_at) as order_date, COUNT(order_id) as trips " +
+                     "FROM orders WHERE driver_id = ? AND status = 'DELIVERED' GROUP BY DATE(created_at)";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                int totalTrips = 0;
+                int todayTrips = 0;
+                String todayStr = new java.sql.Date(System.currentTimeMillis()).toString();
+                
+                while (rs.next()) {
+                    int trips = rs.getInt("trips");
+                    String oDate = rs.getString("order_date");
+                    totalTrips += trips;
+                    if (todayStr.equals(oDate)) {
+                        todayTrips += trips;
+                    }
+                }
+                stats.put("totalTrips", totalTrips);
+                stats.put("totalEarnings", totalTrips * feePerTrip);
+                stats.put("todayTrips", todayTrips);
+                stats.put("todayEarnings", todayTrips * feePerTrip);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return stats;
+    }
+
+    public Order getPendingDispatchOrder() {
+        // Tìm 1 đơn hàng trạng thái CONFIRMED (quán đã nấu xong) chưa có tài xế
+        String sql = "SELECT order_id, customer_name, address, total_amount, phone FROM orders " +
+                     "WHERE status = 'CONFIRMED' AND driver_id IS NULL ORDER BY created_at ASC LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                Order order = new Order();
+                order.setId(rs.getInt("order_id"));
+                order.setCustomerName(rs.getString("customer_name"));
+                order.setAddress(rs.getString("address"));
+                order.setTotalAmount(rs.getDouble("total_amount"));
+                order.setPhone(rs.getString("phone"));
+                return order;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Order getPendingAssignedOrderForDriver(int driverId) {
+        // Tìm đơn hàng được Quán gán đích danh cho tài xế này nhưng tài xế chưa xác nhận nhận cuốc
+        String sql = "SELECT order_id, customer_name, address, total_amount, phone FROM orders " +
+                     "WHERE driver_id = ? AND shipper_accepted = 0 AND status != 'CANCELLED' " +
+                     "ORDER BY created_at DESC LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Order order = new Order();
+                    order.setId(rs.getInt("order_id"));
+                    order.setCustomerName(rs.getString("customer_name"));
+                    order.setAddress(rs.getString("address"));
+                    order.setTotalAmount(rs.getDouble("total_amount"));
+                    order.setPhone(rs.getString("phone"));
+                    return order;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Order> getOrdersByUser(int userId) {
+        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
+                     "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
+                     "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+                     "r.review_id, r.rating, r.comment " +
+                     "FROM orders o " +
+                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+                     "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+                     "WHERE o.user_id = ? " +
+                     "ORDER BY o.created_at DESC";
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setId(rs.getInt("order_id"));
+                    order.setCustomerName(rs.getString("customer_name"));
+                    order.setAddress(rs.getString("address"));
+                    order.setPhone(rs.getString("phone"));
+                    order.setTotalAmount(rs.getDouble("total_amount"));
+                    order.setStatus(rs.getString("status"));
+                    order.setCreatedAt(rs.getTimestamp("created_at"));
+                    order.setCustomerConfirmed(rs.getBoolean("customer_confirmed"));
+                    order.setMerchantConfirmed(rs.getBoolean("merchant_confirmed"));
+                    order.setShipperAccepted(rs.getBoolean("shipper_accepted"));
+                    order.setShipperDelivered(rs.getBoolean("shipper_delivered"));
+                    order.setMerchantCompleted(rs.getBoolean("merchant_completed"));
+                    order.setDriverId(rs.getInt("driver_id"));
+                    if (rs.wasNull()) {
+                         order.setDriverId(null);
+                    } else {
+                         order.setDriverName(rs.getString("driver_name"));
+                         order.setDriverPhone(rs.getString("driver_phone"));
+                    }
+                    
+                    int reviewId = rs.getInt("review_id");
+                    if (!rs.wasNull()) {
+                        com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                        review.setReviewId(reviewId);
+                        review.setOrderId(order.getId());
+                        review.setRating(rs.getInt("rating"));
+                        review.setComment(rs.getString("comment"));
+                        order.setReview(review);
+                    }
+                    
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public List<Order> getOrdersByDriver(int driverId, String statusFilter) {
+        List<Order> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "                o.customer_confirmed, o.merchant_confirmed, " +
+            "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "                r.review_id, r.rating, r.comment " +
+            "FROM orders o " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+            "WHERE o.driver_id = ? "
+        );
+        if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
+            sql.append("AND o.status = ? ");
+        }
+        sql.append("ORDER BY o.created_at DESC");
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                    ps.setInt(1, driverId);
+                    if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
+                        ps.setString(2, statusFilter.trim().toUpperCase());
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"), rs.getInt("user_id"),
+                                rs.getString("customer_name"), rs.getString("phone"),
+                                rs.getString("address"), rs.getString("note"),
+                                rs.getDouble("total_amount"), rs.getString("payment_method"),
+                                rs.getString("status"), rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                order.setReview(review);
+                            }
+                            list.add(order);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi filter order driver: " + e.getMessage());
+        }
+        return list;
     }
 
     // =========================================================================
@@ -306,7 +474,7 @@ public class OrderDAO {
             "  AND YEAR(o.created_at) = ? " +
             "  AND MONTH(o.created_at) = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 " +
+            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY DAY(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -350,7 +518,7 @@ public class OrderDAO {
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 " +
+            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY MONTH(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -392,7 +560,7 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 " +
+            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY YEAR(o.created_at) " +
             "ORDER BY period_key DESC";
 
@@ -427,13 +595,14 @@ public class OrderDAO {
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
             "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
+            "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
             "                d.name AS driver_name, d.phone AS driver_phone " +
             "FROM orders o " +
             "JOIN order_items oi ON o.order_id = oi.order_id " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
             "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 "
+            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 "
         );
 
         if ("DAY".equalsIgnoreCase(type) && month != null && day != null) {
@@ -474,7 +643,10 @@ public class OrderDAO {
                                 rs.getInt("driver_id"),
                                 rs.getTimestamp("created_at"),
                                 rs.getBoolean("customer_confirmed"),
-                                rs.getBoolean("merchant_confirmed")
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
                             );
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
@@ -500,7 +672,7 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "JOIN orders o ON oi.order_id = o.order_id " +
             "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 " +
+            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY f.food_id, f.name, f.image_url, f.price " +
             "ORDER BY total_qty DESC " +
             "LIMIT ?";
@@ -540,10 +712,10 @@ public class OrderDAO {
 
         String sql = 
             "SELECT " +
-            "  COALESCE(SUM(CASE WHEN o.status NOT IN ('CANCELLED', 'PENDING') AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
-            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND o.status NOT IN ('CANCELLED', 'PENDING') AND o.customer_confirmed = 1 AND o.merchant_confirmed = 1 THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
+            "  COALESCE(SUM(CASE WHEN o.status NOT IN ('CANCELLED', 'PENDING') AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
+            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND o.status NOT IN ('CANCELLED', 'PENDING') AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
             "  COUNT(DISTINCT o.order_id) AS total_orders, " +
-            "  COUNT(DISTINCT CASE WHEN o.status = 'DELIVERED' THEN o.order_id END) AS delivered_orders, " +
+            "  COUNT(DISTINCT CASE WHEN o.status = 'DELIVERED' OR o.status = 'COMPLETED' THEN o.order_id END) AS delivered_orders, " +
             "  COUNT(DISTINCT CASE WHEN o.status = 'PENDING' THEN o.order_id END) AS pending_orders " +
             "FROM orders o " +
             "JOIN order_items oi ON o.order_id = oi.order_id " +
@@ -686,20 +858,101 @@ public class OrderDAO {
         return false;
     }
 
-    public boolean confirmCustomerOrder(int orderId, int userId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+    public boolean assignDriver(int orderId, int driverId) {
+        String sql = "UPDATE orders SET driver_id = ?, shipper_accepted = 0 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gán shipper cho đơn #" + orderId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperAcceptOrder(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_accepted = 1 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setInt(1, orderId);
-                    ps.setInt(2, userId);
+                    ps.setInt(2, driverId);
                     int updated = ps.executeUpdate();
                     if (updated > 0) {
-                        checkConfirmationAndFinalize(conn, orderId);
+                        // Đổi trạng thái tài xế sang BUSY
+                        String sqlBusy = "UPDATE drivers SET status = 'BUSY' WHERE driver_id = ?";
+                        try (PreparedStatement psBusy = conn.prepareStatement(sqlBusy)) {
+                            psBusy.setInt(1, driverId);
+                            psBusy.executeUpdate();
+                        } catch (Exception ignored) {}
                         return true;
                     }
                 }
             }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper chấp nhận đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperDeclineOrder(int orderId, int driverId) {
+        String sql = "UPDATE orders SET driver_id = NULL, shipper_accepted = 0 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper từ chối đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperConfirmDelivered(int orderId) {
+        String sql = "UPDATE orders SET shipper_delivered = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperConfirmDelivered(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_delivered = 1 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean confirmCustomerOrder(int orderId) {
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean confirmCustomerOrder(int orderId, int userId) {
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
         }
@@ -707,53 +960,112 @@ public class OrderDAO {
     }
 
     public boolean confirmMerchantOrder(int orderId) {
-        String sql = "UPDATE orders SET merchant_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        return merchantCompleteOrder(orderId);
+    }
+
+    /**
+     * Chủ cửa hàng duyệt đơn đã hoàn thành:
+     * BẮT BUỘC: Phải được shipper xác nhận đã giao (shipper_delivered = 1)
+     * VÀ khách hàng xác nhận đã nhận (customer_confirmed = 1).
+     */
+    public boolean merchantCompleteOrder(int orderId) {
+        String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, orderId);
-                    int updated = ps.executeUpdate();
+                boolean ready = false;
+                int driverId = 0;
+                try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+                    psCheck.setInt(1, orderId);
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (rs.next()) {
+                            boolean shipDelivered = rs.getBoolean("shipper_delivered");
+                            boolean custConfirmed = rs.getBoolean("customer_confirmed");
+                            driverId = rs.getInt("driver_id");
+                            ready = shipDelivered && custConfirmed;
+                        }
+                    }
+                }
+
+                if (!ready) {
+                    System.err.println("Chưa thể duyệt hoàn thành đơn #" + orderId + ": Cần cả Shipper và Khách cùng xác nhận!");
+                    return false;
+                }
+
+                String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+                try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                    psUpdate.setInt(1, orderId);
+                    int updated = psUpdate.executeUpdate();
                     if (updated > 0) {
-                        checkConfirmationAndFinalize(conn, orderId);
+                        // Giải phóng shipper về AVAILABLE để tiếp tục nhận cuốc mới
+                        if (driverId > 0) {
+                            String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
+                            try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                                psDriver.setInt(1, driverId);
+                                psDriver.executeUpdate();
+                            } catch (Exception ignored) {}
+                        }
                         return true;
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi quán xác nhận hoàn tất đơn: " + e.getMessage());
+            System.err.println("Lỗi khi chủ quán duyệt hoàn tất đơn: " + e.getMessage());
         }
         return false;
     }
 
-    private void checkConfirmationAndFinalize(Connection conn, int orderId) {
-        String checkSql = "SELECT customer_confirmed, merchant_confirmed, status FROM orders WHERE order_id = ?";
-        try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+    public Integer getMerchantUserIdByOrderId(int orderId) {
+        String sql = "SELECT DISTINCT r.user_id " +
+                     "FROM order_items oi " +
+                     "JOIN foods f ON oi.food_id = f.food_id " +
+                     "JOIN restaurants r ON f.restaurant_id = r.restaurant_id " +
+                     "WHERE oi.order_id = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    boolean cust = rs.getBoolean("customer_confirmed");
-                    boolean merch = rs.getBoolean("merchant_confirmed");
-                    String currentStatus = rs.getString("status");
-
-                    if (cust && merch && !"CANCELLED".equalsIgnoreCase(currentStatus)) {
-                        if (!"DELIVERED".equalsIgnoreCase(currentStatus)) {
-                            String updateSql = "UPDATE orders SET status = 'DELIVERED' WHERE order_id = ?";
-                            try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
-                                psUpdate.setInt(1, orderId);
-                                psUpdate.executeUpdate();
-                            }
-                        }
-                        // Giải phóng shipper về AVAILABLE
-                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
-                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                            psDriver.setInt(1, orderId);
-                            psDriver.executeUpdate();
-                        } catch (Exception ignored) {}
-                    }
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi kiểm tra hoàn tất 2 bên đơn hàng #" + orderId + ": " + e.getMessage());
+            System.err.println("Lỗi getMerchantUserIdByOrderId: " + e.getMessage());
         }
+        return null;
+    }
+
+    public Integer getCustomerUserIdByOrderId(int orderId) {
+        String sql = "SELECT user_id FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getCustomerUserIdByOrderId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Integer getDriverUserIdByOrderId(int orderId) {
+        String sql = "SELECT d.user_id FROM orders o JOIN drivers d ON o.driver_id = d.driver_id WHERE o.order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getDriverUserIdByOrderId: " + e.getMessage());
+        }
+        return null;
     }
 }

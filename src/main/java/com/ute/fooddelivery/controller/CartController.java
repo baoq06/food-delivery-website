@@ -1,11 +1,15 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.dao.DriverDAO;
+import com.ute.fooddelivery.dao.OrderDAO;
 import com.ute.fooddelivery.model.CartItem;
+import com.ute.fooddelivery.model.Driver;
 import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.OrderItem;
 import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.FoodService;
+import com.ute.fooddelivery.service.NotificationService;
 import com.ute.fooddelivery.service.OrderService;
 import com.ute.fooddelivery.utils.CookieUtils;
 import jakarta.servlet.ServletException;
@@ -24,6 +28,9 @@ import java.util.Map;
 public class CartController extends HttpServlet {
     private final FoodService foodService = new FoodService();
     private final OrderService orderService = new OrderService();
+    private final OrderDAO orderDAO = new OrderDAO();
+    private final NotificationService notificationService = new NotificationService();
+    private final DriverDAO driverDAO = new DriverDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
     @Override
@@ -35,6 +42,23 @@ public class CartController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
             return;
+        }
+
+        // Chặn shipper đang BẬT chế độ nhận đơn (không thể đặt hàng)
+        if (currentUser != null && currentUser.isShipper()) {
+            Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            if (session != null) {
+                session.setAttribute("shipperActive", isShipperActive);
+                session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            }
+            if (isShipperActive) {
+                if (session != null) {
+                    session.removeAttribute("cart");
+                }
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?warning=shipper_mode_active");
+                return;
+            }
         }
 
         // Bắt buộc đăng nhập khi xem giỏ hàng / thông tin đặt hàng
@@ -59,6 +83,23 @@ public class CartController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             req.getRequestDispatcher("/error/404.jsp").forward(req, resp);
             return;
+        }
+
+        // Chặn shipper đang BẬT chế độ nhận đơn thêm món hoặc đặt hàng
+        if (currentUser != null && currentUser.isShipper()) {
+            Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            if (session != null) {
+                session.setAttribute("shipperActive", isShipperActive);
+                session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            }
+            if (isShipperActive) {
+                if (session != null) {
+                    session.removeAttribute("cart");
+                }
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?warning=shipper_mode_active");
+                return;
+            }
         }
 
         String action = req.getParameter("action");
@@ -183,6 +224,16 @@ public class CartController extends HttpServlet {
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
+                    // Tự động gửi thông báo tức thì đến Chủ quán ăn (Merchant)
+                    try {
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        if (merchantUserId != null) {
+                            notificationService.notifyNewOrderToMerchant(merchantUserId, orderId, order.getCustomerName(), order.getTotalAmount());
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Lỗi khi gửi thông báo đơn mới đến chủ quán: " + e.getMessage());
+                    }
+
                     // Xóa các cookie giao hàng cũ (nếu có) để bảo mật thông tin tài khoản
                     CookieUtils.deleteCookie(resp, "deli_name");
                     CookieUtils.deleteCookie(resp, "deli_phone");

@@ -12,6 +12,7 @@ USE `food_delivery_db`;
 -- Tắt kiểm tra khóa ngoại tạm thời để xóa và tạo mới bảng không bị xung đột
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS `order_reviews`;
 DROP TABLE IF EXISTS `order_items`;
 DROP TABLE IF EXISTS `orders`;
 DROP TABLE IF EXISTS `addresses`;
@@ -40,7 +41,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(100) UNIQUE,
     `phone` VARCHAR(20),
     `address` VARCHAR(255),
-    `role` VARCHAR(20) DEFAULT 'CUSTOMER', -- 'ADMIN', 'CUSTOMER', 'SELLER'
+    `role` VARCHAR(20) DEFAULT 'CUSTOMER', -- 'ADMIN', 'CUSTOMER', 'SELLER', 'SHIPPER'
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -97,9 +98,15 @@ CREATE TABLE `foods` (
 -- 6. Bảng tài xế giao hàng (drivers)
 CREATE TABLE `drivers` (
     `driver_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT DEFAULT NULL,
     `name` VARCHAR(100) NOT NULL,
     `phone` VARCHAR(20) NOT NULL,
-    `status` VARCHAR(20) DEFAULT 'AVAILABLE' -- 'AVAILABLE', 'BUSY', 'OFFLINE'
+    `status` VARCHAR(20) DEFAULT 'AVAILABLE', -- 'AVAILABLE', 'BUSY', 'OFFLINE'
+    `license_plate` VARCHAR(30) DEFAULT '59-X3 999.99',
+    `vehicle_type` VARCHAR(50) DEFAULT 'Xe máy',
+    CONSTRAINT `fk_drivers_users`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+        ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 7. Bảng đơn đặt hàng (orders)
@@ -116,8 +123,11 @@ CREATE TABLE `orders` (
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `customer_confirmed` TINYINT(1) DEFAULT 0, -- Người dùng xác nhận đã nhận/đặt được hàng
-    `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý xong đơn hàng
+    `customer_confirmed` TINYINT(1) DEFAULT 0, -- Khách hàng xác nhận đã nhận được món
+    `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý đơn
+    `shipper_accepted` TINYINT(1) DEFAULT 0,   -- Shipper xác nhận nhận giao đơn
+    `shipper_delivered` TINYINT(1) DEFAULT 0,  -- Shipper xác nhận đã giao tận tay khách
+    `merchant_completed` TINYINT(1) DEFAULT 0, -- Merchant duyệt hoàn thành đơn cuối cùng (để tính doanh thu)
     CONSTRAINT `fk_orders_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE,
@@ -142,3 +152,44 @@ CREATE TABLE `order_items` (
         FOREIGN KEY (`food_id`) REFERENCES `foods` (`food_id`)
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. Bảng đánh giá và nhận xét đơn hàng / tài xế (order_reviews)
+CREATE TABLE IF NOT EXISTS `order_reviews` (
+    `review_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `order_id` INT NOT NULL,
+    `customer_id` INT NOT NULL,
+    `driver_id` INT NULL,
+    `restaurant_id` INT NULL,
+    `rating` INT NOT NULL CHECK (`rating` >= 1 AND `rating` <= 5),
+    `comment` TEXT,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_reviews_orders` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_reviews_customers` FOREIGN KEY (`customer_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_reviews_drivers` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`driver_id`) ON DELETE SET NULL,
+    CONSTRAINT `fk_reviews_restaurants` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`restaurant_id`) ON DELETE CASCADE,
+    UNIQUE (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. Bảng thông báo chung cho cả 3 vai trò (notifications)
+CREATE TABLE IF NOT EXISTS `notifications` (
+    `notification_id` INT AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT NOT NULL,
+    `order_id` INT DEFAULT NULL,
+    `title` VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
+    `type` VARCHAR(50) DEFAULT 'ORDER', -- 'ORDER_NEW', 'ORDER_ASSIGNED', 'SHIPPER_ACCEPTED', 'ORDER_SHIPPING', 'SHIPPER_DELIVERED', 'CUSTOMER_CONFIRMED', 'ORDER_COMPLETED', 'ORDER_CANCELLED'
+    `link` VARCHAR(255) DEFAULT NULL,
+    `is_read` TINYINT(1) DEFAULT 0,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_notif_users` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ====================================================================
+-- DỮ LIỆU KHỞI TẠO MẪU CHO TÀI KHOẢN SHIPPER KAITOKID
+-- ====================================================================
+INSERT INTO `users` (`username`, `password`, `name`, `email`, `phone`, `address`, `role`)
+VALUES ('kaitokid', '123456', 'Kaito Kid (Tài Xế Siêu Cấp)', 'kaitokid@utee.vn', '0909998877', '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh', 'SHIPPER');
+
+INSERT INTO `drivers` (`user_id`, `name`, `phone`, `status`, `license_plate`, `vehicle_type`)
+SELECT `user_id`, 'Kaito Kid (Tài Xế Siêu Cấp)', '0909998877', 'AVAILABLE', '59-X3 999.99', 'Honda Air Blade 160'
+FROM `users` WHERE `username` = 'kaitokid';

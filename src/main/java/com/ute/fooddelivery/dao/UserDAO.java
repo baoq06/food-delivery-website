@@ -223,4 +223,65 @@ public class UserDAO {
         }
         return false;
     }
+
+    public boolean registerShipper(User user) {
+        return registerShipper(user, "59-X3 999.99", "Xe máy");
+    }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType) {
+        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'SHIPPER')";
+        String insertDriverSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type) VALUES (?, ?, ?, 'AVAILABLE', ?, ?)";
+        Connection conn = null;
+        try {
+            conn = DBContext.getConnection();
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+
+            int userId = -1;
+            try (PreparedStatement psUser = conn.prepareStatement(insertUserSql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+                psUser.setString(1, user.getUsername());
+                psUser.setString(2, user.getPassword());
+                psUser.setString(3, user.getFullName());
+                psUser.setString(4, user.getEmail());
+                psUser.setString(5, user.getPhone());
+                psUser.setString(6, user.getAddress());
+
+                int affected = psUser.executeUpdate();
+                if (affected > 0) {
+                    try (ResultSet rs = psUser.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            userId = rs.getInt(1);
+                        }
+                    }
+                }
+            }
+
+            if (userId > 0) {
+                try (PreparedStatement psDriver = conn.prepareStatement(insertDriverSql)) {
+                    psDriver.setInt(1, userId);
+                    psDriver.setString(2, user.getFullName());
+                    psDriver.setString(3, user.getPhone());
+                    psDriver.setString(4, licensePlate != null && !licensePlate.trim().isEmpty() ? licensePlate.trim() : "59-X3 999.99");
+                    psDriver.setString(5, vehicleType != null && !vehicleType.trim().isEmpty() ? vehicleType.trim() : "Xe máy");
+                    psDriver.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (Exception ignored) {}
+            }
+            System.err.println("Lỗi khi đăng ký tài khoản shipper: " + e.getMessage());
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception ignored) {}
+            }
+        }
+    }
 }

@@ -36,6 +36,25 @@ public class ProfileController extends HttpServlet {
             currentUser = freshUser;
         }
 
+        // Nếu là shipper và đang BẬT chế độ nhận đơn: chặn tab đơn hàng khách và chuyển sang lịch sử giao
+        if (currentUser.isShipper()) {
+            com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
+            com.ute.fooddelivery.model.Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
+            boolean isShipperActive = (driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()));
+            session.setAttribute("shipperActive", isShipperActive);
+            session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
+            req.setAttribute("driver", driver);
+            if (driver != null) {
+                com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                req.setAttribute("driverWallet", oDAO.getDriverEarnings(driver.getId()));
+            }
+            String tab = req.getParameter("tab");
+            if ("orders".equalsIgnoreCase(tab) && isShipperActive) {
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=history");
+                return;
+            }
+        }
+
         // Lấy danh sách đơn hàng của người dùng
         List<Order> orders = orderService.getOrdersByUserId(currentUser.getId());
 
@@ -183,6 +202,13 @@ public class ProfileController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 boolean cancelled = orderService.cancelOrderByCustomer(orderId, currentUser.getId());
                 if (cancelled) {
+                    try {
+                        com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                        com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
+                        Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
+                        Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
+                        notifSvc.notifyOrderCancelled(currentUser.getId(), shipperUserId, merchantUserId, orderId, "Khách hàng tự hủy đơn");
+                    } catch (Exception ignored) {}
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_cancelled");
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
@@ -197,6 +223,13 @@ public class ProfileController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
                 if (confirmed) {
+                    try {
+                        com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                        com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
+                        Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
+                        Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
+                        notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
+                    } catch (Exception ignored) {}
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");

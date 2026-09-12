@@ -1,6 +1,7 @@
 package com.ute.fooddelivery.dao;
 
 import com.ute.fooddelivery.model.Driver;
+import com.ute.fooddelivery.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +12,7 @@ public class DriverDAO {
 
     public List<Driver> getAllDrivers() {
         List<Driver> list = new ArrayList<>();
-        String query = "SELECT driver_id, name, phone, status FROM drivers ORDER BY status ASC, driver_id ASC";
+        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers ORDER BY status ASC, driver_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
@@ -29,7 +30,7 @@ public class DriverDAO {
 
     public List<Driver> getAvailableDrivers() {
         List<Driver> list = new ArrayList<>();
-        String query = "SELECT driver_id, name, phone, status FROM drivers WHERE status = 'AVAILABLE' ORDER BY driver_id ASC";
+        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE status = 'AVAILABLE' ORDER BY driver_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
@@ -46,7 +47,7 @@ public class DriverDAO {
     }
 
     public Driver getDriverById(int id) {
-        String query = "SELECT driver_id, name, phone, status FROM drivers WHERE driver_id = ?";
+        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE driver_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -64,12 +65,69 @@ public class DriverDAO {
         return null;
     }
 
+    public Driver getDriverByUserId(int userId) {
+        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return mapResultSetToDriver(rs);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm tài xế theo User ID: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Driver getOrCreateDriverForUser(User user) {
+        if (user == null) return null;
+        Driver driver = getDriverByUserId(user.getId());
+        if (driver != null) return driver;
+
+        String insertSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type) VALUES (?, ?, ?, 'AVAILABLE', '59-X3 999.99', 'Xe máy')";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                    ps.setInt(1, user.getId());
+                    ps.setString(2, user.getFullName());
+                    ps.setString(3, user.getPhone());
+                    ps.executeUpdate();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi tự động tạo tài xế cho user " + user.getId() + ": " + e.getMessage());
+        }
+        return getDriverByUserId(user.getId());
+    }
+
+    public boolean updateStatusByUserId(int userId, String status) {
+        String query = "UPDATE drivers SET status = ? WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, status);
+                    ps.setInt(2, userId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái tài xế qua User ID: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean updateStatus(int driverId, String status) {
         String query = "UPDATE drivers SET status = ? WHERE driver_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
                     ps.setString(1, status);
+                    ps.setInt(2, driverId);
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -123,12 +181,28 @@ public class DriverDAO {
     }
 
     private Driver mapResultSetToDriver(ResultSet rs) throws Exception {
-        return new Driver(
-            rs.getInt("driver_id"),
-            rs.getString("name"),
-            rs.getString("phone"),
-            rs.getString("status")
-        );
+        int driverId = rs.getInt("driver_id");
+        String name = rs.getString("name");
+        String phone = rs.getString("phone");
+        String status = rs.getString("status");
+
+        Integer userId = null;
+        String licensePlate = "59-X3 999.99";
+        String vehicleType = "Xe máy";
+        try {
+            int uid = rs.getInt("user_id");
+            if (!rs.wasNull()) userId = uid;
+        } catch (Exception ignored) {}
+        try {
+            String lp = rs.getString("license_plate");
+            if (lp != null && !lp.trim().isEmpty()) licensePlate = lp;
+        } catch (Exception ignored) {}
+        try {
+            String vt = rs.getString("vehicle_type");
+            if (vt != null && !vt.trim().isEmpty()) vehicleType = vt;
+        } catch (Exception ignored) {}
+
+        return new Driver(driverId, userId, name, phone, status, licensePlate, vehicleType);
     }
 }
 

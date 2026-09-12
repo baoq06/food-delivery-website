@@ -106,9 +106,18 @@
 
                         <!-- Action Buttons -->
                         <div class="detail-cta-group">
-                            <button type="submit" class="btn btn-primary btn-lg btn-add-full">
-                                <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
-                            </button>
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                    <button type="button" class="btn btn-secondary btn-lg btn-add-full" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở thanh menu trên cùng nếu muốn đặt món như khách hàng!');" style="opacity: 0.7; cursor: not-allowed; background: #64748b;">
+                                        <i class="fa-solid fa-motorcycle"></i> Đang Bật Chế Độ Shipper
+                                    </button>
+                                </c:when>
+                                <c:otherwise>
+                                    <button type="submit" class="btn btn-primary btn-lg btn-add-full">
+                                        <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
+                                    </button>
+                                </c:otherwise>
+                            </c:choose>
                             <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
                                 <i class="fa-solid fa-arrow-left"></i> Xem Thực Đơn
                             </a>
