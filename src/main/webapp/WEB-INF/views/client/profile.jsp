@@ -190,7 +190,7 @@
                     <p class="profile-card-subtitle">Thông tin sẽ được tự động điền khi bạn đặt đồ ăn tại VinDelivery</p>
                 </div>
 
-                <form action="${pageContext.request.contextPath}/profile" method="POST" class="profile-form">
+                <form action="${pageContext.request.contextPath}/profile" method="POST" class="profile-form" id="updateProfileForm">
                     <input type="hidden" name="action" value="update_profile">
 
                     <div class="form-row-2">
@@ -242,12 +242,9 @@
                     </div>
 
                     <div class="profile-form-actions">
-                        <button type="submit" class="btn btn-primary btn-save-profile">
+                        <button type="submit" id="btnSaveProfile" class="btn btn-primary btn-save-profile" disabled title="Chưa có thay đổi nào để lưu">
                             <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
                         </button>
-                        <a href="${pageContext.request.contextPath}/profile" class="btn btn-outline">
-                            <i class="fa-solid fa-rotate-left"></i> Khôi phục ban đầu
-                        </a>
                     </div>
                 </form>
             </div>
@@ -538,7 +535,7 @@
                         <div class="form-group">
                             <label class="form-label" for="newPassword">Mật khẩu mới <span class="required-star">*</span></label>
                             <div class="input-icon-wrap">
-                                <i class="fa-solid fa-shield-keyhole input-icon"></i>
+                                <i class="fa-solid fa-key input-icon"></i>
                                 <input type="password" id="newPassword" name="newPassword" class="form-control" required minlength="6" placeholder="Tối thiểu 6 ký tự">
                                 <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('newPassword', this)">
                                     <i class="fa-regular fa-eye"></i>
@@ -626,6 +623,52 @@ function togglePasswordVisibility(fieldId, btn) {
         icon.classList.add('fa-eye');
     }
 }
+
+// Theo dõi thay đổi thông tin khách hàng: chỉ kích hoạt nút "Lưu thay đổi" khi có sửa đổi
+document.addEventListener('DOMContentLoaded', function() {
+    const profileForm = document.getElementById('updateProfileForm');
+    const saveBtn = document.getElementById('btnSaveProfile');
+    if (!profileForm || !saveBtn) return;
+
+    const fields = ['fullName', 'phone', 'email', 'address'];
+    const initialValues = {};
+
+    fields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            initialValues[id] = el.value.trim();
+        }
+    });
+
+    function checkProfileChanges() {
+        let hasChanged = false;
+        for (let i = 0; i < fields.length; i++) {
+            const el = document.getElementById(fields[i]);
+            if (el) {
+                if (el.value.trim() !== initialValues[fields[i]]) {
+                    hasChanged = true;
+                    break;
+                }
+            }
+        }
+        saveBtn.disabled = !hasChanged;
+        if (hasChanged) {
+            saveBtn.removeAttribute('title');
+        } else {
+            saveBtn.setAttribute('title', 'Chưa có thay đổi nào để lưu');
+        }
+    }
+
+    fields.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', checkProfileChanges);
+            el.addEventListener('change', checkProfileChanges);
+        }
+    });
+
+    checkProfileChanges();
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

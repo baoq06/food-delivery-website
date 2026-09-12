@@ -5406,13 +5406,21 @@ a,
 
 .form-control {
     width: 100%;
-    padding: 13px 16px 13px 44px;
+    padding: 12px 16px;
     border: 1.5px solid #cbd5e1;
     border-radius: 12px;
     font-size: 0.96rem;
     color: #0f172a;
     background: #ffffff;
     transition: all 0.22s ease;
+}
+
+.input-icon-wrap .form-control {
+    padding-left: 44px;
+}
+
+.input-icon-wrap:has(.btn-toggle-pwd) .form-control {
+    padding-right: 44px;
 }
 
 .form-control:focus {
@@ -5471,6 +5479,17 @@ a,
     font-weight: 700;
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(240, 84, 84, 0.28);
+}
+
+.btn-save-profile:disabled,
+.btn-save-profile[disabled] {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: #cbd5e1 !important;
+    border-color: #cbd5e1 !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
 /* ==========================================================================
@@ -6085,6 +6104,530 @@ a,
         justify-content: center;
     }
 }
+
+/* ==========================================================================
+   Merchant Orders Table - UI/UX Pro Max Redesign
+   Zero Horizontal Scrollbar & 100% Fit Across All Order States
+   ========================================================================== */
+
+.merchant-orders-container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.merchant-order-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+    margin-top: 16px;
+}
+
+.merchant-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.merchant-order-title {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.merchant-order-sub {
+    font-size: 0.84rem;
+    color: #64748b;
+}
+
+.merchant-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+@media (min-width: 1100px) {
+    .merchant-table-wrapper {
+        overflow-x: visible;
+    }
+}
+
+.merchant-order-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.88rem;
+}
+
+/* Column Width Allocations - 100% Total */
+.merchant-order-table th.col-mo-code,
+.merchant-order-table td.col-mo-code {
+    width: 8.5%;
+}
+.merchant-order-table th.col-mo-customer,
+.merchant-order-table td.col-mo-customer {
+    width: 20%;
+}
+.merchant-order-table th.col-mo-items,
+.merchant-order-table td.col-mo-items {
+    width: 16.5%;
+}
+.merchant-order-table th.col-mo-amount,
+.merchant-order-table td.col-mo-amount {
+    width: 9%;
+}
+.merchant-order-table th.col-mo-driver,
+.merchant-order-table td.col-mo-driver {
+    width: 12%;
+}
+.merchant-order-table th.col-mo-status,
+.merchant-order-table td.col-mo-status {
+    width: 15%;
+    min-width: 145px;
+    padding-right: 18px;
+}
+.merchant-order-table th.col-mo-actions,
+.merchant-order-table td.col-mo-actions {
+    width: 19%;
+    min-width: 175px;
+    padding-left: 10px;
+    padding-right: 12px;
+}
+
+.merchant-order-table th {
+    background: #f8fafc;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 12px 10px;
+    border-top: 1px solid #edf2f7;
+    border-bottom: 1.5px solid #e2e8f0;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.merchant-order-table th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.merchant-order-table th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.merchant-order-table td {
+    padding: 13px 10px;
+    vertical-align: top;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    word-break: normal;
+}
+
+.merchant-order-table tr:hover td {
+    background-color: #fcfcfd;
+}
+
+.merchant-order-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Cell Style: Code & Time */
+.mo-code-badge {
+    font-family: var(--font-monospace, monospace);
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #0f172a;
+    display: inline-block;
+    letter-spacing: -0.2px;
+}
+
+.mo-time-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.mo-time-hour {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.mo-time-date {
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+/* Cell Style: Customer & Address */
+.mo-customer-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.88rem;
+    line-height: 1.3;
+}
+
+.mo-customer-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: #0284c7;
+    text-decoration: none;
+    margin-top: 3px;
+    font-weight: 500;
+}
+
+.mo-customer-phone:hover {
+    text-decoration: underline;
+}
+
+.mo-customer-phone i {
+    font-size: 0.72rem;
+    color: #0284c7;
+}
+
+.mo-customer-address {
+    font-size: 0.79rem;
+    color: #475569;
+    line-height: 1.35;
+    margin-top: 4px;
+    word-break: break-word;
+}
+
+.mo-customer-address i {
+    font-size: 0.75rem;
+    color: #ef4444;
+    margin-right: 3px;
+}
+
+.mo-customer-note {
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    color: #b45309;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+    word-break: break-word;
+}
+
+.mo-customer-note i {
+    font-size: 0.72rem;
+    margin-top: 2px;
+}
+
+/* Cell Style: Items List */
+.mo-items-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mo-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+    padding-bottom: 3px;
+    border-bottom: 1px dashed #f1f5f9;
+}
+
+.mo-item-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.mo-item-name {
+    font-size: 0.82rem;
+    color: #1e293b;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.mo-item-qty {
+    background: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 1px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Cell Style: Amount & Payment */
+.mo-amount-val {
+    font-size: 0.96rem;
+    font-weight: 800;
+    color: #f05454;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+}
+
+.mo-pay-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 7px;
+    border-radius: 9999px;
+    margin-top: 4px;
+    white-space: nowrap;
+    text-transform: uppercase;
+}
+
+.mo-pay-badge.badge-cod {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+
+.mo-pay-badge.badge-vietqr {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+/* Cell Style: Driver Shipper */
+.mo-driver-info {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.mo-driver-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ecfdf5;
+    color: #059669;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+.mo-driver-name {
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 0.82rem;
+    line-height: 1.25;
+    word-break: break-word;
+}
+
+.mo-driver-phone {
+    font-size: 0.73rem;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.btn-mo-quick-assign {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-mo-quick-assign:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(29, 78, 216, 0.12);
+}
+
+/* Cell Style: Status Badges */
+.mo-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.mo-status-badge.status-pending {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fef3c7;
+}
+
+.mo-status-badge.status-confirmed {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #dbeafe;
+}
+
+.mo-status-badge.status-shipping {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ede9fe;
+}
+
+.mo-status-badge.status-delivered {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #d1fae5;
+}
+
+.mo-status-badge.status-cancelled {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #ffe4e6;
+}
+
+.mo-sub-status {
+    font-size: 0.72rem;
+    margin-top: 4px;
+    display: block;
+    line-height: 1.3;
+}
+
+/* Cell Style: Action Buttons */
+.mo-actions-group {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.btn-mo-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 0.77rem;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-family: inherit;
+    text-decoration: none;
+}
+
+.btn-mo-action-accept {
+    background: linear-gradient(135deg, #f05454 0%, #ff6b6b 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(240, 84, 84, 0.25);
+}
+
+.btn-mo-action-accept:hover {
+    background: linear-gradient(135deg, #e03e22 0%, #fa5252 100%);
+    box-shadow: 0 4px 12px rgba(240, 84, 84, 0.35);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.btn-mo-action-dispatch {
+    background: #f59e0b;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+}
+
+.btn-mo-action-dispatch:hover {
+    background: #d97706;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+.btn-mo-action-ship {
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+
+.btn-mo-action-ship:hover {
+    background: #059669;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+}
+
+.btn-mo-action-delivered {
+    background: #ffffff;
+    border: 1.5px solid #10b981;
+    color: #059669;
+}
+
+.btn-mo-action-delivered:hover {
+    background: #ecfdf5;
+    color: #047857;
+    transform: translateY(-1px);
+}
+
+.btn-mo-action-pay {
+    background: #ffffff;
+    border: 1.5px solid #3b82f6;
+    color: #1d4ed8;
+}
+
+.btn-mo-action-pay:hover {
+    background: #eff6ff;
+    color: #1e40af;
+    transform: translateY(-1px);
+}
+
+.btn-mo-action-cancel {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #fecaca;
+    color: #ef4444;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.btn-mo-action-cancel:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #dc2626;
+    transform: translateY(-1px);
+}
+
 
 
 
