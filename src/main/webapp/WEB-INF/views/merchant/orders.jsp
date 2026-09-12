@@ -11,64 +11,6 @@
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
 
     <div class="merchant-orders-container pb-5">
-        <!-- Quy Trình Xác Nhận 3 Bên UI/UX Pro Max Stepper -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1px solid #e2e8f0;">
-            <div class="card-body p-3 p-md-4">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background: #fee2e2; color: #f05454; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                            <i class="fa-solid fa-arrows-split-up-and-left"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0 fw-bold text-dark">Quy Trình Xác Nhận Đơn Hàng 3 Bên (Khách - Quán - Shipper)</h6>
-                            <small class="text-muted">Doanh thu chỉ được ghi nhận khi Quán duyệt hoàn tất sau khi Shipper đã giao và Khách đã nhận</small>
-                        </div>
-                    </div>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold" style="font-size: 0.8rem;">
-                        <i class="fa-solid fa-shield-halved me-1"></i> Chuẩn Bảo Vệ Doanh Thu 3 Lớp
-                    </span>
-                </div>
-                <div class="row g-2 text-center">
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border h-100 shadow-sm">
-                            <div class="fw-bold text-primary small">1. Khách Đặt Đơn</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Hệ thống báo chuông Quán</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border h-100 shadow-sm">
-                            <div class="fw-bold text-warning small">2. Chọn Shipper</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Chỉ định tài xế khả dụng</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border h-100 shadow-sm">
-                            <div class="fw-bold text-info small">3. Shipper Xác Nhận</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Tài xế bấm đồng ý giao</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border h-100 shadow-sm">
-                            <div class="fw-bold text-primary small">4. Bắt Đầu Nấu</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Quán chế biến &amp; giao shipper</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border h-100 shadow-sm">
-                            <div class="fw-bold text-success small">5. Giao &amp; Nhận</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Shipper giao &amp; Khách nhận</div>
-                        </div>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <div class="p-2 rounded-3 bg-white border border-success h-100 shadow-sm" style="background: #f0fdf4;">
-                            <div class="fw-bold text-success small">6. Duyệt Hoàn Tất</div>
-                            <div class="text-muted" style="font-size: 0.72rem;">Cộng vào doanh thu quán</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Toolbar Bộ Lọc Trạng Thái Đơn Hàng -->
         <div class="merchant-filter-bar">
             <div class="merchant-filter-left">
