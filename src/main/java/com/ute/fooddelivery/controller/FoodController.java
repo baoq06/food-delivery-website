@@ -86,8 +86,10 @@ public class FoodController extends HttpServlet {
                 foods = foodService.getAllFoods();
             }
 
+            List<Food> allFoods = foodService.getAllFoods();
             req.setAttribute("categories", categoryService.getAllCategories());
-            req.setAttribute("foods", foods);
+            req.setAttribute("allFoods", allFoods);
+            req.setAttribute("foods", (foods != null && !foods.isEmpty()) ? foods : allFoods);
             req.getRequestDispatcher("/WEB-INF/views/client/menu.jsp").forward(req, resp);
         }
     }
