@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 public class UserDAO {
 
     public User login(String account, String password) {
-        String query = "SELECT user_id, username, password, name, email, phone, address, role " +
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar " +
                        "FROM users WHERE (username = ? OR email = ? OR phone = ?) AND password = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -27,7 +27,8 @@ public class UserDAO {
                                 rs.getString("email"),
                                 rs.getString("phone"),
                                 rs.getString("address"),
-                                rs.getString("role")
+                                rs.getString("role"),
+                                rs.getString("avatar")
                             );
                         }
                     }
@@ -58,7 +59,7 @@ public class UserDAO {
     }
 
     public boolean register(User user) {
-        String query = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO users (username, password, name, email, phone, address, role, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setString(1, user.getUsername());
@@ -68,6 +69,7 @@ public class UserDAO {
             ps.setString(5, user.getPhone());
             ps.setString(6, user.getAddress());
             ps.setString(7, user.getRole() != null ? user.getRole() : "CUSTOMER");
+            ps.setString(8, user.getAvatar());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.err.println("Lỗi khi đăng ký User: " + e.getMessage());
@@ -76,8 +78,12 @@ public class UserDAO {
     }
 
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
-        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'SELLER')";
-        String insertRestSql = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status) VALUES (?, ?, ?, ?, ?, ?, 'OPEN')";
+        return registerSeller(user, restaurantName, restaurantAddress, null, "07:00", "22:00", null);
+    }
+
+    public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl) {
+        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role, avatar) VALUES (?, ?, ?, ?, ?, ?, 'SELLER', ?)";
+        String insertRestSql = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status, open_time, close_time) VALUES (?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
@@ -92,6 +98,7 @@ public class UserDAO {
                 psUser.setString(4, user.getEmail());
                 psUser.setString(5, user.getPhone());
                 psUser.setString(6, user.getAddress());
+                psUser.setString(7, logoUrl != null ? logoUrl : user.getAvatar());
 
                 int affected = psUser.executeUpdate();
                 if (affected > 0) {
@@ -107,10 +114,12 @@ public class UserDAO {
                 try (PreparedStatement psRest = conn.prepareStatement(insertRestSql)) {
                     psRest.setInt(1, userId);
                     psRest.setString(2, restaurantName != null && !restaurantName.trim().isEmpty() ? restaurantName.trim() : "Quán Ăn của " + user.getFullName());
-                    psRest.setString(3, "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc VinDelivery.");
+                    psRest.setString(3, description != null && !description.trim().isEmpty() ? description.trim() : "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc VinDelivery.");
                     psRest.setString(4, user.getPhone());
                     psRest.setString(5, restaurantAddress != null && !restaurantAddress.trim().isEmpty() ? restaurantAddress.trim() : user.getAddress());
-                    psRest.setString(6, "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60");
+                    psRest.setString(6, logoUrl != null && !logoUrl.trim().isEmpty() ? logoUrl.trim() : "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60");
+                    psRest.setString(7, openTime != null && !openTime.trim().isEmpty() ? openTime.trim() : "07:00");
+                    psRest.setString(8, closeTime != null && !closeTime.trim().isEmpty() ? closeTime.trim() : "22:00");
                     psRest.executeUpdate();
                 }
             }
@@ -134,7 +143,7 @@ public class UserDAO {
     }
 
     public User getUserById(int id) {
-        String query = "SELECT user_id, username, password, name, email, phone, address, role " +
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar " +
                        "FROM users WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -150,7 +159,8 @@ public class UserDAO {
                                 rs.getString("email"),
                                 rs.getString("phone"),
                                 rs.getString("address"),
-                                rs.getString("role")
+                                rs.getString("role"),
+                                rs.getString("avatar")
                             );
                         }
                     }
@@ -225,12 +235,16 @@ public class UserDAO {
     }
 
     public boolean registerShipper(User user) {
-        return registerShipper(user, "59-X3 999.99", "Xe máy");
+        return registerShipper(user, "59-X3 999.99", "Xe máy", null, null, null, null);
     }
 
     public boolean registerShipper(User user, String licensePlate, String vehicleType) {
-        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role) VALUES (?, ?, ?, ?, ?, ?, 'SHIPPER')";
-        String insertDriverSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type) VALUES (?, ?, ?, 'AVAILABLE', ?, ?)";
+        return registerShipper(user, licensePlate, vehicleType, null, null, null, null);
+    }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType, String idCardFront, String idCardBack, String vehicleDoc, String avatarUrl) {
+        String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role, avatar) VALUES (?, ?, ?, ?, ?, ?, 'SHIPPER', ?)";
+        String insertDriverSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type, id_card_front, id_card_back, vehicle_doc, avatar) VALUES (?, ?, ?, 'AVAILABLE', ?, ?, ?, ?, ?, ?)";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
@@ -245,6 +259,7 @@ public class UserDAO {
                 psUser.setString(4, user.getEmail());
                 psUser.setString(5, user.getPhone());
                 psUser.setString(6, user.getAddress());
+                psUser.setString(7, avatarUrl != null ? avatarUrl : user.getAvatar());
 
                 int affected = psUser.executeUpdate();
                 if (affected > 0) {
@@ -263,6 +278,10 @@ public class UserDAO {
                     psDriver.setString(3, user.getPhone());
                     psDriver.setString(4, licensePlate != null && !licensePlate.trim().isEmpty() ? licensePlate.trim() : "59-X3 999.99");
                     psDriver.setString(5, vehicleType != null && !vehicleType.trim().isEmpty() ? vehicleType.trim() : "Xe máy");
+                    psDriver.setString(6, idCardFront);
+                    psDriver.setString(7, idCardBack);
+                    psDriver.setString(8, vehicleDoc);
+                    psDriver.setString(9, avatarUrl != null ? avatarUrl : user.getAvatar());
                     psDriver.executeUpdate();
                 }
             }

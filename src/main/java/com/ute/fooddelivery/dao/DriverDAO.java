@@ -202,7 +202,24 @@ public class DriverDAO {
             if (vt != null && !vt.trim().isEmpty()) vehicleType = vt;
         } catch (Exception ignored) {}
 
-        return new Driver(driverId, userId, name, phone, status, licensePlate, vehicleType);
+        String idCardFront = null;
+        String idCardBack = null;
+        String vehicleDoc = null;
+        String avatar = null;
+        try {
+            idCardFront = rs.getString("id_card_front");
+        } catch (Exception ignored) {}
+        try {
+            idCardBack = rs.getString("id_card_back");
+        } catch (Exception ignored) {}
+        try {
+            vehicleDoc = rs.getString("vehicle_doc");
+        } catch (Exception ignored) {}
+        try {
+            avatar = rs.getString("avatar");
+        } catch (Exception ignored) {}
+
+        return new Driver(driverId, userId, name, phone, status, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatar);
     }
 }
 

@@ -12,6 +12,11 @@ public class Driver implements Serializable {
     private String licensePlate;
     private String vehicleType;
 
+    private String idCardFront;
+    private String idCardBack;
+    private String vehicleDoc;
+    private String avatar;
+
     public Driver() {
     }
 
@@ -30,6 +35,20 @@ public class Driver implements Serializable {
         this.status = status;
         this.licensePlate = licensePlate;
         this.vehicleType = vehicleType;
+    }
+
+    public Driver(int id, Integer userId, String name, String phone, String status, String licensePlate, String vehicleType, String idCardFront, String idCardBack, String vehicleDoc, String avatar) {
+        this.id = id;
+        this.userId = userId;
+        this.name = name;
+        this.phone = phone;
+        this.status = status;
+        this.licensePlate = licensePlate;
+        this.vehicleType = vehicleType;
+        this.idCardFront = idCardFront;
+        this.idCardBack = idCardBack;
+        this.vehicleDoc = vehicleDoc;
+        this.avatar = avatar;
     }
 
     public int getId() {
@@ -86,6 +105,38 @@ public class Driver implements Serializable {
 
     public void setVehicleType(String vehicleType) {
         this.vehicleType = vehicleType;
+    }
+
+    public String getIdCardFront() {
+        return idCardFront;
+    }
+
+    public void setIdCardFront(String idCardFront) {
+        this.idCardFront = idCardFront;
+    }
+
+    public String getIdCardBack() {
+        return idCardBack;
+    }
+
+    public void setIdCardBack(String idCardBack) {
+        this.idCardBack = idCardBack;
+    }
+
+    public String getVehicleDoc() {
+        return vehicleDoc;
+    }
+
+    public void setVehicleDoc(String vehicleDoc) {
+        this.vehicleDoc = vehicleDoc;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public boolean isAvailable() {

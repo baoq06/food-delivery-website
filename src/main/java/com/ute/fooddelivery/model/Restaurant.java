@@ -11,15 +11,21 @@ public class Restaurant implements Serializable {
     private String address;
     private String imageUrl;
     private String status;
+    private String openTime;  // Ví dụ: '07:00'
+    private String closeTime; // Ví dụ: '22:00'
 
     public Restaurant() {
     }
 
     public Restaurant(int id, String name, String description, String phone, String address, String imageUrl, String status) {
-        this(id, null, name, description, phone, address, imageUrl, status);
+        this(id, null, name, description, phone, address, imageUrl, status, "07:00", "22:00");
     }
 
     public Restaurant(int id, Integer userId, String name, String description, String phone, String address, String imageUrl, String status) {
+        this(id, userId, name, description, phone, address, imageUrl, status, "07:00", "22:00");
+    }
+
+    public Restaurant(int id, Integer userId, String name, String description, String phone, String address, String imageUrl, String status, String openTime, String closeTime) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -28,6 +34,8 @@ public class Restaurant implements Serializable {
         this.address = address;
         this.imageUrl = imageUrl;
         this.status = status;
+        this.openTime = openTime != null ? openTime : "07:00";
+        this.closeTime = closeTime != null ? closeTime : "22:00";
     }
 
     public Integer getUserId() {
@@ -92,5 +100,21 @@ public class Restaurant implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getOpenTime() {
+        return openTime;
+    }
+
+    public void setOpenTime(String openTime) {
+        this.openTime = openTime;
+    }
+
+    public String getCloseTime() {
+        return closeTime;
+    }
+
+    public void setCloseTime(String closeTime) {
+        this.closeTime = closeTime;
     }
 }

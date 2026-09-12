@@ -18,6 +18,10 @@ public class UserService {
         return userDAO.registerSeller(user, restaurantName, restaurantAddress);
     }
 
+    public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl) {
+        return userDAO.registerSeller(user, restaurantName, restaurantAddress, description, openTime, closeTime, logoUrl);
+    }
+
     public User getUserById(int id) {
         return userDAO.getUserById(id);
     }
@@ -36,6 +40,10 @@ public class UserService {
 
     public boolean registerShipper(User user, String licensePlate, String vehicleType) {
         return userDAO.registerShipper(user, licensePlate, vehicleType);
+    }
+
+    public boolean registerShipper(User user, String licensePlate, String vehicleType, String idCardFront, String idCardBack, String vehicleDoc, String avatarUrl) {
+        return userDAO.registerShipper(user, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatarUrl);
     }
 }
 
