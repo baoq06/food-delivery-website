@@ -2778,11 +2778,13 @@ button, input, select, textarea {
     margin-top: 1px;
 }
 
-/* Tab Views */
+/* Tab Views - Strictly synchronized height to eliminate layout jumping */
 .auth-tab-view {
     display: none;
     animation: authFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    min-height: 440px;
+    height: 480px;
+    min-height: 480px;
+    max-height: 480px;
 }
 
 .auth-tab-view.active {
@@ -2795,6 +2797,7 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-height: 0;
 }
 
 @keyframes authFadeUp {
@@ -2812,8 +2815,8 @@ button, input, select, textarea {
 .auth-fields-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .auth-fields-row-2 .auth-field-group {
@@ -2822,22 +2825,22 @@ button, input, select, textarea {
 
 /* Field Controls */
 .auth-field-group {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .auth-field-label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #334155;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .auth-field-label-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .auth-forgot-link {
@@ -2870,11 +2873,11 @@ button, input, select, textarea {
 
 .auth-field-input {
     width: 100%;
-    height: 46px;
-    padding: 0 40px;
+    height: 44px;
+    padding: 0 38px;
     border: 1.5px solid #e2e8f0;
     border-radius: 12px;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     color: var(--text-main);
     background: #f8fafc;
     transition: all 0.22s ease;
@@ -2914,7 +2917,7 @@ button, input, select, textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .auth-checkbox-container {
@@ -2938,33 +2941,33 @@ button, input, select, textarea {
 /* Submit CTA with Modern Gradient */
 .auth-primary-submit-btn {
     width: 100%;
-    height: 48px;
+    height: 46px;
     background: linear-gradient(135deg, #f05454 0%, #ff6b6b 50%, #f05454 100%);
     background-size: 200% auto;
     color: #ffffff;
     border: none;
     border-radius: 12px;
     font-weight: 700;
-    font-size: 0.96rem;
+    font-size: 0.94rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    box-shadow: 0 6px 20px rgba(240, 84, 84, 0.28);
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(240, 84, 84, 0.25);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     font-family: var(--font-body);
 }
 
 .auth-primary-submit-btn:hover {
     background-position: right center;
     transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(240, 84, 84, 0.38);
+    box-shadow: 0 8px 20px rgba(240, 84, 84, 0.35);
 }
 
 .auth-primary-submit-btn:active {
     transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(240, 84, 84, 0.25);
+    box-shadow: 0 3px 10px rgba(240, 84, 84, 0.2);
 }
 
 /* Minimalist Inline Demo Quick Chips */
@@ -2972,8 +2975,8 @@ button, input, select, textarea {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 18px;
+    gap: 6px;
+    margin-top: 14px;
     padding: 8px 12px;
     background: #fff9f6;
     border: 1px dashed rgba(240, 84, 84, 0.25);
@@ -2981,7 +2984,7 @@ button, input, select, textarea {
 }
 
 .auth-demo-label {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #c2410c;
     display: flex;
@@ -2994,8 +2997,8 @@ button, input, select, textarea {
     background: #ffffff;
     border: 1px solid #fed7aa;
     border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 0.8rem;
+    padding: 3px 8px;
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--text-main);
     cursor: pointer;
@@ -3015,8 +3018,9 @@ button, input, select, textarea {
 /* Switch Tab Footer */
 .auth-tab-switch-footer {
     text-align: center;
-    margin-top: 18px;
-    font-size: 0.88rem;
+    margin-top: auto;
+    padding-top: 10px;
+    font-size: 0.86rem;
     color: var(--text-muted);
 }
 
@@ -3115,19 +3119,20 @@ button, input, select, textarea {
    4-STEP REGISTRATION WIZARD STYLES (/ui-ux-pro-max & /ui-styling)
    ========================================================================== */
 
-/* Stepper Progress Bar */
+/* Stepper Progress Bar - Compact & Balanced */
 .auth-stepper {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     position: relative;
-    padding: 0 4px;
+    padding: 0 6px;
+    flex-shrink: 0;
 }
 
 .auth-stepper-progress-bg {
     position: absolute;
-    top: 18px;
+    top: 15px;
     left: 20px;
     right: 20px;
     height: 3px;
@@ -3150,44 +3155,44 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     cursor: default;
     user-select: none;
 }
 
 .auth-stepper-circle {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid #cbd5e1;
     color: #64748b;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
 }
 
 .auth-stepper-step.active .auth-stepper-circle {
     border-color: #f05454;
     background: #f05454;
     color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(240, 84, 84, 0.18), 0 4px 12px rgba(240, 84, 84, 0.3);
-    transform: scale(1.08);
+    box-shadow: 0 0 0 3.5px rgba(240, 84, 84, 0.18), 0 3px 10px rgba(240, 84, 84, 0.3);
+    transform: scale(1.06);
 }
 
 .auth-stepper-step.completed .auth-stepper-circle {
     border-color: #10b981;
     background: #10b981;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
 }
 
 .auth-stepper-title {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     font-weight: 600;
     color: #94a3b8;
     white-space: nowrap;
@@ -3203,41 +3208,47 @@ button, input, select, textarea {
     color: #10b981;
 }
 
-/* Wizard Step Panels */
+/* Wizard Step Panels - Height locked to strictly 380px */
 .auth-wizard-step {
     display: none;
+    height: 380px;
+    min-height: 380px;
+    max-height: 380px;
+    flex-direction: column;
+    justify-content: space-between;
     animation: authFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .auth-wizard-step.active {
-    display: block;
+    display: flex;
 }
 
 .auth-step-instruction {
-    font-size: 0.92rem;
+    font-size: 0.86rem;
     color: #64748b;
-    margin-bottom: 20px;
-    line-height: 1.5;
+    margin-bottom: 12px;
+    line-height: 1.4;
+    flex-shrink: 0;
 }
 
-/* Step 1: Role Selection Cards */
+/* Step 1: Role Selection Cards - Compact 3-Row Grid */
 .auth-role-cards-grid {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-bottom: 24px;
+    gap: 10px;
+    margin-bottom: auto;
 }
 
 .auth-role-card {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 18px;
+    gap: 12px;
+    padding: 10px 14px;
     background: #ffffff;
-    border: 2px solid #e2e8f0;
-    border-radius: 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
 }
@@ -3245,14 +3256,14 @@ button, input, select, textarea {
 .auth-role-card:hover {
     border-color: #fca5a5;
     background: #fffafa;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(240, 84, 84, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(240, 84, 84, 0.08);
 }
 
 .auth-role-card.selected {
     border-color: #f05454;
     background: #fff8f8;
-    box-shadow: 0 8px 22px rgba(240, 84, 84, 0.14);
+    box-shadow: 0 4px 14px rgba(240, 84, 84, 0.12);
 }
 
 .auth-role-card.selected::before {
@@ -3260,52 +3271,54 @@ button, input, select, textarea {
     position: absolute;
     top: 0;
     left: 0;
-    width: 5px;
+    width: 4px;
     height: 100%;
     background: #f05454;
 }
 
 .auth-role-icon-box {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
+    font-size: 1.35rem;
     flex-shrink: 0;
-    transition: all 0.25s;
+    transition: all 0.22s;
 }
 
 .auth-role-card.selected .auth-role-icon-box {
     background: #fee2e2;
     border-color: #fca5a5;
-    transform: scale(1.06);
+    transform: scale(1.04);
 }
 
 .auth-role-info {
     flex: 1;
+    min-width: 0;
 }
 
 .auth-role-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
+    gap: 6px;
+    margin-bottom: 2px;
 }
 
 .auth-role-title {
-    font-size: 1.02rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: #1e293b;
+    white-space: nowrap;
 }
 
 .auth-role-badge {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 1px 7px;
     border-radius: 999px;
     background: #eff6ff;
     color: #2563eb;
@@ -3313,22 +3326,26 @@ button, input, select, textarea {
 }
 
 .auth-role-desc {
-    font-size: 0.84rem;
+    font-size: 0.78rem;
     color: #64748b;
-    line-height: 1.4;
+    line-height: 1.35;
     margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .auth-role-check {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     border: 2px solid #cbd5e1;
     display: flex;
     align-items: center;
     justify-content: center;
     color: transparent;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     transition: all 0.2s;
     flex-shrink: 0;
 }
@@ -3337,23 +3354,23 @@ button, input, select, textarea {
     border-color: #f05454;
     background: #f05454;
     color: #ffffff;
-    transform: scale(1.08);
+    transform: scale(1.05);
 }
 
-/* Step 2: Phone Input */
+/* Step 2: Phone Input & Trust Card */
 .auth-phone-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 24px;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
 }
 
 .auth-phone-input-wrap {
     display: flex;
     align-items: center;
     background: #ffffff;
-    border: 2px solid #e2e8f0;
+    border: 1.5px solid #e2e8f0;
     border-radius: 12px;
     overflow: hidden;
     transition: all 0.22s ease;
@@ -3368,23 +3385,23 @@ button, input, select, textarea {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 0 14px;
+    padding: 0 12px;
     background: #f1f5f9;
     border-right: 1px solid #e2e8f0;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: #475569;
-    height: 48px;
+    height: 44px;
     user-select: none;
 }
 
 .auth-phone-field {
     flex: 1;
-    height: 48px;
+    height: 44px;
     border: none;
     outline: none;
-    padding: 0 14px;
-    font-size: 1.05rem;
+    padding: 0 12px;
+    font-size: 1rem;
     font-weight: 600;
     color: #1e293b;
     letter-spacing: 0.5px;
@@ -3392,24 +3409,54 @@ button, input, select, textarea {
 }
 
 .auth-phone-hint {
-    margin-top: 10px;
-    font-size: 0.82rem;
+    margin-top: 8px;
+    font-size: 0.78rem;
     color: #64748b;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
+/* Step 2 Benefit Highlights to maintain consistent visual height */
+.auth-phone-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #fff9f6;
+    border: 1px dashed rgba(240, 84, 84, 0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: auto;
+}
+
+.auth-phone-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.auth-phone-benefit-item i {
+    color: #f05454;
+    font-size: 0.88rem;
+    flex-shrink: 0;
+}
+
 /* Step 3: OTP 6-Box Verification */
 .auth-otp-box {
     text-align: center;
-    padding: 10px 0 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin-bottom: auto;
 }
 
 .auth-otp-phone-display {
-    font-size: 0.96rem;
+    font-size: 0.9rem;
     color: #475569;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
 .auth-otp-phone-number {
@@ -3418,11 +3465,11 @@ button, input, select, textarea {
 }
 
 .auth-otp-edit-phone {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: #f05454;
     font-weight: 600;
     text-decoration: none;
-    margin-left: 8px;
+    margin-left: 6px;
     cursor: pointer;
 }
 
@@ -3433,29 +3480,30 @@ button, input, select, textarea {
 .auth-otp-inputs {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 22px;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
 }
 
 .auth-otp-digit {
-    width: 48px;
-    height: 56px;
+    width: 42px;
+    height: 48px;
     text-align: center;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 800;
     font-family: monospace;
     color: #1e293b;
     background: #ffffff;
     border: 2px solid #cbd5e1;
-    border-radius: 12px;
+    border-radius: 10px;
     outline: none;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .auth-otp-digit:focus {
     border-color: #f05454;
-    box-shadow: 0 0 0 4px rgba(240, 84, 84, 0.16);
+    box-shadow: 0 0 0 3.5px rgba(240, 84, 84, 0.16);
     transform: translateY(-2px);
 }
 
@@ -3469,9 +3517,10 @@ button, input, select, textarea {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     color: #64748b;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
 .auth-otp-timer-badge {
@@ -3484,9 +3533,9 @@ button, input, select, textarea {
     border: none;
     color: #f05454;
     font-weight: 700;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 6px;
     transition: all 0.2s;
 }
@@ -3505,27 +3554,28 @@ button, input, select, textarea {
 .simulated-sms-banner {
     background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
     color: #ffffff;
-    padding: 14px 18px;
-    border-radius: 16px;
-    margin-bottom: 24px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
     animation: authFadeUp 0.35s ease;
     text-align: left;
+    flex-shrink: 0;
 }
 
 .simulated-sms-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     background: #f05454;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     color: #ffffff;
     flex-shrink: 0;
 }
@@ -3538,35 +3588,35 @@ button, input, select, textarea {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .simulated-sms-sender {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #fbbf24;
     letter-spacing: 0.3px;
 }
 
 .simulated-sms-time {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     color: #94a3b8;
 }
 
 .simulated-sms-text {
-    font-size: 0.86rem;
+    font-size: 0.8rem;
     color: #e2e8f0;
-    line-height: 1.45;
-    margin-bottom: 8px;
+    line-height: 1.4;
+    margin-bottom: 6px;
 }
 
 .simulated-sms-fill-btn {
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #ffffff;
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-size: 0.78rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
@@ -3581,25 +3631,51 @@ button, input, select, textarea {
     transform: translateY(-1px);
 }
 
-/* Step 4: Document & Profile Upload Dropzones */
+/* Step 4 Scrollable Container & Document Dropzones */
+.auth-step4-scroll-body {
+    flex: 1;
+    max-height: 310px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 6px;
+    margin-bottom: 10px;
+}
+
+/* Sleek custom scrollbar for step 4 */
+.auth-step4-scroll-body::-webkit-scrollbar {
+    width: 5px;
+}
+.auth-step4-scroll-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+.auth-step4-scroll-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.auth-step4-scroll-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
 .auth-doc-upload-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .auth-doc-card {
-    border: 2px dashed #cbd5e1;
-    border-radius: 14px;
-    padding: 14px 10px;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 8px 6px;
     background: #f8fafc;
     text-align: center;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.22s ease;
     position: relative;
     overflow: hidden;
-    min-height: 130px;
+    height: 72px;
+    min-height: 72px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3609,8 +3685,8 @@ button, input, select, textarea {
 .auth-doc-card:hover {
     border-color: #f05454;
     background: #fff8f8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(240, 84, 84, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(240, 84, 84, 0.08);
 }
 
 .auth-doc-card.has-file {
@@ -3623,11 +3699,11 @@ button, input, select, textarea {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
 }
 
 .auth-doc-icon {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     color: #94a3b8;
     transition: color 0.2s;
 }
@@ -3637,15 +3713,17 @@ button, input, select, textarea {
 }
 
 .auth-doc-title {
-    font-size: 0.8rem;
+    font-size: 0.74rem;
     font-weight: 700;
     color: #334155;
-    line-height: 1.25;
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
 .auth-doc-subtitle {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #94a3b8;
+    white-space: nowrap;
 }
 
 .auth-doc-preview-box {
@@ -3675,7 +3753,7 @@ button, input, select, textarea {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 2px;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -3685,28 +3763,28 @@ button, input, select, textarea {
 }
 
 .auth-doc-change-text {
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 700;
     color: #ffffff;
     background: rgba(240, 84, 84, 0.85);
-    padding: 3px 8px;
-    border-radius: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .auth-doc-badge-success {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 4px;
+    right: 4px;
     background: #10b981;
     color: #ffffff;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    font-size: 0.65rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     z-index: 2;
 }
 
@@ -3714,12 +3792,12 @@ button, input, select, textarea {
 .auth-avatar-dropzone {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px;
+    gap: 12px;
+    padding: 8px 12px;
     background: #f8fafc;
     border: 1.5px dashed #cbd5e1;
-    border-radius: 16px;
-    margin-bottom: 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
     cursor: pointer;
     transition: all 0.22s ease;
 }
@@ -3730,15 +3808,15 @@ button, input, select, textarea {
 }
 
 .auth-avatar-circle-preview {
-    width: 62px;
-    height: 62px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     color: #94a3b8;
     overflow: hidden;
     flex-shrink: 0;
@@ -3756,37 +3834,39 @@ button, input, select, textarea {
 
 .auth-avatar-info strong {
     display: block;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
     color: #334155;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
 }
 
 .auth-avatar-info span {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     color: #94a3b8;
 }
 
-/* Navigation Buttons Bar (Quay lại & Tiếp tục) */
+/* Navigation Buttons Bar (Quay lại & Tiếp tục) - Always docked at bottom */
 .auth-step-nav-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 18px;
+    gap: 10px;
+    margin-top: auto;
+    flex-shrink: 0;
+    height: 46px;
 }
 
 .auth-btn-back {
-    height: 48px;
-    padding: 0 20px;
+    height: 46px;
+    padding: 0 18px;
     background: #f1f5f9;
     color: #475569;
     border: 1.5px solid #e2e8f0;
     border-radius: 12px;
     font-weight: 700;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s ease;
     flex-shrink: 0;
 }

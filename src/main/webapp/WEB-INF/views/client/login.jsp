@@ -220,7 +220,7 @@
                     </div>
                 </div>
 
-                <form action="${pageContext.request.contextPath}/auth" method="POST" enctype="multipart/form-data" class="auth-form-body" id="registerForm" onsubmit="return validateFinalRegisterForm()">
+                <form action="${pageContext.request.contextPath}/auth" method="POST" enctype="multipart/form-data" class="auth-form-body" id="registerForm" novalidate onsubmit="return validateFinalRegisterForm()">
                     <input type="hidden" name="action" value="register">
                     <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
                     <input type="hidden" name="accountType" id="wizardAccountType" value="<c:out value='${not empty stickyAccountType ? stickyAccountType : \"CUSTOMER\"}' />">
@@ -316,8 +316,24 @@
                             </div>
                         </div>
 
+                        <!-- Step 2 Benefit Highlights to maintain consistent visual height -->
+                        <div class="auth-phone-benefits">
+                            <div class="auth-phone-benefit-item">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Xác thực OTP tức thì hoàn toàn miễn phí qua tin nhắn SMS</span>
+                            </div>
+                            <div class="auth-phone-benefit-item">
+                                <i class="fa-solid fa-lock"></i>
+                                <span>Bảo vệ tài khoản với công nghệ bảo mật 2 lớp hiện đại</span>
+                            </div>
+                            <div class="auth-phone-benefit-item">
+                                <i class="fa-solid fa-bell"></i>
+                                <span>Nhận cập nhật lộ trình giao hàng thời gian thực</span>
+                            </div>
+                        </div>
+
                         <!-- Step 2 Error alert if invalid phone -->
-                        <div id="step2Error" class="auth-error-banner" style="display:none; margin-bottom: 16px;">
+                        <div id="step2Error" class="auth-error-banner" style="display:none; margin-bottom: 12px;">
                             <div class="auth-error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
                             <div class="auth-error-msg" id="step2ErrorMsg"></div>
                         </div>
@@ -365,7 +381,7 @@
                                 </div>
                             </div>
 
-                            <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 12px;">Nhập 6 chữ số:</p>
+                            <p style="font-size: 0.84rem; color: #64748b; margin-bottom: 8px;">Nhập 6 chữ số:</p>
 
                             <!-- 6 Digit OTP Inputs -->
                             <div class="auth-otp-inputs" id="otpInputsContainer">
@@ -385,7 +401,7 @@
                             </div>
 
                             <!-- Step 3 Error alert -->
-                            <div id="step3Error" class="auth-error-banner" style="display:none; text-align: left;">
+                            <div id="step3Error" class="auth-error-banner" style="display:none; text-align: left; margin-bottom: 8px;">
                                 <div class="auth-error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
                                 <div class="auth-error-msg" id="step3ErrorMsg"></div>
                             </div>
@@ -407,261 +423,263 @@
                          BƯỚC 4: NHẬP THÔNG TIN CÁ NHÂN & HỒ SƠ
                          ============================================== -->
                     <div class="auth-wizard-step" id="wizardStep4">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0;">
                             <span class="auth-step-instruction" style="margin-bottom: 0;">Điền thông tin tài khoản:</span>
-                            <span class="auth-role-badge" id="step4RoleBadge" style="font-size: 0.78rem; padding: 4px 10px;">Khách hàng</span>
+                            <span class="auth-role-badge" id="step4RoleBadge" style="font-size: 0.74rem; padding: 3px 8px;">Khách hàng</span>
                         </div>
 
-                        <!-- 1. Cụm thông tin chung: Họ tên & Username -->
-                        <div class="auth-fields-row-2">
-                            <div class="auth-field-group">
-                                <label for="regFullName" class="auth-field-label" id="lblFullName">Họ và tên *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-id-card"></i></span>
-                                    <input type="text" id="regFullName" name="fullName" class="auth-field-input" required 
-                                           value="<c:out value='${stickyRegFullName}' />"
-                                           placeholder="Nguyễn Văn A">
-                                </div>
-                            </div>
-
-                            <div class="auth-field-group">
-                                <label for="regUsername" class="auth-field-label">Tên đăng nhập *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-user"></i></span>
-                                    <input type="text" id="regUsername" name="username" class="auth-field-input" required 
-                                           value="<c:out value='${stickyRegUsername}' />"
-                                           placeholder="Chọn username">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 2. Cụm Mật khẩu & Xác nhận Mật khẩu -->
-                        <div class="auth-fields-row-2">
-                            <div class="auth-field-group">
-                                <label for="regPassword" class="auth-field-label">Mật khẩu *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-lock"></i></span>
-                                    <input type="password" id="regPassword" name="password" class="auth-field-input" required placeholder="Tối thiểu 6 ký tự">
-                                    <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('regPassword', this)" title="Ẩn/hiện">
-                                        <i class="fa-regular fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="auth-field-group">
-                                <label for="regConfirmPassword" class="auth-field-label">Xác nhận mật khẩu *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-shield-check"></i></span>
-                                    <input type="password" id="regConfirmPassword" name="confirmPassword" class="auth-field-input" required placeholder="Nhập lại mật khẩu">
-                                    <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('regConfirmPassword', this)" title="Ẩn/hiện">
-                                        <i class="fa-regular fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 3. PHẦN RIÊNG: KHÁCH HÀNG (CUSTOMER) -->
-                        <div id="step4CustomerFields" style="display: block;">
-                            <div class="auth-field-group">
-                                <label for="customerAddress" class="auth-field-label">Địa chỉ giao hàng mặc định *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-location-dot"></i></span>
-                                    <input type="text" id="customerAddress" class="auth-field-input" 
-                                           value="<c:out value='${stickyRegAddress}' />"
-                                           placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">
-                                </div>
-                            </div>
-
-                            <div class="auth-field-group">
-                                <label class="auth-field-label">Ảnh đại diện <span style="font-weight: normal; color: #94a3b8;">(Không bắt buộc)</span></label>
-                                <div class="auth-avatar-dropzone" onclick="document.getElementById('avatarFileCustomer').click()">
-                                    <input type="file" id="avatarFileCustomer" name="avatarFile" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'customerAvatarPreview')">
-                                    <div class="auth-avatar-circle-preview" id="customerAvatarPreview">
-                                        <i class="fa-solid fa-camera"></i>
-                                    </div>
-                                    <div class="auth-avatar-info">
-                                        <strong>Tải ảnh đại diện</strong>
-                                        <span>Bấm để chọn ảnh từ thiết bị của bạn (JPG, PNG)</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 4. PHẦN RIÊNG: SHIPPER (TÀI XẾ GIAO HÀNG) -->
-                        <div id="step4ShipperFields" style="display: none;">
-                            <div class="auth-field-group">
-                                <label for="shipperAddress" class="auth-field-label">Địa chỉ thường trú / Chỗ ở hiện tại *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-house-user"></i></span>
-                                    <input type="text" id="shipperAddress" class="auth-field-input" 
-                                           value="<c:out value='${stickyRegAddress}' />"
-                                           placeholder="Địa chỉ cư trú của tài xế...">
-                                </div>
-                            </div>
-
+                        <div class="auth-step4-scroll-body">
+                            <!-- 1. Cụm thông tin chung: Họ tên & Username -->
                             <div class="auth-fields-row-2">
                                 <div class="auth-field-group">
-                                    <label for="licensePlate" class="auth-field-label">Biển số xe máy *</label>
+                                    <label for="regFullName" class="auth-field-label" id="lblFullName">Họ và tên *</label>
                                     <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-solid fa-motorcycle text-success"></i></span>
-                                        <input type="text" id="licensePlate" name="licensePlate" class="auth-field-input"
-                                               value="<c:out value='${stickyLicensePlate}' />"
-                                               placeholder="Ví dụ: 59-X3 999.99">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-id-card"></i></span>
+                                        <input type="text" id="regFullName" name="fullName" class="auth-field-input" required 
+                                               value="<c:out value='${stickyRegFullName}' />"
+                                               placeholder="Nguyễn Văn A">
                                     </div>
                                 </div>
 
                                 <div class="auth-field-group">
-                                    <label for="vehicleType" class="auth-field-label">Loại phương tiện *</label>
+                                    <label for="regUsername" class="auth-field-label">Tên đăng nhập *</label>
                                     <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-solid fa-gauge text-success"></i></span>
-                                        <input type="text" id="vehicleType" name="vehicleType" class="auth-field-input"
-                                               value="<c:out value='${stickyVehicleType}' />"
-                                               placeholder="Ví dụ: Honda Vision, Wave, Air Blade...">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-user"></i></span>
+                                        <input type="text" id="regUsername" name="username" class="auth-field-input" required 
+                                               value="<c:out value='${stickyRegUsername}' />"
+                                               placeholder="Chọn username">
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="auth-field-group">
-                                <label class="auth-field-label" style="display: flex; align-items: center; justify-content: space-between;">
-                                    <span>Tài liệu & Ảnh chụp xác thực hồ sơ *</span>
-                                    <span style="font-size: 0.72rem; color: #10b981;"><i class="fa-solid fa-shield-halved mr-1"></i> Bắt buộc 4 ảnh</span>
-                                </label>
-                                
-                                <div class="auth-doc-upload-grid">
-                                    <!-- 1. Ảnh mặt (làm avatar account) -->
-                                    <div class="auth-doc-card" id="cardFacePhoto" onclick="document.getElementById('inputFacePhoto').click()">
-                                        <input type="file" id="inputFacePhoto" name="facePhoto" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgFacePhoto', 'cardFacePhoto')">
-                                        <div class="auth-doc-placeholder">
-                                            <div class="auth-doc-icon"><i class="fa-solid fa-camera"></i></div>
-                                            <div class="auth-doc-title">1. Ảnh khuôn mặt *</div>
-                                            <div class="auth-doc-subtitle">Làm ảnh đại diện</div>
-                                        </div>
-                                        <div class="auth-doc-preview-box">
-                                            <img id="imgFacePhoto" class="auth-doc-preview-img" src="" alt="Ảnh mặt">
-                                            <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
-                                            <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 2. Ảnh CCCD mặt trước -->
-                                    <div class="auth-doc-card" id="cardIdFront" onclick="document.getElementById('inputIdFront').click()">
-                                        <input type="file" id="inputIdFront" name="idCardFront" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgIdFront', 'cardIdFront')">
-                                        <div class="auth-doc-placeholder">
-                                            <div class="auth-doc-icon"><i class="fa-solid fa-address-card"></i></div>
-                                            <div class="auth-doc-title">2. CCCD mặt trước *</div>
-                                            <div class="auth-doc-subtitle">Rõ nét, không lóa</div>
-                                        </div>
-                                        <div class="auth-doc-preview-box">
-                                            <img id="imgIdFront" class="auth-doc-preview-img" src="" alt="CCCD mặt trước">
-                                            <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
-                                            <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 3. Ảnh CCCD mặt sau -->
-                                    <div class="auth-doc-card" id="cardIdBack" onclick="document.getElementById('inputIdBack').click()">
-                                        <input type="file" id="inputIdBack" name="idCardBack" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgIdBack', 'cardIdBack')">
-                                        <div class="auth-doc-placeholder">
-                                            <div class="auth-doc-icon"><i class="fa-solid fa-id-card-clip"></i></div>
-                                            <div class="auth-doc-title">3. CCCD mặt sau *</div>
-                                            <div class="auth-doc-subtitle">Rõ mã vạch / chip</div>
-                                        </div>
-                                        <div class="auth-doc-preview-box">
-                                            <img id="imgIdBack" class="auth-doc-preview-img" src="" alt="CCCD mặt sau">
-                                            <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
-                                            <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 4. Giấy tờ xe / Cà vẹt -->
-                                    <div class="auth-doc-card" id="cardVehicleDoc" onclick="document.getElementById('inputVehicleDoc').click()">
-                                        <input type="file" id="inputVehicleDoc" name="vehicleDoc" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgVehicleDoc', 'cardVehicleDoc')">
-                                        <div class="auth-doc-placeholder">
-                                            <div class="auth-doc-icon"><i class="fa-solid fa-file-invoice"></i></div>
-                                            <div class="auth-doc-title">4. Giấy tờ / Cà vẹt xe *</div>
-                                            <div class="auth-doc-subtitle">Chứng nhận đăng ký xe</div>
-                                        </div>
-                                        <div class="auth-doc-preview-box">
-                                            <img id="imgVehicleDoc" class="auth-doc-preview-img" src="" alt="Giấy tờ xe">
-                                            <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
-                                            <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 5. PHẦN RIÊNG: QUÁN ĂN (SELLER / MERCHANT) -->
-                        <div id="step4SellerFields" style="display: none;">
-                            <div class="auth-field-group">
-                                <label for="restaurantName" class="auth-field-label">Tên quán ăn / Nhà hàng *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-utensils text-primary"></i></span>
-                                    <input type="text" id="restaurantName" name="restaurantName" class="auth-field-input" 
-                                           value="<c:out value='${stickyRestaurantName}' />"
-                                           placeholder="Ví dụ: Bếp Việt Quán, Cơm Tấm Sài Gòn...">
-                                </div>
-                            </div>
-
-                            <div class="auth-field-group">
-                                <label for="sellerAddress" class="auth-field-label">Địa chỉ nhà hàng / quán ăn *</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-map-location-dot"></i></span>
-                                    <input type="text" id="sellerAddress" class="auth-field-input" 
-                                           value="<c:out value='${stickyRegAddress}' />"
-                                           placeholder="Số nhà, tên đường nơi quán ăn đặt trụ sở...">
-                                </div>
-                            </div>
-
+                            <!-- 2. Cụm Mật khẩu & Xác nhận Mật khẩu -->
                             <div class="auth-fields-row-2">
                                 <div class="auth-field-group">
-                                    <label for="openTime" class="auth-field-label">Giờ mở cửa *</label>
+                                    <label for="regPassword" class="auth-field-label">Mật khẩu *</label>
                                     <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-regular fa-clock"></i></span>
-                                        <input type="time" id="openTime" name="openTime" class="auth-field-input" 
-                                               value="<c:out value='${not empty stickyOpenTime ? stickyOpenTime : \"07:00\"}' />">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-lock"></i></span>
+                                        <input type="password" id="regPassword" name="password" class="auth-field-input" required placeholder="Tối thiểu 6 ký tự">
+                                        <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('regPassword', this)" title="Ẩn/hiện">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div class="auth-field-group">
-                                    <label for="closeTime" class="auth-field-label">Giờ đóng cửa *</label>
+                                    <label for="regConfirmPassword" class="auth-field-label">Xác nhận mật khẩu *</label>
                                     <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-solid fa-door-closed"></i></span>
-                                        <input type="time" id="closeTime" name="closeTime" class="auth-field-input" 
-                                               value="<c:out value='${not empty stickyCloseTime ? stickyCloseTime : \"22:00\"}' />">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-shield-check"></i></span>
+                                        <input type="password" id="regConfirmPassword" name="confirmPassword" class="auth-field-input" required placeholder="Nhập lại mật khẩu">
+                                        <button type="button" class="auth-password-toggle-btn" onclick="togglePasswordVisibility('regConfirmPassword', this)" title="Ẩn/hiện">
+                                            <i class="fa-regular fa-eye"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="auth-field-group">
-                                <label for="restaurantDesc" class="auth-field-label">Mô tả quán ăn</label>
-                                <div class="auth-field-control">
-                                    <span class="auth-field-icon"><i class="fa-solid fa-pen-nib"></i></span>
-                                    <input type="text" id="restaurantDesc" name="restaurantDesc" class="auth-field-input"
-                                           value="<c:out value='${stickyRestaurantDesc}' />"
-                                           placeholder="Giới thiệu các món đặc sản, hương vị nổi bật...">
+                            <!-- 3. PHẦN RIÊNG: KHÁCH HÀNG (CUSTOMER) -->
+                            <div id="step4CustomerFields" style="display: block;">
+                                <div class="auth-field-group">
+                                    <label for="customerAddress" class="auth-field-label">Địa chỉ giao hàng mặc định *</label>
+                                    <div class="auth-field-control">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-location-dot"></i></span>
+                                        <input type="text" id="customerAddress" class="auth-field-input" 
+                                               value="<c:out value='${stickyRegAddress}' />"
+                                               placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label class="auth-field-label">Ảnh đại diện <span style="font-weight: normal; color: #94a3b8;">(Không bắt buộc)</span></label>
+                                    <div class="auth-avatar-dropzone" onclick="document.getElementById('avatarFileCustomer').click()">
+                                        <input type="file" id="avatarFileCustomer" name="avatarFile" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'customerAvatarPreview')">
+                                        <div class="auth-avatar-circle-preview" id="customerAvatarPreview">
+                                            <i class="fa-solid fa-camera"></i>
+                                        </div>
+                                        <div class="auth-avatar-info">
+                                            <strong>Tải ảnh đại diện</strong>
+                                            <span>Bấm để chọn ảnh từ thiết bị của bạn (JPG, PNG)</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="auth-field-group">
-                                <label class="auth-field-label">Logo / Ảnh quán ăn <span style="font-weight: normal; color: #94a3b8;">(Không bắt buộc)</span></label>
-                                <div class="auth-avatar-dropzone" onclick="document.getElementById('restaurantLogoInput').click()">
-                                    <input type="file" id="restaurantLogoInput" name="restaurantLogo" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'sellerLogoPreview')">
-                                    <div class="auth-avatar-circle-preview" id="sellerLogoPreview" style="border-radius: 12px;">
-                                        <i class="fa-solid fa-store"></i>
+                            <!-- 4. PHẦN RIÊNG: SHIPPER (TÀI XẾ GIAO HÀNG) -->
+                            <div id="step4ShipperFields" style="display: none;">
+                                <div class="auth-field-group">
+                                    <label for="shipperAddress" class="auth-field-label">Địa chỉ thường trú / Chỗ ở hiện tại *</label>
+                                    <div class="auth-field-control">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-house-user"></i></span>
+                                        <input type="text" id="shipperAddress" class="auth-field-input" 
+                                               value="<c:out value='${stickyRegAddress}' />"
+                                               placeholder="Địa chỉ cư trú của tài xế...">
                                     </div>
-                                    <div class="auth-avatar-info">
-                                        <strong>Tải ảnh / Logo quán ăn</strong>
-                                        <span>Giúp khách hàng dễ dàng nhận diện thương hiệu của bạn</span>
+                                </div>
+
+                                <div class="auth-fields-row-2">
+                                    <div class="auth-field-group">
+                                        <label for="licensePlate" class="auth-field-label">Biển số xe máy *</label>
+                                        <div class="auth-field-control">
+                                            <span class="auth-field-icon"><i class="fa-solid fa-motorcycle text-success"></i></span>
+                                            <input type="text" id="licensePlate" name="licensePlate" class="auth-field-input"
+                                                   value="<c:out value='${stickyLicensePlate}' />"
+                                                   placeholder="Ví dụ: 59-X3 999.99">
+                                        </div>
+                                    </div>
+
+                                    <div class="auth-field-group">
+                                        <label for="vehicleType" class="auth-field-label">Loại phương tiện *</label>
+                                        <div class="auth-field-control">
+                                            <span class="auth-field-icon"><i class="fa-solid fa-gauge text-success"></i></span>
+                                            <input type="text" id="vehicleType" name="vehicleType" class="auth-field-input"
+                                                   value="<c:out value='${stickyVehicleType}' />"
+                                                   placeholder="Ví dụ: Honda Vision, Wave, Air Blade...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label class="auth-field-label" style="display: flex; align-items: center; justify-content: space-between;">
+                                        <span>Tài liệu & Ảnh chụp xác thực hồ sơ *</span>
+                                        <span style="font-size: 0.72rem; color: #10b981;"><i class="fa-solid fa-shield-halved mr-1"></i> Bắt buộc 4 ảnh</span>
+                                    </label>
+                                    
+                                    <div class="auth-doc-upload-grid">
+                                        <!-- 1. Ảnh mặt (làm avatar account) -->
+                                        <div class="auth-doc-card" id="cardFacePhoto" onclick="document.getElementById('inputFacePhoto').click()">
+                                            <input type="file" id="inputFacePhoto" name="facePhoto" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgFacePhoto', 'cardFacePhoto')">
+                                            <div class="auth-doc-placeholder">
+                                                <div class="auth-doc-icon"><i class="fa-solid fa-camera"></i></div>
+                                                <div class="auth-doc-title">1. Ảnh khuôn mặt *</div>
+                                                <div class="auth-doc-subtitle">Làm avatar</div>
+                                            </div>
+                                            <div class="auth-doc-preview-box">
+                                                <img id="imgFacePhoto" class="auth-doc-preview-img" src="" alt="Ảnh mặt">
+                                                <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
+                                                <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 2. Ảnh CCCD mặt trước -->
+                                        <div class="auth-doc-card" id="cardIdFront" onclick="document.getElementById('inputIdFront').click()">
+                                            <input type="file" id="inputIdFront" name="idCardFront" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgIdFront', 'cardIdFront')">
+                                            <div class="auth-doc-placeholder">
+                                                <div class="auth-doc-icon"><i class="fa-solid fa-address-card"></i></div>
+                                                <div class="auth-doc-title">2. CCCD mặt trước *</div>
+                                                <div class="auth-doc-subtitle">Rõ nét, không lóa</div>
+                                            </div>
+                                            <div class="auth-doc-preview-box">
+                                                <img id="imgIdFront" class="auth-doc-preview-img" src="" alt="CCCD mặt trước">
+                                                <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
+                                                <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 3. Ảnh CCCD mặt sau -->
+                                        <div class="auth-doc-card" id="cardIdBack" onclick="document.getElementById('inputIdBack').click()">
+                                            <input type="file" id="inputIdBack" name="idCardBack" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgIdBack', 'cardIdBack')">
+                                            <div class="auth-doc-placeholder">
+                                                <div class="auth-doc-icon"><i class="fa-solid fa-id-card-clip"></i></div>
+                                                <div class="auth-doc-title">3. CCCD mặt sau *</div>
+                                                <div class="auth-doc-subtitle">Rõ mã chip</div>
+                                            </div>
+                                            <div class="auth-doc-preview-box">
+                                                <img id="imgIdBack" class="auth-doc-preview-img" src="" alt="CCCD mặt sau">
+                                                <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
+                                                <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 4. Giấy tờ xe / Cà vẹt -->
+                                        <div class="auth-doc-card" id="cardVehicleDoc" onclick="document.getElementById('inputVehicleDoc').click()">
+                                            <input type="file" id="inputVehicleDoc" name="vehicleDoc" accept="image/*" style="display: none;" onchange="previewDoc(this, 'imgVehicleDoc', 'cardVehicleDoc')">
+                                            <div class="auth-doc-placeholder">
+                                                <div class="auth-doc-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                                                <div class="auth-doc-title">4. Giấy tờ xe *</div>
+                                                <div class="auth-doc-subtitle">Đăng ký xe</div>
+                                            </div>
+                                            <div class="auth-doc-preview-box">
+                                                <img id="imgVehicleDoc" class="auth-doc-preview-img" src="" alt="Giấy tờ xe">
+                                                <div class="auth-doc-preview-overlay"><span class="auth-doc-change-text">Đổi ảnh</span></div>
+                                                <div class="auth-doc-badge-success"><i class="fa-solid fa-check"></i></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Step 4 Error alert -->
-                        <div id="step4Error" class="auth-error-banner" style="display:none;">
-                            <div class="auth-error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
-                            <div class="auth-error-msg" id="step4ErrorMsg"></div>
+                            <!-- 5. PHẦN RIÊNG: QUÁN ĂN (SELLER / MERCHANT) -->
+                            <div id="step4SellerFields" style="display: none;">
+                                <div class="auth-field-group">
+                                    <label for="restaurantName" class="auth-field-label">Tên quán ăn / Nhà hàng *</label>
+                                    <div class="auth-field-control">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-utensils text-primary"></i></span>
+                                        <input type="text" id="restaurantName" name="restaurantName" class="auth-field-input" 
+                                               value="<c:out value='${stickyRestaurantName}' />"
+                                               placeholder="Ví dụ: Bếp Việt Quán, Cơm Tấm Sài Gòn...">
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label for="sellerAddress" class="auth-field-label">Địa chỉ nhà hàng / quán ăn *</label>
+                                    <div class="auth-field-control">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-map-location-dot"></i></span>
+                                        <input type="text" id="sellerAddress" class="auth-field-input" 
+                                               value="<c:out value='${stickyRegAddress}' />"
+                                               placeholder="Số nhà, tên đường nơi quán ăn đặt trụ sở...">
+                                    </div>
+                                </div>
+
+                                <div class="auth-fields-row-2">
+                                    <div class="auth-field-group">
+                                        <label for="openTime" class="auth-field-label">Giờ mở cửa *</label>
+                                        <div class="auth-field-control">
+                                            <span class="auth-field-icon"><i class="fa-regular fa-clock"></i></span>
+                                            <input type="time" id="openTime" name="openTime" class="auth-field-input" 
+                                                   value="<c:out value='${not empty stickyOpenTime ? stickyOpenTime : \"07:00\"}' />">
+                                        </div>
+                                    </div>
+
+                                    <div class="auth-field-group">
+                                        <label for="closeTime" class="auth-field-label">Giờ đóng cửa *</label>
+                                        <div class="auth-field-control">
+                                            <span class="auth-field-icon"><i class="fa-solid fa-door-closed"></i></span>
+                                            <input type="time" id="closeTime" name="closeTime" class="auth-field-input" 
+                                                   value="<c:out value='${not empty stickyCloseTime ? stickyCloseTime : \"22:00\"}' />">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label for="restaurantDesc" class="auth-field-label">Mô tả quán ăn</label>
+                                    <div class="auth-field-control">
+                                        <span class="auth-field-icon"><i class="fa-solid fa-pen-nib"></i></span>
+                                        <input type="text" id="restaurantDesc" name="restaurantDesc" class="auth-field-input"
+                                               value="<c:out value='${stickyRestaurantDesc}' />"
+                                               placeholder="Giới thiệu các món đặc sản, hương vị nổi bật...">
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label class="auth-field-label">Logo / Ảnh quán ăn <span style="font-weight: normal; color: #94a3b8;">(Không bắt buộc)</span></label>
+                                    <div class="auth-avatar-dropzone" onclick="document.getElementById('restaurantLogoInput').click()">
+                                        <input type="file" id="restaurantLogoInput" name="restaurantLogo" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'sellerLogoPreview')">
+                                        <div class="auth-avatar-circle-preview" id="sellerLogoPreview" style="border-radius: 12px;">
+                                            <i class="fa-solid fa-store"></i>
+                                        </div>
+                                        <div class="auth-avatar-info">
+                                            <strong>Tải ảnh / Logo quán ăn</strong>
+                                            <span>Giúp khách hàng dễ dàng nhận diện thương hiệu của bạn</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 4 Error alert -->
+                            <div id="step4Error" class="auth-error-banner" style="display:none; margin-bottom: 8px;">
+                                <div class="auth-error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                                <div class="auth-error-msg" id="step4ErrorMsg"></div>
+                            </div>
                         </div>
 
                         <div class="auth-step-nav-actions">
