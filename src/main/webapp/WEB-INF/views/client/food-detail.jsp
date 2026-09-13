@@ -106,46 +106,77 @@
                         <p class="detail-desc-text">${food.description}</p>
                     </div>
 
-                    <!-- Order Form -->
-                    <form action="${pageContext.request.contextPath}/cart" method="POST" class="detail-order-form">
-                        <input type="hidden" name="action" value="add">
-                        <input type="hidden" name="foodId" value="${food.id}">
-
-                        <!-- Quantity Stepper -->
-                        <div class="order-option-group">
-                            <label class="option-label">Số lượng khẩu phần:</label>
-                            <div class="stepper-box">
-                                <button type="button" class="stepper-btn" onclick="decreaseQty()">-</button>
-                                <input type="number" id="detailQty" name="quantity" value="1" min="1" max="50" class="stepper-input" readonly>
-                                <button type="button" class="stepper-btn" onclick="increaseQty()">+</button>
+                    <c:set var="isMerchantUser" value="${not empty sessionScope.currentUser and (sessionScope.currentUser.seller or sessionScope.currentUser.role eq 'SELLER')}" />
+                    <c:choose>
+                        <c:when test="${isMerchantUser}">
+                            <!-- Merchant View-Only Mode: Không thể đặt món, bố cục cân đối thông thoáng -->
+                            <div class="merchant-view-panel">
+                                <div class="merchant-view-notice">
+                                    <div class="merchant-notice-icon">
+                                        <i class="fa-solid fa-store"></i>
+                                    </div>
+                                    <div class="merchant-notice-body">
+                                        <span class="merchant-notice-badge">
+                                            <i class="fa-solid fa-eye"></i> Chế độ xem Đối Tác Quán Ăn
+                                        </span>
+                                        <p class="merchant-notice-desc">
+                                            Bạn đang duyệt món ăn với tư cách Đối Tác Quán Ăn. Chức năng chọn số lượng và thêm vào giỏ hàng chỉ dành riêng cho tài khoản Khách hàng.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="merchant-view-actions">
+                                    <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-lg">
+                                        <i class="fa-solid fa-arrow-left"></i> Xem Thực Đơn Các Quán
+                                    </a>
+                                    <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-outline btn-lg">
+                                        <i class="fa-solid fa-gauge-high"></i> Về Kênh Quán Ăn
+                                    </a>
+                                </div>
                             </div>
-                        </div>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- Customer / Guest Order Form -->
+                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="detail-order-form">
+                                <input type="hidden" name="action" value="add">
+                                <input type="hidden" name="foodId" value="${food.id}">
 
-                        <!-- Special Request / Notes -->
-                        <div class="order-option-group">
-                            <label for="orderNote" class="option-label">Ghi chú cho nhà bếp (tùy chọn):</label>
-                            <input type="text" id="orderNote" name="note" placeholder="Ví dụ: Ít cay, không hành, để sốt riêng..." class="form-control note-input">
-                        </div>
+                                <!-- Quantity Stepper -->
+                                <div class="order-option-group">
+                                    <label class="option-label">Số lượng khẩu phần:</label>
+                                    <div class="stepper-box">
+                                        <button type="button" class="stepper-btn" onclick="decreaseQty()">-</button>
+                                        <input type="number" id="detailQty" name="quantity" value="1" min="1" max="50" class="stepper-input" readonly>
+                                        <button type="button" class="stepper-btn" onclick="increaseQty()">+</button>
+                                    </div>
+                                </div>
 
-                        <!-- Action Buttons -->
-                        <div class="detail-cta-group">
-                            <c:choose>
-                                <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
-                                    <button type="button" class="btn btn-secondary btn-lg btn-add-full" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở thanh menu trên cùng nếu muốn đặt món như khách hàng!');" style="opacity: 0.7; cursor: not-allowed; background: #64748b;">
-                                        <i class="fa-solid fa-motorcycle"></i> Đang Bật Chế Độ Shipper
-                                    </button>
-                                </c:when>
-                                <c:otherwise>
-                                    <button type="submit" class="btn btn-primary btn-lg btn-add-full">
-                                        <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
-                                    </button>
-                                </c:otherwise>
-                            </c:choose>
-                            <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
-                                <i class="fa-solid fa-arrow-left"></i> Xem Thực Đơn
-                            </a>
-                        </div>
-                    </form>
+                                <!-- Special Request / Notes -->
+                                <div class="order-option-group">
+                                    <label for="orderNote" class="option-label">Ghi chú cho nhà bếp (tùy chọn):</label>
+                                    <input type="text" id="orderNote" name="note" placeholder="Ví dụ: Ít cay, không hành, để sốt riêng..." class="form-control note-input">
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="detail-cta-group">
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                            <button type="button" class="btn btn-secondary btn-lg btn-add-full" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở thanh menu trên cùng nếu muốn đặt món như khách hàng!');" style="opacity: 0.7; cursor: not-allowed; background: #64748b;">
+                                                <i class="fa-solid fa-motorcycle"></i> Đang Bật Chế Độ Shipper
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <button type="submit" class="btn btn-primary btn-lg btn-add-full">
+                                                <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
+                                        <i class="fa-solid fa-arrow-left"></i> Xem Thực Đơn
+                                    </a>
+                                </div>
+                            </form>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
             </div>
         </c:when>

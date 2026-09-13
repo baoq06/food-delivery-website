@@ -35,7 +35,10 @@
                     </a>
                 </c:if>
             </form>
-            <div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline" style="border-radius: 10px; font-weight: 700; font-size: 0.88rem; padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px;" title="Xem toàn bộ thực đơn trên hệ thống Utee">
+                    <i class="fa-solid fa-utensils"></i> <span>Xem Thực Đơn Chung</span>
+                </a>
                 <button type="button" class="merchant-add-food-btn" onclick="openAddFoodModal()">
                     <i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>
                 </button>

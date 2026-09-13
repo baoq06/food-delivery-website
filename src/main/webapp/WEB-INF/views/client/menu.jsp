@@ -159,11 +159,6 @@
                             <div class="food-time-badge">
                                 <i class="fa-solid fa-bolt text-warning"></i> 20-30 phút
                             </div>
-
-                            <!-- Quick View Overlay Button -->
-                            <button type="button" class="btn-quick-view" data-food-id="${food.id}" title="Xem nhanh món này">
-                                <i class="fa-solid fa-eye"></i> Xem nhanh
-                            </button>
                         </div>
 
                         <div class="food-body">
@@ -193,13 +188,19 @@
                                     <span class="price-label">Giá bán</span>
                                     <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
                                 </div>
-<div class="food-actions-wrap">
+                                <div class="food-actions-wrap">
                                     <c:choose>
                                         <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
                                             <button type="button" class="btn-add-cart disabled" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở góc trên màn hình nếu muốn đặt món như khách hàng!');" style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;" title="Chế độ Shipper đang bật">
                                                 <i class="fa-solid fa-motorcycle"></i>
                                                 <span>Đang là Shipper</span>
                                             </button>
+                                        </c:when>
+                                        <c:when test="${not empty sessionScope.currentUser and (sessionScope.currentUser.role eq 'SELLER' or sessionScope.currentUser.seller)}">
+                                            <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="btn-add-cart btn-view-only" title="Xem chi tiết món này">
+                                                <i class="fa-solid fa-eye text-primary"></i>
+                                                <span>Xem món</span>
+                                            </a>
                                         </c:when>
                                         <c:otherwise>
                                             <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form ajax-cart-form" data-food-id="${food.id}">
@@ -240,79 +241,17 @@
     </div>
 </div>
 
-<!-- Quick View Modal (Popup xem nhanh thông minh) -->
-<div id="quick-view-modal" class="qv-modal-overlay" aria-hidden="true">
-    <div class="qv-modal-card" role="dialog" aria-modal="true" aria-labelledby="qv-modal-title">
-        <button type="button" class="qv-modal-close" id="qv-close-btn" aria-label="Đóng cửa sổ">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
 
-        <div class="qv-modal-grid">
-            <div class="qv-image-side">
-                <img id="qv-food-image" src="" alt="Food Preview" class="qv-main-img">
-                <span id="qv-food-tag" class="qv-badge-tag">Món Ngon</span>
-                <div class="qv-img-badge">
-                    <i class="fa-solid fa-clock"></i> Giao 20-30 phút
-                </div>
-            </div>
 
-            <div class="qv-content-side">
-                <div class="qv-meta-top">
-                    <span class="qv-store-name"><i class="fa-solid fa-store text-primary"></i> <span id="qv-food-store">Quán đối tác</span></span>
-                    <span class="qv-rating" id="qv-food-rating"><i class="fa-solid fa-star"></i> Đánh giá</span>
-                </div>
-
-                <h2 id="qv-modal-title" class="qv-food-title">Tên món ăn</h2>
-
-                <p id="qv-food-desc" class="qv-food-desc">Mô tả chi tiết món ăn...</p>
-
-                <div class="qv-price-row">
-                    <div class="qv-price-wrap">
-                        <span class="qv-price-label">Đơn giá:</span>
-                        <span id="qv-food-price" class="qv-price-value">0 đ</span>
-                    </div>
-                    <div class="qv-badge-fresh">
-                        <i class="fa-solid fa-shield-halved"></i> Đảm bảo tươi nóng
-                    </div>
-                </div>
-
-                <div class="qv-qty-row">
-                    <span class="qv-qty-label">Chọn số lượng:</span>
-                    <div class="qv-qty-stepper">
-                        <button type="button" id="qv-qty-minus" class="qty-btn" aria-label="Giảm"><i class="fa-solid fa-minus"></i></button>
-                        <input type="number" id="qv-qty-input" value="1" min="1" max="99" readonly>
-                        <button type="button" id="qv-qty-plus" class="qty-btn" aria-label="Tăng"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                </div>
-
-                <div class="qv-subtotal-box">
-                    <span>Tổng tiền tạm tính:</span>
-                    <strong id="qv-subtotal-price">0 đ</strong>
-                </div>
-
-                <div class="qv-actions">
-                    <button type="button" id="qv-add-cart-btn" class="btn btn-primary btn-qv-add">
-                        <i class="fa-solid fa-cart-plus"></i>
-                        <span>Thêm Vào Giỏ Hàng</span>
-                    </button>
-                    <a id="qv-detail-link" href="#" class="btn btn-outline btn-qv-detail">
-                        <span>Chi tiết đầy đủ</span>
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Floating Bottom Mini-Cart Bar (Ghim đáy màn hình khi có món) -->
-<c:set var="hasCart" value="${not empty sessionScope.cart and sessionScope.cart.size() > 0}" />
-<div id="floating-mini-cart" class="floating-mini-cart ${hasCart ? 'show' : ''}">
-    <div class="container floating-mini-cart-inner">
-        <div class="fmc-left">
-            <div class="fmc-icon-wrap">
-                <i class="fa-solid fa-bag-shopping"></i>
-                <span class="fmc-badge" id="fmc-badge-count">
+<!-- Floating Bottom Mini-Cart Bar (Ghim đáy màn hình khi có món - chỉ cho khách hàng) -->
+<c:if test="${not isSeller}">
+    <c:set var="hasCart" value="${not empty sessionScope.cart and sessionScope.cart.size() > 0}" />
+    <div id="floating-mini-cart" class="floating-mini-cart ${hasCart ? 'show' : ''}">
+        <div class="container floating-mini-cart-inner">
+            <div class="fmc-left">
+                <div class="fmc-icon-wrap">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="fmc-badge" id="fmc-badge-count">
                     <c:choose>
                         <c:when test="${hasCart}">${sessionScope.cart.size()}</c:when>
                         <c:otherwise>0</c:otherwise>
@@ -348,5 +287,6 @@
         </div>
     </div>
 </div>
+</c:if>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
