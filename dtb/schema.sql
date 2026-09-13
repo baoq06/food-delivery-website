@@ -192,8 +192,8 @@ CREATE TABLE IF NOT EXISTS `notifications` (
 -- DỮ LIỆU KHỞI TẠO MẪU CHO TÀI KHOẢN SHIPPER KAITOKID
 -- ====================================================================
 INSERT INTO `users` (`username`, `password`, `name`, `email`, `phone`, `address`, `role`)
-VALUES ('kaitokid', '123456', 'Kaito Kid (Tài Xế Siêu Cấp)', 'kaitokid@utee.vn', '0909998877', '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh', 'SHIPPER');
+VALUES ('kaitokid', '123456', 'tran gia kiet', 'kaitokid@utee.vn', '0909998877', '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh', 'SHIPPER');
 
 INSERT INTO `drivers` (`user_id`, `name`, `phone`, `status`, `license_plate`, `vehicle_type`)
-SELECT `user_id`, 'Kaito Kid (Tài Xế Siêu Cấp)', '0909998877', 'AVAILABLE', '59-X3 999.99', 'Honda Air Blade 160'
+SELECT `user_id`, 'tran gia kiet', '0909998877', 'AVAILABLE', '59-X3 999.99', 'Honda Air Blade 160'
 FROM `users` WHERE `username` = 'kaitokid';

@@ -13,6 +13,8 @@ public class Food implements Serializable {
     private int restaurantId;
     private String restaurantName;
     private boolean available;
+    private double rating;
+    private int reviewCount;
 
     public Food() {
     }
@@ -127,5 +129,21 @@ public class Food implements Serializable {
 
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
     }
 }

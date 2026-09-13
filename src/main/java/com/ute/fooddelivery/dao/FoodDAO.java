@@ -12,10 +12,20 @@ public class FoodDAO {
     private static final String BASE_QUERY = 
         "SELECT f.food_id, f.name, f.description, f.price, f.image_url, f.is_available, " +
         "       f.category_id, c.name AS category_name, " +
-        "       f.restaurant_id, r.name AS restaurant_name " +
+        "       f.restaurant_id, r.name AS restaurant_name, " +
+        "       COALESCE(sub.avg_rating, 0.0) AS avg_rating, " +
+        "       COALESCE(sub.review_count, 0) AS review_count " +
         "FROM foods f " +
         "LEFT JOIN categories c ON f.category_id = c.category_id " +
-        "LEFT JOIN restaurants r ON f.restaurant_id = r.restaurant_id ";
+        "LEFT JOIN restaurants r ON f.restaurant_id = r.restaurant_id " +
+        "LEFT JOIN (" +
+        "    SELECT oi.food_id, " +
+        "           ROUND(AVG(COALESCE(rv.food_rating, rv.rating)), 1) AS avg_rating, " +
+        "           COUNT(DISTINCT rv.review_id) AS review_count " +
+        "    FROM order_items oi " +
+        "    JOIN order_reviews rv ON oi.order_id = rv.order_id " +
+        "    GROUP BY oi.food_id " +
+        ") sub ON f.food_id = sub.food_id ";
 
     public List<Food> getAllFoods() {
         List<Food> list = new ArrayList<>();
@@ -217,7 +227,7 @@ public class FoodDAO {
     }
 
     private Food mapResultSetToFood(ResultSet rs) throws Exception {
-        return new Food(
+        Food food = new Food(
             rs.getInt("food_id"),
             rs.getString("name"),
             rs.getString("description"),
@@ -229,5 +239,10 @@ public class FoodDAO {
             rs.getString("restaurant_name"),
             rs.getInt("is_available") == 1
         );
+        try {
+            food.setRating(rs.getDouble("avg_rating"));
+            food.setReviewCount(rs.getInt("review_count"));
+        } catch (Exception ignored) {}
+        return food;
     }
 }

@@ -399,6 +399,20 @@ document.addEventListener("DOMContentLoaded", () => {
             if (qvDesc) qvDesc.innerText = foodDesc;
             if (qvPrice) qvPrice.innerText = formatVND(activeFoodPrice);
             if (qvQtyInput) qvQtyInput.value = 1;
+
+            const qvRating = document.getElementById("qv-food-rating");
+            if (qvRating) {
+                const rVal = parseFloat(card.dataset.rating) || 0;
+                const rCnt = parseInt(card.dataset.reviews) || 0;
+                if (rCnt > 0) {
+                    qvRating.innerHTML = `<i class="fa-solid fa-star"></i> ${rVal} (${rCnt} đánh giá)`;
+                    qvRating.style.color = "";
+                } else {
+                    qvRating.innerHTML = `<i class="fa-regular fa-star"></i> Chưa có đánh giá`;
+                    qvRating.style.color = "#94a3b8";
+                }
+            }
+
             if (qvDetailLink) {
                 const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1)) || "";
                 qvDetailLink.href = `${contextPath}/food-detail?id=${activeFoodId}`;

@@ -145,7 +145,8 @@
                          data-restaurant="${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác Utee'}"
                          data-image="${food.image}"
                          data-desc="${food.description}"
-                         data-rating="4.9"
+                         data-rating="${food.rating}"
+                         data-reviews="${food.reviewCount}"
                          data-index="${status.index}">
 
                         <div class="food-card-img-wrap">
@@ -168,7 +169,14 @@
                         <div class="food-body">
                             <div class="food-meta">
                                 <span class="food-cat-badge"><c:out value="${not empty food.categoryName ? food.categoryName : 'Món ngon'}" /></span>
-                                <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9 (120+)</span>
+                                <c:choose>
+                                    <c:when test="${food.reviewCount > 0}">
+                                        <span class="food-rating"><i class="fa-solid fa-star"></i> ${food.rating} (${food.reviewCount})</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
+                                    </c:otherwise>
+                                </c:choose>
                                 <span class="food-distance" title="${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}">
                                     <i class="fa-solid fa-store text-primary"></i> ${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}
                                 </span>
@@ -251,7 +259,7 @@
             <div class="qv-content-side">
                 <div class="qv-meta-top">
                     <span class="qv-store-name"><i class="fa-solid fa-store text-primary"></i> <span id="qv-food-store">Quán đối tác</span></span>
-                    <span class="qv-rating"><i class="fa-solid fa-star"></i> 4.9 (120+ đánh giá)</span>
+                    <span class="qv-rating" id="qv-food-rating"><i class="fa-solid fa-star"></i> Đánh giá</span>
                 </div>
 
                 <h2 id="qv-modal-title" class="qv-food-title">Tên món ăn</h2>

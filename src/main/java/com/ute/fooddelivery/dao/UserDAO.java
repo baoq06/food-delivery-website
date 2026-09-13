@@ -4,6 +4,8 @@ import com.ute.fooddelivery.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserDAO {
 
@@ -302,5 +304,41 @@ public class UserDAO {
                 } catch (Exception ignored) {}
             }
         }
+    }
+
+    public Map<String, Integer> getUserStats() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("totalUsers", 0);
+        map.put("customerCount", 0);
+        map.put("driverCount", 0);
+        map.put("restaurantCount", 0);
+        map.put("sellerCount", 0);
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement("SELECT role, COUNT(*) AS cnt FROM users GROUP BY role");
+                     ResultSet rs = ps.executeQuery()) {
+                    int total = 0;
+                    while (rs.next()) {
+                        String role = rs.getString("role");
+                        int count = rs.getInt("cnt");
+                        total += count;
+                        if ("CUSTOMER".equalsIgnoreCase(role)) map.put("customerCount", count);
+                        else if ("SELLER".equalsIgnoreCase(role)) map.put("sellerCount", count);
+                    }
+                    map.put("totalUsers", total);
+                }
+                try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM drivers");
+                     ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) map.put("driverCount", rs.getInt(1));
+                }
+                try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM restaurants");
+                     ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) map.put("restaurantCount", rs.getInt(1));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getUserStats: " + e.getMessage());
+        }
+        return map;
     }
 }

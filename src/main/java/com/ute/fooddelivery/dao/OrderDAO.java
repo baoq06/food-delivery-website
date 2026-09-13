@@ -1095,4 +1095,91 @@ public class OrderDAO {
         }
         return null;
     }
+
+    public double getTotalDeliveredRevenue() {
+        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'DELIVERED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính tổng doanh thu cho admin: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public Map<String, Integer> getOrderStatusCounts() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("TOTAL", 0);
+        map.put("PENDING", 0);
+        map.put("CONFIRMED", 0);
+        map.put("SHIPPING", 0);
+        map.put("DELIVERED", 0);
+        map.put("CANCELLED", 0);
+        String sql = "SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            int total = 0;
+            while (rs.next()) {
+                String st = rs.getString("status");
+                int count = rs.getInt("cnt");
+                if (st != null) {
+                    map.put(st.toUpperCase(), count);
+                }
+                total += count;
+            }
+            map.put("TOTAL", total);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm trạng thái đơn cho admin: " + e.getMessage());
+        }
+        return map;
+    }
+
+    public List<Order> getRecentOrdersForAdmin(int limit) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+                     "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+                     "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+                     "       d.name AS driver_name, " +
+                     "       (SELECT GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') " +
+                     "        FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id) AS food_summary " +
+                     "FROM orders o " +
+                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+                     "ORDER BY o.created_at DESC LIMIT ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order(
+                        rs.getInt("order_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("customer_name"),
+                        rs.getString("phone"),
+                        rs.getString("address"),
+                        rs.getString("note"),
+                        rs.getDouble("total_amount"),
+                        rs.getString("payment_method"),
+                        rs.getString("status"),
+                        rs.getInt("driver_id"),
+                        rs.getTimestamp("created_at"),
+                        rs.getBoolean("customer_confirmed"),
+                        rs.getBoolean("merchant_confirmed"),
+                        rs.getBoolean("shipper_accepted"),
+                        rs.getBoolean("shipper_delivered"),
+                        rs.getBoolean("merchant_completed")
+                    );
+                    order.setDriverName(rs.getString("driver_name"));
+                    order.setFoodSummary(rs.getString("food_summary"));
+                    list.add(order);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách đơn cho admin: " + e.getMessage());
+        }
+        return list;
+    }
 }

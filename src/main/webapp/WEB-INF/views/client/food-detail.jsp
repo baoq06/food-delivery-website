@@ -46,15 +46,38 @@
                 <!-- Right: Food Info -->
                 <div class="detail-content">
                     <div class="detail-rating-row">
-                        <div class="stars">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                        </div>
-                        <span class="rating-score">4.9/5</span>
-                        <span class="rating-count">(Hơn 250 lượt đánh giá tích cực)</span>
+                        <c:choose>
+                            <c:when test="${food.reviewCount > 0}">
+                                <div class="stars">
+                                    <c:forEach begin="1" end="5" var="s">
+                                        <c:choose>
+                                            <c:when test="${food.rating >= s}">
+                                                <i class="fa-solid fa-star"></i>
+                                            </c:when>
+                                            <c:when test="${food.rating >= s - 0.5}">
+                                                <i class="fa-solid fa-star-half-stroke"></i>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="fa-regular fa-star"></i>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </c:forEach>
+                                </div>
+                                <span class="rating-score">${food.rating}/5</span>
+                                <span class="rating-count">(${food.reviewCount} lượt đánh giá thực tế)</span>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="stars" style="color: #cbd5e1;">
+                                    <i class="fa-regular fa-star"></i>
+                                    <i class="fa-regular fa-star"></i>
+                                    <i class="fa-regular fa-star"></i>
+                                    <i class="fa-regular fa-star"></i>
+                                    <i class="fa-regular fa-star"></i>
+                                </div>
+                                <span class="rating-score" style="color: #64748b; font-size: 0.95rem;">Chưa có đánh giá</span>
+                                <span class="rating-count" style="color: #94a3b8;">(Món mới chưa có lượt nhận xét)</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <h1 class="detail-food-name">${food.name}</h1>

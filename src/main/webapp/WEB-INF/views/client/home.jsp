@@ -254,7 +254,14 @@
                     </div>
                     <div class="food-body">
                         <div class="food-meta">
-                            <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9 (120+)</span>
+                            <c:choose>
+                                <c:when test="${food.reviewCount > 0}">
+                                    <span class="food-rating"><i class="fa-solid fa-star"></i> ${food.rating} (${food.reviewCount})</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
+                                </c:otherwise>
+                            </c:choose>
                             <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}</span>
                         </div>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-title-link">
@@ -315,7 +322,14 @@
                         </div>
                         <div class="food-body">
                             <div class="food-meta">
-                                <span class="food-rating"><i class="fa-solid fa-star"></i> 4.9</span>
+                                <c:choose>
+                                    <c:when test="${rFood.reviewCount > 0}">
+                                        <span class="food-rating"><i class="fa-solid fa-star"></i> ${rFood.rating} (${rFood.reviewCount})</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
+                                    </c:otherwise>
+                                </c:choose>
                                 <span class="food-distance"><i class="fa-solid fa-store text-primary"></i> ${not empty rFood.restaurantName ? rFood.restaurantName : 'Quán đối tác'}</span>
                             </div>
                             <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="food-title-link">

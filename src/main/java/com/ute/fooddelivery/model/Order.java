@@ -25,9 +25,12 @@ public class Order implements Serializable {
     private boolean shipperDelivered;
     private boolean merchantCompleted;
     private Review review;
+    private String foodSummary;
 
     public Review getReview() { return review; }
     public void setReview(Review review) { this.review = review; }
+    public String getFoodSummary() { return foodSummary; }
+    public void setFoodSummary(String foodSummary) { this.foodSummary = foodSummary; }
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {
