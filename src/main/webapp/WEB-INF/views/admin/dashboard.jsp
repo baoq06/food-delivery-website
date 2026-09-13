@@ -35,9 +35,9 @@
                     <i class="fa-solid fa-sack-dollar"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-title">Doanh Thu Đã Giao</span>
-                    <h3 class="stat-val"><fmt:formatNumber value="${totalRevenue}" pattern="#,##0" /> đ</h3>
-                    <span class="stat-sub"><i class="fa-solid fa-circle-check text-success"></i> ${orderStats['DELIVERED'] != null ? orderStats['DELIVERED'] : 0} đơn hoàn thành</span>
+                    <span class="stat-title">Doanh Thu Admin (10%)</span>
+                    <h3 class="stat-val"><fmt:formatNumber value="${adminRevenue}" pattern="#,##0" /> đ</h3>
+                    <span class="stat-sub"><i class="fa-solid fa-circle-check text-success"></i> 10% giá trị món giao (${orderStats['DELIVERED'] != null ? orderStats['DELIVERED'] : 0} đơn, trừ ship)</span>
                 </div>
             </div>
 
@@ -114,6 +114,11 @@
                                         </td>
                                         <td class="font-weight-bold text-primary">
                                             <fmt:formatNumber value="${order.totalAmount}" pattern="#,##0" /> đ
+                                            <c:if test="${order.adminCommission > 0}">
+                                                <div style="font-size: 0.78rem; color: #059669; font-weight: 600;" title="Hoa hồng Admin 10% giá trị món ăn">
+                                                    +<fmt:formatNumber value="${order.adminCommission}" pattern="#,##0" /> đ (10%)
+                                                </div>
+                                            </c:if>
                                         </td>
                                         <td>
                                             <span class="badge ${order.paymentMethod eq 'COD' ? 'badge-cod' : 'badge-qr'}">

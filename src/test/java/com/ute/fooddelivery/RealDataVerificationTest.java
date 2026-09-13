@@ -48,6 +48,10 @@ public class RealDataVerificationTest {
             try (ResultSet rs = stmt.executeQuery("SELECT driver_id, name FROM drivers WHERE name LIKE '%Kaito Kid%'")) {
                 assertFalse("Driver 'Kaito Kid' must no longer exist", rs.next());
             }
+            // 4. Verify order of 7gao (#480005) is deleted
+            try (ResultSet rs = stmt.executeQuery("SELECT order_id FROM orders WHERE order_id = 480005")) {
+                assertFalse("Order #480005 must be deleted", rs.next());
+            }
         }
     }
 
@@ -56,9 +60,12 @@ public class RealDataVerificationTest {
         OrderDAO orderDAO = new OrderDAO();
         UserDAO userDAO = new UserDAO();
 
-        // 1. Total revenue
-        double revenue = orderDAO.getTotalDeliveredRevenue();
-        assertTrue("Revenue should be non-negative", revenue >= 0);
+        // 1. Admin commission revenue (10% of food value without shipping)
+        double adminRev = orderDAO.getAdminCommissionRevenue();
+        double totalFoodVal = orderDAO.getTotalDeliveredFoodValue();
+        assertTrue("Admin revenue should be non-negative", adminRev >= 0);
+        assertTrue("Total food value should be non-negative", totalFoodVal >= 0);
+        assertEquals("Admin revenue must be exactly 10% of total food value", totalFoodVal * 0.10, adminRev, 0.01);
 
         // 2. Order status counts
         Map<String, Integer> orderStats = orderDAO.getOrderStatusCounts();
@@ -79,6 +86,7 @@ public class RealDataVerificationTest {
         for (Order o : recentOrders) {
             assertTrue("Order id should be > 0", o.getId() > 0);
             assertNotNull("Status should not be null", o.getStatus());
+            assertEquals("Admin commission for order should be 10% of food value", o.getFoodValue() * 0.10, o.getAdminCommission(), 0.1);
         }
     }
 

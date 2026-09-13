@@ -1096,8 +1096,15 @@ public class OrderDAO {
         return null;
     }
 
-    public double getTotalDeliveredRevenue() {
-        String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM orders WHERE status = 'DELIVERED'";
+    /**
+     * Doanh thu của Admin: Mỗi đơn hàng hoàn tất (DELIVERED) của bất kỳ nhà hàng nào,
+     * Admin được hưởng 10% giá trị của đơn đó (tổng giá trị món ăn, không tính phí ship).
+     */
+    public double getAdminCommissionRevenue() {
+        String sql = "SELECT COALESCE(SUM(oi.subtotal), 0) * 0.10 " +
+                     "FROM order_items oi " +
+                     "JOIN orders o ON oi.order_id = o.order_id " +
+                     "WHERE o.status = 'DELIVERED'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -1105,9 +1112,30 @@ public class OrderDAO {
                 return rs.getDouble(1);
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi tính tổng doanh thu cho admin: " + e.getMessage());
+            System.err.println("Lỗi khi tính doanh thu hoa hồng admin 10%: " + e.getMessage());
         }
         return 0.0;
+    }
+
+    public double getTotalDeliveredFoodValue() {
+        String sql = "SELECT COALESCE(SUM(oi.subtotal), 0) " +
+                     "FROM order_items oi " +
+                     "JOIN orders o ON oi.order_id = o.order_id " +
+                     "WHERE o.status = 'DELIVERED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính tổng giá trị món giao: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public double getTotalDeliveredRevenue() {
+        return getAdminCommissionRevenue();
     }
 
     public Map<String, Integer> getOrderStatusCounts() {
@@ -1145,7 +1173,8 @@ public class OrderDAO {
                      "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
                      "       d.name AS driver_name, " +
                      "       (SELECT GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') " +
-                     "        FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id) AS food_summary " +
+                     "        FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id) AS food_summary, " +
+                     "       COALESCE((SELECT SUM(oi2.subtotal) FROM order_items oi2 WHERE oi2.order_id = o.order_id), 0) AS food_value " +
                      "FROM orders o " +
                      "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
                      "ORDER BY o.created_at DESC LIMIT ?";
@@ -1174,6 +1203,9 @@ public class OrderDAO {
                     );
                     order.setDriverName(rs.getString("driver_name"));
                     order.setFoodSummary(rs.getString("food_summary"));
+                    double fVal = rs.getDouble("food_value");
+                    order.setFoodValue(fVal);
+                    order.setAdminCommission(Math.round(fVal * 0.10 * 10.0) / 10.0);
                     list.add(order);
                 }
             }

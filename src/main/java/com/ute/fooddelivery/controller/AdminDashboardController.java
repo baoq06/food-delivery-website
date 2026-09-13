@@ -39,8 +39,9 @@ public class AdminDashboardController extends HttpServlet {
             }
         }
 
-        // 1. Doanh thu thực tế (các đơn đã hoàn thành DELIVERED)
-        double totalRevenue = orderDAO.getTotalDeliveredRevenue();
+        // 1. Doanh thu của Admin: 10% giá trị món ăn của các đơn hoàn tất DELIVERED (không tính phí ship)
+        double adminRevenue = orderDAO.getAdminCommissionRevenue();
+        double totalFoodValue = orderDAO.getTotalDeliveredFoodValue();
 
         // 2. Thống kê đơn hàng thực tế
         Map<String, Integer> orderStats = orderDAO.getOrderStatusCounts();
@@ -55,7 +56,9 @@ public class AdminDashboardController extends HttpServlet {
         // 5. Danh sách đơn đặt hàng thực tế gần đây
         List<Order> recentOrders = orderDAO.getRecentOrdersForAdmin(20);
 
-        req.setAttribute("totalRevenue", totalRevenue);
+        req.setAttribute("adminRevenue", adminRevenue);
+        req.setAttribute("totalRevenue", adminRevenue);
+        req.setAttribute("totalFoodValue", totalFoodValue);
         req.setAttribute("orderStats", orderStats);
         req.setAttribute("foodCount", foodCount);
         req.setAttribute("categoryCount", categoryCount);

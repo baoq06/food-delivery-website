@@ -26,11 +26,17 @@ public class Order implements Serializable {
     private boolean merchantCompleted;
     private Review review;
     private String foodSummary;
+    private double foodValue;
+    private double adminCommission;
 
     public Review getReview() { return review; }
     public void setReview(Review review) { this.review = review; }
     public String getFoodSummary() { return foodSummary; }
     public void setFoodSummary(String foodSummary) { this.foodSummary = foodSummary; }
+    public double getFoodValue() { return foodValue; }
+    public void setFoodValue(double foodValue) { this.foodValue = foodValue; }
+    public double getAdminCommission() { return adminCommission; }
+    public void setAdminCommission(double adminCommission) { this.adminCommission = adminCommission; }
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {
