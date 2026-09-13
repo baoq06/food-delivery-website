@@ -159,23 +159,6 @@ public class MerchantOrderController extends HttpServlet {
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
                 }
-            } else if ("payShipper".equalsIgnoreCase(action)) {
-                Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
-                if (restaurant != null) {
-                    int driverId = Integer.parseInt(req.getParameter("driverId"));
-                    String orderIdStr = req.getParameter("orderId");
-                    Integer orderId = (orderIdStr != null && !orderIdStr.trim().isEmpty()) ? Integer.parseInt(orderIdStr) : null;
-                    double amount = Double.parseDouble(req.getParameter("amount"));
-                    String paymentMethod = req.getParameter("paymentMethod");
-                    String note = req.getParameter("note");
-
-                    boolean success = merchantService.payDriverFee(restaurant.getId(), driverId, orderId, amount, paymentMethod, note);
-                    if (success) {
-                        req.getSession().setAttribute("flashMessage", "Đã ghi nhận thanh toán phí shipper thành công!");
-                    } else {
-                        req.getSession().setAttribute("flashError", "Không thể ghi nhận thanh toán phí shipper!");
-                    }
-                }
             }
         } catch (Exception e) {
             req.getSession().setAttribute("flashError", "Có lỗi xảy ra: " + e.getMessage());

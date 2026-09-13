@@ -310,11 +310,6 @@
                                                     <span class="badge bg-success-subtle text-success border border-success-subtle py-1 px-2" style="font-size: 0.78rem;">
                                                         <i class="fa-solid fa-circle-check me-1"></i> Đã hoàn tất
                                                     </span>
-                                                    <c:if test="${not empty order.driverName}">
-                                                        <button type="button" class="btn-mo-action btn-mo-action-pay ms-1" onclick="openPayShipperModal(${order.driverId}, '${order.driverName}', ${order.id})" title="Thanh toán tiền cước giao hàng cho shipper">
-                                                            <i class="fa-solid fa-money-bill-wave"></i> Trả Phí Ship
-                                                        </button>
-                                                    </c:if>
                                                 </c:if>
 
                                                 <c:if test="${order.status eq 'PENDING' || order.status eq 'CONFIRMED'}">
@@ -394,56 +389,6 @@
     </div>
 </div>
 
-<!-- Modal Trả Phí Cho Shipper -->
-<div id="payShipperModal" class="merchant-modal-backdrop" style="display: none;">
-    <div class="merchant-modal-box">
-        <div class="merchant-modal-header">
-            <h3 class="merchant-modal-title">
-                <i class="fa-solid fa-money-bill-wave text-success"></i> Trả Phí Cho Shipper
-            </h3>
-            <button type="button" class="merchant-modal-close" onclick="closePayShipperModal()">&times;</button>
-        </div>
-        <form action="${pageContext.request.contextPath}/merchant/orders" method="POST">
-            <input type="hidden" name="action" value="payShipper" />
-            <input type="hidden" name="driverId" id="payDriverId" value="" />
-            <input type="hidden" name="orderId" id="payOrderId" value="" />
-
-            <div class="merchant-modal-body">
-                <div class="p-3 mb-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-                    <div class="text-muted small">Tài xế thụ hưởng:</div>
-                    <div id="payDriverName" class="fw-bold text-success fs-6 mt-1"></div>
-                    <div id="payOrderInfo" class="text-muted small mt-1"></div>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label class="form-label fw-bold mb-1">Số tiền thanh toán (VNĐ) <span class="text-danger">*</span></label>
-                    <input type="number" name="amount" class="form-control" value="25000" min="1000" step="1000" required style="border-radius: 10px;" />
-                </div>
-
-                <div class="form-group mb-3">
-                    <label class="form-label fw-bold mb-1">Hình thức chi trả</label>
-                    <select name="paymentMethod" class="form-select form-control" style="border-radius: 10px; height: 44px;">
-                        <option value="CASH">Tiền mặt trực tiếp (Cash)</option>
-                        <option value="BANK_TRANSFER">Chuyển khoản VietQR</option>
-                    </select>
-                </div>
-
-                <div class="form-group mb-2">
-                    <label class="form-label fw-bold mb-1">Ghi chú chi trả</label>
-                    <input type="text" name="note" class="form-control" placeholder="VD: Phí ship đơn hoàn tất + thưởng..." style="border-radius: 10px;" />
-                </div>
-            </div>
-
-            <div class="merchant-modal-footer">
-                <button type="button" class="btn btn-outline" onclick="closePayShipperModal()">Đóng</button>
-                <button type="submit" class="btn btn-success d-inline-flex align-items-center gap-1">
-                    <i class="fa-solid fa-paper-plane"></i> Xác Nhận Chi Trả
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
     function openOrderDispatchModal(orderId, customerName) {
         document.getElementById('modalOrderId').value = orderId;
@@ -453,18 +398,6 @@
 
     function closeOrderDispatchModal() {
         document.getElementById('orderDispatchModal').style.display = 'none';
-    }
-
-    function openPayShipperModal(driverId, driverName, orderId) {
-        document.getElementById('payDriverId').value = driverId;
-        document.getElementById('payDriverName').innerText = driverName;
-        document.getElementById('payOrderId').value = orderId || '';
-        document.getElementById('payOrderInfo').innerText = orderId ? ('Gắn liền với đơn hàng #' + orderId) : '';
-        document.getElementById('payShipperModal').style.display = 'flex';
-    }
-
-    function closePayShipperModal() {
-        document.getElementById('payShipperModal').style.display = 'none';
     }
 </script>
 
