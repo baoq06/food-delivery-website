@@ -33,6 +33,7 @@ public class CartController extends HttpServlet {
     private final DriverDAO driverDAO = new DriverDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -103,6 +104,12 @@ public class CartController extends HttpServlet {
         }
 
         String action = req.getParameter("action");
+        String ajaxParam = req.getParameter("ajax");
+        String xRequestedWith = req.getHeader("X-Requested-With");
+        String acceptHeader = req.getHeader("Accept");
+        boolean isAjax = "true".equalsIgnoreCase(ajaxParam) ||
+                         "XMLHttpRequest".equals(xRequestedWith) ||
+                         (acceptHeader != null && acceptHeader.contains("application/json"));
 
         // Nếu chưa đăng nhập: chặn mọi thao tác liên quan tới đơn hàng và yêu cầu đăng nhập/đăng ký
         if (currentUser == null) {
@@ -119,6 +126,12 @@ public class CartController extends HttpServlet {
                     session.setAttribute("pendingQuantity", quantity);
                 } catch (Exception ignored) {}
             }
+            if (isAjax) {
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.setStatus(HttpServletResponse.SC_OK);
+                resp.getWriter().write(String.format("{\"success\":false,\"requireLogin\":true,\"loginUrl\":\"%s/auth?action=login\",\"message\":\"Vui lòng đăng nhập để đặt món!\"}", req.getContextPath()));
+                return;
+            }
             resp.sendRedirect(req.getContextPath() + "/auth?action=login");
             return;
         }
@@ -131,6 +144,8 @@ public class CartController extends HttpServlet {
         }
 
         if ("add".equalsIgnoreCase(action)) {
+            String addedFoodName = "";
+            String addedFoodImage = "";
             try {
                 int foodId = Integer.parseInt(req.getParameter("foodId"));
                 int quantity = 1;
@@ -142,16 +157,36 @@ public class CartController extends HttpServlet {
                 if (cart.containsKey(foodId)) {
                     CartItem item = cart.get(foodId);
                     item.setQuantity(item.getQuantity() + quantity);
+                    addedFoodName = item.getFood().getName();
+                    addedFoodImage = item.getFood().getImage();
                 } else {
                     Food food = foodService.getFoodById(foodId);
                     if (food != null) {
                         cart.put(foodId, new CartItem(food, quantity));
+                        addedFoodName = food.getName();
+                        addedFoodImage = food.getImage();
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
             session.setAttribute("cart", cart);
+
+            if (isAjax) {
+                int totalQuantity = 0;
+                double totalPrice = 0;
+                for (CartItem ci : cart.values()) {
+                    totalQuantity += ci.getQuantity();
+                    totalPrice += ci.getTotalPrice();
+                }
+                resp.setContentType("application/json;charset=UTF-8");
+                String safeName = addedFoodName != null ? addedFoodName.replace("\"", "\\\"") : "";
+                String safeImage = addedFoodImage != null ? addedFoodImage.replace("\"", "\\\"") : "";
+                resp.getWriter().write(String.format("{\"success\":true,\"foodName\":\"%s\",\"foodImage\":\"%s\",\"cartCount\":%d,\"totalQuantity\":%d,\"totalPrice\":%.0f,\"message\":\"Đã thêm món vào giỏ hàng!\"}",
+                        safeName, safeImage, cart.size(), totalQuantity, totalPrice));
+                return;
+            }
+
             resp.sendRedirect(req.getContextPath() + "/cart");
             return;
         } else if ("remove".equalsIgnoreCase(action)) {
@@ -162,6 +197,20 @@ public class CartController extends HttpServlet {
                 e.printStackTrace();
             }
             session.setAttribute("cart", cart);
+
+            if (isAjax) {
+                int totalQuantity = 0;
+                double totalPrice = 0;
+                for (CartItem ci : cart.values()) {
+                    totalQuantity += ci.getQuantity();
+                    totalPrice += ci.getTotalPrice();
+                }
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().write(String.format("{\"success\":true,\"cartCount\":%d,\"totalQuantity\":%d,\"totalPrice\":%.0f}",
+                        cart.size(), totalQuantity, totalPrice));
+                return;
+            }
+
             resp.sendRedirect(req.getContextPath() + "/cart");
             return;
         } else if ("checkout".equalsIgnoreCase(action)) {
