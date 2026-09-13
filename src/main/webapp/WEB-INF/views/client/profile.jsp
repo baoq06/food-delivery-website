@@ -13,7 +13,13 @@
             <i class="fa-solid fa-chevron-right"></i>
             <span>Tài khoản của tôi</span>
         </div>
-        <h1 class="page-title">Tài Khoản & Hồ Sơ Khách Hàng</h1>
+        <h1 class="page-title">
+            <c:choose>
+                <c:when test="${user.seller or user.role eq 'SELLER'}">Hồ Sơ Đối Tác Quán Ăn</c:when>
+                <c:when test="${user.isShipper()}">Hồ Sơ Tài Xế Giao Hàng</c:when>
+                <c:otherwise>Tài Khoản &amp; Hồ Sơ Khách Hàng</c:otherwise>
+            </c:choose>
+        </h1>
     </div>
 </div>
 
@@ -35,6 +41,33 @@
                 <span>${errorMessage}</span>
             </div>
             <button type="button" class="alert-close" onclick="this.parentElement.style.display='none';">&times;</button>
+        </div>
+    </c:if>
+
+    <!-- Merchant Mode Status Banner -->
+    <c:if test="${user.seller or user.role eq 'SELLER'}">
+        <div class="alert alert-info" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid var(--primary-color); background: #fff5f5;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(240, 84, 84, 0.12); color: var(--primary-color); font-size: 1.3rem;">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div>
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem; color: #1e293b;">
+                        Tài khoản Đối Tác Quán Ăn: <strong>${not empty currentRestaurant.name ? currentRestaurant.name : 'Utee Merchant'}</strong>
+                    </h5>
+                    <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-muted);">
+                        Quán ăn quản lý thực đơn, nhận và xử lý đơn hàng của khách tại Kênh Quán Ăn (tài khoản quán không đặt đồ ăn).
+                    </p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-primary btn-sm" style="border-radius: 50px; font-weight: 600; padding: 8px 18px;">
+                    <i class="fa-solid fa-gauge-high me-1"></i> Kênh Quán Ăn
+                </a>
+                <a href="${pageContext.request.contextPath}/merchant/orders" class="btn btn-outline btn-sm" style="border-radius: 50px; font-weight: 600; padding: 8px 18px;">
+                    <i class="fa-solid fa-receipt me-1"></i> Đơn hàng của quán
+                </a>
+            </div>
         </div>
     </c:if>
 
@@ -163,6 +196,57 @@
                     </div>
                 </div>
             </c:when>
+            <c:when test="${user.seller or user.role eq 'SELLER'}">
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-primary">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" style="font-size: 1.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;" title="${currentRestaurant.name != null ? currentRestaurant.name : 'Quán của tôi'}">
+                                ${currentRestaurant.name != null ? currentRestaurant.name : 'Đối Tác Quán'}
+                            </div>
+                            <div class="stat-label">
+                                <span class="badge ${currentRestaurant.status eq 'OPEN' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}" style="font-size: 0.72rem; font-weight: 700;">
+                                    ${currentRestaurant.status eq 'OPEN' ? 'Đang mở cửa' : 'Tạm đóng cửa'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-warning">
+                            <i class="fa-solid fa-receipt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${merchantKpis.todayOrders != null ? merchantKpis.todayOrders : 0}</div>
+                            <div class="stat-label">Đơn nhận hôm nay</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-info">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">${merchantKpis.activeOrders != null ? merchantKpis.activeOrders : 0}</div>
+                            <div class="stat-label">Đơn quán đang xử lý</div>
+                        </div>
+                    </div>
+
+                    <div class="profile-stat-box">
+                        <div class="stat-icon-wrap stat-icon-success">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">
+                                <fmt:formatNumber value="${merchantKpis.todayRevenue != null ? merchantKpis.todayRevenue : 0}" pattern="#,###" /> đ
+                            </div>
+                            <div class="stat-label">Doanh thu hôm nay</div>
+                        </div>
+                    </div>
+                </div>
+            </c:when>
             <c:otherwise>
                 <div class="profile-stats-grid">
                     <div class="profile-stat-box">
@@ -224,6 +308,9 @@
                         <span class="tab-count-badge" style="background:#10ac84; color:#fff;">Shipper</span>
                     </a>
                 </c:when>
+                <c:when test="${user.seller or user.role eq 'SELLER'}">
+                    <!-- Quán ăn không được đặt đồ ăn: Không hiển thị tab Lịch sử đơn hàng đã đặt -->
+                </c:when>
                 <c:otherwise>
                     <button type="button" class="profile-tab-btn ${activeTab eq 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
                         <i class="fa-solid fa-clock-rotate-left"></i>
@@ -281,13 +368,27 @@
                         <strong class="text-success"><i class="fa-solid fa-lock"></i> Đã xác thực</strong>
                     </div>
                 </div>
+
+                <c:if test="${user.seller or user.role eq 'SELLER'}">
+                    <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                        <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; font-weight: 700; padding: 11px;">
+                            <i class="fa-solid fa-store"></i>
+                            <span>Vào Kênh Quán Ăn</span>
+                        </a>
+                    </div>
+                </c:if>
             </div>
 
             <!-- Right Form Column -->
             <div class="profile-main-card">
                 <div class="profile-card-header">
-                    <h3 class="profile-card-title"><i class="fa-solid fa-pen-to-square text-primary"></i> Cập nhật thông tin nhận hàng</h3>
-                    <p class="profile-card-subtitle">Thông tin sẽ được tự động điền khi bạn đặt đồ ăn tại VinDelivery</p>
+                    <h3 class="profile-card-title"><i class="fa-solid fa-pen-to-square text-primary"></i> Cập nhật thông tin tài khoản</h3>
+                    <p class="profile-card-subtitle">
+                        <c:choose>
+                            <c:when test="${user.seller or user.role eq 'SELLER'}">Thông tin người đại diện tài khoản đối tác quán ăn</c:when>
+                            <c:otherwise>Thông tin sẽ được tự động điền khi bạn đặt đồ ăn tại VinDelivery</c:otherwise>
+                        </c:choose>
+                    </p>
                 </div>
 
                 <form action="${pageContext.request.contextPath}/profile" method="POST" class="profile-form" id="updateProfileForm">
@@ -314,12 +415,12 @@
 
                     <div class="form-row-2">
                         <div class="form-group">
-                            <label class="form-label" for="phone">Số điện thoại nhận hàng <span class="required-star">*</span></label>
+                            <label class="form-label" for="phone">${(user.seller or user.role eq 'SELLER') ? 'Số điện thoại liên hệ chủ quán' : 'Số điện thoại nhận hàng'} <span class="required-star">*</span></label>
                             <div class="input-icon-wrap">
                                 <i class="fa-solid fa-phone input-icon"></i>
                                 <input type="tel" id="phone" name="phone" class="form-control" value="${not empty stickyPhone ? stickyPhone : user.phone}" required pattern="^0[0-9]{9,10}$" placeholder="Ví dụ: 0987654321">
                             </div>
-                            <span class="form-help-text">Tài xế sẽ gọi vào số này khi giao món</span>
+                            <span class="form-help-text">${(user.seller or user.role eq 'SELLER') ? 'Số điện thoại liên hệ quản trị và CSKH' : 'Tài xế sẽ gọi vào số này khi giao món'}</span>
                         </div>
 
                         <div class="form-group">
@@ -333,12 +434,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="address">Địa chỉ giao hàng mặc định <span class="required-star">*</span></label>
+                        <label class="form-label" for="address">${(user.seller or user.role eq 'SELLER') ? 'Địa chỉ liên hệ cá nhân' : 'Địa chỉ giao hàng mặc định'} <span class="required-star">*</span></label>
                         <div class="input-icon-wrap">
                             <i class="fa-solid fa-location-dot input-icon input-icon-textarea"></i>
                             <textarea id="address" name="address" class="form-control textarea-address" rows="3" required placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện...">${not empty stickyAddress ? stickyAddress : user.address}</textarea>
                         </div>
-                        <span class="form-help-text">Địa chỉ giao hàng chính xác giúp tài xế tìm đường nhanh hơn</span>
+                        <span class="form-help-text">${(user.seller or user.role eq 'SELLER') ? 'Địa chỉ cá nhân của chủ tài khoản' : 'Địa chỉ giao hàng chính xác giúp tài xế tìm đường nhanh hơn'}</span>
                     </div>
 
                     <div class="profile-form-actions">
@@ -351,7 +452,8 @@
         </div>
     </div>
 
-    <!-- Tab 2: Lịch sử đơn hàng -->
+    <!-- Tab 2: Lịch sử đơn hàng (Chỉ hiển thị cho khách hàng & Shipper - Quán ăn không đặt đồ ăn) -->
+    <c:if test="${not user.seller and user.role ne 'SELLER'}">
     <div id="tab-orders" class="profile-tab-pane ${activeTab eq 'orders' ? 'active' : ''}">
         <!-- Orders Filter Bar -->
         <div class="orders-filter-bar">
@@ -720,6 +822,7 @@
             </c:otherwise>
         </c:choose>
     </div>
+    </c:if>
 
     <!-- Tab 3: Đổi mật khẩu & Bảo mật -->
     <div id="tab-security" class="profile-tab-pane ${activeTab eq 'security' ? 'active' : ''}">
@@ -817,7 +920,7 @@ function switchTab(tabId) {
     }
 
     // Bật button tương ứng
-    const btn = Array.from(document.querySelectorAll('.profile-tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+    const btn = Array.from(document.querySelectorAll('.profile-tab-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
     if (btn) {
         btn.classList.add('active');
     }
