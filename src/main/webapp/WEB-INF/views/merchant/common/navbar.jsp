@@ -32,6 +32,12 @@
             </div>
 
             <div class="merchant-header-actions">
+                <!-- Nút Thông Báo Merchant -->
+                <a href="${pageContext.request.contextPath}/notifications" class="btn-merchant-quick position-relative" title="Trung tâm thông báo quán">
+                    <i class="fa-solid fa-bell text-warning"></i>
+                    <span>Thông báo</span>
+                    <span id="merchantNavNotifBadge" class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill" style="display:none; font-size: 0.68rem; padding: 3px 6px;">0</span>
+                </a>
                 <!-- Nút bật tắt mở quán nhanh 1-click -->
                 <form action="${pageContext.request.contextPath}/merchant/profile" method="POST" style="display:inline;">
                     <input type="hidden" name="action" value="toggleStatus" />
@@ -62,6 +68,11 @@
                 <i class="fa-solid fa-receipt"></i>
                 <span>Đơn hàng</span>
             </a>
+            <a href="${pageContext.request.contextPath}/notifications" class="merchant-tab-btn ${pageContext.request.servletPath eq '/notifications' ? 'active' : ''}">
+                <i class="fa-solid fa-bell text-warning"></i>
+                <span>Thông báo</span>
+                <span id="merchantTabNotifBadge" class="badge bg-danger ms-1" style="display:none; font-size: 0.68rem; border-radius: 50px;">0</span>
+            </a>
             <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/foods' ? 'active' : ''}">
                 <i class="fa-solid fa-bowl-food"></i>
                 <span>Thực đơn món</span>
@@ -79,6 +90,31 @@
                 <span>Cài đặt quán</span>
             </a>
         </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                function updateMerchantNotifCount() {
+                    fetch('${pageContext.request.contextPath}/api/notifications/unread-count')
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            var count = data.unreadCount || 0;
+                            var badge1 = document.getElementById('merchantNavNotifBadge');
+                            var badge2 = document.getElementById('merchantTabNotifBadge');
+                            if (badge1) {
+                                badge1.innerText = count > 99 ? '99+' : count;
+                                badge1.style.display = count > 0 ? 'inline-block' : 'none';
+                            }
+                            if (badge2) {
+                                badge2.innerText = count > 99 ? '99+' : count;
+                                badge2.style.display = count > 0 ? 'inline-block' : 'none';
+                            }
+                        })
+                        .catch(function(err) {});
+                }
+                updateMerchantNotifCount();
+                setInterval(updateMerchantNotifCount, 5000);
+            });
+        </script>
 
         <!-- Flash Message Alerts -->
         <c:if test="${not empty sessionScope.flashMessage}">

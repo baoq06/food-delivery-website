@@ -106,9 +106,10 @@
                                             </c:choose>
                                         </td>
                                         <td>
+                                            <c:set var="rStat" value="${driverRatings[driver.id]}" />
                                             <div class="d-flex align-items-center gap-1">
-                                                <span class="text-warning fw-bold"><i class="fa-solid fa-star"></i> 4.9</span>
-                                                <small class="text-muted">(120+ đơn)</small>
+                                                <span class="text-warning fw-bold"><i class="fa-solid fa-star"></i> ${rStat != null ? rStat['avgRating'] : 5.0}</span>
+                                                <small class="text-muted">(${rStat != null ? rStat['reviewCount'] : 0} đánh giá)</small>
                                             </div>
                                         </td>
                                         <td class="text-end">

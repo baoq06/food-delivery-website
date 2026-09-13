@@ -340,10 +340,14 @@
                         <span>•</span>
                         <span><i class="fa-solid fa-id-card text-muted"></i> ID: #${sessionScope.currentUser.id}</span>
                     </div>
-                    <div style="background: #fff; border: 1px solid #fee2e2; border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; color: #475569; display: flex; justify-content: space-around;">
+                    <div style="background: #fff; border: 1px solid #fee2e2; border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; color: #475569; display: flex; justify-content: space-around; margin-bottom: 6px;">
                         <span><i class="fa-solid fa-motorcycle text-primary"></i> ${not empty driver.licensePlate ? driver.licensePlate : 'Xe máy'}</span>
                         <span>|</span>
                         <span><i class="fa-solid fa-shield-halved text-success"></i> Đã xác thực</span>
+                    </div>
+                    <div style="background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; color: #b45309; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fa-solid fa-star text-warning"></i>
+                        <span>Đánh giá từ khách: <strong>${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0}</strong>/5.0 <small class="text-muted">(${driverRatingStats != null ? driverRatingStats['reviewCount'] : 0} lượt)</small></span>
                     </div>
                 </div>
 
@@ -354,6 +358,10 @@
                         <c:if test="${not empty activeOrder}">
                             <span class="shipper-nav-badge">1 đơn</span>
                         </c:if>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/notifications" class="shipper-nav-item">
+                        <span><i class="fa-solid fa-bell me-2 text-warning" style="width: 22px;"></i> Thông báo của tôi</span>
+                        <span class="shipper-nav-badge" id="shipperNavNotifBadge" style="display:none; background: #fee2e2; color: #dc2626;">0</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/shipper/history" class="shipper-nav-item ${activeTab eq 'history' ? 'active' : ''}">
                         <span><i class="fa-solid fa-clock-rotate-left me-2" style="width: 22px;"></i> Lịch sử chuyến giao</span>
@@ -369,6 +377,26 @@
                         </a>
                     </c:if>
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        function updateShipperNotifCount() {
+                            fetch('${pageContext.request.contextPath}/api/notifications/unread-count')
+                                .then(function(res) { return res.json(); })
+                                .then(function(data) {
+                                    var count = data.unreadCount || 0;
+                                    var badge = document.getElementById('shipperNavNotifBadge');
+                                    if (badge) {
+                                        badge.innerText = count > 99 ? '99+' : count;
+                                        badge.style.display = count > 0 ? 'inline-block' : 'none';
+                                    }
+                                })
+                                .catch(function(err) {});
+                        }
+                        updateShipperNotifCount();
+                        setInterval(updateShipperNotifCount, 5000);
+                    });
+                </script>
 
                 <!-- Driver Wallet Box -->
                 <c:if test="${not empty wallet}">
@@ -968,24 +996,27 @@
                                         </div>
                                     </div>
 
-                                    <!-- Khách Hàng Đánh Giá Shipper (Review & Rating) -->
+                                    <!-- Khách Hàng Đánh Giá Shipper & Món Ăn -->
                                     <div class="trip-review-box">
                                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                                             <div>
                                                 <span style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-right: 8px;">
-                                                    <i class="fa-solid fa-star text-warning me-1"></i> Đánh giá từ khách hàng:
+                                                    <i class="fa-solid fa-star text-warning me-1"></i> Đánh giá của khách:
                                                 </span>
                                                 <c:choose>
                                                     <c:when test="${not empty item.review}">
                                                         <span class="star-rating-display">
-                                                            <c:forEach begin="1" end="${item.review.rating}">
+                                                            <c:forEach begin="1" end="${item.review.driverRating}">
                                                                 <i class="fa-solid fa-star"></i>
                                                             </c:forEach>
-                                                            <c:forEach begin="${item.review.rating + 1}" end="5">
+                                                            <c:forEach begin="${item.review.driverRating + 1}" end="5">
                                                                 <i class="fa-regular fa-star" style="color: #cbd5e1;"></i>
                                                             </c:forEach>
                                                         </span>
-                                                        <strong style="color: #b45309; font-size: 0.95rem;">${item.review.rating}/5 sao</strong>
+                                                        <strong style="color: #b45309; font-size: 0.95rem;">Tài xế: ${item.review.driverRating}/5 sao</strong>
+                                                        <c:if test="${not empty item.review.foodRating}">
+                                                            <span style="color: #64748b; font-size: 0.85rem; margin-left: 8px;">| Món ăn: ${item.review.foodRating}/5 sao</span>
+                                                        </c:if>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span style="color: #94a3b8; font-size: 0.85rem; font-style: italic;">Khách chưa để lại đánh giá cho cuốc này</span>
@@ -999,12 +1030,17 @@
                                             </c:if>
                                         </div>
 
-                                        <c:if test="${not empty item.review and not empty item.review.comment}">
-                                            <p style="margin: 8px 0 0 0; font-size: 0.92rem; color: #334155; font-style: italic; background: #fff; padding: 8px 14px; border-radius: 8px; border: 1px dashed #e2e8f0;">
-                                                <i class="fa-solid fa-quote-left text-muted me-1" style="font-size: 0.75rem;"></i>
-                                                ${item.review.comment}
-                                                <i class="fa-solid fa-quote-right text-muted ms-1" style="font-size: 0.75rem;"></i>
-                                            </p>
+                                        <c:if test="${not empty item.review}">
+                                            <c:if test="${not empty item.review.driverComment}">
+                                                <p style="margin: 8px 0 0 0; font-size: 0.92rem; color: #334155; font-style: italic; background: #fff; padding: 8px 14px; border-radius: 8px; border: 1px dashed #e2e8f0;">
+                                                    <strong><i class="fa-solid fa-motorcycle text-primary me-1"></i> Shipper:</strong> "${item.review.driverComment}"
+                                                </p>
+                                            </c:if>
+                                            <c:if test="${not empty item.review.foodComment and item.review.foodComment ne item.review.driverComment}">
+                                                <p style="margin: 6px 0 0 0; font-size: 0.88rem; color: #475569; font-style: italic; background: #fff; padding: 6px 14px; border-radius: 8px; border: 1px dashed #e2e8f0;">
+                                                    <strong><i class="fa-solid fa-utensils text-warning me-1"></i> Món ăn:</strong> "${item.review.foodComment}"
+                                                </p>
+                                            </c:if>
                                         </c:if>
                                     </div>
                                 </div>

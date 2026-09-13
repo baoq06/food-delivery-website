@@ -79,34 +79,76 @@
                     </div>
                     
                     <!-- Phần đánh giá đơn hàng -->
-                    <c:if test="${order.status eq 'DELIVERED'}">
+                    <c:if test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
                         <c:choose>
                             <c:when test="${not empty order.review}">
-                                <div class="rating-section" style="background: #fff8e1; border-color: #ffc107;">
-                                    <h6 class="text-warning"><i class="fa-solid fa-star"></i> Bạn đã đánh giá ${order.review.rating} sao</h6>
-                                    <p class="mb-0 text-muted"><em>"${order.review.comment}"</em></p>
+                                <div class="rating-section" style="background: #fffdf5; border-color: #ffe082; padding: 16px; border-radius: 12px;">
+                                    <h6 class="text-warning font-weight-bold mb-2"><i class="fa-solid fa-star"></i> Đánh giá của bạn cho đơn hàng này:</h6>
+                                    <div class="row g-2" style="font-size: 0.9rem;">
+                                        <div class="col-md-6">
+                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
+                                                <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
+                                                    <i class="fa-solid fa-utensils me-1"></i> Món ăn &amp; Quán: ⭐ ${order.review.foodRating}/5 sao
+                                                </div>
+                                                <div style="color: #475569; font-style: italic;">"${order.review.foodComment}"</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
+                                                <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
+                                                    <i class="fa-solid fa-motorcycle me-1"></i> Tài xế Shipper: ⭐ ${order.review.driverRating}/5 sao
+                                                </div>
+                                                <div style="color: #475569; font-style: italic;">"${order.review.driverComment}"</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </c:when>
                             
                             <c:otherwise>
-                                <div class="rating-section">
-                                    <h6><i class="fa-solid fa-comment-dots text-primary"></i> Đánh giá trải nghiệm dịch vụ & Tài xế</h6>
+                                <div class="rating-section" style="background: #f8fafc; border-color: #cbd5e1; padding: 16px; border-radius: 12px;">
+                                    <h6 class="text-primary mb-3"><i class="fa-solid fa-comment-dots"></i> Đánh giá trải nghiệm Món ăn &amp; Tài xế Shipper</h6>
                                     <form action="${pageContext.request.contextPath}/client/orders" method="POST">
                                         <input type="hidden" name="action" value="rate">
                                         <input type="hidden" name="orderId" value="${order.id}">
                                         <input type="hidden" name="driverId" value="${order.driverId != null ? order.driverId : 0}">
                                         
-                                        <div class="star-rating">
-                                            <input type="radio" id="star5-${order.id}" name="rating" value="5" required/><label for="star5-${order.id}" class="fa-solid fa-star"></label>
-                                            <input type="radio" id="star4-${order.id}" name="rating" value="4" /><label for="star4-${order.id}" class="fa-solid fa-star"></label>
-                                            <input type="radio" id="star3-${order.id}" name="rating" value="3" /><label for="star3-${order.id}" class="fa-solid fa-star"></label>
-                                            <input type="radio" id="star2-${order.id}" name="rating" value="2" /><label for="star2-${order.id}" class="fa-solid fa-star"></label>
-                                            <input type="radio" id="star1-${order.id}" name="rating" value="1" /><label for="star1-${order.id}" class="fa-solid fa-star"></label>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fa-solid fa-utensils text-danger me-1"></i> 1. Đánh giá món ăn:
+                                                    </label>
+                                                    <select name="foodRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>
+                                                        <option value="5" selected>⭐⭐⭐⭐⭐ (5 sao)</option>
+                                                        <option value="4">⭐⭐⭐⭐ (4 sao)</option>
+                                                        <option value="3">⭐⭐⭐ (3 sao)</option>
+                                                        <option value="2">⭐⭐ (2 sao)</option>
+                                                        <option value="1">⭐ (1 sao)</option>
+                                                    </select>
+                                                    <input type="text" name="foodComment" class="form-control form-control-sm" placeholder="Ghi chú về món ăn..." required>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                                        <i class="fa-solid fa-motorcycle text-primary me-1"></i> 2. Đánh giá shipper:
+                                                    </label>
+                                                    <select name="driverRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>
+                                                        <option value="5" selected>⭐⭐⭐⭐⭐ (5 sao)</option>
+                                                        <option value="4">⭐⭐⭐⭐ (4 sao)</option>
+                                                        <option value="3">⭐⭐⭐ (3 sao)</option>
+                                                        <option value="2">⭐⭐ (2 sao)</option>
+                                                        <option value="1">⭐ (1 sao)</option>
+                                                    </select>
+                                                    <input type="text" name="driverComment" class="form-control form-control-sm" placeholder="Ghi chú về shipper..." required>
+                                                </div>
+                                            </div>
                                         </div>
                                         
-                                        <div class="d-flex" style="gap: 10px;">
-                                            <input type="text" name="comment" class="form-control" placeholder="Ghi chú đánh giá (ví dụ: Shipper rất dễ thương...)" required>
-                                            <button type="submit" class="btn btn-warning" style="white-space: nowrap;">Gửi Đánh Giá</button>
+                                        <div class="text-end mt-3">
+                                            <button type="submit" class="btn btn-warning px-4" style="border-radius: 50px; font-weight: 700;">Gửi Đánh Giá</button>
                                         </div>
                                     </form>
                                 </div>

@@ -94,6 +94,8 @@ public class ProfileController extends HttpServlet {
             req.setAttribute("successMessage", "Đã hủy đơn hàng thành công!");
         } else if ("order_confirmed".equals(success)) {
             req.setAttribute("successMessage", "Bạn đã xác nhận nhận hàng thành công! Cảm ơn bạn đã sử dụng dịch vụ.");
+        } else if ("review_added".equals(success)) {
+            req.setAttribute("successMessage", "Cảm ơn bạn đã gửi đánh giá cho món ăn và tài xế!");
         }
 
         String error = req.getParameter("error");
@@ -237,6 +239,46 @@ public class ProfileController extends HttpServlet {
                 return;
             } catch (Exception e) {
                 resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                return;
+            }
+        } else if ("rate".equalsIgnoreCase(action) || "add_review".equalsIgnoreCase(action)) {
+            try {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                String dIdStr = req.getParameter("driverId");
+                Integer driverId = (dIdStr != null && !dIdStr.trim().isEmpty() && !"0".equals(dIdStr.trim())) ? Integer.parseInt(dIdStr.trim()) : null;
+                
+                String foodRStr = req.getParameter("foodRating");
+                String driverRStr = req.getParameter("driverRating");
+                String overallRStr = req.getParameter("rating");
+
+                int foodRating = (foodRStr != null && !foodRStr.isEmpty()) ? Integer.parseInt(foodRStr) : ((overallRStr != null && !overallRStr.isEmpty()) ? Integer.parseInt(overallRStr) : 5);
+                int driverRating = (driverRStr != null && !driverRStr.isEmpty()) ? Integer.parseInt(driverRStr) : ((overallRStr != null && !overallRStr.isEmpty()) ? Integer.parseInt(overallRStr) : 5);
+
+                String foodComment = req.getParameter("foodComment");
+                String driverComment = req.getParameter("driverComment");
+                String comment = req.getParameter("comment");
+
+                if (foodComment == null || foodComment.trim().isEmpty()) foodComment = comment;
+                if (driverComment == null || driverComment.trim().isEmpty()) driverComment = comment;
+
+                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                review.setOrderId(orderId);
+                review.setCustomerId(currentUser.getId());
+                review.setDriverId(driverId);
+                review.setFoodRating(foodRating);
+                review.setFoodComment(foodComment);
+                review.setDriverRating(driverRating);
+                review.setDriverComment(driverComment);
+                review.setRating((foodRating + driverRating) / 2);
+                review.setComment(foodComment != null ? foodComment : driverComment);
+
+                com.ute.fooddelivery.dao.ReviewDAO rDAO = new com.ute.fooddelivery.dao.ReviewDAO();
+                rDAO.addReview(review);
+                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=review_added");
+                return;
+            } catch (Exception e) {
+                e.printStackTrace();
+                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=review_failed");
                 return;
             }
         }

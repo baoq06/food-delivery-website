@@ -10,6 +10,10 @@ public class Review {
     private Integer restaurantId;
     private int rating;
     private String comment;
+    private Integer foodRating;
+    private String foodComment;
+    private Integer driverRating;
+    private String driverComment;
     private Timestamp createdAt;
 
     // Getters and setters
@@ -27,6 +31,14 @@ public class Review {
     public void setRating(int rating) { this.rating = rating; }
     public String getComment() { return comment; }
     public void setComment(String comment) { this.comment = comment; }
+    public Integer getFoodRating() { return foodRating != null ? foodRating : rating; }
+    public void setFoodRating(Integer foodRating) { this.foodRating = foodRating; }
+    public String getFoodComment() { return foodComment != null ? foodComment : comment; }
+    public void setFoodComment(String foodComment) { this.foodComment = foodComment; }
+    public Integer getDriverRating() { return driverRating != null ? driverRating : rating; }
+    public void setDriverRating(Integer driverRating) { this.driverRating = driverRating; }
+    public String getDriverComment() { return driverComment != null ? driverComment : comment; }
+    public void setDriverComment(String driverComment) { this.driverComment = driverComment; }
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }

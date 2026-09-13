@@ -64,22 +64,40 @@ public class ClientOrderController extends HttpServlet {
         if ("rate".equals(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
-                int driverId = Integer.parseInt(req.getParameter("driverId")); 
-                int rating = Integer.parseInt(req.getParameter("rating"));
+                String dIdStr = req.getParameter("driverId");
+                Integer driverId = (dIdStr != null && !dIdStr.trim().isEmpty() && !"0".equals(dIdStr.trim())) ? Integer.parseInt(dIdStr.trim()) : null;
+                
+                String foodRStr = req.getParameter("foodRating");
+                String driverRStr = req.getParameter("driverRating");
+                String overallRStr = req.getParameter("rating");
+
+                int foodRating = (foodRStr != null && !foodRStr.isEmpty()) ? Integer.parseInt(foodRStr) : ((overallRStr != null && !overallRStr.isEmpty()) ? Integer.parseInt(overallRStr) : 5);
+                int driverRating = (driverRStr != null && !driverRStr.isEmpty()) ? Integer.parseInt(driverRStr) : ((overallRStr != null && !overallRStr.isEmpty()) ? Integer.parseInt(overallRStr) : 5);
+
+                String foodComment = req.getParameter("foodComment");
+                String driverComment = req.getParameter("driverComment");
                 String comment = req.getParameter("comment");
 
-                if (rating >= 1 && rating <= 5) {
-                    Review review = new Review();
-                    review.setOrderId(orderId);
-                    review.setCustomerId(currentUser.getId());
-                    if (driverId > 0) review.setDriverId(driverId);
-                    review.setRating(rating);
-                    review.setComment(comment);
-                    reviewDAO.addReview(review);
-                }
+                if (foodComment == null || foodComment.trim().isEmpty()) foodComment = comment;
+                if (driverComment == null || driverComment.trim().isEmpty()) driverComment = comment;
+
+                Review review = new Review();
+                review.setOrderId(orderId);
+                review.setCustomerId(currentUser.getId());
+                review.setDriverId(driverId);
+                review.setFoodRating(foodRating);
+                review.setFoodComment(foodComment);
+                review.setDriverRating(driverRating);
+                review.setDriverComment(driverComment);
+                review.setRating((foodRating + driverRating) / 2);
+                review.setComment(foodComment != null ? foodComment : driverComment);
+
+                reviewDAO.addReview(review);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            resp.sendRedirect(req.getContextPath() + "/client/orders");
+            return;
         }
         
         resp.sendRedirect(req.getContextPath() + "/client/orders");

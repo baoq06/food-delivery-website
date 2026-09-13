@@ -66,6 +66,20 @@ public class NotificationService {
         }
     }
 
+    public void notifyShipperDeclinedToMerchant(Integer merchantUserId, int orderId, String driverName) {
+        if (merchantUserId != null && merchantUserId > 0) {
+            Notification notif = new Notification(
+                merchantUserId,
+                orderId,
+                "⚠️ Tài xế đã từ chối nhận đơn #DH-" + orderId,
+                "Tài xế " + driverName + " đã từ chối nhận cuốc xe này. Vui lòng gán tài xế khác cho đơn hàng!",
+                "ORDER_CANCELLED",
+                "/merchant/orders?status=PENDING"
+            );
+            notificationDAO.createNotification(notif);
+        }
+    }
+
     public void notifyOrderShipping(Integer customerUserId, Integer shipperUserId, int orderId) {
         if (customerUserId != null && customerUserId > 0) {
             Notification notif = new Notification(

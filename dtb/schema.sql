@@ -153,7 +153,7 @@ CREATE TABLE `order_items` (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 9. Bảng đánh giá và nhận xét đơn hàng / tài xế (order_reviews)
+-- 9. Bảng đánh giá và nhận xét đơn hàng / tài xế / món ăn (order_reviews)
 CREATE TABLE IF NOT EXISTS `order_reviews` (
     `review_id` INT AUTO_INCREMENT PRIMARY KEY,
     `order_id` INT NOT NULL,
@@ -162,6 +162,10 @@ CREATE TABLE IF NOT EXISTS `order_reviews` (
     `restaurant_id` INT NULL,
     `rating` INT NOT NULL CHECK (`rating` >= 1 AND `rating` <= 5),
     `comment` TEXT,
+    `food_rating` INT DEFAULT NULL,
+    `food_comment` TEXT DEFAULT NULL,
+    `driver_rating` INT DEFAULT NULL,
+    `driver_comment` TEXT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `fk_reviews_orders` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_reviews_customers` FOREIGN KEY (`customer_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,

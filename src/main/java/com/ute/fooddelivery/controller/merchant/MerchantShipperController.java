@@ -53,7 +53,15 @@ public class MerchantShipperController extends HttpServlet {
             .filter(o -> "CONFIRMED".equalsIgnoreCase(o.getStatus()) || "PENDING".equalsIgnoreCase(o.getStatus()))
             .collect(Collectors.toList());
 
+        // Lấy rating của từng shipper
+        com.ute.fooddelivery.dao.ReviewDAO reviewDAO = new com.ute.fooddelivery.dao.ReviewDAO();
+        java.util.Map<Integer, java.util.Map<String, Object>> driverRatings = new java.util.HashMap<>();
+        for (Driver d : allDrivers) {
+            driverRatings.put(d.getId(), reviewDAO.getDriverRatingStats(d.getId()));
+        }
+
         req.setAttribute("drivers", displayedDrivers);
+        req.setAttribute("driverRatings", driverRatings);
         req.setAttribute("availableCount", availableCount);
         req.setAttribute("busyCount", busyCount);
         req.setAttribute("offlineCount", offlineCount);

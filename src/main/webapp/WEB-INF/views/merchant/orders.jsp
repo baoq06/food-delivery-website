@@ -233,7 +233,7 @@
                                         <!-- Cột 7: Thao Tác Tiến Trình -->
                                         <td class="col-mo-actions text-end">
                                             <div class="mo-actions-group">
-                                                <c:if test="${order.status eq 'PENDING'}">
+                                                <c:if test="${order.status eq 'PENDING' || order.status eq 'CONFIRMED'}">
                                                     <c:choose>
                                                         <c:when test="${empty order.driverName}">
                                                             <button type="button" class="btn-mo-action btn-mo-action-dispatch" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')" title="Chọn shipper giao đơn này">
@@ -241,7 +241,7 @@
                                                             </button>
                                                         </c:when>
                                                         <c:when test="${not order.shipperAccepted}">
-                                                            <button type="button" class="btn-mo-action" disabled title="Đang chờ tài xế xác nhận nhận cuốc" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;">
+                                                            <button type="button" class="btn-mo-action" disabled title="Đang chờ tài xế xác nhận nhận cuốc xe" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;">
                                                                 <i class="fa-solid fa-hourglass-half"></i> Chờ Shipper...
                                                             </button>
                                                             <button type="button" class="btn-mo-action" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')" title="Đổi tài xế khác" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1;">
@@ -253,33 +253,8 @@
                                                                 <input type="hidden" name="action" value="updateStatus" />
                                                                 <input type="hidden" name="orderId" value="${order.id}" />
                                                                 <input type="hidden" name="newStatus" value="SHIPPING" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-accept" title="Bắt đầu nấu món và giao cho shipper">
-                                                                    <i class="fa-solid fa-fire-burner"></i> Bắt đầu nấu
-                                                                </button>
-                                                            </form>
-                                                        </c:otherwise>
-                                                    </c:choose>
-                                                </c:if>
-
-                                                <c:if test="${order.status eq 'CONFIRMED'}">
-                                                    <c:choose>
-                                                        <c:when test="${empty order.driverName}">
-                                                            <button type="button" class="btn-mo-action btn-mo-action-dispatch" onclick="openOrderDispatchModal(${order.id}, '${order.customerName}')" title="Gán shipper giao món">
-                                                                <i class="fa-solid fa-motorcycle"></i> Gán Shipper
-                                                            </button>
-                                                        </c:when>
-                                                        <c:when test="${not order.shipperAccepted}">
-                                                            <button type="button" class="btn-mo-action" disabled style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;">
-                                                                <i class="fa-solid fa-hourglass-half"></i> Chờ Shipper...
-                                                            </button>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
-                                                                <input type="hidden" name="action" value="updateStatus" />
-                                                                <input type="hidden" name="orderId" value="${order.id}" />
-                                                                <input type="hidden" name="newStatus" value="SHIPPING" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-ship" title="Chuyển món cho tài xế giao đi">
-                                                                    <i class="fa-solid fa-truck-fast"></i> Giao Shipper
+                                                                <button type="submit" class="btn-mo-action btn-mo-action-accept" title="Tài xế đã đồng ý: Bắt đầu nấu và bàn giao món cho shipper">
+                                                                    <i class="fa-solid fa-fire-burner"></i> Nấu &amp; Bàn giao Shipper
                                                                 </button>
                                                             </form>
                                                         </c:otherwise>
@@ -290,17 +265,16 @@
                                                     <c:choose>
                                                         <c:when test="${order.readyForMerchantComplete}">
                                                             <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
-                                                                <input type="hidden" name="action" value="updateStatus" />
+                                                                <input type="hidden" name="action" value="completeOrder" />
                                                                 <input type="hidden" name="orderId" value="${order.id}" />
-                                                                <input type="hidden" name="newStatus" value="DELIVERED" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-delivered shadow-sm" style="animation: pulse 1.5s infinite;" title="Cả Shipper và Khách đã xác nhận. Bấm để duyệt hoàn tất!">
-                                                                    <i class="fa-solid fa-circle-check"></i> Duyệt Hoàn Tất
+                                                                <button type="submit" class="btn-mo-action btn-mo-action-delivered shadow-sm" style="animation: pulse 1.5s infinite;" title="Cả Shipper và Khách đã xác nhận. Bấm để duyệt hoàn tất và ghi nhận doanh thu!">
+                                                                    <i class="fa-solid fa-circle-check"></i> Duyệt Hoàn Tất Đơn
                                                                 </button>
                                                             </form>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <button type="button" class="btn-mo-action" disabled title="Cần cả Shipper báo đã giao VÀ Khách xác nhận đã nhận mới có thể duyệt hoàn tất!" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;">
-                                                                <i class="fa-solid fa-hourglass-half"></i> Chờ 2 bên
+                                                                <i class="fa-solid fa-hourglass-half"></i> Chờ 2 bên xác nhận
                                                             </button>
                                                         </c:otherwise>
                                                     </c:choose>

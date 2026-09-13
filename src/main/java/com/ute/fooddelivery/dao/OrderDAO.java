@@ -345,7 +345,7 @@ public class OrderDAO {
         String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
                      "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
                      "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
-                     "r.review_id, r.rating, r.comment " +
+                     "r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
                      "FROM orders o " +
                      "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
                      "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
@@ -385,6 +385,10 @@ public class OrderDAO {
                         review.setOrderId(order.getId());
                         review.setRating(rs.getInt("rating"));
                         review.setComment(rs.getString("comment"));
+                        review.setFoodRating((Integer) rs.getObject("food_rating"));
+                        review.setFoodComment(rs.getString("food_comment"));
+                        review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                        review.setDriverComment(rs.getString("driver_comment"));
                         order.setReview(review);
                     }
                     
@@ -404,7 +408,7 @@ public class OrderDAO {
             "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
             "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
-            "                r.review_id, r.rating, r.comment " +
+            "                r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.driver_id = ? "
@@ -443,6 +447,10 @@ public class OrderDAO {
                                 review.setOrderId(order.getId());
                                 review.setRating(rs.getInt("rating"));
                                 review.setComment(rs.getString("comment"));
+                                review.setFoodRating((Integer) rs.getObject("food_rating"));
+                                review.setFoodComment(rs.getString("food_comment"));
+                                review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                                review.setDriverComment(rs.getString("driver_comment"));
                                 order.setReview(review);
                             }
                             list.add(order);
@@ -752,10 +760,12 @@ public class OrderDAO {
         String sql = 
             "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
             "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
-            "       o.customer_confirmed, o.merchant_confirmed, " +
-            "       d.name AS driver_name, d.phone AS driver_phone " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.user_id = ? " +
             "ORDER BY o.created_at DESC";
 
@@ -778,10 +788,27 @@ public class OrderDAO {
                                 rs.getInt("driver_id"),
                                 rs.getTimestamp("created_at"),
                                 rs.getBoolean("customer_confirmed"),
-                                rs.getBoolean("merchant_confirmed")
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
                             );
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
+
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                review.setFoodRating((Integer) rs.getObject("food_rating"));
+                                review.setFoodComment(rs.getString("food_comment"));
+                                review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                                review.setDriverComment(rs.getString("driver_comment"));
+                                order.setReview(review);
+                            }
 
                             // Lấy danh sách tất cả các món trong đơn hàng này
                             order.setItems(getOrderItemsByOrderId(order.getId()));

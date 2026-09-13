@@ -116,7 +116,11 @@ public class ShipperDashboardController extends HttpServlet {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 if (driver != null) {
-                    orderDAO.shipperDeclineOrder(orderId, driver.getId());
+                    boolean success = orderDAO.shipperDeclineOrder(orderId, driver.getId());
+                    if (success) {
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        notificationService.notifyShipperDeclinedToMerchant(merchantUserId, orderId, driver.getName());
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -181,9 +185,12 @@ public class ShipperDashboardController extends HttpServlet {
                 req.setAttribute("deliveryHistory", orderDAO.getOrdersByDriver(driver.getId(), statusFilter));
             }
 
-            // Thống kê ví tài xế
+            // Thống kê ví tài xế & Rating tài xế
             java.util.Map<String, Object> earnings = orderDAO.getDriverEarnings(driver.getId());
+            com.ute.fooddelivery.dao.ReviewDAO rDAO = new com.ute.fooddelivery.dao.ReviewDAO();
+            java.util.Map<String, Object> driverRatingStats = rDAO.getDriverRatingStats(driver.getId());
             req.setAttribute("wallet", earnings);
+            req.setAttribute("driverRatingStats", driverRatingStats);
             req.setAttribute("driver", driver);
         }
 

@@ -53,7 +53,36 @@ public class MerchantOrderController extends HttpServlet {
         String action = req.getParameter("action");
 
         try {
-            if ("updateStatus".equalsIgnoreCase(action)) {
+            if ("merchantConfirm".equalsIgnoreCase(action) || "completeOrder".equalsIgnoreCase(action) ||
+                ("updateStatus".equalsIgnoreCase(action) && "DELIVERED".equalsIgnoreCase(req.getParameter("newStatus")))) {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                Order currentOrder = merchantService.getOrderById(orderId);
+
+                if (currentOrder == null) {
+                    req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    return;
+                }
+
+                // Điều kiện kép: Shipper đã giao VÀ Khách đã nhận
+                if (!currentOrder.isShipperDelivered() || !currentOrder.isCustomerConfirmed()) {
+                    req.getSession().setAttribute("flashError", "Không thể duyệt hoàn thành: Đơn hàng cần được cả Shipper xác nhận đã giao VÀ Khách hàng xác nhận đã nhận món!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    return;
+                }
+
+                boolean success = orderDAO.merchantCompleteOrder(orderId);
+                if (success) {
+                    // Bắn thông báo hoàn tất đến Khách và Shipper
+                    Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
+                    Integer shipperUserId = orderDAO.getDriverUserIdByOrderId(orderId);
+                    notificationService.notifyMerchantCompleted(customerUserId, shipperUserId, orderId);
+
+                    req.getSession().setAttribute("flashMessage", "Đã duyệt hoàn thành đơn hàng #" + orderId + "! Đơn hàng đã được chính thức ghi nhận vào doanh thu của quán.");
+                } else {
+                    req.getSession().setAttribute("flashError", "Không thể duyệt hoàn tất đơn hàng!");
+                }
+            } else if ("updateStatus".equalsIgnoreCase(action)) {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String newStatus = req.getParameter("newStatus");
 
@@ -97,34 +126,6 @@ public class MerchantOrderController extends HttpServlet {
                     req.getSession().setAttribute("flashMessage", "Đã cập nhật đơn hàng #" + orderId + " sang trạng thái: " + newStatus);
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể cập nhật trạng thái đơn!");
-                }
-            } else if ("merchantConfirm".equalsIgnoreCase(action) || "completeOrder".equalsIgnoreCase(action)) {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
-                Order currentOrder = merchantService.getOrderById(orderId);
-
-                if (currentOrder == null) {
-                    req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
-                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
-                    return;
-                }
-
-                // Điều kiện kép: Shipper đã giao VÀ Khách đã nhận
-                if (!currentOrder.isShipperDelivered() || !currentOrder.isCustomerConfirmed()) {
-                    req.getSession().setAttribute("flashError", "Không thể duyệt hoàn thành: Đơn hàng cần được cả Shipper xác nhận đã giao VÀ Khách hàng xác nhận đã nhận món!");
-                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
-                    return;
-                }
-
-                boolean success = orderDAO.merchantCompleteOrder(orderId);
-                if (success) {
-                    // Bắn thông báo hoàn tất đến Khách và Shipper
-                    Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
-                    Integer shipperUserId = orderDAO.getDriverUserIdByOrderId(orderId);
-                    notificationService.notifyMerchantCompleted(customerUserId, shipperUserId, orderId);
-
-                    req.getSession().setAttribute("flashMessage", "Đã duyệt hoàn thành đơn hàng #" + orderId + "! Đơn hàng đã được chính thức ghi nhận vào doanh thu của quán.");
-                } else {
-                    req.getSession().setAttribute("flashError", "Không thể duyệt hoàn tất đơn hàng!");
                 }
             } else if ("assignDriver".equalsIgnoreCase(action)) {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
