@@ -355,7 +355,7 @@
 
 <!-- Distinct Section: Featured Restaurants / Stores -->
 <c:if test="${not empty tabRestaurants}">
-    <section class="section section-featured-restaurants bg-white" id="restaurants-section">
+    <section class="section section-featured-restaurants" id="restaurants-section">
         <div class="container">
             <div class="section-header-flex align-items-center">
                 <div>

@@ -11,6 +11,22 @@
     <link rel="icon" type="image/png" sizes="16x16" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
     <link rel="shortcut icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
+    <!-- Instant Zero-FOUC Theme Initializer -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('utee_theme') || 'light';
+                var savedColor = localStorage.getItem('utee_color') || 'coral';
+                var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var effectiveTheme = savedTheme === 'system' ? (systemDark ? 'dark' : 'light') : savedTheme;
+                
+                document.documentElement.setAttribute('data-theme', effectiveTheme);
+                document.documentElement.setAttribute('data-color', savedColor);
+                document.documentElement.setAttribute('data-theme-setting', savedTheme);
+            } catch(e) {}
+        })();
+    </script>
+    <meta name="theme-color" content="#f05454" id="meta-theme-color">
     <!-- Google Fonts: Be Vietnam Pro (Font chuẩn 100% tiếng Việt từ font-weight 300 đến 900, không bị lỗi dấu hay nhảy font) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

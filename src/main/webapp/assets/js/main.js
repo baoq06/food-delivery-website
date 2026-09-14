@@ -488,4 +488,200 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
+
+    // ==========================================================================
+    // 7. HỆ THỐNG TÙY CHỈNH THEME & GIAO DIỆN CÁ NHÂN HÓA (ThemeManager)
+    // ==========================================================================
+    const ThemeManager = {
+        STORAGE_KEY_THEME: "utee_theme",
+        STORAGE_KEY_COLOR: "utee_color",
+        
+        COLOR_NAMES: {
+            coral: "Đỏ San Hô Utee",
+            orange: "Cam Năng Động Fastfood",
+            emerald: "Xanh Healthy Eat Clean",
+            royal: "Tím Trà Sữa Thời Thượng",
+            ocean: "Xanh Biển Tươi Mát"
+        },
+
+        COLOR_HEX: {
+            coral: "#f05454",
+            orange: "#ff7a00",
+            emerald: "#10b981",
+            royal: "#8b5cf6",
+            ocean: "#0284c7"
+        },
+
+        init() {
+            const savedTheme = localStorage.getItem(this.STORAGE_KEY_THEME) || "light";
+            const savedColor = localStorage.getItem(this.STORAGE_KEY_COLOR) || "coral";
+            
+            this.apply(savedTheme, savedColor, false);
+            this.bindEvents();
+            this.listenSystemTheme();
+        },
+
+        getSystemTheme() {
+            return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        },
+
+        apply(themeMode, colorPreset, showNotification = false) {
+            const effectiveTheme = (themeMode === "system") ? this.getSystemTheme() : themeMode;
+            
+            // 1. Áp dụng lên DOM
+            document.documentElement.setAttribute("data-theme", effectiveTheme);
+            document.documentElement.setAttribute("data-color", colorPreset);
+            document.documentElement.setAttribute("data-theme-setting", themeMode);
+
+            // 2. Lưu vào localStorage
+            try {
+                localStorage.setItem(this.STORAGE_KEY_THEME, themeMode);
+                localStorage.setItem(this.STORAGE_KEY_COLOR, colorPreset);
+            } catch (ignored) {}
+
+            // 3. Cập nhật thẻ meta theme-color cho trình duyệt di động
+            const metaTheme = document.getElementById("meta-theme-color");
+            if (metaTheme) {
+                metaTheme.setAttribute("content", effectiveTheme === "dark" ? "#0b1120" : (this.COLOR_HEX[colorPreset] || "#f05454"));
+            }
+
+            // 4. Đồng bộ UI trong Navbar Quick Popover
+            this.syncNavbarUI(themeMode, colorPreset, effectiveTheme);
+
+            // 5. Đồng bộ UI trong trang Hồ sơ cá nhân (Profile tab)
+            this.syncProfileUI(themeMode, colorPreset);
+
+            // 6. Hiển thị thông báo Toast nếu người dùng vừa chủ động đổi
+            if (showNotification && typeof window.showToast === "function") {
+                const modeLabel = themeMode === "dark" ? "Chế độ Tối" : (themeMode === "light" ? "Chế độ Sáng" : "Tự động theo máy");
+                const colorLabel = this.COLOR_NAMES[colorPreset] || "Đỏ San Hô";
+                window.showToast(`🎨 Giao diện: <strong>${modeLabel}</strong> • Tông màu: <strong>${colorLabel}</strong>`);
+            }
+        },
+
+        syncNavbarUI(themeMode, colorPreset, effectiveTheme) {
+            // Icon chế độ trên nút Navbar
+            const modeIcon = document.getElementById("navThemeModeIcon");
+            if (modeIcon) {
+                modeIcon.className = (themeMode === "dark" || (themeMode === "system" && effectiveTheme === "dark")) 
+                    ? "fa-solid fa-moon" 
+                    : (themeMode === "system" ? "fa-solid fa-laptop" : "fa-solid fa-sun");
+            }
+
+            // Active state trên các pill chế độ
+            document.querySelectorAll(".theme-mode-pill").forEach(pill => {
+                pill.classList.toggle("active", pill.dataset.themeMode === themeMode);
+            });
+
+            // Active state trên các swatch màu sắc
+            document.querySelectorAll(".theme-swatch-btn").forEach(swatch => {
+                swatch.classList.toggle("active", swatch.dataset.themeColor === colorPreset);
+            });
+        },
+
+        syncProfileUI(themeMode, colorPreset) {
+            // Active cards chế độ trong Profile
+            document.querySelectorAll(".app-mode-card").forEach(card => {
+                const isMatch = card.dataset.mode === themeMode;
+                card.classList.toggle("active", isMatch);
+                const radio = card.querySelector('input[type="radio"]');
+                if (radio) radio.checked = isMatch;
+            });
+
+            // Active items bảng màu trong Profile
+            document.querySelectorAll(".app-color-item").forEach(item => {
+                item.classList.toggle("active", item.dataset.color === colorPreset);
+            });
+        },
+
+        bindEvents() {
+            // 1. Mở/Đóng Popover Quick Theme Switcher trên Navbar
+            const wrap = document.getElementById("themeSwitcherWrap");
+            const toggleBtn = document.getElementById("navThemeToggleBtn");
+            const closeBtn = document.getElementById("themePopoverCloseBtn");
+
+            if (wrap && toggleBtn) {
+                toggleBtn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    wrap.classList.toggle("open");
+                });
+
+                if (closeBtn) {
+                    closeBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        wrap.classList.remove("open");
+                    });
+                }
+
+                document.addEventListener("click", (e) => {
+                    if (!wrap.contains(e.target)) {
+                        wrap.classList.remove("open");
+                    }
+                });
+            }
+
+            // 2. Click chọn chế độ trong Navbar Popover
+            document.querySelectorAll(".theme-mode-pill").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const targetMode = btn.dataset.themeMode;
+                    const currentColor = localStorage.getItem(this.STORAGE_KEY_COLOR) || "coral";
+                    this.apply(targetMode, currentColor, true);
+                });
+            });
+
+            // 3. Click chọn màu trong Navbar Popover
+            document.querySelectorAll(".theme-swatch-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const targetColor = btn.dataset.themeColor;
+                    const currentMode = localStorage.getItem(this.STORAGE_KEY_THEME) || "light";
+                    this.apply(currentMode, targetColor, true);
+                });
+            });
+
+            // 4. Tương tác trong trang Profile (Tab Giao diện)
+            document.querySelectorAll(".app-mode-card").forEach(card => {
+                card.addEventListener("click", () => {
+                    const targetMode = card.dataset.mode;
+                    const currentColor = localStorage.getItem(this.STORAGE_KEY_COLOR) || "coral";
+                    this.apply(targetMode, currentColor, true);
+                });
+            });
+
+            document.querySelectorAll(".app-color-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    const targetColor = item.dataset.color;
+                    const currentMode = localStorage.getItem(this.STORAGE_KEY_THEME) || "light";
+                    this.apply(currentMode, targetColor, true);
+                });
+            });
+
+            // 5. Nút Khôi phục mặc định trong Profile
+            const resetBtn = document.getElementById("btnResetThemeProfile");
+            if (resetBtn) {
+                resetBtn.addEventListener("click", () => {
+                    this.apply("light", "coral", true);
+                    if (typeof window.showToast === "function") {
+                        window.showToast("✨ Đã khôi phục giao diện mặc định (Sáng & Đỏ San Hô Utee)");
+                    }
+                });
+            }
+        },
+
+        listenSystemTheme() {
+            if (window.matchMedia) {
+                window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+                    const currentThemeSetting = localStorage.getItem(this.STORAGE_KEY_THEME) || "light";
+                    if (currentThemeSetting === "system") {
+                        const currentColor = localStorage.getItem(this.STORAGE_KEY_COLOR) || "coral";
+                        this.apply("system", currentColor, false);
+                    }
+                });
+            }
+        }
+    };
+
+    // Khởi chạy ThemeManager
+    ThemeManager.init();
+    window.ThemeManager = ThemeManager;
 });
+

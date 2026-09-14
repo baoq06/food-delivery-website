@@ -270,6 +270,53 @@
 
                 <!-- User Actions -->
                 <div class="nav-actions">
+                    <!-- Quick Theme Customizer Switcher -->
+                    <div class="theme-switcher-dropdown-wrap" id="themeSwitcherWrap">
+                        <button type="button" class="nav-theme-btn" id="navThemeToggleBtn" title="Tùy chỉnh giao diện (Sáng / Tối / Bảng màu)" aria-label="Tùy chỉnh giao diện">
+                            <i class="fa-solid fa-palette"></i>
+                            <span class="theme-mode-indicator"><i class="fa-solid fa-sun" id="navThemeModeIcon"></i></span>
+                        </button>
+                        <div class="theme-popover" id="navThemePopover">
+                            <div class="theme-popover-header">
+                                <span class="theme-popover-title"><i class="fa-solid fa-sliders text-primary"></i> Giao Diện Utee</span>
+                                <button type="button" class="theme-popover-close" id="themePopoverCloseBtn" aria-label="Đóng">&times;</button>
+                            </div>
+                            <div class="theme-popover-body">
+                                <div class="theme-popover-section">
+                                    <div class="theme-popover-label">Chế độ hiển thị</div>
+                                    <div class="theme-mode-pills">
+                                        <button type="button" class="theme-mode-pill" data-theme-mode="light" title="Chế độ Sáng">
+                                            <i class="fa-solid fa-sun"></i> <span>Sáng</span>
+                                        </button>
+                                        <button type="button" class="theme-mode-pill" data-theme-mode="dark" title="Chế độ Tối">
+                                            <i class="fa-solid fa-moon"></i> <span>Tối</span>
+                                        </button>
+                                        <button type="button" class="theme-mode-pill" data-theme-mode="system" title="Tự động theo hệ thống">
+                                            <i class="fa-solid fa-laptop"></i> <span>Tự động</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="theme-popover-section">
+                                    <div class="theme-popover-label">Tông màu chủ đạo</div>
+                                    <div class="theme-color-swatches">
+                                        <button type="button" class="theme-swatch-btn" data-theme-color="coral" title="Đỏ San Hô (Mặc định)" style="--swatch-color: #f05454;"></button>
+                                        <button type="button" class="theme-swatch-btn" data-theme-color="orange" title="Cam Fastfood" style="--swatch-color: #ff7a00;"></button>
+                                        <button type="button" class="theme-swatch-btn" data-theme-color="emerald" title="Xanh Healthy" style="--swatch-color: #10b981;"></button>
+                                        <button type="button" class="theme-swatch-btn" data-theme-color="royal" title="Tím Trà Sữa" style="--swatch-color: #8b5cf6;"></button>
+                                        <button type="button" class="theme-swatch-btn" data-theme-color="ocean" title="Xanh Biển Tươi" style="--swatch-color: #0284c7;"></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <c:if test="${not empty sessionScope.currentUser}">
+                                <div class="theme-popover-footer">
+                                    <a href="${pageContext.request.contextPath}/profile?tab=appearance" class="theme-popover-link">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Xem phòng tùy chỉnh chi tiết
+                                    </a>
+                                </div>
+                            </c:if>
+                        </div>
+                    </div>
+
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
                             <!-- Chuông thông báo Realtime cho cả 3 vai trò -->
@@ -333,6 +380,10 @@
 
                                     <a href="${pageContext.request.contextPath}/profile" class="${pageContext.request.servletPath eq '/profile' and (empty param.tab or param.tab eq 'profile') ? 'active-link' : ''}">
                                         <i class="fa-solid fa-id-card text-primary"></i> Tài khoản của tôi
+                                    </a>
+
+                                    <a href="${pageContext.request.contextPath}/profile?tab=appearance" class="${pageContext.request.servletPath eq '/profile' and param.tab eq 'appearance' ? 'active-link' : ''}">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-info"></i> Tùy chỉnh giao diện
                                     </a>
 
                                     <!-- Đơn hàng đã đặt & Giỏ hàng: ẨN hoàn toàn khi shipper đang BẬT nhận đơn; HIỆN khi shipper TẮT nhận đơn hoặc là khách thường -->

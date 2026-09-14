@@ -323,6 +323,11 @@
                 <i class="fa-solid fa-shield-halved"></i>
                 <span>Đổi mật khẩu & Bảo mật</span>
             </button>
+            <button type="button" class="profile-tab-btn ${activeTab eq 'appearance' or param.tab eq 'appearance' ? 'active' : ''}" onclick="switchTab('appearance')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Giao diện &amp; Chủ đề</span>
+                <span class="tab-count-badge" style="background:var(--primary-color); color:#fff; font-size: 0.7rem;">Mới</span>
+            </button>
         </div>
     </div>
 
@@ -904,6 +909,185 @@
             </div>
         </div>
     </div>
+
+    <!-- Tab 4: Giao diện & Chủ đề cá nhân hóa (Appearance) -->
+    <div id="tab-appearance" class="profile-tab-pane ${activeTab eq 'appearance' or param.tab eq 'appearance' ? 'active' : ''}">
+        <div class="appearance-layout-grid">
+            <!-- Cột Cấu Hình (Settings) -->
+            <div class="appearance-settings-col">
+                <!-- Card 1: Chế độ hiển thị -->
+                <div class="appearance-card">
+                    <div class="appearance-card-header">
+                        <div class="app-card-title-group">
+                            <div class="app-card-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                            <div>
+                                <h3 class="appearance-card-title">Chế độ hiển thị (Display Mode)</h3>
+                                <p class="appearance-card-desc">Tùy biến chế độ sáng/tối để phù hợp với môi trường làm việc ngày và đêm.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="appearance-mode-options">
+                        <label class="app-mode-card" data-mode="light">
+                            <input type="radio" name="profileThemeMode" value="light">
+                            <div class="app-mode-preview light-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-line-1"></div>
+                                    <div class="preview-line-2"></div>
+                                </div>
+                            </div>
+                            <div class="app-mode-info">
+                                <div class="app-mode-name"><i class="fa-solid fa-sun text-warning"></i> Sáng (Light)</div>
+                                <div class="app-mode-sub">Rõ ràng, tràn đầy năng lượng</div>
+                            </div>
+                        </label>
+
+                        <label class="app-mode-card" data-mode="dark">
+                            <input type="radio" name="profileThemeMode" value="dark">
+                            <div class="app-mode-preview dark-preview">
+                                <div class="preview-header"></div>
+                                <div class="preview-content">
+                                    <div class="preview-line-1"></div>
+                                    <div class="preview-line-2"></div>
+                                </div>
+                            </div>
+                            <div class="app-mode-info">
+                                <div class="app-mode-name"><i class="fa-solid fa-moon text-info"></i> Tối (Dark)</div>
+                                <div class="app-mode-sub">Dịu mắt khi đặt món đêm</div>
+                            </div>
+                        </label>
+
+                        <label class="app-mode-card" data-mode="system">
+                            <input type="radio" name="profileThemeMode" value="system">
+                            <div class="app-mode-preview system-preview">
+                                <div class="preview-split-left"></div>
+                                <div class="preview-split-right"></div>
+                            </div>
+                            <div class="app-mode-info">
+                                <div class="app-mode-name"><i class="fa-solid fa-laptop text-primary"></i> Tự động (Auto)</div>
+                                <div class="app-mode-sub">Đồng bộ theo thiết bị</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Card 2: Bảng màu ẩm thực tuyển chọn -->
+                <div class="appearance-card">
+                    <div class="appearance-card-header">
+                        <div class="app-card-title-group">
+                            <div class="app-card-icon"><i class="fa-solid fa-palette"></i></div>
+                            <div>
+                                <h3 class="appearance-card-title">Tông màu ẩm thực (Food Palettes)</h3>
+                                <p class="appearance-card-desc">Chọn phong cách màu sắc kích thích thị giác món ăn theo sở thích của bạn.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="appearance-color-list">
+                        <button type="button" class="app-color-item" data-color="coral">
+                            <span class="app-color-circle" style="background: linear-gradient(135deg, #f05454 0%, #ff7676 100%);"></span>
+                            <div class="app-color-details">
+                                <div class="app-color-name">Đỏ San Hô Utee (Mặc định)</div>
+                                <div class="app-color-tagline">Rực rỡ, ấm cúng và tôn vinh mọi món ngon chuẩn vị</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
+                        </button>
+
+                        <button type="button" class="app-color-item" data-color="orange">
+                            <span class="app-color-circle" style="background: linear-gradient(135deg, #ff7a00 0%, #ff9f43 100%);"></span>
+                            <div class="app-color-details">
+                                <div class="app-color-name">Cam Năng Động (Fastfood &amp; Snack)</div>
+                                <div class="app-color-tagline">Tràn trề năng lượng, kích thích sự thèm ăn tuyệt đối</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
+                        </button>
+
+                        <button type="button" class="app-color-item" data-color="emerald">
+                            <span class="app-color-circle" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);"></span>
+                            <div class="app-color-details">
+                                <div class="app-color-name">Xanh Healthy (Món Chay &amp; Eat Clean)</div>
+                                <div class="app-color-tagline">Tươi mát, thanh lọc tự nhiên và bảo vệ sức khỏe</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
+                        </button>
+
+                        <button type="button" class="app-color-item" data-color="royal">
+                            <span class="app-color-circle" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);"></span>
+                            <div class="app-color-details">
+                                <div class="app-color-name">Tím Trà Sữa (Bánh Ngọt &amp; Trendy)</div>
+                                <div class="app-color-tagline">Ngọt ngào, trẻ trung và chuẩn phong cách Gen Z</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
+                        </button>
+
+                        <button type="button" class="app-color-item" data-color="ocean">
+                            <span class="app-color-circle" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);"></span>
+                            <div class="app-color-details">
+                                <div class="app-color-name">Xanh Biển Tươi (Hải Sản &amp; Nước Ép)</div>
+                                <div class="app-color-tagline">Sảng khoái, phóng khoáng và ngập tràn hương vị biển cả</div>
+                            </div>
+                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <div class="appearance-footer-actions">
+                    <button type="button" class="btn btn-outline" id="btnResetThemeProfile">
+                        <i class="fa-solid fa-rotate-left"></i> Khôi phục giao diện mặc định
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cột Xem Trước Thời Gian Thực (Live Preview) -->
+            <div class="appearance-preview-col">
+                <div class="appearance-preview-sticky">
+                    <div class="app-preview-card">
+                        <div class="app-preview-header">
+                            <div class="app-preview-dots">
+                                <span class="dot dot-red"></span>
+                                <span class="dot dot-yellow"></span>
+                                <span class="dot dot-green"></span>
+                            </div>
+                            <div class="app-preview-badge"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Xem trước thời gian thực</div>
+                        </div>
+                        <div class="app-preview-body">
+                            <!-- Mock Top Navigation -->
+                            <div class="mock-nav-bar">
+                                <div class="mock-nav-brand"><i class="fa-solid fa-utensils"></i> Utee Express</div>
+                                <div class="mock-nav-right">
+                                    <span class="mock-nav-pill"><i class="fa-solid fa-bolt"></i> 30p</span>
+                                    <span class="mock-nav-cart"><i class="fa-solid fa-bag-shopping"></i> 1</span>
+                                </div>
+                            </div>
+
+                            <!-- Mock Food Card -->
+                            <div class="mock-food-item">
+                                <div class="mock-food-banner">
+                                    <span class="mock-food-badge"><i class="fa-solid fa-fire"></i> Best Seller</span>
+                                </div>
+                                <div class="mock-food-content">
+                                    <h4 class="mock-food-title">Cơm Gà Xối Mỡ Sốt Mắm Tỏi Giòn Rụm</h4>
+                                    <p class="mock-food-snippet">Đùi gà vàng ươm thơm lừng kèm cơm chiên hoàng kim và canh súp nóng hổi.</p>
+                                    <div class="mock-food-row">
+                                        <div class="mock-food-price">48.000 đ</div>
+                                        <button type="button" class="mock-order-btn">
+                                            <i class="fa-solid fa-plus"></i> Đặt món
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mock Toast Message -->
+                            <div class="mock-toast-box">
+                                <i class="fa-solid fa-circle-check text-success"></i>
+                                <span>Giao diện đang áp dụng theo lựa chọn của bạn!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -1008,6 +1192,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     checkProfileChanges();
+
+    // Khởi tạo tab từ URL parameter hoặc hash
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab') || window.location.hash.replace('#', '');
+    if (initialTab && document.getElementById('tab-' + initialTab)) {
+        switchTab(initialTab);
+    }
 });
 </script>
 
