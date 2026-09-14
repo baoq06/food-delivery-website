@@ -1,20 +1,49 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "drivers")
 public class Driver implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "driver_id")
     private int id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "phone", nullable = false)
     private String phone;
+
+    @Column(name = "status")
     private String status; // "AVAILABLE", "BUSY", "OFFLINE"
 
+    @Column(name = "user_id")
     private Integer userId;
+
+    @Column(name = "license_plate")
     private String licensePlate;
+
+    @Column(name = "vehicle_type")
     private String vehicleType;
 
+    @Column(name = "id_card_front")
     private String idCardFront;
+
+    @Column(name = "id_card_back")
     private String idCardBack;
+
+    @Column(name = "vehicle_doc")
     private String vehicleDoc;
+
+    @Column(name = "avatar")
     private String avatar;
 
     public Driver() {

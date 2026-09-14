@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" 
+    xmlns="https://jakarta.ee/xml/ns/persistence" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence 
+       https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+       
+  <persistence-unit name="foodDeliveryPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    
+    <class>com.ute.fooddelivery.model.User</class>
+    <class>com.ute.fooddelivery.model.Category</class>
+    <class>com.ute.fooddelivery.model.Food</class>
+    <class>com.ute.fooddelivery.model.Restaurant</class>
+    <class>com.ute.fooddelivery.model.Order</class>
+    <class>com.ute.fooddelivery.model.OrderItem</class>
+    <class>com.ute.fooddelivery.model.Driver</class>
+    <class>com.ute.fooddelivery.model.Review</class>
+    <class>com.ute.fooddelivery.model.Notification</class>
+    
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    
+    <properties>
+      <!-- Cấu hình kết nối JDBC TiDB Cloud (Giữ nguyên CSDL đang dùng) -->
+      <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&amp;sslMode=VERIFY_IDENTITY&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC"/>
+      <property name="jakarta.persistence.jdbc.user" value="4GZ4scbbci9yLyb.root"/>
+      <property name="jakarta.persistence.jdbc.password" value="ETp7DO4YQ1QUHbng"/>
+
+      <!-- Hỗ trợ cả key javax cũ theo đúng cú pháp Slide 8 -->
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&amp;sslMode=VERIFY_IDENTITY&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC"/>
+      <property name="javax.persistence.jdbc.user" value="4GZ4scbbci9yLyb.root"/>
+      <property name="javax.persistence.jdbc.password" value="ETp7DO4YQ1QUHbng"/>
+
+      <!-- Chế độ Schema: 'none' để bảo toàn dữ liệu hiện có trên TiDB Cloud -->
+      <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+      
+      <!-- Cấu hình EclipseLink logging & hiệu năng -->
+      <property name="eclipselink.logging.level" value="WARNING"/>
+      <property name="eclipselink.logging.parameters" value="true"/>
+      <property name="eclipselink.cache.shared.default" value="false"/>
+    </properties>
+  </persistence-unit>
+</persistence>

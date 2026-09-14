@@ -1,15 +1,41 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "order_items")
 public class OrderItem implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_item_id")
     private int id;
+
+    @Column(name = "order_id", nullable = false)
     private int orderId;
+
+    @Column(name = "food_id", nullable = false)
     private int foodId;
+
+    @Transient
     private String foodName;
+
+    @Transient
     private String foodImage;
+
+    @Column(name = "quantity", nullable = false)
     private int quantity;
+
+    @Column(name = "unit_price", nullable = false)
     private double unitPrice;
+
+    @Column(name = "subtotal", nullable = false)
     private double subtotal;
 
     public OrderItem() {

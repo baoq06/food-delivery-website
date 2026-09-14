@@ -1,11 +1,28 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "categories")
 public class Category implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
     private int id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "image_icon")
     private String imageIcon;
+
+    @Column(name = "description")
     private String description;
 
     public Category() {

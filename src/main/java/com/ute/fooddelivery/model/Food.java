@@ -1,22 +1,58 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "foods")
 public class Food implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "food_id")
     private int id;
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "price", nullable = false)
     private double price;
+
+    @Column(name = "image_url")
     private String image;
+
+    @Column(name = "category_id", nullable = false)
     private int categoryId;
+
+    @Transient
     private String categoryName;
+
+    @Column(name = "restaurant_id", nullable = false)
     private int restaurantId;
+
+    @Transient
     private String restaurantName;
+
+    @Column(name = "is_available")
     private boolean available;
+
+    @Transient
     private double rating;
+
+    @Transient
     private int reviewCount;
+
+    @Transient
     private List<Review> reviews = new ArrayList<>();
 
     public Food() {

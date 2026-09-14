@@ -1,32 +1,86 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "orders")
 public class Order implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private int id;
+
+    @Column(name = "user_id")
     private Integer userId;
+
+    @Column(name = "customer_name", nullable = false)
     private String customerName;
+
+    @Column(name = "phone", nullable = false)
     private String phone;
+
+    @Column(name = "address", nullable = false)
     private String address;
+
+    @Column(name = "note")
     private String note;
+
+    @Column(name = "total_amount", nullable = false)
     private double totalAmount;
+
+    @Column(name = "payment_method")
     private String paymentMethod;
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "driver_id")
     private Integer driverId;
+
+    @Transient
     private String driverName;
+
+    @Transient
     private String driverPhone;
+
+    @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Column(name = "customer_confirmed")
     private boolean customerConfirmed;
+
+    @Column(name = "merchant_confirmed")
     private boolean merchantConfirmed;
+
+    @Column(name = "shipper_accepted")
     private boolean shipperAccepted;
+
+    @Column(name = "shipper_delivered")
     private boolean shipperDelivered;
+
+    @Column(name = "merchant_completed")
     private boolean merchantCompleted;
+
+    @Transient
     private Review review;
+
+    @Transient
     private String foodSummary;
+
+    @Transient
     private double foodValue;
+
+    @Transient
     private double adminCommission;
 
     public Review getReview() { return review; }
@@ -37,6 +91,8 @@ public class Order implements Serializable {
     public void setFoodValue(double foodValue) { this.foodValue = foodValue; }
     public double getAdminCommission() { return adminCommission; }
     public void setAdminCommission(double adminCommission) { this.adminCommission = adminCommission; }
+
+    @Transient
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {

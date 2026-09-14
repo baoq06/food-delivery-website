@@ -1,26 +1,66 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Entity
+@Table(name = "restaurants")
 public class Restaurant implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "restaurant_id")
     private int id;
+
+    @Column(name = "user_id")
     private Integer userId; // ID chủ quán (user role SELLER)
+
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "phone")
     private String phone;
+
+    @Column(name = "address")
     private String address;
+
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Column(name = "status")
     private String status;
+
+    @Column(name = "open_time")
     private String openTime;  // Ví dụ: '07:00'
+
+    @Column(name = "close_time")
     private String closeTime; // Ví dụ: '22:00'
+
+    @Transient
     private double rating;
+
+    @Transient
     private int reviewCount;
+
+    @Transient
     private Map<Integer, Integer> ratingBreakdown = new HashMap<>();
+
+    @Transient
     private List<Review> reviews = new ArrayList<>();
+
+    @Transient
     private int totalOrders;
 
     public Restaurant() {

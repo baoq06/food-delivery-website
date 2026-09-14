@@ -1,19 +1,46 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 
+@Entity
+@Table(name = "notifications")
 public class Notification implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "notification_id")
     private int id;
+
+    @Column(name = "user_id", nullable = false)
     private int userId;
+
+    @Column(name = "order_id")
     private Integer orderId;
+
+    @Column(name = "title", nullable = false)
     private String title;
+
+    @Column(name = "message", nullable = false)
     private String message;
+
+    @Column(name = "type")
     private String type; // 'ORDER_NEW', 'ORDER_ASSIGNED', 'SHIPPER_ACCEPTED', 'ORDER_SHIPPING', 'SHIPPER_DELIVERED', 'CUSTOMER_CONFIRMED', 'ORDER_COMPLETED', 'ORDER_CANCELLED', 'SYSTEM'
+
+    @Column(name = "link")
     private String link;
+
+    @Column(name = "is_read")
     private boolean read;
+
+    @Column(name = "created_at")
     private Timestamp createdAt;
 
     public Notification() {

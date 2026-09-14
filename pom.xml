@@ -54,6 +54,18 @@
       <version>8.3.0</version>
     </dependency>
 
+    <!-- Jakarta Persistence API (JPA) & EclipseLink Provider theo chuẩn Chapter 13 Slide 8 -->
+    <dependency>
+      <groupId>jakarta.persistence</groupId>
+      <artifactId>jakarta.persistence-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.persistence</groupId>
+      <artifactId>org.eclipse.persistence.jpa</artifactId>
+      <version>4.0.2</version>
+    </dependency>
+
     <!-- Gson / JSON parsing -->
     <dependency>
       <groupId>com.google.code.gson</groupId>

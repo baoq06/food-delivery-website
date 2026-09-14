@@ -1,22 +1,63 @@
 package com.ute.fooddelivery.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
-public class Review {
+@Entity
+@Table(name = "order_reviews")
+public class Review implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")
     private int reviewId;
+
+    @Column(name = "order_id", nullable = false)
     private int orderId;
+
+    @Column(name = "customer_id", nullable = false)
     private int customerId;
+
+    @Column(name = "driver_id")
     private Integer driverId;
+
+    @Column(name = "restaurant_id")
     private Integer restaurantId;
+
+    @Column(name = "rating", nullable = false)
     private int rating;
+
+    @Column(name = "comment")
     private String comment;
+
+    @Column(name = "food_rating")
     private Integer foodRating;
+
+    @Column(name = "food_comment")
     private String foodComment;
+
+    @Column(name = "driver_rating")
     private Integer driverRating;
+
+    @Column(name = "driver_comment")
     private String driverComment;
+
+    @Column(name = "created_at")
     private Timestamp createdAt;
+
+    @Transient
     private String customerName;
+
+    @Transient
     private String customerAvatar;
+
+    @Transient
     private String orderedFoods;
 
     // Getters and setters
