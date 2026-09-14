@@ -41,7 +41,7 @@
                     <c:if test="${selectedView eq 'DAY'}">
                         <div class="d-flex align-items-center gap-2">
                             <label class="text-muted small fw-bold mb-0">Tháng:</label>
-                            <select name="month" class="form-select form-control" onchange="this.form.submit()" style="width: 120px; height: 38px; border-radius: 8px;">
+                            <select name="month" class="form-select merchant-filter-select" onchange="this.form.submit()">
                                 <c:forEach var="m" begin="1" end="12">
                                     <option value="${m}" ${selectedMonth == m ? 'selected' : ''}>Tháng ${m}</option>
                                 </c:forEach>
@@ -52,7 +52,7 @@
                     <c:if test="${selectedView eq 'DAY' || selectedView eq 'MONTH'}">
                         <div class="d-flex align-items-center gap-2">
                             <label class="text-muted small fw-bold mb-0">Năm:</label>
-                            <select name="year" class="form-select form-control" onchange="this.form.submit()" style="width: 110px; height: 38px; border-radius: 8px;">
+                            <select name="year" class="form-select merchant-filter-select" onchange="this.form.submit()">
                                 <c:forEach var="y" begin="2024" end="2027">
                                     <option value="${y}" ${selectedYear == y ? 'selected' : ''}>Năm ${y}</option>
                                 </c:forEach>
@@ -60,7 +60,7 @@
                         </div>
                     </c:if>
 
-                    <button type="submit" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" style="height: 38px; border-radius: 8px; padding: 0 14px;">
+                    <button type="submit" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" style="height: 36px; border-radius: 9px; padding: 0 14px; font-weight: 600; font-size: 0.84rem;">
                         <i class="fa-solid fa-rotate"></i> <span>Áp dụng</span>
                     </button>
                 </form>

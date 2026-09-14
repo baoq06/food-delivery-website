@@ -336,6 +336,12 @@
                                         <span>Đang là Shipper</span>
                                     </button>
                                 </c:when>
+                                <c:when test="${not empty sessionScope.currentUser and (sessionScope.currentUser.role eq 'SELLER' or sessionScope.currentUser.seller)}">
+                                    <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="btn-add-cart btn-view-only" title="Xem chi tiết món này">
+                                        <i class="fa-solid fa-eye text-primary"></i>
+                                        <span>Xem món</span>
+                                    </a>
+                                </c:when>
                                 <c:otherwise>
                                     <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
                                         <input type="hidden" name="action" value="add">

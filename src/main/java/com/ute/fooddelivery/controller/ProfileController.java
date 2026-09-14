@@ -55,8 +55,23 @@ public class ProfileController extends HttpServlet {
             }
         }
 
-        // Lấy danh sách đơn hàng của người dùng
-        List<Order> orders = orderService.getOrdersByUserId(currentUser.getId());
+        // Nếu là chủ quán (Merchant/Seller): không thể đặt đồ ăn nên không có lịch sử đơn đặt
+        if (currentUser.isSeller()) {
+            com.ute.fooddelivery.service.MerchantService merchantService = new com.ute.fooddelivery.service.MerchantService();
+            com.ute.fooddelivery.model.Restaurant restaurant = merchantService.getRestaurantForUser(currentUser.getId());
+            if (restaurant != null) {
+                req.setAttribute("currentRestaurant", restaurant);
+                req.setAttribute("merchantKpis", merchantService.getRestaurantKPIs(restaurant.getId()));
+            }
+            String tab = req.getParameter("tab");
+            if ("orders".equalsIgnoreCase(tab)) {
+                resp.sendRedirect(req.getContextPath() + "/profile?tab=profile");
+                return;
+            }
+        }
+
+        // Lấy danh sách đơn hàng của người dùng (nếu là merchant thì không cần tải đơn đặt món)
+        List<Order> orders = currentUser.isSeller() ? java.util.Collections.emptyList() : orderService.getOrdersByUserId(currentUser.getId());
 
         // Tính toán các chỉ số thống kê khách hàng
         int totalOrders = (orders != null) ? orders.size() : 0;

@@ -216,10 +216,8 @@
                     </li>
                     <c:choose>
                         <c:when test="${isSeller}">
-                            <li><a href="${pageContext.request.contextPath}/merchant/dashboard" class="${pageContext.request.servletPath eq '/merchant/dashboard' ? 'active' : ''}">Kênh Quán Ăn</a></li>
-                            <li><a href="${pageContext.request.contextPath}/merchant/foods" class="${pageContext.request.servletPath eq '/merchant/foods' ? 'active' : ''}">Thực đơn món</a></li>
-                            <li><a href="${pageContext.request.contextPath}/merchant/orders" class="${pageContext.request.servletPath eq '/merchant/orders' ? 'active' : ''}">Đơn hàng</a></li>
-                            <li><a href="${pageContext.request.contextPath}/merchant/revenue" class="${pageContext.request.servletPath eq '/merchant/revenue' ? 'active' : ''}">Doanh thu</a></li>
+                            <li><a href="${pageContext.request.contextPath}/foods" class="${pageContext.request.servletPath eq '/foods' or pageContext.request.servletPath eq '/food-detail' ? 'active' : ''}">Thực đơn</a></li>
+                            <li><a href="${pageContext.request.contextPath}/merchant/dashboard" class="${pageContext.request.servletPath.startsWith('/merchant') ? 'active' : ''}">Kênh Quán Ăn</a></li>
                         </c:when>
                         <c:when test="${isShipper and isShipperActive}">
                             <!-- Khi BẬT chế độ nhận đơn: Shipper KHÔNG THỂ ĐẶT HÀNG (Ẩn giỏ hàng, chỉ nhận đơn và xem lịch sử giao) -->
@@ -354,8 +352,9 @@
 
                                     <c:if test="${sessionScope.currentUser.seller}">
                                         <div class="dropdown-divider"></div>
+                                        <a href="${pageContext.request.contextPath}/foods"><i class="fa-solid fa-utensils text-success"></i> Xem thực đơn toàn sàn</a>
                                         <a href="${pageContext.request.contextPath}/merchant/dashboard" class="text-primary font-weight-bold"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn</a>
-                                        <a href="${pageContext.request.contextPath}/merchant/foods"><i class="fa-solid fa-bowl-food"></i> Thực đơn món ăn</a>
+                                        <a href="${pageContext.request.contextPath}/merchant/foods"><i class="fa-solid fa-bowl-food"></i> Món ăn của quán tôi</a>
                                         <a href="${pageContext.request.contextPath}/merchant/revenue"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a>
                                         <a href="${pageContext.request.contextPath}/merchant/shippers"><i class="fa-solid fa-motorcycle"></i> Danh sách shipper</a>
                                         <a href="${pageContext.request.contextPath}/merchant/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng của quán</a>
