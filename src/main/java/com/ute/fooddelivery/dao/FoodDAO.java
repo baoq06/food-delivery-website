@@ -1,11 +1,13 @@
 package com.ute.fooddelivery.dao;
 
 import com.ute.fooddelivery.model.Food;
+import com.ute.fooddelivery.model.Review;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class FoodDAO {
 
@@ -25,7 +27,30 @@ public class FoodDAO {
         "    FROM order_items oi " +
         "    JOIN order_reviews rv ON oi.order_id = rv.order_id " +
         "    GROUP BY oi.food_id " +
-        ") sub ON f.food_id = sub.food_id ";
+        ") sub ON f.food_id = sub.food_id " +
+        "LEFT JOIN (" +
+        "    SELECT oi.food_id, SUM(oi.quantity) AS total_sold " +
+        "    FROM order_items oi " +
+        "    JOIN orders o ON oi.order_id = o.order_id " +
+        "    WHERE o.status IN ('DELIVERED', 'COMPLETED') " +
+        "    GROUP BY oi.food_id " +
+        ") sub_sales ON f.food_id = sub_sales.food_id ";
+
+    private void attachReviews(List<Food> list, int maxPerFood) {
+        if (list == null || list.isEmpty()) return;
+        List<Integer> ids = new ArrayList<>();
+        for (Food f : list) {
+            ids.add(f.getId());
+        }
+        ReviewDAO reviewDAO = new ReviewDAO();
+        Map<Integer, List<Review>> revMap = reviewDAO.getRecentReviewsForFoods(ids, maxPerFood);
+        for (Food f : list) {
+            List<Review> revs = revMap.get(f.getId());
+            if (revs != null) {
+                f.setReviews(revs);
+            }
+        }
+    }
 
     public List<Food> getAllFoods() {
         List<Food> list = new ArrayList<>();
@@ -42,6 +67,7 @@ public class FoodDAO {
         } catch (Exception e) {
             System.err.println("Lỗi khi truy vấn getAllFoods: " + e.getMessage());
         }
+        attachReviews(list, 2);
         return list;
     }
 
@@ -62,18 +88,20 @@ public class FoodDAO {
         } catch (Exception e) {
             System.err.println("Lỗi khi truy vấn getFoodsByCategory: " + e.getMessage());
         }
+        attachReviews(list, 2);
         return list;
     }
 
     public List<Food> searchFoods(String keyword) {
         List<Food> list = new ArrayList<>();
-        String query = BASE_QUERY + "WHERE f.is_available = 1 AND (f.name LIKE ? OR f.description LIKE ?) ORDER BY f.food_id ASC";
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND (f.name LIKE ? OR f.description LIKE ? OR r.name LIKE ?) ORDER BY f.food_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
                     String pattern = "%" + keyword + "%";
                     ps.setString(1, pattern);
                     ps.setString(2, pattern);
+                    ps.setString(3, pattern);
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
                             list.add(mapResultSetToFood(rs));
@@ -84,6 +112,7 @@ public class FoodDAO {
         } catch (Exception e) {
             System.err.println("Lỗi khi tìm kiếm searchFoods: " + e.getMessage());
         }
+        attachReviews(list, 2);
         return list;
     }
 
@@ -95,7 +124,10 @@ public class FoodDAO {
                     ps.setInt(1, id);
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            return mapResultSetToFood(rs);
+                            Food food = mapResultSetToFood(rs);
+                            ReviewDAO reviewDAO = new ReviewDAO();
+                            food.setReviews(reviewDAO.getReviewsByFoodId(id, 20));
+                            return food;
                         }
                     }
                 }
@@ -107,8 +139,15 @@ public class FoodDAO {
     }
 
     public List<Food> getFeaturedFoods(int limit) {
+        return getBestSellingFoods(limit);
+    }
+
+    /**
+     * Lấy các món ăn bán chạy nhất dựa trên số lượng bán thật (Tab Bán chạy)
+     */
+    public List<Food> getBestSellingFoods(int limit) {
         List<Food> list = new ArrayList<>();
-        String query = BASE_QUERY + "WHERE f.is_available = 1 ORDER BY f.food_id ASC LIMIT ?";
+        String query = BASE_QUERY + "WHERE f.is_available = 1 ORDER BY COALESCE(sub_sales.total_sold, 0) DESC, sub.avg_rating DESC, f.food_id ASC LIMIT ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -121,8 +160,33 @@ public class FoodDAO {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi lấy featured foods: " + e.getMessage());
+            System.err.println("Lỗi khi lấy best selling foods: " + e.getMessage());
         }
+        attachReviews(list, 2);
+        return list;
+    }
+
+    /**
+     * Lấy các món ăn được đánh giá cao nhất dựa trên rating thật (Tab Đánh giá)
+     */
+    public List<Food> getTopRatedFoods(int limit) {
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.is_available = 1 ORDER BY sub.avg_rating DESC, sub.review_count DESC, f.food_id ASC LIMIT ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, limit);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(mapResultSetToFood(rs));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy top rated foods: " + e.getMessage());
+        }
+        attachReviews(list, 2);
         return list;
     }
 
@@ -143,6 +207,7 @@ public class FoodDAO {
         } catch (Exception e) {
             System.err.println("Lỗi khi lấy món ăn theo nhà hàng: " + e.getMessage());
         }
+        attachReviews(list, 2);
         return list;
     }
 

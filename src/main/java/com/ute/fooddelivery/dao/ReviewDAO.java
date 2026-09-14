@@ -2,7 +2,9 @@ package com.ute.fooddelivery.dao;
 
 import com.ute.fooddelivery.model.Review;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ReviewDAO {
@@ -150,36 +152,53 @@ public class ReviewDAO {
     }
 
     /**
-     * Thống kê Rating Tổng của Quán ăn (Restaurant Rating):
-     * Quy tắc: Rating tổng của quán = AVG của tất cả các món mà quán hiện bán.
-     * (Ví dụ quán có 2 món: món 1 có avg 5.0 sao, món 2 có avg 5.0 sao => rating tổng của quán = 5.0 sao).
+     * Thống kê Rating Tổng của Quán ăn (Restaurant Rating) từ dữ liệu thật:
+     * - Điểm trung bình thật (avgRating), nếu 0 review trả về 0.0
+     * - Tổng số lượt đánh giá thật (reviewCount)
+     * - Phân bố số sao 5★, 4★, 3★, 2★, 1★ (ratingBreakdown)
      */
     public Map<String, Object> getRestaurantRatingStats(int restaurantId) {
         Map<String, Object> res = new HashMap<>();
-        res.put("avgRating", 5.0);
+        res.put("avgRating", 0.0);
         res.put("reviewCount", 0);
+        Map<Integer, Integer> breakdown = new HashMap<>();
+        breakdown.put(5, 0);
+        breakdown.put(4, 0);
+        breakdown.put(3, 0);
+        breakdown.put(2, 0);
+        breakdown.put(1, 0);
+        res.put("breakdown", breakdown);
 
         String sql = 
-            "SELECT AVG(food_avg) AS rest_avg, SUM(food_cnt) AS total_reviews " +
-            "FROM (" +
-            "   SELECT f.food_id, AVG(COALESCE(r.food_rating, r.rating)) AS food_avg, COUNT(r.review_id) AS food_cnt " +
-            "   FROM foods f " +
-            "   JOIN order_items oi ON f.food_id = oi.food_id " +
-            "   JOIN order_reviews r ON oi.order_id = r.order_id " +
-            "   WHERE f.restaurant_id = ? " +
-            "   GROUP BY f.food_id " +
-            ") sub";
+            "SELECT " +
+            "   COUNT(DISTINCT r.review_id) AS total_reviews, " +
+            "   AVG(COALESCE(r.food_rating, r.rating)) AS avg_r, " +
+            "   SUM(CASE WHEN ROUND(COALESCE(r.food_rating, r.rating)) >= 5 THEN 1 ELSE 0 END) AS star_5, " +
+            "   SUM(CASE WHEN ROUND(COALESCE(r.food_rating, r.rating)) = 4 THEN 1 ELSE 0 END) AS star_4, " +
+            "   SUM(CASE WHEN ROUND(COALESCE(r.food_rating, r.rating)) = 3 THEN 1 ELSE 0 END) AS star_3, " +
+            "   SUM(CASE WHEN ROUND(COALESCE(r.food_rating, r.rating)) = 2 THEN 1 ELSE 0 END) AS star_2, " +
+            "   SUM(CASE WHEN ROUND(COALESCE(r.food_rating, r.rating)) <= 1 THEN 1 ELSE 0 END) AS star_1 " +
+            "FROM order_reviews r " +
+            "LEFT JOIN order_items oi ON r.order_id = oi.order_id " +
+            "LEFT JOIN foods f ON oi.food_id = f.food_id " +
+            "WHERE r.restaurant_id = ? OR f.restaurant_id = ?";
 
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, restaurantId);
+            ps.setInt(2, restaurantId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     int totalCnt = rs.getInt("total_reviews");
                     if (totalCnt > 0) {
-                        double avg = rs.getDouble("rest_avg");
+                        double avg = rs.getDouble("avg_r");
                         res.put("avgRating", Math.round(avg * 10.0) / 10.0);
                         res.put("reviewCount", totalCnt);
+                        breakdown.put(5, rs.getInt("star_5"));
+                        breakdown.put(4, rs.getInt("star_4"));
+                        breakdown.put(3, rs.getInt("star_3"));
+                        breakdown.put(2, rs.getInt("star_2"));
+                        breakdown.put(1, rs.getInt("star_1"));
                     }
                 }
             }
@@ -187,5 +206,150 @@ public class ReviewDAO {
             System.err.println("Lỗi khi tính rating tổng của quán: " + e.getMessage());
         }
         return res;
+    }
+
+    /**
+     * Lấy danh sách đánh giá & bình luận của người dùng cho Quán Ăn
+     */
+    public List<Review> getReviewsByRestaurantId(int restaurantId, int limit) {
+        List<Review> list = new ArrayList<>();
+        String sql = 
+            "SELECT r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name, " +
+            "       GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') AS ordered_foods " +
+            "FROM order_reviews r " +
+            "LEFT JOIN users u ON r.customer_id = u.user_id " +
+            "LEFT JOIN orders o ON r.order_id = o.order_id " +
+            "LEFT JOIN order_items oi ON r.order_id = oi.order_id " +
+            "LEFT JOIN foods f ON oi.food_id = f.food_id " +
+            "WHERE r.restaurant_id = ? OR f.restaurant_id = ? " +
+            "GROUP BY r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
+            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "         r.created_at, u.name, o.customer_name " +
+            "ORDER BY r.created_at DESC " +
+            (limit > 0 ? "LIMIT ?" : "");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, restaurantId);
+            ps.setInt(2, restaurantId);
+            if (limit > 0) {
+                ps.setInt(3, limit);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Review rev = mapResultSetToReview(rs);
+                    rev.setOrderedFoods(rs.getString("ordered_foods"));
+                    list.add(rev);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lấy danh sách đánh giá của quán: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * Lấy danh sách đánh giá & bình luận của người dùng cho Món Ăn
+     */
+    public List<Review> getReviewsByFoodId(int foodId, int limit) {
+        List<Review> list = new ArrayList<>();
+        String sql = 
+            "SELECT r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name, " +
+            "       f.name AS food_name " +
+            "FROM order_reviews r " +
+            "JOIN order_items oi ON r.order_id = oi.order_id " +
+            "JOIN foods f ON oi.food_id = f.food_id " +
+            "LEFT JOIN users u ON r.customer_id = u.user_id " +
+            "LEFT JOIN orders o ON r.order_id = o.order_id " +
+            "WHERE oi.food_id = ? " +
+            "GROUP BY r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
+            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "         r.created_at, u.name, o.customer_name, f.name " +
+            "ORDER BY r.created_at DESC " +
+            (limit > 0 ? "LIMIT ?" : "");
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, foodId);
+            if (limit > 0) {
+                ps.setInt(2, limit);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Review rev = mapResultSetToReview(rs);
+                    rev.setOrderedFoods(rs.getString("food_name"));
+                    list.add(rev);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lấy danh sách đánh giá của món: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * Nạp nhanh các đánh giá gần nhất cho nhiều món ăn cùng lúc (tối ưu hiệu năng 1 truy vấn)
+     */
+    public Map<Integer, List<Review>> getRecentReviewsForFoods(List<Integer> foodIds, int maxPerFood) {
+        Map<Integer, List<Review>> map = new HashMap<>();
+        if (foodIds == null || foodIds.isEmpty()) return map;
+
+        StringBuilder inClause = new StringBuilder();
+        for (int i = 0; i < foodIds.size(); i++) {
+            inClause.append(i == 0 ? "?" : ", ?");
+        }
+
+        String sql = 
+            "SELECT oi.food_id, r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name " +
+            "FROM order_reviews r " +
+            "JOIN order_items oi ON r.order_id = oi.order_id " +
+            "LEFT JOIN users u ON r.customer_id = u.user_id " +
+            "LEFT JOIN orders o ON r.order_id = o.order_id " +
+            "WHERE oi.food_id IN (" + inClause + ") " +
+            "ORDER BY r.created_at DESC";
+
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < foodIds.size(); i++) {
+                ps.setInt(i + 1, foodIds.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int fId = rs.getInt("food_id");
+                    List<Review> revList = map.computeIfAbsent(fId, k -> new ArrayList<>());
+                    if (maxPerFood <= 0 || revList.size() < maxPerFood) {
+                        Review rev = mapResultSetToReview(rs);
+                        revList.add(rev);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi lấy recent reviews cho danh sách món: " + e.getMessage());
+        }
+        return map;
+    }
+
+    private Review mapResultSetToReview(ResultSet rs) {
+        Review review = new Review();
+        try { review.setReviewId(rs.getInt("review_id")); } catch (Exception ignored) {}
+        try { review.setOrderId(rs.getInt("order_id")); } catch (Exception ignored) {}
+        try { review.setCustomerId(rs.getInt("customer_id")); } catch (Exception ignored) {}
+        try { review.setDriverId((Integer) rs.getObject("driver_id")); } catch (Exception ignored) {}
+        try { review.setRestaurantId((Integer) rs.getObject("restaurant_id")); } catch (Exception ignored) {}
+        try { review.setRating(rs.getInt("rating")); } catch (Exception ignored) {}
+        try { review.setComment(rs.getString("comment")); } catch (Exception ignored) {}
+        try { review.setFoodRating((Integer) rs.getObject("food_rating")); } catch (Exception ignored) {}
+        try { review.setFoodComment(rs.getString("food_comment")); } catch (Exception ignored) {}
+        try { review.setDriverRating((Integer) rs.getObject("driver_rating")); } catch (Exception ignored) {}
+        try { review.setDriverComment(rs.getString("driver_comment")); } catch (Exception ignored) {}
+        try { review.setCreatedAt(rs.getTimestamp("created_at")); } catch (Exception ignored) {}
+        try { review.setCustomerName(rs.getString("cust_name")); } catch (Exception ignored) {}
+        return review;
     }
 }

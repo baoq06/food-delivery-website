@@ -1,6 +1,10 @@
 package com.ute.fooddelivery.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Restaurant implements Serializable {
     private int id;
@@ -13,6 +17,11 @@ public class Restaurant implements Serializable {
     private String status;
     private String openTime;  // Ví dụ: '07:00'
     private String closeTime; // Ví dụ: '22:00'
+    private double rating;
+    private int reviewCount;
+    private Map<Integer, Integer> ratingBreakdown = new HashMap<>();
+    private List<Review> reviews = new ArrayList<>();
+    private int totalOrders;
 
     public Restaurant() {
     }
@@ -116,5 +125,51 @@ public class Restaurant implements Serializable {
 
     public void setCloseTime(String closeTime) {
         this.closeTime = closeTime;
+    }
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
+    public int getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(int reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    public Map<Integer, Integer> getRatingBreakdown() {
+        return ratingBreakdown;
+    }
+
+    public void setRatingBreakdown(Map<Integer, Integer> ratingBreakdown) {
+        this.ratingBreakdown = ratingBreakdown != null ? ratingBreakdown : new HashMap<>();
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews != null ? reviews : new ArrayList<>();
+    }
+
+    public int getTotalOrders() {
+        return totalOrders;
+    }
+
+    public void setTotalOrders(int totalOrders) {
+        this.totalOrders = totalOrders;
+    }
+
+    public int getStarPercentage(int star) {
+        if (reviewCount <= 0 || ratingBreakdown == null) return 0;
+        int count = ratingBreakdown.getOrDefault(star, 0);
+        return (int) Math.round(((double) count / reviewCount) * 100);
     }
 }

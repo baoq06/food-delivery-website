@@ -1,6 +1,8 @@
 package com.ute.fooddelivery.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Food implements Serializable {
     private int id;
@@ -15,6 +17,7 @@ public class Food implements Serializable {
     private boolean available;
     private double rating;
     private int reviewCount;
+    private List<Review> reviews = new ArrayList<>();
 
     public Food() {
     }
@@ -145,5 +148,13 @@ public class Food implements Serializable {
 
     public void setReviewCount(int reviewCount) {
         this.reviewCount = reviewCount;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews != null ? reviews : new ArrayList<>();
     }
 }

@@ -31,6 +31,14 @@ public class FoodService {
         return foodDAO.getFeaturedFoods(limit);
     }
 
+    public List<Food> getBestSellingFoods(int limit) {
+        return foodDAO.getBestSellingFoods(limit);
+    }
+
+    public List<Food> getTopRatedFoods(int limit) {
+        return foodDAO.getTopRatedFoods(limit);
+    }
+
     public List<Food> getFoodsByIds(List<Integer> ids) {
         List<Food> list = new ArrayList<>();
         if (ids == null || ids.isEmpty()) return list;

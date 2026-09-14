@@ -15,6 +15,9 @@ public class Review {
     private Integer driverRating;
     private String driverComment;
     private Timestamp createdAt;
+    private String customerName;
+    private String customerAvatar;
+    private String orderedFoods;
 
     // Getters and setters
     public int getReviewId() { return reviewId; }
@@ -41,4 +44,23 @@ public class Review {
     public void setDriverComment(String driverComment) { this.driverComment = driverComment; }
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public String getCustomerName() {
+        return (customerName != null && !customerName.trim().isEmpty()) ? customerName : "Khách hàng Utee";
+    }
+    public void setCustomerName(String customerName) { this.customerName = customerName; }
+
+    public String getCustomerAvatar() { return customerAvatar; }
+    public void setCustomerAvatar(String customerAvatar) { this.customerAvatar = customerAvatar; }
+
+    public String getOrderedFoods() { return orderedFoods; }
+    public void setOrderedFoods(String orderedFoods) { this.orderedFoods = orderedFoods; }
+
+    public String getCustomerInitial() {
+        String name = getCustomerName();
+        if (name == null || name.trim().isEmpty()) return "U";
+        String[] words = name.trim().split("\\s+");
+        String lastWord = words[words.length - 1];
+        return lastWord.substring(0, 1).toUpperCase();
+    }
 }

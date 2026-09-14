@@ -85,7 +85,11 @@
                     <c:if test="${not empty food.restaurantName or not empty food.categoryName}">
                         <div style="display: flex; flex-wrap: wrap; gap: 15px; margin: 8px 0 16px; font-size: 0.95rem; color: #666;">
                             <c:if test="${not empty food.restaurantName}">
-                                <span><i class="fa-solid fa-store text-primary"></i> <strong>Nhà hàng:</strong> ${food.restaurantName}</span>
+                                <span>
+                                    <a href="${pageContext.request.contextPath}/restaurant-detail?id=${food.restaurantId}" style="color: #f05454; font-weight: 600; text-decoration: none;" title="Xem thông tin và toàn bộ đánh giá quán ${food.restaurantName}">
+                                        <i class="fa-solid fa-store"></i> <strong>Nhà hàng:</strong> ${food.restaurantName} <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.78rem;"></i>
+                                    </a>
+                                </span>
                             </c:if>
                             <c:if test="${not empty food.categoryName}">
                                 <span><i class="fa-solid fa-utensils text-primary"></i> <strong>Danh mục:</strong> ${food.categoryName}</span>
@@ -127,6 +131,7 @@
                             <input type="text" id="orderNote" name="note" placeholder="Ví dụ: Ít cay, không hành, để sốt riêng..." class="form-control note-input">
                         </div>
 
+<<<<<<< Updated upstream
                         <!-- Action Buttons -->
                         <div class="detail-cta-group">
                             <c:choose>
@@ -146,7 +151,99 @@
                             </a>
                         </div>
                     </form>
+=======
+                                <!-- Special Request / Notes -->
+                                <div class="order-option-group">
+                                    <label for="orderNote" class="option-label">Ghi chú cho nhà bếp (tùy chọn):</label>
+                                    <input type="text" id="orderNote" name="note" placeholder="Ví dụ: Ít cay, không hành, để sốt riêng..." class="form-control note-input">
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="detail-cta-group">
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                            <button type="button" class="btn btn-secondary btn-lg btn-add-full" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở thanh menu trên cùng nếu muốn đặt món như khách hàng!');" style="opacity: 0.7; cursor: not-allowed; background: #64748b;">
+                                                <i class="fa-solid fa-motorcycle"></i> Đang Bật Chế Độ Shipper
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <button type="submit" class="btn btn-primary btn-lg btn-add-full">
+                                                <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
+                                            </button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-lg">
+                                        <i class="fa-solid fa-arrow-left"></i> Xem Thực Đơn
+                                    </a>
+                                </div>
+                            </form>
+                        </c:otherwise>
+                    </c:choose>
+            </div>
+
+            <!-- Full Customer Reviews & Comments Section for this Food -->
+            <div class="section-food-reviews mt-5">
+                <div class="section-header-flex align-items-center mb-4">
+                    <div>
+                        <span class="sub-heading"><i class="fa-solid fa-comments"></i> Nhận Xét &amp; Đánh Giá</span>
+                        <h2 class="section-title">Khách Hàng Nói Gì Về ${food.name}?</h2>
+                        <p class="section-desc mb-0">Đánh giá thực tế từ khách hàng đã đặt món và thưởng thức</p>
+                    </div>
+                    <div class="rating-highlight-pill">
+                        <i class="fa-solid fa-star text-warning"></i>
+                        <strong>${food.rating > 0 ? food.rating : '5.0'} / 5.0</strong>
+                        <span class="text-muted">(${food.reviewCount} nhận xét)</span>
+                    </div>
+>>>>>>> Stashed changes
                 </div>
+
+                <c:choose>
+                    <c:when test="${not empty food.reviews}">
+                        <div class="full-reviews-list">
+                            <c:forEach items="${food.reviews}" var="rev">
+                                <div class="full-review-card">
+                                    <div class="full-review-header">
+                                        <div class="reviewer-profile">
+                                            <div class="reviewer-avatar-big">${rev.customerInitial}</div>
+                                            <div class="reviewer-info">
+                                                <div class="reviewer-name-row">
+                                                    <strong class="reviewer-name">${rev.customerName}</strong>
+                                                    <span class="verified-order-badge"><i class="fa-solid fa-circle-check"></i> Đã thưởng thức</span>
+                                                </div>
+                                                <div class="reviewer-date text-muted">
+                                                    <i class="fa-regular fa-clock"></i> ${rev.createdAt}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="reviewer-rating-box">
+                                            <div class="review-stars-group">
+                                                <c:forEach begin="1" end="${rev.rating}">
+                                                    <i class="fa-solid fa-star text-warning"></i>
+                                                </c:forEach>
+                                                <c:forEach begin="${rev.rating + 1}" end="5">
+                                                    <i class="fa-regular fa-star text-muted"></i>
+                                                </c:forEach>
+                                            </div>
+                                            <span class="review-score-tag">${rev.rating}.0 / 5.0</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="full-review-content">
+                                        <p class="full-review-comment">${rev.comment}</p>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="empty-state-card" style="padding: 30px; background: #fff; border: 1px solid #fee2e2; border-radius: 16px;">
+                            <div class="empty-state-icon" style="font-size: 2.5rem; color: #94a3b8;"><i class="fa-regular fa-comment-dots"></i></div>
+                            <h3 style="font-size: 1.2rem; margin-top: 10px;">Chưa có nhận xét nào cho món này</h3>
+                            <p style="color: #64748b; font-size: 0.95rem;">Hãy là người đầu tiên đặt món và chia sẻ cảm nhận hương vị cho mọi người nhé!</p>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </c:when>
         <c:otherwise>
