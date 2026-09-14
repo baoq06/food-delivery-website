@@ -10,7 +10,7 @@
     <div class="container hero-wrapper">
         <div class="hero-text">
             <div class="hero-badge-wrap">
-                <span class="hero-badge"><i class="fa-solid fa-fire-flame-curved"></i> Siêu Ứng Dụng Đặt Món Số 1 • Giao Siêu Tốc 30 Phút</span>
+                <span class="hero-badge"><i class="fa-solid fa-fire-flame-curved"></i> Siêu Ứng Dụng Đặt Món • Giao Siêu Tốc 30 Phút</span>
             </div>
             <h1 class="hero-title">
                 Thèm Món Ngon Gì, <br>
@@ -229,22 +229,24 @@
     </div>
 </section>
 
-<!-- Featured & Recommended Foods & Stores Section (3 Tabs) -->
+<!-- Featured & Recommended Foods Section (3 Tabs) -->
 <section class="section bg-light-soft" id="recommend-section">
     <div class="container">
         <div class="section-header-flex align-items-center">
             <div>
-                <span class="sub-heading"><i class="fa-solid fa-sparkles text-warning"></i> Thực Đơn Đề Xuất</span>
+                <span class="sub-heading"><i class="fa-solid fa-fire text-danger"></i> Thực Đơn Đề Xuất</span>
                 <h2 class="section-title">
                     <c:choose>
-                        <c:when test="${activeTab eq 'toprated'}">Món Ngon &amp; Quán Ăn Đánh Giá Cao Nhất</c:when>
-                        <c:otherwise>Món Ngon &amp; Quán Ăn Bán Chạy Nhất</c:otherwise>
+                        <c:when test="${activeTab eq 'toprated'}">Món Ăn Được Đánh Giá Cao Nhất</c:when>
+                        <c:when test="${activeTab eq 'nearby'}">Món Ăn Gần Vị Trí Của Bạn</c:when>
+                        <c:otherwise>Món Ăn Bán Chạy Nhất</c:otherwise>
                     </c:choose>
                 </h2>
                 <p class="section-desc mb-0">
                     <c:choose>
-                        <c:when test="${activeTab eq 'toprated'}">Tuyển tập các món ăn và quán ăn được thực khách chấm điểm cao nhất dựa trên nhận xét thực tế</c:when>
-                        <c:otherwise>Khám phá các món ăn và quán ăn có lượt đặt nhiều nhất, nóng hổi giao tận nơi trong 30 phút</c:otherwise>
+                        <c:when test="${activeTab eq 'toprated'}">Tuyển tập các món ăn chuẩn vị được thực khách chấm điểm cao nhất trên hệ thống</c:when>
+                        <c:when test="${activeTab eq 'nearby'}">Khám phá các món ngon gần bạn nhất, thời gian giao hàng siêu tốc chỉ từ 15-25 phút</c:when>
+                        <c:otherwise>Khám phá các món ăn có lượt đặt nhiều nhất, nóng hổi giao tận nơi trong 30 phút</c:otherwise>
                     </c:choose>
                 </p>
             </div>
@@ -252,7 +254,7 @@
         </div>
 
         <!-- 3 Sub-Tabs UI/UX Pro Max -->
-        <div class="recommend-tabs-wrap mt-3 mb-4">
+        <div class="recommend-tabs-wrap">
             <a href="${pageContext.request.contextPath}/home?tab=nearby#recommend-section" 
                class="recommend-tab-pill ${activeTab eq 'nearby' ? 'active' : ''}" 
                title="Món ăn &amp; Quán ăn gần vị trí của bạn">
@@ -263,7 +265,7 @@
 
             <a href="${pageContext.request.contextPath}/home?tab=bestseller#recommend-section" 
                class="recommend-tab-pill ${activeTab eq 'bestseller' ? 'active' : ''}" 
-               title="Món ăn &amp; Quán ăn bán chạy nhất theo đơn hàng thực tế">
+               title="Món ăn bán chạy nhất theo đơn hàng thực tế">
                 <i class="fa-solid fa-fire-flame-curved"></i>
                 <span>Bán chạy</span>
                 <c:if test="${activeTab eq 'bestseller'}">
@@ -273,27 +275,16 @@
 
             <a href="${pageContext.request.contextPath}/home?tab=toprated#recommend-section" 
                class="recommend-tab-pill ${activeTab eq 'toprated' ? 'active' : ''}" 
-               title="Món ăn &amp; Quán ăn được đánh giá cao nhất từ bình luận người dùng">
+               title="Món ăn được đánh giá cao nhất từ khách hàng">
                 <i class="fa-solid fa-star"></i>
-                <span>Đánh giá</span>
+                <span>Đánh giá cao</span>
                 <c:if test="${activeTab eq 'toprated'}">
                     <span class="tab-indicator-dot"></span>
                 </c:if>
             </a>
         </div>
 
-        <!-- Section Title: Foods -->
-        <div class="tab-sub-header mb-3">
-            <h3 class="tab-sub-title">
-                <i class="fa-solid fa-utensils text-primary"></i> 
-                <c:choose>
-                    <c:when test="${activeTab eq 'toprated'}">Món Ăn Được Đánh Giá Cao Nhất</c:when>
-                    <c:otherwise>Món Ăn Bán Chạy Nhất</c:otherwise>
-                </c:choose>
-            </h3>
-        </div>
-
-        <!-- Food Grid with Customer Reviews below each card -->
+        <!-- Food Grid -->
         <div class="food-grid">
             <c:forEach items="${tabFoods}" var="food">
                 <div class="food-card">
@@ -355,66 +346,34 @@
                                 </c:otherwise>
                             </c:choose>
                         </div>
-
-                        <!-- DANH SÁCH ĐÁNH GIÁ & COMMENT CỦA NGƯỜI DÙNG BÊN DƯỚI MÓN ĂN -->
-                        <div class="food-card-reviews-block">
-                            <div class="reviews-header-mini">
-                                <span><i class="fa-solid fa-comments text-primary"></i> Đánh giá từ khách (${food.reviewCount})</span>
-                                <c:if test="${food.reviewCount > 0}">
-                                    <span class="rating-badge-mini"><i class="fa-solid fa-star text-warning"></i> ${food.rating}/5</span>
-                                </c:if>
-                            </div>
-                            <c:choose>
-                                <c:when test="${not empty food.reviews}">
-                                    <div class="reviews-list-mini">
-                                        <c:forEach items="${food.reviews}" var="rev" begin="0" end="1">
-                                            <div class="review-mini-item">
-                                                <div class="review-mini-top">
-                                                    <div class="review-mini-author">
-                                                        <span class="author-avatar-circle">${rev.customerInitial}</span>
-                                                        <span class="author-name">${rev.customerName}</span>
-                                                    </div>
-                                                    <div class="review-mini-stars">
-                                                        <c:forEach begin="1" end="${rev.rating}">
-                                                            <i class="fa-solid fa-star text-warning"></i>
-                                                        </c:forEach>
-                                                    </div>
-                                                </div>
-                                                <p class="review-mini-comment">"${rev.comment}"</p>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                    <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="view-more-reviews-link">
-                                        <span>Xem tất cả ${food.reviewCount} nhận xét</span>
-                                        <i class="fa-solid fa-chevron-right"></i>
-                                    </a>
-                                </c:when>
-                                <c:otherwise>
-                                    <div class="review-empty-mini">
-                                        <i class="fa-regular fa-comment-dots"></i>
-                                        <span>Món mới, chưa có đánh giá nào</span>
-                                    </div>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
                     </div>
                 </div>
             </c:forEach>
         </div>
+    </div>
+</section>
 
-        <!-- Section 2: Restaurants / Stores with Overall Rating & Comments -->
-        <c:if test="${not empty tabRestaurants}">
-            <div class="tab-sub-header mt-5 mb-3">
-                <h3 class="tab-sub-title">
-                    <i class="fa-solid fa-store text-primary"></i> 
-                    <c:choose>
-                        <c:when test="${activeTab eq 'toprated'}">Quán Ăn Được Đánh Giá Cao Nhất</c:when>
-                        <c:otherwise>Quán Ăn Nổi Bật Bán Chạy Nhất</c:otherwise>
-                    </c:choose>
-                </h3>
+<!-- Distinct Section: Featured Restaurants / Stores -->
+<c:if test="${not empty tabRestaurants}">
+    <section class="section section-featured-restaurants bg-white" id="restaurants-section">
+        <div class="container">
+            <div class="section-header-flex align-items-center">
+                <div>
+                    <span class="sub-heading"><i class="fa-solid fa-shop text-primary"></i> Quán Ăn Đối Tác</span>
+                    <h2 class="section-title">
+                        <c:choose>
+                            <c:when test="${activeTab eq 'toprated'}">Quán Ăn Được Đánh Giá Cao Nhất</c:when>
+                            <c:otherwise>Quán Ăn Nổi Bật &amp; Được Yêu Thích</c:otherwise>
+                        </c:choose>
+                    </h2>
+                    <p class="section-desc mb-0">
+                        Khám phá các quán ăn đối tác uy tín, chất lượng với thực đơn đa dạng và điểm đánh giá thực tế xuất sắc
+                    </p>
+                </div>
+                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline">Xem tất cả quán <i class="fa-solid fa-arrow-right"></i></a>
             </div>
 
-            <div class="restaurant-grid">
+            <div class="restaurant-grid mt-4">
                 <c:forEach items="${tabRestaurants}" var="rest">
                     <div class="restaurant-card">
                         <div class="restaurant-card-banner">
@@ -436,7 +395,7 @@
                                 </div>
                                 <span class="rating-overall-text">
                                     <c:choose>
-                                        <c:when test="${rest.reviewCount > 0}">${rest.reviewCount} lượt đánh giá thực tế</c:when>
+                                        <c:when test="${rest.reviewCount > 0}">${rest.reviewCount} đánh giá</c:when>
                                         <c:otherwise>Chưa có đánh giá</c:otherwise>
                                     </c:choose>
                                 </span>
@@ -453,44 +412,6 @@
 
                             <p class="restaurant-card-desc">${rest.description}</p>
 
-                            <!-- DANH SÁCH ĐÁNH GIÁ & COMMENT CỦA NGƯỜI DÙNG BÊN DƯỚI QUÁN ĂN -->
-                            <div class="restaurant-card-reviews-block">
-                                <div class="reviews-header-mini">
-                                    <span><i class="fa-solid fa-quote-left text-primary"></i> Nhận xét từ khách hàng về quán</span>
-                                </div>
-                                <c:choose>
-                                    <c:when test="${not empty rest.reviews}">
-                                        <div class="reviews-list-mini">
-                                            <c:forEach items="${rest.reviews}" var="rRev" begin="0" end="1">
-                                                <div class="review-mini-item">
-                                                    <div class="review-mini-top">
-                                                        <div class="review-mini-author">
-                                                            <span class="author-avatar-circle">${rRev.customerInitial}</span>
-                                                            <span class="author-name">${rRev.customerName}</span>
-                                                        </div>
-                                                        <div class="review-mini-stars">
-                                                            <c:forEach begin="1" end="${rRev.rating}">
-                                                                <i class="fa-solid fa-star text-warning"></i>
-                                                            </c:forEach>
-                                                        </div>
-                                                    </div>
-                                                    <p class="review-mini-comment">"${rRev.comment}"</p>
-                                                    <c:if test="${not empty rRev.orderedFoods}">
-                                                        <span class="review-ordered-pill"><i class="fa-solid fa-bag-shopping"></i> ${rRev.orderedFoods}</span>
-                                                    </c:if>
-                                                </div>
-                                            </c:forEach>
-                                        </div>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="review-empty-mini">
-                                            <i class="fa-regular fa-comment-dots"></i>
-                                            <span>Quán mới, chưa có đánh giá nào</span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
-
                             <div class="restaurant-card-action mt-3">
                                 <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" class="btn btn-primary w-100">
                                     <span>Xem Quán &amp; Thực Đơn</span>
@@ -501,13 +422,13 @@
                     </div>
                 </c:forEach>
             </div>
-        </c:if>
-    </div>
-</section>
+        </div>
+    </section>
+</c:if>
 
 <!-- Recently Viewed Section -->
 <c:if test="${not empty recentFoods}">
-    <section class="section">
+    <section class="section bg-light-soft">
         <div class="container">
             <div class="section-header-flex">
                 <div>
@@ -547,28 +468,6 @@
                                 </div>
                                 <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="btn btn-outline btn-sm">Xem lại</a>
                             </div>
-
-                            <!-- Nhận xét gần đây của món -->
-                            <c:if test="${not empty rFood.reviews}">
-                                <div class="food-card-reviews-block mt-2">
-                                    <c:forEach items="${rFood.reviews}" var="rfRev" begin="0" end="0">
-                                        <div class="review-mini-item">
-                                            <div class="review-mini-top">
-                                                <div class="review-mini-author">
-                                                    <span class="author-avatar-circle">${rfRev.customerInitial}</span>
-                                                    <span class="author-name">${rfRev.customerName}</span>
-                                                </div>
-                                                <div class="review-mini-stars">
-                                                    <c:forEach begin="1" end="${rfRev.rating}">
-                                                        <i class="fa-solid fa-star text-warning"></i>
-                                                    </c:forEach>
-                                                </div>
-                                            </div>
-                                            <p class="review-mini-comment">"${rfRev.comment}"</p>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-                            </c:if>
                         </div>
                     </div>
                 </c:forEach>
@@ -626,10 +525,10 @@
             </div>
             <div class="feature-card">
                 <div class="feature-icon">
-                    <i class="fa-solid fa-kitchen-set"></i>
+                    <i class="fa-solid fa-store"></i>
                 </div>
-                <h3>Đầu Bếp Tuyển Chọn</h3>
-                <p>Liên kết cùng những nhà hàng và quán ăn được kiểm duyệt nghiêm ngặt về quy trình nấu nướng chuẩn vị.</p>
+                <h3>Nhà Hàng Tuyển Chọn</h3>
+                <p>Liên kết các quán ăn, nhà hàng uy tín hàng đầu, đảm bảo chuẩn an toàn thực phẩm và thực đơn phong phú chất lượng.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon">

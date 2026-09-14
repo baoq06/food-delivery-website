@@ -216,48 +216,6 @@
                                     </c:choose>
                                 </div>
                             </div>
-
-                            <!-- DANH SÁCH ĐÁNH GIÁ & COMMENT CỦA NGƯỜI DÙNG BÊN DƯỚI MÓN ĂN -->
-                            <div class="food-card-reviews-block">
-                                <div class="reviews-header-mini">
-                                    <span><i class="fa-solid fa-comments text-primary"></i> Đánh giá từ khách (${food.reviewCount})</span>
-                                    <c:if test="${food.reviewCount > 0}">
-                                        <span class="rating-badge-mini"><i class="fa-solid fa-star text-warning"></i> ${food.rating}/5</span>
-                                    </c:if>
-                                </div>
-                                <c:choose>
-                                    <c:when test="${not empty food.reviews}">
-                                        <div class="reviews-list-mini">
-                                            <c:forEach items="${food.reviews}" var="rev" begin="0" end="1">
-                                                <div class="review-mini-item">
-                                                    <div class="review-mini-top">
-                                                        <div class="review-mini-author">
-                                                            <span class="author-avatar-circle">${rev.customerInitial}</span>
-                                                            <span class="author-name">${rev.customerName}</span>
-                                                        </div>
-                                                        <div class="review-mini-stars">
-                                                            <c:forEach begin="1" end="${rev.rating}">
-                                                                <i class="fa-solid fa-star text-warning"></i>
-                                                            </c:forEach>
-                                                        </div>
-                                                    </div>
-                                                    <p class="review-mini-comment">"${rev.comment}"</p>
-                                                </div>
-                                            </c:forEach>
-                                        </div>
-                                        <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="view-more-reviews-link">
-                                            <span>Xem tất cả ${food.reviewCount} nhận xét</span>
-                                            <i class="fa-solid fa-chevron-right"></i>
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <div class="review-empty-mini">
-                                            <i class="fa-regular fa-comment-dots"></i>
-                                            <span>Món mới, chưa có đánh giá nào</span>
-                                        </div>
-                                    </c:otherwise>
-                                </c:choose>
-                            </div>
                         </div>
                     </div>
                 </c:forEach>

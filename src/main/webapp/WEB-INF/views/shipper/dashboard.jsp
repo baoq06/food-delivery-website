@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="${activeTab eq 'history' ? 'Lịch Sử Giao Hàng - Đối Tác Tài Xế' : 'Bảng Điều Khiển Tài Xế - Utee Express'}" />
+    <jsp:param name="title" value="${activeTab eq 'history' ? 'Lịch Sử Giao Hàng - Đối Tác Tài Xế' : (activeTab eq 'income' ? 'Thu Nhập Tài Xế - Utee Express' : (activeTab eq 'violations' ? 'Điểm Vi Phạm & Tác Phong - Utee Express' : (activeTab eq 'settings' ? 'Cài Đặt Tài Xế - Utee Express' : (activeTab eq 'help' ? 'Trung Tâm Trợ Giúp Tài Xế - Utee Express' : 'Bảng Điều Khiển Tài Xế - Utee Express'))))}" />
 </jsp:include>
 
 <!-- Page Banner -->
@@ -14,11 +14,35 @@
                 <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
                 <a href="${pageContext.request.contextPath}/shipper/dashboard" style="color: #cbd5e1; text-decoration: none;">Kênh tài xế</a>
                 <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
-                <span style="color: #f05454; font-weight: 600;">${activeTab eq 'history' ? 'Lịch sử chuyến giao' : 'Bảng điều khiển & Nhận đơn'}</span>
+                <span style="color: #f05454; font-weight: 600;">
+                    <c:choose>
+                        <c:when test="${activeTab eq 'history'}">Lịch sử chuyến giao</c:when>
+                        <c:when test="${activeTab eq 'income'}">Thu nhập tài xế</c:when>
+                        <c:when test="${activeTab eq 'violations'}">Điểm vi phạm</c:when>
+                        <c:when test="${activeTab eq 'settings'}">Cài đặt</c:when>
+                        <c:when test="${activeTab eq 'help'}">Trung tâm trợ giúp</c:when>
+                        <c:otherwise>Bảng điều khiển &amp; Nhận đơn</c:otherwise>
+                    </c:choose>
+                </span>
             </div>
             <h1 class="page-title" style="margin: 0; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -0.5px;">
-                <i class="fa-solid ${activeTab eq 'history' ? 'fa-clock-rotate-left' : 'fa-motorcycle'}" style="color: #f05454; margin-right: 10px;"></i>
-                ${activeTab eq 'history' ? 'Lịch Sử Chuyến Xe Giao Hàng' : 'Trung Tâm Điều Phối & Nhận Đơn'}
+                <i class="fa-solid 
+                    <c:choose>
+                        <c:when test="${activeTab eq 'history'}">fa-clock-rotate-left</c:when>
+                        <c:when test="${activeTab eq 'income'}">fa-wallet</c:when>
+                        <c:when test="${activeTab eq 'violations'}">fa-triangle-exclamation</c:when>
+                        <c:when test="${activeTab eq 'settings'}">fa-gear</c:when>
+                        <c:when test="${activeTab eq 'help'}">fa-circle-question</c:when>
+                        <c:otherwise>fa-motorcycle</c:otherwise>
+                    </c:choose>" style="color: #f05454; margin-right: 10px;"></i>
+                <c:choose>
+                    <c:when test="${activeTab eq 'history'}">Lịch Sử Chuyến Xe Giao Hàng</c:when>
+                    <c:when test="${activeTab eq 'income'}">Ví Thu Nhập &amp; Thù Lao Giao Hàng</c:when>
+                    <c:when test="${activeTab eq 'violations'}">Điểm Vi Phạm &amp; Hạnh Kiểm Tác Phong</c:when>
+                    <c:when test="${activeTab eq 'settings'}">Cài Đặt Ứng Dụng &amp; Hồ Sơ Tài Xế</c:when>
+                    <c:when test="${activeTab eq 'help'}">Trung Tâm Trợ Giúp &amp; Hỗ Trợ Đối Tác</c:when>
+                    <c:otherwise>Trung Tâm Điều Phối &amp; Nhận Đơn</c:otherwise>
+                </c:choose>
             </h1>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -91,13 +115,13 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 14px 18px;
+        padding: 13px 18px;
         border-radius: 12px;
         color: #475569;
         font-weight: 600;
         text-decoration: none;
         transition: all 0.2s ease;
-        margin-bottom: 6px;
+        margin-bottom: 5px;
     }
     .shipper-nav-item:hover {
         background: #f8fafc;
@@ -275,6 +299,43 @@
         border-color: #f05454;
         box-shadow: 0 4px 12px rgba(240, 84, 84, 0.25);
     }
+
+    /* Common Card Headers & Utilities */
+    .sec-card-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .sec-card-title { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .sec-card-body { padding: 24px; }
+    
+    /* Stat Grid */
+    .income-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 24px; }
+    .income-stat-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 20px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .income-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    }
+    
+    /* Form controls in settings */
+    .form-switch-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .form-switch-row:last-child { border-bottom: none; }
 </style>
 
 <div class="container">
@@ -286,7 +347,7 @@
                 <div>
                     <h5 style="margin: 0; font-weight: 700; color: #92400e;">Chế độ Shipper đang BẬT</h5>
                     <p style="margin: 3px 0 0 0; font-size: 0.9rem; color: #b45309;">
-                        Giỏ hàng và tính năng đặt món ăn tạm thời khóa để bạn tập trung làm việc. Nếu muốn đặt đồ ăn, chỉ cần nhấn nút <strong>"TẮT CHẾ ĐỘ NHẬN ĐƠN"</strong> bên dưới!
+                        Giỏ hàng và tính năng đặt món ăn tạm thời khóa để bạn tập trung làm việc. Nếu muốn tạm dừng nhận đơn, chỉ cần nhấn nút <strong>"TẮT NHẬN ĐƠN"</strong> bên dưới!
                     </p>
                 </div>
             </div>
@@ -320,7 +381,7 @@
 
     <div class="shipper-layout">
         <!-- ================================================================= -->
-        <!-- LEFT SIDEBAR: DRIVER PROFILE & WALLET STATS -->
+        <!-- LEFT SIDEBAR: DRIVER PROFILE & FUNCTIONAL NAVIGATION -->
         <!-- ================================================================= -->
         <div class="shipper-sidebar">
             <div class="shipper-card">
@@ -341,41 +402,50 @@
                         <span><i class="fa-solid fa-id-card text-muted"></i> ID: #${sessionScope.currentUser.id}</span>
                     </div>
                     <div style="background: #fff; border: 1px solid #fee2e2; border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; color: #475569; display: flex; justify-content: space-around; margin-bottom: 6px;">
-                        <span><i class="fa-solid fa-motorcycle text-primary"></i> ${not empty driver.licensePlate ? driver.licensePlate : 'Xe máy'}</span>
+                        <span><i class="fa-solid fa-motorcycle text-primary"></i> ${not empty driver.licensePlate ? driver.licensePlate : '59-X3 999.99'}</span>
                         <span>|</span>
                         <span><i class="fa-solid fa-shield-halved text-success"></i> Đã xác thực</span>
                     </div>
                     <div style="background: #fff8e1; border: 1px solid #ffe082; border-radius: 10px; padding: 8px 12px; font-size: 0.85rem; color: #b45309; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fa-solid fa-star text-warning"></i>
-                        <span>Đánh giá từ khách: <strong>${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0}</strong>/5.0 <small class="text-muted">(${driverRatingStats != null ? driverRatingStats['reviewCount'] : 0} lượt)</small></span>
+                        <span>Đánh giá: <strong>${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0}</strong>/5.0 <small class="text-muted">(${driverRatingStats != null ? driverRatingStats['reviewCount'] : 0} lượt)</small></span>
                     </div>
                 </div>
 
-                <!-- Navigation Tabs -->
+                <!-- Navigation Tabs (Danh Sách Chức Năng) -->
                 <div class="shipper-nav">
-                    <a href="${pageContext.request.contextPath}/shipper/dashboard" class="shipper-nav-item ${activeTab ne 'history' ? 'active' : ''}">
-                        <span><i class="fa-solid fa-gauge-high me-2" style="width: 22px;"></i> Nhận đơn & Điều phối</span>
+                    <a href="${pageContext.request.contextPath}/shipper/dashboard" class="shipper-nav-item ${activeTab eq 'dispatch' or empty activeTab ? 'active' : ''}">
+                        <span><i class="fa-solid fa-gauge-high me-2 text-primary" style="width: 22px;"></i> Nhận đơn &amp; Điều phối</span>
                         <c:if test="${not empty activeOrder}">
                             <span class="shipper-nav-badge">1 đơn</span>
                         </c:if>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=income" class="shipper-nav-item ${activeTab eq 'income' ? 'active' : ''}">
+                        <span><i class="fa-solid fa-wallet me-2 text-success" style="width: 22px;"></i> Thu nhập</span>
+                        <c:if test="${not empty wallet and wallet.todayEarnings > 0}">
+                            <span class="shipper-nav-badge" style="background: #dcfce7; color: #15803d;"><fmt:formatNumber value="${wallet.todayEarnings}" pattern="#,###" />đ</span>
+                        </c:if>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/shipper/history" class="shipper-nav-item ${activeTab eq 'history' ? 'active' : ''}">
+                        <span><i class="fa-solid fa-clock-rotate-left me-2 text-info" style="width: 22px;"></i> Lịch sử chuyến giao</span>
+                        <c:if test="${totalDeliveryCount > 0}">
+                            <span class="shipper-nav-badge" style="background: #e2e8f0; color: #334155;">${totalDeliveryCount}</span>
+                        </c:if>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=violations" class="shipper-nav-item ${activeTab eq 'violations' ? 'active' : ''}">
+                        <span><i class="fa-solid fa-triangle-exclamation me-2 text-warning" style="width: 22px;"></i> Điểm vi phạm</span>
+                        <span class="shipper-nav-badge" style="background: #ecfdf5; color: #059669;">100đ</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/notifications" class="shipper-nav-item">
                         <span><i class="fa-solid fa-bell me-2 text-warning" style="width: 22px;"></i> Thông báo của tôi</span>
                         <span class="shipper-nav-badge" id="shipperNavNotifBadge" style="display:none; background: #fee2e2; color: #dc2626;">0</span>
                     </a>
-                    <a href="${pageContext.request.contextPath}/shipper/history" class="shipper-nav-item ${activeTab eq 'history' ? 'active' : ''}">
-                        <span><i class="fa-solid fa-clock-rotate-left me-2" style="width: 22px;"></i> Lịch sử chuyến giao</span>
-                        <c:if test="${totalDeliveryCount > 0}">
-                            <span class="shipper-nav-badge" style="background: #e2e8f0; color: #334155;">${totalDeliveryCount}</span>
-                        </c:if>
+                    <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=settings" class="shipper-nav-item ${activeTab eq 'settings' ? 'active' : ''}">
+                        <span><i class="fa-solid fa-gear me-2 text-secondary" style="width: 22px;"></i> Cài đặt</span>
                     </a>
-                    <c:if test="${driver.status eq 'OFFLINE'}">
-                        <!-- Quick switch to food menu when offline -->
-                        <a href="${pageContext.request.contextPath}/foods" class="shipper-nav-item" style="color: #10ac84; background: #f0fdf4;">
-                            <span><i class="fa-solid fa-utensils me-2" style="width: 22px;"></i> Xem thực đơn (Làm khách)</span>
-                            <span class="shipper-nav-badge" style="background: #dcfce7; color: #16a34a;">Đặt món</span>
-                        </a>
-                    </c:if>
+                    <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=help" class="shipper-nav-item ${activeTab eq 'help' ? 'active' : ''}">
+                        <span><i class="fa-solid fa-circle-question me-2 text-primary" style="width: 22px;"></i> Trung tâm trợ giúp</span>
+                    </a>
                 </div>
 
                 <script>
@@ -398,11 +468,11 @@
                     });
                 </script>
 
-                <!-- Driver Wallet Box -->
+                <!-- Driver Wallet Box Quick Stats -->
                 <c:if test="${not empty wallet}">
                     <div class="wallet-stat-card">
                         <div class="wallet-title">
-                            <i class="fa-solid fa-wallet text-success"></i> Ví Thu Nhập Tài Xế
+                            <i class="fa-solid fa-wallet text-success"></i> Ví Thu Nhập Nhanh
                         </div>
 
                         <!-- Today Stats -->
@@ -430,7 +500,7 @@
         </div>
 
         <!-- ================================================================= -->
-        <!-- RIGHT CONTENT: STATUS SWITCHER + (DISPATCH / HISTORY) -->
+        <!-- RIGHT CONTENT AREA -->
         <!-- ================================================================= -->
         <div class="shipper-content">
             <!-- 1. DRIVER MODE TOGGLE BANNER -->
@@ -457,7 +527,7 @@
                             <c:choose>
                                 <c:when test="${driver.status eq 'AVAILABLE'}">ĐANG BẬT NHẬN ĐƠN (TRỰC TUYẾN)</c:when>
                                 <c:when test="${driver.status eq 'BUSY'}">ĐANG VẬN CHUYỂN ĐƠN HÀNG</c:when>
-                                <c:otherwise>ĐANG TẮT NHẬN ĐƠN (CHẾ ĐỘ KHÁCH HÀNG)</c:otherwise>
+                                <c:otherwise>ĐANG TẮT NHẬN ĐƠN (NGOẠI TUYẾN)</c:otherwise>
                             </c:choose>
                         </h3>
                         <p style="margin: 0; font-size: 0.9rem; color: #475569; max-width: 580px;">
@@ -469,7 +539,7 @@
                                     Bạn đang giao đơn hàng. Vui lòng hoàn thành chuyến đi và cập nhật lộ trình trước khi đổi trạng thái.
                                 </c:when>
                                 <c:otherwise>
-                                    Bạn đang ngoại tuyến nhận đơn. Lúc này bạn có thể duyệt menu, thêm vào giỏ hàng và đặt đồ ăn như một khách hàng thông thường!
+                                    Bạn đang ngoại tuyến nhận đơn. Bật nhận đơn để bắt đầu nhận các cuốc xe giao hàng mới nhất quanh khu vực!
                                 </c:otherwise>
                             </c:choose>
                         </p>
@@ -488,7 +558,7 @@
                             <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;">
                                 <input type="hidden" name="action" value="toggleStatus">
                                 <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 8px;">
-                                    <i class="fa-solid fa-power-off"></i> TẮT NHẬN ĐƠN (Làm khách)
+                                    <i class="fa-solid fa-power-off"></i> TẮT NHẬN ĐƠN
                                 </button>
                             </form>
                         </c:when>
@@ -505,9 +575,9 @@
             </div>
 
             <!-- ============================================================= -->
-            <!-- CONDITIONAL TAB 1: DISPATCH & ACTIVE ORDER (activeTab ne 'history') -->
+            <!-- TAB 1: NHẬN ĐƠN & ĐIỀU PHỐI (dispatch) -->
             <!-- ============================================================= -->
-            <c:if test="${activeTab ne 'history'}">
+            <c:if test="${activeTab eq 'dispatch' or empty activeTab}">
                 <!-- ĐƠN HÀNG QUÁN VỪA CHỈ ĐỊNH (CẦN SHIPPER XÁC NHẬN NHẬN CUỐC) -->
                 <c:if test="${not empty pendingAssignedOrder}">
                     <div class="shipper-card mb-4" style="border: 2px solid #f59e0b; background: #fffdf5; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);">
@@ -618,133 +688,79 @@
                                     <!-- Lifecycle Action Buttons -->
                                     <div style="border-top: 1px dashed #e2e8f0; padding-top: 20px;">
                                         <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 12px;">
-                                            <i class="fa-solid fa-list-check me-1"></i> Cập nhật tiến độ giao hàng:
+                                            Cập nhật tiến trình chuyến đi:
                                         </div>
-                                        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                            <!-- Button 1: Xác nhận Đã giao tận tay -->
                                             <c:choose>
                                                 <c:when test="${activeOrder.shipperDelivered}">
-                                                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0 w-100" style="border-radius: 12px; padding: 12px 18px;">
-                                                        <i class="fa-solid fa-circle-check text-success fs-4"></i>
-                                                        <div>
-                                                            <div class="fw-bold">Bạn đã xác nhận giao hàng thành công!</div>
-                                                            <div class="small text-muted">Đang chờ khách hàng xác nhận nhận món và chủ quán duyệt hoàn tất đơn. Tiền ship sẽ cập nhật vào ví khi hoàn tất.</div>
-                                                        </div>
+                                                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" style="border-radius: 50px;">
+                                                        <i class="fa-solid fa-circle-check text-success"></i>
+                                                        <span class="fw-bold">Bạn đã bấm xác nhận giao xong!</span>
                                                     </div>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <!-- Button 1: Đã lấy món -->
-                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
-                                                        <input type="hidden" name="action" value="updateOrder">
-                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                        <input type="hidden" name="status" value="SHIPPING">
-                                                        <button type="submit" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; padding: 10px 20px;" onclick="alert('Đã cập nhật trạng thái: Đã lấy món từ quán và đang trên đường giao!');">
-                                                            <i class="fa-solid fa-box text-primary me-1"></i> Đã lấy món
-                                                        </button>
-                                                    </form>
-
-                                                    <!-- Button 2: Giao thành công & Xác nhận -->
-                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1;">
                                                         <input type="hidden" name="action" value="confirmDelivered">
                                                         <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                         <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận bạn đã giao món ăn tận nơi cho khách?');">
-                                                            <i class="fa-solid fa-circle-check me-1"></i> Tôi Đã Giao Hàng Thành Công
-                                                        </button>
-                                                    </form>
-
-                                                    <!-- Button 3: Khách boom hàng / Hủy -->
-                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
-                                                        <input type="hidden" name="action" value="updateOrder">
-                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                        <input type="hidden" name="status" value="CANCELLED">
-                                                        <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 10px 20px; background: #fff; color: #dc2626; border-color: #fca5a5;" onclick="return confirm('Bạn xác nhận báo cáo đơn hàng này bị bom/hủy?');">
-                                                            <i class="fa-solid fa-ban me-1"></i> Báo Hủy Đơn
+                                                            <i class="fa-solid fa-check-circle me-1"></i> Báo Đã Giao Cho Khách
                                                         </button>
                                                     </form>
                                                 </c:otherwise>
                                             </c:choose>
+
+                                            <!-- Button 2: Khách boom hàng / Hủy -->
+                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn này?');">
+                                                <input type="hidden" name="action" value="updateOrder">
+                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                <input type="hidden" name="status" value="CANCELLED">
+                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
+                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố / Hủy Cuốc
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Right Column: Leaflet GPS Map Navigation -->
-                                <div style="flex: 1; min-width: 300px; padding: 24px; border-left: 1px solid #f1f5f9; background: #fafbfc;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                        <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b;">
-                                            <i class="fa-solid fa-location-crosshairs text-danger me-1"></i> Định vị lộ trình (GPS)
+                                <!-- Right Column: Simulated GPS Map and Progress -->
+                                <div style="flex: 1; min-width: 280px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                                    <div>
+                                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
+                                            <i class="fa-solid fa-location-crosshairs text-primary me-2"></i> Lộ Trình Vận Chuyển
                                         </h4>
-                                        <span id="gpsStatus" style="font-size: 0.75rem; color: #10ac84; font-weight: 600;"><i class="fa-solid fa-circle-notch fa-spin"></i> Đang tải GPS...</span>
-                                    </div>
+                                        <div style="position: relative; padding-left: 28px; margin-bottom: 24px;">
+                                            <!-- Step 1: Merchant -->
+                                            <div style="position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #10ac84;"></div>
+                                            <div style="border-left: 2px solid #cbd5e1; position: absolute; left: 6px; top: 18px; bottom: 10px;"></div>
+                                            <div style="margin-bottom: 20px;">
+                                                <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">Lấy món tại Quán ăn</div>
+                                                <div style="font-size: 0.85rem; color: #64748b;">Đã hoàn thành lấy món</div>
+                                            </div>
 
-                                    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-                                    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-                                    <div id="mapTracker" style="width: 100%; height: 260px; border-radius: 12px; background: #e2e8f0; border: 1px solid #cbd5e1; position: relative;">
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #64748b; font-size: 0.88rem;">
-                                            <i class="fa-solid fa-map-location-dot" style="font-size: 2rem; margin-bottom: 8px;"></i><br>
-                                            Đang đồng bộ bản đồ vệ tinh...
+                                            <!-- Step 2: On the road -->
+                                            <div style="position: absolute; left: 0; top: 58px; width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; animation: radarWave 1.5s infinite;"></div>
+                                            <div>
+                                                <div style="font-weight: 700; color: #3b82f6; font-size: 0.95rem;">Đang trên đường đến nhà khách</div>
+                                                <div style="font-size: 0.85rem; color: #64748b;">${activeOrder.address}</div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <script>
-                                        setTimeout(function() {
-                                            try {
-                                                var map = L.map('mapTracker').setView([10.762622, 106.660172], 13);
-                                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                                    attribution: '© Utee Express Map'
-                                                }).addTo(map);
-
-                                                var driverMarker = null;
-                                                if (navigator.geolocation) {
-                                                    navigator.geolocation.watchPosition(function(position) {
-                                                        var lat = position.coords.latitude;
-                                                        var lng = position.coords.longitude;
-                                                        var gpsEl = document.getElementById('gpsStatus');
-                                                        if (gpsEl) gpsEl.innerHTML = '<i class="fa-solid fa-signal text-success"></i> Tín hiệu GPS tốt';
-
-                                                        if (!driverMarker) {
-                                                            var shipperIcon = L.icon({
-                                                                iconUrl: 'https://cdn-icons-png.flaticon.com/512/7592/7592236.png',
-                                                                iconSize: [38, 38],
-                                                                iconAnchor: [19, 19]
-                                                            });
-                                                            driverMarker = L.marker([lat, lng], {icon: shipperIcon}).addTo(map);
-                                                            driverMarker.bindPopup("<b>Vị trí của bạn (Shipper)</b><br>Đang di chuyển...").openPopup();
-                                                            map.setView([lat, lng], 15);
-                                                        } else {
-                                                            driverMarker.setLatLng([lat, lng]);
-                                                        }
-                                                    }, function(err) {
-                                                        var gpsEl = document.getElementById('gpsStatus');
-                                                        if (gpsEl) gpsEl.innerHTML = '<span class="text-muted">Chưa bật GPS</span>';
-                                                    }, { enableHighAccuracy: true });
-                                                }
-                                            } catch(e) {
-                                                console.error("Lỗi khởi tạo Leaflet map:", e);
-                                            }
-                                        }, 400);
-                                    </script>
-                                    <p style="font-size: 0.8rem; color: #94a3b8; margin: 10px 0 0 0; text-align: center;">
-                                        *Hệ thống tự động đồng bộ vị trí của bạn với khách hàng qua GPS
-                                    </p>
+                                    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                                        <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;">Thù lao nhận được cho chuyến này:</div>
+                                        <div style="font-size: 1.3rem; font-weight: 800; color: #10ac84;">+15.000 đ</div>
+                                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">*Tự động cộng vào ví sau khi đơn hoàn tất</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </c:when>
 
                     <c:when test="${driver.status eq 'AVAILABLE'}">
-                        <!-- TÌM ĐƠN HÀNG MỚI (RADAR QUÉT ĐƠN) -->
-                        <div class="shipper-card">
-                            <div style="padding: 24px 24px 0 24px;">
-                                <h3 style="margin: 0 0 6px 0; font-size: 1.25rem; font-weight: 800; color: #1e293b;">
-                                    <i class="fa-solid fa-satellite-dish text-success me-2"></i> Trạm Điều Phối Tự Động
-                                </h3>
-                                <p style="margin: 0 0 20px 0; color: #64748b; font-size: 0.92rem;">
-                                    Hệ thống phát tín hiệu radar liên tục 4 giây/lần để ghép đơn quanh vị trí của bạn.
-                                </p>
-                            </div>
-
-                            <div style="padding: 0 24px 24px 24px;">
-                                <!-- Radar Scanning Animation Box -->
+                        <!-- ĐÀI RADAR QUÉT ĐƠN TRỰC TUYẾN TỰ ĐỘNG -->
+                        <div class="shipper-card" style="padding: 30px 24px;">
+                            <div style="max-width: 680px; margin: 0 auto;">
                                 <div id="radarScan" class="radar-box">
                                     <div class="radar-pulse-center">
                                         <i class="fa-solid fa-motorcycle"></i>
@@ -755,7 +771,7 @@
                                     </p>
                                 </div>
 
-                                <!-- New Order Popup Box (Hidden default, appears when dispatch found) -->
+                                <!-- New Order Popup Box -->
                                 <div id="orderPopup" class="new-order-popup" style="display: none;">
                                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px dashed #fcd34d; padding-bottom: 12px; margin-bottom: 16px;">
                                         <h3 style="margin: 0; font-weight: 900; color: #d97706; font-size: 1.3rem;">
@@ -832,26 +848,26 @@
                     </c:when>
 
                     <c:otherwise>
-                        <!-- KHI DRIVER STATUS EQ 'OFFLINE' (CHẾ ĐỘ KHÁCH HÀNG) -->
+                        <!-- KHI DRIVER STATUS EQ 'OFFLINE' -->
                         <div class="shipper-card" style="text-align: center; padding: 50px 24px;">
                             <div style="width: 80px; height: 80px; border-radius: 50%; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px auto;">
-                                <i class="fa-solid fa-mug-hot"></i>
+                                <i class="fa-solid fa-power-off"></i>
                             </div>
                             <h3 style="font-size: 1.4rem; font-weight: 800; color: #1e293b; margin-bottom: 8px;">
-                                Bạn Đang Ngoại Tuyến (Chế Độ Khách Hàng)
+                                Bạn Đang Ngoại Tuyến (Đã Tắt Nhận Đơn)
                             </h3>
                             <p style="color: #64748b; max-width: 540px; margin: 0 auto 24px auto; font-size: 0.95rem; line-height: 1.6;">
-                                Trong chế độ này, bạn không nhận đơn giao mà có thể thỏa thích dạo quanh thực đơn, thêm đồ ăn vào giỏ hàng và đặt món như một khách hàng bình thường.
+                                Bật chế độ nhận đơn để bắt đầu quét tìm các đơn hàng mới nhất xung quanh vị trí của bạn và gia tăng thu nhập mỗi ngày cùng Utee Express.
                             </p>
                             <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
                                 <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
                                     <input type="hidden" name="action" value="toggleStatus">
-                                    <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; background: #10ac84; border-color: #10ac84;">
-                                        <i class="fa-solid fa-power-off me-1"></i> Bật nhận đơn tài xế
+                                    <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3);">
+                                        <i class="fa-solid fa-bolt me-1"></i> Bật nhận đơn ngay
                                     </button>
                                 </form>
-                                <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 12px 28px;">
-                                    <i class="fa-solid fa-utensils me-1"></i> Khám phá món ngon ngay
+                                <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=income" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; border-color: #cbd5e1; color: #475569;">
+                                    <i class="fa-solid fa-wallet me-1"></i> Xem ví thu nhập
                                 </a>
                             </div>
                         </div>
@@ -860,7 +876,150 @@
             </c:if>
 
             <!-- ============================================================= -->
-            <!-- CONDITIONAL TAB 2: DELIVERY HISTORY (activeTab eq 'history') -->
+            <!-- TAB 2: THU NHẬP TÀI XẾ (income) -->
+            <!-- ============================================================= -->
+            <c:if test="${activeTab eq 'income'}">
+                <div class="shipper-card">
+                    <div class="sec-card-header">
+                        <div>
+                            <h3 class="sec-card-title"><i class="fa-solid fa-wallet text-success me-2"></i> Tổng Quan Ví Thu Nhập Tài Xế</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Minh bạch số dư ví, tiền thù lao từng cuốc xe và lịch đối soát tự động</p>
+                        </div>
+                        <button type="button" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 22px; background: #10ac84; border-color: #10ac84;" onclick="alert('Hệ thống Utee Express tự động đối soát và chuyển khoản vào 15:00 Thứ 2 và Thứ 5 hàng tuần. Bạn cũng có thể liên kết tài khoản ngân hàng trong Cài đặt.');">
+                            <i class="fa-solid fa-money-bill-transfer me-1"></i> Yêu Cầu Rút Tiền
+                        </button>
+                    </div>
+
+                    <div class="sec-card-body">
+                        <!-- Stat Grid -->
+                        <div class="income-grid">
+                            <!-- Card 1: Today -->
+                            <div class="income-stat-card" style="border-left: 4px solid #10ac84; background: #f0fdf4;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Thu Nhập Hôm Nay</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: #16a34a; margin: 6px 0;">
+                                    <fmt:formatNumber value="${wallet.todayEarnings}" pattern="#,###" /> đ
+                                </div>
+                                <div style="font-size: 0.85rem; color: #64748b;">
+                                    Đã hoàn tất: <strong>${wallet.todayTrips} chuyến giao</strong>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Total Accumulation -->
+                            <div class="income-stat-card" style="border-left: 4px solid #f05454; background: #fff5f5;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">Tổng Thu Nhập Tích Lũy</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: #f05454; margin: 6px 0;">
+                                    <fmt:formatNumber value="${wallet.totalEarnings}" pattern="#,###" /> đ
+                                </div>
+                                <div style="font-size: 0.85rem; color: #64748b;">
+                                    Tổng cuốc: <strong>${wallet.totalTrips} chuyến hoàn tất</strong>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Bonus Tier -->
+                            <div class="income-stat-card" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #b45309; text-transform: uppercase;">Thưởng Mốc Hoạt Động</div>
+                                <div style="font-size: 1.8rem; font-weight: 900; color: #d97706; margin: 6px 0;">
+                                    +50.000 đ
+                                </div>
+                                <div style="font-size: 0.85rem; color: #b45309;">
+                                    Mục tiêu: Đạt 10 cuốc/ngày (Tiến độ: ${wallet.todayTrips}/10)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank & Payout info card -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                                    <i class="fa-solid fa-building-columns"></i>
+                                </div>
+                                <div>
+                                    <h5 style="margin: 0; font-weight: 800; color: #1e293b;">Tài Khoản Nhận Thù Lao Mặc Định</h5>
+                                    <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #64748b;">
+                                        Ngân hàng: <strong>MB Bank (Quân Đội)</strong> • STK: <strong>9999****8888</strong> • Chủ TK: <strong>${sessionScope.currentUser.fullName.toUpperCase()}</strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.82rem; padding: 6px 12px; border-radius: 50px;">
+                                <i class="fa-solid fa-shield-check me-1"></i> Đã liên kết &amp; Xác thực
+                            </span>
+                        </div>
+
+                        <!-- Recent Earnings Table -->
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 14px;">
+                            <i class="fa-solid fa-receipt text-primary me-2"></i> Kê Khai Thù Lao Các Chuyến Gần Nhất
+                        </h4>
+
+                        <c:choose>
+                            <c:when test="${empty deliveryHistory}">
+                                <div style="text-align: center; padding: 36px 20px; background: #fafbfc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                                    <p style="color: #94a3b8; font-size: 0.9rem; margin: 0;">Chưa có giao dịch thu nhập phát sinh. Hãy nhận đơn để gia tăng thu nhập!</p>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div style="overflow-x: auto;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 0.92rem;">
+                                        <thead>
+                                            <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                                                <th style="padding: 12px 16px; color: #475569;">Mã Cuốc Xe</th>
+                                                <th style="padding: 12px 16px; color: #475569;">Thời Gian</th>
+                                                <th style="padding: 12px 16px; color: #475569;">Điểm Giao</th>
+                                                <th style="padding: 12px 16px; color: #475569;">COD Thu Hộ</th>
+                                                <th style="padding: 12px 16px; color: #475569; text-align: right;">Thù Lao Shipper</th>
+                                                <th style="padding: 12px 16px; color: #475569; text-align: center;">Trạng Thái Ví</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <c:forEach var="item" items="${deliveryHistory}">
+                                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                                    <td style="padding: 12px 16px; font-weight: 800; color: #1e293b;">#FZ-${item.id}</td>
+                                                    <td style="padding: 12px 16px; color: #64748b;">
+                                                        <fmt:formatDate value="${item.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                    </td>
+                                                    <td style="padding: 12px 16px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                        ${item.address}
+                                                    </td>
+                                                    <td style="padding: 12px 16px; font-weight: 700; color: #dc2626;">
+                                                        <fmt:formatNumber value="${item.totalAmount}" pattern="#,###" /> đ
+                                                    </td>
+                                                    <td style="padding: 12px 16px; font-weight: 800; color: #10ac84; text-align: right;">
+                                                        <c:choose>
+                                                            <c:when test="${item.status eq 'DELIVERED'}">+15.000 đ</c:when>
+                                                            <c:otherwise><span style="color:#94a3b8;">0 đ</span></c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                    <td style="padding: 12px 16px; text-align: center;">
+                                                        <c:choose>
+                                                            <c:when test="${item.status eq 'DELIVERED'}">
+                                                                <span class="badge" style="background: #dcfce7; color: #15803d; border-radius: 50px; padding: 4px 10px; font-size: 0.78rem;">
+                                                                    <i class="fa-solid fa-check me-1"></i> Đã vào ví
+                                                                </span>
+                                                            </c:when>
+                                                            <c:when test="${item.status eq 'CANCELLED'}">
+                                                                <span class="badge" style="background: #fee2e2; color: #dc2626; border-radius: 50px; padding: 4px 10px; font-size: 0.78rem;">
+                                                                    Đã hủy
+                                                                </span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge" style="background: #e0f2fe; color: #0284c7; border-radius: 50px; padding: 4px 10px; font-size: 0.78rem;">
+                                                                    Đang xử lý
+                                                                </span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- ============================================================= -->
+            <!-- TAB 3: LỊCH SỬ CHUYẾN GIAO (history) -->
             <!-- ============================================================= -->
             <c:if test="${activeTab eq 'history'}">
                 <div class="shipper-card" style="padding: 24px;">
@@ -871,7 +1030,7 @@
                                 <i class="fa-solid fa-route text-primary me-2"></i> Lịch Sử Các Chuyến Xe Giao Hàng
                             </h3>
                             <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">
-                                Danh sách các đơn bạn đã tiếp nhận giao (không bao gồm đơn bạn tự đặt ăn).
+                                Danh sách toàn bộ các chuyến bạn đã tiếp nhận giao hàng cho quán ăn.
                             </p>
                         </div>
                         <div style="display: flex; gap: 12px; align-items: center;">
@@ -1047,6 +1206,297 @@
                             </c:forEach>
                         </c:otherwise>
                     </c:choose>
+                </div>
+            </c:if>
+
+            <!-- ============================================================= -->
+            <!-- TAB 4: ĐIỂM VI PHẠM (violations) -->
+            <!-- ============================================================= -->
+            <c:if test="${activeTab eq 'violations'}">
+                <div class="shipper-card">
+                    <div class="sec-card-header">
+                        <div>
+                            <h3 class="sec-card-title"><i class="fa-solid fa-shield-halved text-warning me-2"></i> Điểm Vi Phạm &amp; Tác Phong Hoạt Động</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Theo dõi điểm hạnh kiểm, tỷ lệ hoàn thành cuốc xe và quy chế tài xế 5 sao</p>
+                        </div>
+                        <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.85rem; padding: 8px 16px; border-radius: 50px;">
+                            <i class="fa-solid fa-circle-check me-1"></i> Tài khoản Tốt (Không có vi phạm)
+                        </span>
+                    </div>
+
+                    <div class="sec-card-body">
+                        <!-- Score Hero Box -->
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e6f9ed 100%); border: 1px solid #bbf7d0; border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                            <div style="display: flex; align-items: center; gap: 18px;">
+                                <div style="width: 72px; height: 72px; border-radius: 50%; background: #10ac84; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 900; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3);">
+                                    100
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Điểm Hạnh Kiểm Hiện Tại</div>
+                                    <h3 style="margin: 2px 0 0 0; font-size: 1.45rem; font-weight: 900; color: #065f46;">100 / 100 Điểm (Hạng Xuất Sắc 🏆)</h3>
+                                    <p style="margin: 4px 0 0 0; font-size: 0.88rem; color: #047857;">Tài khoản ưu tiên nhận các cuốc xe có giá trị cao và thưởng tuần hấp dẫn.</p>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="display: inline-block; background: #fff; border: 1px solid #86efac; border-radius: 12px; padding: 8px 16px; font-weight: 700; color: #15803d; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-award text-warning me-1"></i> Đối Tác Gương Mẫu
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 4 Service Quality Metric Cards -->
+                        <div class="income-grid" style="margin-bottom: 24px;">
+                            <div class="income-stat-card">
+                                <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">TỶ LỆ NHẬN ĐƠN (AR)</div>
+                                <div style="font-size: 1.6rem; font-weight: 900; color: #10ac84; margin: 4px 0;">98.5%</div>
+                                <div style="font-size: 0.8rem; color: #15803d;">Mục tiêu duy trì: &gt;= 85%</div>
+                            </div>
+                            <div class="income-stat-card">
+                                <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">TỶ LỆ HỦY CUỐC (CR)</div>
+                                <div style="font-size: 1.6rem; font-weight: 900; color: #10ac84; margin: 4px 0;">0.0%</div>
+                                <div style="font-size: 0.8rem; color: #15803d;">Mục tiêu an toàn: &lt; 5%</div>
+                            </div>
+                            <div class="income-stat-card">
+                                <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">TỶ LỆ ĐÚNG GIỜ 30P</div>
+                                <div style="font-size: 1.6rem; font-weight: 900; color: #3b82f6; margin: 4px 0;">99.2%</div>
+                                <div style="font-size: 0.8rem; color: #1d4ed8;">Chuẩn cam kết Utee Express</div>
+                            </div>
+                            <div class="income-stat-card">
+                                <div style="font-size: 0.82rem; color: #64748b; font-weight: 700;">ĐÁNH GIÁ TRUNG BÌNH</div>
+                                <div style="font-size: 1.6rem; font-weight: 900; color: #f59e0b; margin: 4px 0;">
+                                    ${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0} ⭐
+                                </div>
+                                <div style="font-size: 0.8rem; color: #b45309;">Từ thực khách &amp; Quán ăn</div>
+                            </div>
+                        </div>
+
+                        <!-- Violations Rules & Regulations -->
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 14px;">
+                            <i class="fa-solid fa-book-open text-primary me-2"></i> Bảng Quy Chuẩn Xử Lý Vi Phạm Đối Tác Tài Xế
+                        </h4>
+
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                                <thead>
+                                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                                        <th style="padding: 10px 14px; color: #475569;">Hành Vi Vi Phạm</th>
+                                        <th style="padding: 10px 14px; color: #475569; text-align: center;">Điểm Trừ Hạnh Kiểm</th>
+                                        <th style="padding: 10px 14px; color: #475569;">Biện Pháp Xử Lý</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; color: #334155;">Tự ý hủy đơn sau khi đã bấm nhận cuốc (không có lý do chính đáng)</td>
+                                        <td style="padding: 10px 14px; text-align: center; color: #dc2626; font-weight: 700;">-5 điểm / lần</td>
+                                        <td style="padding: 10px 14px; color: #64748b;">Khóa nhận đơn 2 giờ</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; color: #334155;">Giao trễ quá 45 phút không thông báo trước cho quán &amp; khách</td>
+                                        <td style="padding: 10px 14px; text-align: center; color: #dc2626; font-weight: 700;">-3 điểm / lần</td>
+                                        <td style="padding: 10px 14px; color: #64748b;">Nhắc nhở qua thông báo app</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; color: #334155;">Thu sai tiền thu hộ COD hoặc thái độ phục vụ khiếm nhã</td>
+                                        <td style="padding: 10px 14px; text-align: center; color: #dc2626; font-weight: 700;">-10 điểm / lần</td>
+                                        <td style="padding: 10px 14px; color: #64748b;">Hoàn tiền &amp; Đào tạo lại tác phong</td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                        <td style="padding: 10px 14px; color: #334155;">Khi điểm hạnh kiểm tích lũy dưới 70 điểm</td>
+                                        <td style="padding: 10px 14px; text-align: center; color: #dc2626; font-weight: 700;">&lt; 70 điểm</td>
+                                        <td style="padding: 10px 14px; color: #dc2626; font-weight: 600;">Tạm khóa tài khoản tài xế</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- ============================================================= -->
+            <!-- TAB 5: CÀI ĐẶT TÀI XẾ (settings) -->
+            <!-- ============================================================= -->
+            <c:if test="${activeTab eq 'settings'}">
+                <div class="shipper-card">
+                    <div class="sec-card-header">
+                        <div>
+                            <h3 class="sec-card-title"><i class="fa-solid fa-gear text-secondary me-2"></i> Cài Đặt Hoạt Động &amp; Hồ Sơ Phương Tiện</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Tùy chỉnh khoảng cách quét đơn, âm báo chuông và thông tin xe máy</p>
+                        </div>
+                    </div>
+
+                    <div class="sec-card-body">
+                        <!-- Group 1: Dispatch Settings -->
+                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                            <i class="fa-solid fa-sliders text-primary me-2"></i> Tùy Chỉnh Tiếp Nhận Đơn Hàng
+                        </h4>
+
+                        <div class="form-switch-row">
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">Tự động nhận đơn nhanh (Auto-Accept)</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">Tự động tiếp nhận khi quán gần bạn phát tín hiệu gán đơn trực tiếp</div>
+                            </div>
+                            <div>
+                                <input type="checkbox" id="autoAcceptToggle" checked style="width: 20px; height: 20px; accent-color: #10ac84; cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <div class="form-switch-row">
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">Bán kính radar quét đơn hàng</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">Khoảng cách tối đa từ vị trí hiện tại đến quán ăn lấy hàng</div>
+                            </div>
+                            <div>
+                                <select style="padding: 8px 14px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; color: #1e293b; outline: none;">
+                                    <option value="3">Bán kính 3 km (Gần nhất)</option>
+                                    <option value="5" selected>Bán kính 5 km (Tiêu chuẩn)</option>
+                                    <option value="10">Bán kính 10 km (Mở rộng)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-switch-row">
+                            <div>
+                                <div style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">Âm thanh chuông báo khi có cuốc mới</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">Phát chuông rung to rõ để không bỏ lỡ các chuyến xe</div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" style="border-radius: 50px; font-size: 0.8rem; font-weight: 600;" onclick="try { new Audio('https://www.myinstants.com/media/sounds/ding-sound-effect_2.mp3').play(); } catch(e){}">
+                                    <i class="fa-solid fa-volume-high me-1"></i> Thử chuông
+                                </button>
+                                <input type="checkbox" checked style="width: 20px; height: 20px; accent-color: #10ac84; cursor: pointer;">
+                            </div>
+                        </div>
+
+                        <!-- Group 2: Vehicle Profile -->
+                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin: 28px 0 16px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                            <i class="fa-solid fa-motorcycle text-primary me-2"></i> Thông Tin Phương Tiện &amp; Giấy Tờ Đăng Ký
+                        </h4>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Biển số xe đăng ký:</label>
+                                <input type="text" class="form-control" value="${not empty driver.licensePlate ? driver.licensePlate : '59-X3 999.99'}" readonly style="background: #f8fafc; font-weight: 700;">
+                            </div>
+                            <div class="col-md-6">
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Loại phương tiện:</label>
+                                <input type="text" class="form-control" value="${not empty driver.vehicleType ? driver.vehicleType : 'Xe máy 2 bánh'}" readonly style="background: #f8fafc;">
+                            </div>
+                            <div class="col-md-6">
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Căn cước công dân (CCCD):</label>
+                                <div style="display: flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; color: #15803d; font-weight: 600;">
+                                    <i class="fa-solid fa-circle-check"></i> Đã xác thực CCCD gắn chip
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Giấy phép lái xe (GPLX):</label>
+                                <div style="display: flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; color: #15803d; font-weight: 600;">
+                                    <i class="fa-solid fa-circle-check"></i> Hạng A1/A2 hợp lệ
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; text-align: right;">
+                            <button type="button" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 10px 24px;" onclick="alert('Đã lưu cấu hình cài đặt tài xế thành công!');">
+                                <i class="fa-solid fa-check me-1"></i> Lưu Cấu Hình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </c:if>
+
+            <!-- ============================================================= -->
+            <!-- TAB 6: TRUNG TÂM TRỢ GIÚP (help) -->
+            <!-- ============================================================= -->
+            <c:if test="${activeTab eq 'help'}">
+                <div class="shipper-card">
+                    <div class="sec-card-header">
+                        <div>
+                            <h3 class="sec-card-title"><i class="fa-solid fa-circle-question text-primary me-2"></i> Trung Tâm Trợ Giúp Đối Tác Tài Xế Utee</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Kênh hỗ trợ khẩn cấp 24/7, cẩm nang xử lý sự cố và giải đáp thắc mắc</p>
+                        </div>
+                    </div>
+
+                    <div class="sec-card-body">
+                        <!-- Emergency Contact Grid -->
+                        <div class="income-grid" style="margin-bottom: 24px;">
+                            <div class="income-stat-card" style="border-left: 4px solid #f05454; background: #fff5f5;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #dc2626;"><i class="fa-solid fa-phone-volume me-1"></i> HOTLINE KHẨN CẤP ĐANG GIAO ĐƠN</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; color: #dc2626; margin: 6px 0;">1900 6869</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">Nhấn phím 1 để gặp bộ phận Điều Phối Khẩn Cấp (24/7)</div>
+                            </div>
+
+                            <div class="income-stat-card" style="border-left: 4px solid #0284c7; background: #f0f9ff;">
+                                <div style="font-size: 0.82rem; font-weight: 700; color: #0369a1;"><i class="fa-brands fa-telegram me-1"></i> KÊNH HỖ TRỢ ZALO / TELEGRAM</div>
+                                <div style="font-size: 1.25rem; font-weight: 900; color: #0284c7; margin: 6px 0;">@UteeDriverSupport</div>
+                                <div style="font-size: 0.85rem; color: #64748b;">Hỗ trợ đối soát thu nhập, cập nhật biển số xe và giấy tờ</div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Section -->
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
+                            <i class="fa-solid fa-lightbulb text-warning me-2"></i> Các Tình Huống Thường Gặp &amp; Hướng Xử Lý
+                        </h4>
+
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px;">
+                            <details style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; cursor: pointer;">
+                                <summary style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                                    <i class="fa-solid fa-circle-question text-primary me-2"></i> Khách hàng không nghe máy hoặc địa chỉ giao không chính xác?
+                                </summary>
+                                <p style="margin: 10px 0 0 0; color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                                    Vui lòng gọi tối thiểu 3 cuộc cách nhau 3 phút. Nếu sau 10 phút khách không phản hồi, hãy bấm nút <strong>"Báo Sự Cố / Hủy Cuốc"</strong> trên màn hình đơn hàng và liên hệ tổng đài 1900 6869 để được hỗ trợ bồi hoàn phí ship và xử lý hoàn món về quán.
+                                </p>
+                            </details>
+
+                            <details style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; cursor: pointer;">
+                                <summary style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                                    <i class="fa-solid fa-circle-question text-primary me-2"></i> Khi nào tiền thù lao cuốc xe được cộng vào ví tài xế?
+                                </summary>
+                                <p style="margin: 10px 0 0 0; color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                                    Sau khi bạn bấm <strong>"Báo Đã Giao Cho Khách"</strong> và khách hàng/quán hoàn tất xác nhận, thù lao 15.000 đ/cuốc sẽ được cộng tức thì vào số dư ví của bạn.
+                                </p>
+                            </details>
+
+                            <details style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; cursor: pointer;">
+                                <summary style="font-weight: 700; color: #1e293b; font-size: 0.95rem;">
+                                    <i class="fa-solid fa-circle-question text-primary me-2"></i> Gặp sự cố hỏng xe hoặc va chạm trên đường giao hàng?
+                                </summary>
+                                <p style="margin: 10px 0 0 0; color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                                    Ưu tiên an toàn bản thân lên hàng đầu. Hãy dừng lại nơi an toàn và gọi ngay hotline 1900 6869 nhánh 1 để điều phối viên gán tài xế khác hỗ trợ giao tiếp đơn hàng mà không bị trừ điểm hạnh kiểm.
+                                </p>
+                            </details>
+                        </div>
+
+                        <!-- Ticket form -->
+                        <div style="background: #fff; border: 1px solid #cbd5e1; border-radius: 14px; padding: 22px;">
+                            <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 14px;">
+                                <i class="fa-solid fa-paper-plane text-primary me-2"></i> Gửi Yêu Cầu Hỗ Trợ Trực Tuyến
+                            </h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Loại vấn đề cần hỗ trợ:</label>
+                                    <select class="form-control">
+                                        <option>Đối soát thu nhập / Rút tiền ví</option>
+                                        <option>Khiếu nại điểm vi phạm / Đánh giá sao</option>
+                                        <option>Cập nhật biển số xe / Số điện thoại</option>
+                                        <option>Vấn đề khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Mã cuốc xe liên quan (nếu có):</label>
+                                    <input type="text" class="form-control" placeholder="Ví dụ: #FZ-12">
+                                </div>
+                                <div class="col-12">
+                                    <label style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 4px; display: block;">Nội dung chi tiết:</label>
+                                    <textarea class="form-control" rows="3" placeholder="Mô tả sự cố bạn gặp phải để CSKH hỗ trợ nhanh nhất..."></textarea>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="button" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 10px 24px;" onclick="alert('Đã gửi phiếu yêu cầu hỗ trợ! Bộ phận CSKH sẽ phản hồi trong 15 phút.');">
+                                        <i class="fa-solid fa-paper-plane me-1"></i> Gửi Yêu Cầu Hỗ Trợ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </c:if>
         </div>

@@ -142,6 +142,14 @@ public class ShipperDashboardController extends HttpServlet {
         String tab = req.getParameter("tab");
         if ("/shipper/history".equalsIgnoreCase(servletPath) || "history".equalsIgnoreCase(tab)) {
             req.setAttribute("activeTab", "history");
+        } else if ("income".equalsIgnoreCase(tab)) {
+            req.setAttribute("activeTab", "income");
+        } else if ("violations".equalsIgnoreCase(tab)) {
+            req.setAttribute("activeTab", "violations");
+        } else if ("settings".equalsIgnoreCase(tab)) {
+            req.setAttribute("activeTab", "settings");
+        } else if ("help".equalsIgnoreCase(tab)) {
+            req.setAttribute("activeTab", "help");
         } else {
             req.setAttribute("activeTab", "dispatch");
         }

@@ -121,7 +121,7 @@
                                 <span><i class="fa-solid fa-motorcycle text-success"></i> <strong>Kênh Tài Xế:</strong> <span class="badge" style="background:#e6f9ed;color:#10ac84;border:1px solid #a3e9b9;border-radius:12px;padding:2px 8px;font-size:0.75rem;">🟢 ĐANG BẬT NHẬN ĐƠN</span></span>
                             </c:when>
                             <c:otherwise>
-                                <span><i class="fa-solid fa-person-walking-luggage text-secondary"></i> <strong>Kênh Tài Xế:</strong> <span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;border-radius:12px;padding:2px 8px;font-size:0.75rem;">⚪ TẮT NHẬN ĐƠN (Chế độ Khách)</span></span>
+                                <span><i class="fa-solid fa-power-off text-secondary"></i> <strong>Kênh Tài Xế:</strong> <span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;border-radius:12px;padding:2px 8px;font-size:0.75rem;">⚪ TẮT NHẬN ĐƠN</span></span>
                             </c:otherwise>
                         </c:choose>
                     </c:when>
@@ -179,9 +179,6 @@
                         </c:otherwise>
                     </c:choose>
                 </c:when>
-                <c:otherwise>
-                    <span class="brand-badge"><i class="fa-solid fa-bolt"></i> 30m Express</span>
-                </c:otherwise>
             </c:choose>
         </a>
 
@@ -201,7 +198,7 @@
                     <div class="nav-search">
                         <form action="${pageContext.request.contextPath}/foods" method="GET" class="search-form">
                             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                            <input type="text" name="search" placeholder="Tìm món ăn, trà sữa, pizza..." class="search-input" value="${param.search}">
+                            <input type="text" name="search" placeholder="Tìm quán ăn, món ăn &amp; đồ uống" class="search-input" value="${param.search}">
                             <button type="submit" class="search-btn">Tìm</button>
                         </form>
                     </div>
@@ -297,7 +294,7 @@
                                                 <c:when test="${sessionScope.currentUser.role eq 'SHIPPER' or sessionScope.currentUser.shipper}"><span class="role-badge role-shipper"><i class="fa-solid fa-motorcycle"></i> Tài xế Shipper</span></c:when>
                                                 <c:when test="${isShipper}">
                                                     <span class="role-badge" style="background:${isShipperActive ? '#e6f9ed' : '#f1f5f9'};color:${isShipperActive ? '#10ac84' : '#64748b'};">
-                                                        <i class="fa-solid fa-motorcycle"></i> ${isShipperActive ? 'Shipper (Đang nhận đơn)' : 'Shipper (Ngoại tuyến - Khách)'}
+                                                        <i class="fa-solid fa-motorcycle"></i> ${isShipperActive ? 'Shipper (Đang nhận đơn)' : 'Shipper (Ngoại tuyến)'}
                                                     </span>
                                                 </c:when>
                                                 <c:otherwise><span class="role-badge role-customer"><i class="fa-solid fa-crown"></i> Khách hàng thân thiết</span></c:otherwise>
@@ -310,15 +307,21 @@
                                         <!-- Công tắc Bật/Tắt chế độ Shipper trực quan trong Menu -->
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=${pageContext.request.requestURI}" 
                                            style="background:${isShipperActive ? '#fff5f5' : '#f0fff4'}; font-weight: 600; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; margin: 4px 8px; padding: 10px 14px; text-decoration: none;">
-                                            <span><i class="fa-solid fa-power-off ${isShipperActive ? 'text-danger' : 'text-success'}"></i> ${isShipperActive ? 'Tắt Nhận Đơn (Chế độ Khách)' : 'Bật Nhận Đơn (Chế độ Shipper)'}</span>
+                                            <span><i class="fa-solid fa-power-off ${isShipperActive ? 'text-danger' : 'text-success'}"></i> ${isShipperActive ? 'Tắt Nhận Đơn' : 'Bật Nhận Đơn'}</span>
                                             <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; background:${isShipperActive ? '#fee2e2' : '#dcfce7'}; color:${isShipperActive ? '#dc2626' : '#16a34a'}; font-weight: bold;">${isShipperActive ? 'BẬT' : 'TẮT'}</span>
                                         </a>
                                         <div class="dropdown-divider"></div>
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard" class="text-primary font-weight-bold">
                                             <i class="fa-solid fa-gauge-high"></i> Bảng điều khiển tài xế
                                         </a>
+                                        <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=income">
+                                            <i class="fa-solid fa-wallet text-success"></i> Thu nhập tài xế
+                                        </a>
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=history">
                                             <i class="fa-solid fa-clock-rotate-left text-info"></i> Lịch sử chuyến giao
+                                        </a>
+                                        <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=violations">
+                                            <i class="fa-solid fa-triangle-exclamation text-warning"></i> Điểm vi phạm
                                         </a>
                                     </c:if>
 
