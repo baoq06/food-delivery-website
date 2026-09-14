@@ -5825,6 +5825,43 @@ a,
     box-shadow: 0 0 0 3px rgba(240, 84, 84, 0.12);
 }
 
+/* Choicebox / Dropdown styling for Merchant Filter Bars (UI/UX Pro Max) */
+.merchant-filter-select {
+    height: 36px;
+    min-width: 124px;
+    padding: 0 28px 0 12px;
+    font-family: var(--font-body);
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 34px;
+    color: #334155;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m3 6 5 5 5-5'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 11px 8px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 9px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.merchant-filter-select:hover {
+    border-color: #94a3b8;
+    background-color: #f8fafc;
+}
+
+.merchant-filter-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(240, 84, 84, 0.14);
+    background-color: #ffffff;
+}
+
 .merchant-filter-submit-btn {
     height: 42px;
     padding: 0 18px;
@@ -7016,6 +7053,33 @@ a,
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px rgba(240, 84, 84, 0.15);
     outline: none;
+}
+
+/* Custom Select & Choicebox Standards */
+select.form-control,
+.form-select {
+    height: 42px;
+    padding: 0 34px 0 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 40px;
+    cursor: pointer;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m3 6 5 5 5-5'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px 8px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.form-select-sm {
+    height: 34px;
+    line-height: 32px;
+    padding: 0 28px 0 10px;
+    font-size: 0.82rem;
+    border-radius: 8px;
 }
 
 .input-disabled .form-control {
