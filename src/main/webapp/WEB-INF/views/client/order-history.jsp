@@ -7,22 +7,29 @@
 
 <style>
     .order-history-cont { margin-top: 40px; margin-bottom: 60px; min-height: 50vh; }
-    .order-card { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 24px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
-    .order-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px; }
-    .order-status { font-weight: 700; padding: 5px 12px; border-radius: 50px; font-size: 0.9em; }
+    .order-card { background: var(--bg-card); border-radius: 16px; border: 1.5px solid var(--border-color); margin-bottom: 24px; padding: 24px; box-shadow: var(--shadow-sm); }
+    .order-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; }
+    .order-status { font-weight: 700; padding: 5px 14px; border-radius: 50px; font-size: 0.88rem; }
     .status-confirmed, .status-pending { background: #e0f7fa; color: #00838f; }
     .status-shipping { background: #fff3e0; color: #e65100; }
     .status-delivered { background: #e8f5e9; color: #2e7d32; }
     .status-cancelled { background: #ffebee; color: #c62828; }
     
-    .rating-section { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px dashed #ccc; }
+    [data-theme="dark"] .status-confirmed, [data-theme="dark"] .status-pending { background: #083344; color: #38bdf8; }
+    [data-theme="dark"] .status-shipping { background: #431407; color: #fb923c; }
+    [data-theme="dark"] .status-delivered { background: #052e16; color: #4ade80; }
+    [data-theme="dark"] .status-cancelled { background: #450a0a; color: #f87171; }
+    
+    .rating-section { background: var(--bg-soft); padding: 18px; border-radius: 14px; margin-top: 18px; border: 1.5px dashed var(--border-color); }
+    .rating-inner-card { background: var(--bg-card); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); }
+    .driver-info-box { background: var(--bg-soft); border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; }
     
     .star-rating {
         direction: rtl; display: inline-block; padding: 5px 0;
     }
     .star-rating input[type="radio"] { display: none; }
     .star-rating label {
-        color: #ddd; font-size: 2rem; padding: 0; cursor: pointer; transition: all 0.2s;
+        color: var(--text-light); font-size: 2rem; padding: 0; cursor: pointer; transition: all 0.2s;
     }
     .star-rating label:hover,
     .star-rating label:hover ~ label,
@@ -69,8 +76,8 @@
                         
                         <div class="col-md-6">
                             <c:if test="${not empty order.driverId}">
-                                <div style="background: #e3f2fd; padding: 12px; border-radius: 8px;">
-                                    <h6 style="color: #1976d2; margin-bottom: 5px;"><i class="fa-solid fa-motorcycle"></i> Thông tin Tài xế Utee</h6>
+                                <div class="driver-info-box">
+                                    <h6 class="text-primary mb-1"><i class="fa-solid fa-motorcycle"></i> Thông tin Tài xế Utee</h6>
                                     <p style="margin:0;"><strong>Tên:</strong> ${order.driverName}</p>
                                     <p style="margin:0;"><strong>SĐT:</strong> ${order.driverPhone}</p>
                                 </div>
@@ -82,23 +89,23 @@
                     <c:if test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
                         <c:choose>
                             <c:when test="${not empty order.review}">
-                                <div class="rating-section" style="background: #fffdf5; border-color: #ffe082; padding: 16px; border-radius: 12px;">
+                                <div class="rating-section">
                                     <h6 class="text-warning font-weight-bold mb-2"><i class="fa-solid fa-star"></i> Đánh giá của bạn cho đơn hàng này:</h6>
                                     <div class="row g-2" style="font-size: 0.9rem;">
                                         <div class="col-md-6">
-                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
+                                            <div class="rating-inner-card">
                                                 <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
                                                     <i class="fa-solid fa-utensils me-1"></i> Món ăn &amp; Quán: ⭐ ${order.review.foodRating}/5 sao
                                                 </div>
-                                                <div style="color: #475569; font-style: italic;">"${order.review.foodComment}"</div>
+                                                <div style="color: var(--text-muted); font-style: italic;">"${order.review.foodComment}"</div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
+                                            <div class="rating-inner-card">
                                                 <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
                                                     <i class="fa-solid fa-motorcycle me-1"></i> Tài xế Shipper: ⭐ ${order.review.driverRating}/5 sao
                                                 </div>
-                                                <div style="color: #475569; font-style: italic;">"${order.review.driverComment}"</div>
+                                                <div style="color: var(--text-muted); font-style: italic;">"${order.review.driverComment}"</div>
                                             </div>
                                         </div>
                                     </div>
@@ -106,7 +113,7 @@
                             </c:when>
                             
                             <c:otherwise>
-                                <div class="rating-section" style="background: #f8fafc; border-color: #cbd5e1; padding: 16px; border-radius: 12px;">
+                                <div class="rating-section">
                                     <h6 class="text-primary mb-3"><i class="fa-solid fa-comment-dots"></i> Đánh giá trải nghiệm Món ăn &amp; Tài xế Shipper</h6>
                                     <form action="${pageContext.request.contextPath}/client/orders" method="POST">
                                         <input type="hidden" name="action" value="rate">
@@ -115,8 +122,8 @@
                                         
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                                <div class="rating-inner-card">
+                                                    <label class="form-label fw-bold mb-1" style="font-size: 0.85rem;">
                                                         <i class="fa-solid fa-utensils text-danger me-1"></i> 1. Đánh giá món ăn:
                                                     </label>
                                                     <select name="foodRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>
@@ -131,8 +138,8 @@
                                             </div>
 
                                             <div class="col-md-6">
-                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
+                                                <div class="rating-inner-card">
+                                                    <label class="form-label fw-bold mb-1" style="font-size: 0.85rem;">
                                                         <i class="fa-solid fa-motorcycle text-primary me-1"></i> 2. Đánh giá shipper:
                                                     </label>
                                                     <select name="driverRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>

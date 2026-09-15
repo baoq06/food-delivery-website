@@ -53,11 +53,11 @@
         flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 24px;
-        background: #ffffff;
+        background: var(--bg-card);
         padding: 16px 20px;
         border-radius: 16px;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
     }
     .notif-filter-pills {
         display: flex;
@@ -73,21 +73,21 @@
         font-size: 0.88rem;
         font-weight: 600;
         text-decoration: none;
-        color: #64748b;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        color: var(--text-muted);
+        background: var(--bg-soft);
+        border: 1px solid var(--border-color);
         transition: all 0.2s ease;
     }
     .notif-pill:hover {
-        background: #fff5f5;
-        color: #f05454;
-        border-color: #fecaca;
+        background: rgba(240, 84, 84, 0.15);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
     }
     .notif-pill.active {
-        background: #f05454;
+        background: var(--primary-color);
         color: #ffffff;
-        border-color: #f05454;
-        box-shadow: 0 4px 12px rgba(240, 84, 84, 0.25);
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 12px var(--primary-glow);
     }
     .notif-actions-right {
         display: flex;
@@ -102,15 +102,16 @@
         border-radius: 50px;
         font-size: 0.85rem;
         font-weight: 700;
-        background: #f1f5f9;
-        color: #334155;
-        border: none;
+        background: var(--bg-soft);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
         cursor: pointer;
         transition: all 0.2s ease;
     }
     .btn-mark-all-read:hover {
-        background: #e2e8f0;
-        color: #0f172a;
+        background: rgba(240, 84, 84, 0.15);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
         transform: translateY(-1px);
     }
 
@@ -124,23 +125,23 @@
         display: flex;
         align-items: flex-start;
         gap: 16px;
-        background: #ffffff;
+        background: var(--bg-card);
         border-radius: 16px;
         padding: 18px 22px;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
     }
     .notif-card:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-md);
         transform: translateY(-2px);
     }
     .notif-card.unread {
-        background: #fffafa;
-        border-color: #fee2e2;
-        border-left: 5px solid #f05454;
+        background: var(--bg-soft);
+        border-color: var(--border-color);
+        border-left: 5px solid var(--primary-color);
     }
     .notif-icon-circle {
         width: 48px;
@@ -151,12 +152,12 @@
         justify-content: center;
         font-size: 1.35rem;
         flex-shrink: 0;
-        background: #f8fafc;
-        border: 1px solid #f1f5f9;
+        background: var(--bg-soft);
+        border: 1px solid var(--border-color);
     }
     .notif-card.unread .notif-icon-circle {
-        background: #ffffff;
-        box-shadow: 0 4px 12px rgba(240, 84, 84, 0.15);
+        background: var(--bg-card);
+        box-shadow: 0 4px 12px var(--primary-glow);
     }
     .notif-body {
         flex: 1;
@@ -172,12 +173,12 @@
     .notif-title {
         font-size: 1rem;
         font-weight: 800;
-        color: #1e293b;
+        color: var(--text-main);
         margin: 0;
     }
     .notif-time {
         font-size: 0.8rem;
-        color: #94a3b8;
+        color: var(--text-muted);
         font-weight: 500;
         white-space: nowrap;
         display: flex;
@@ -186,7 +187,7 @@
     }
     .notif-message {
         font-size: 0.92rem;
-        color: #475569;
+        color: var(--text-muted);
         line-height: 1.5;
         margin: 0 0 10px 0;
     }

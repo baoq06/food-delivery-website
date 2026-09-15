@@ -46,13 +46,13 @@
 
     <!-- Merchant Mode Status Banner -->
     <c:if test="${user.seller or user.role eq 'SELLER'}">
-        <div class="alert alert-info" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid var(--primary-color); background: #fff5f5;">
+        <div class="alert alert-info" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid var(--primary-color); background: var(--bg-soft); border-color: var(--border-color);">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(240, 84, 84, 0.12); color: var(--primary-color); font-size: 1.3rem;">
                     <i class="fa-solid fa-store"></i>
                 </div>
                 <div>
-                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem; color: #1e293b;">
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem; color: var(--text-main);">
                         Tài khoản Đối Tác Quán Ăn: <strong>${not empty currentRestaurant.name ? currentRestaurant.name : 'Utee Merchant'}</strong>
                     </h5>
                     <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-muted);">
@@ -73,13 +73,13 @@
 
     <!-- Shipper Mode Status Banner -->
     <c:if test="${user.isShipper()}">
-        <div class="alert ${sessionScope.shipperActive ? 'alert-success' : 'alert-info'}" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid ${sessionScope.shipperActive ? '#10ac84' : '#ff9f43'};">
+        <div class="alert ${sessionScope.shipperActive ? 'alert-success' : 'alert-info'}" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border-left: 5px solid ${sessionScope.shipperActive ? '#10ac84' : '#ff9f43'}; background: var(--bg-soft); border-color: var(--border-color);">
             <div style="display: flex; align-items: center; gap: 14px;">
-                <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${sessionScope.shipperActive ? '#e6f9ed' : '#f1f5f9'}; color: ${sessionScope.shipperActive ? '#10ac84' : '#64748b'}; font-size: 1.3rem;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: ${sessionScope.shipperActive ? 'rgba(16, 172, 132, 0.15)' : 'rgba(255, 159, 67, 0.15)'}; color: ${sessionScope.shipperActive ? '#10ac84' : '#ff9f43'}; font-size: 1.3rem;">
                     <i class="fa-solid fa-motorcycle"></i>
                 </div>
                 <div>
-                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem;">
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem; color: var(--text-main);">
                         ${sessionScope.shipperActive ? 'Chế độ Shipper: ĐANG BẬT (Trực Tuyến)' : 'Chế độ Shipper: ĐANG TẮT (Ngoại Tuyến / Khách Hàng)'}
                     </h5>
                     <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: var(--text-muted);">

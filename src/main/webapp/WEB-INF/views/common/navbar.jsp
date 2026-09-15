@@ -53,6 +53,73 @@
     .topbar-toggle-shipper-btn.offline .shipper-pulse-dot {
         background: #94a3b8;
     }
+    .shipper-menu-toggle {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: 8px;
+        margin: 4px 8px;
+        padding: 10px 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .shipper-menu-toggle.active-mode {
+        background: #fff5f5;
+        color: var(--text-main);
+    }
+    .shipper-menu-toggle.inactive-mode {
+        background: #f0fff4;
+        color: var(--text-main);
+    }
+    .shipper-menu-toggle-badge {
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+    .shipper-menu-toggle-badge.badge-on {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    .shipper-menu-toggle-badge.badge-off {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    [data-theme="dark"] .shipper-menu-toggle.active-mode {
+        background: #3b1414;
+    }
+    [data-theme="dark"] .shipper-menu-toggle.inactive-mode {
+        background: #0c3826;
+    }
+    [data-theme="dark"] .shipper-menu-toggle-badge.badge-on {
+        background: #5c1e1e;
+        color: #fca5a5;
+    }
+    [data-theme="dark"] .shipper-menu-toggle-badge.badge-off {
+        background: #13553a;
+        color: #6ee7b7;
+    }
+    [data-theme="dark"] .topbar-toggle-shipper-btn.online {
+        background: #0c3826;
+        color: #6ee7b7;
+        border-color: #13553a;
+    }
+    [data-theme="dark"] .topbar-toggle-shipper-btn.offline {
+        background: #1e293b;
+        color: #94a3b8;
+        border-color: #334155;
+    }
+    [data-theme="dark"] .nav-notif-btn {
+        background: #1e293b;
+        border-color: #334155;
+        color: #cbd5e1;
+    }
+    [data-theme="dark"] .nav-notif-btn:hover {
+        background: rgba(240, 84, 84, 0.2);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
     /* Notification Bell UI/UX Pro Max */
     .nav-notif-btn {
         position: relative;
@@ -328,7 +395,7 @@
                                                 <c:when test="${sessionScope.currentUser.seller}"><span class="role-badge role-seller"><i class="fa-solid fa-store"></i> Đối tác Quán ăn</span></c:when>
                                                 <c:when test="${sessionScope.currentUser.role eq 'SHIPPER' or sessionScope.currentUser.shipper}"><span class="role-badge role-shipper"><i class="fa-solid fa-motorcycle"></i> Tài xế Shipper</span></c:when>
                                                 <c:when test="${isShipper}">
-                                                    <span class="role-badge" style="background:${isShipperActive ? '#e6f9ed' : '#f1f5f9'};color:${isShipperActive ? '#10ac84' : '#64748b'};">
+                                                    <span class="role-badge ${isShipperActive ? 'role-shipper' : 'role-shipper-offline'}">
                                                         <i class="fa-solid fa-motorcycle"></i> ${isShipperActive ? 'Shipper (Đang nhận đơn)' : 'Shipper (Ngoại tuyến)'}
                                                     </span>
                                                 </c:when>
@@ -341,9 +408,9 @@
                                     <c:if test="${isShipper}">
                                         <!-- Công tắc Bật/Tắt chế độ Shipper trực quan trong Menu -->
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=${pageContext.request.requestURI}" 
-                                           style="background:${isShipperActive ? '#fff5f5' : '#f0fff4'}; font-weight: 600; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; margin: 4px 8px; padding: 10px 14px; text-decoration: none;">
+                                           class="shipper-menu-toggle ${isShipperActive ? 'active-mode' : 'inactive-mode'}">
                                             <span><i class="fa-solid fa-power-off ${isShipperActive ? 'text-danger' : 'text-success'}"></i> ${isShipperActive ? 'Tắt Nhận Đơn' : 'Bật Nhận Đơn'}</span>
-                                            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; background:${isShipperActive ? '#fee2e2' : '#dcfce7'}; color:${isShipperActive ? '#dc2626' : '#16a34a'}; font-weight: bold;">${isShipperActive ? 'BẬT' : 'TẮT'}</span>
+                                            <span class="shipper-menu-toggle-badge ${isShipperActive ? 'badge-on' : 'badge-off'}">${isShipperActive ? 'BẬT' : 'TẮT'}</span>
                                         </a>
                                         <div class="dropdown-divider"></div>
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard" class="text-primary font-weight-bold">

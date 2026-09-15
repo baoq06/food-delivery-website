@@ -9,7 +9,7 @@
 <style>
     .topbar, .navbar, .footer { display: none !important; }
     .main-content { padding: 0 !important; margin: 0 !important; min-height: 100vh !important; }
-    body { background: #ffffff !important; overflow-x: hidden; }
+    body { background: var(--bg-page) !important; overflow-x: hidden; }
 </style>
 
 <div class="auth-fullscreen-split">
