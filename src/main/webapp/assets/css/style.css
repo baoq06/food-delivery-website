@@ -50,75 +50,6 @@
 }
 
 /* ==========================================================================
-   THEME COLOR PRESETS (5 Bảng màu ẩm thực tuyển chọn)
-   ========================================================================== */
-
-/* 1. Đỏ San Hô Utee (Mặc định) */
-:root[data-color="coral"], :root:not([data-color]) {
-    --primary-color: #f05454;
-    --primary-hover: #de3b3b;
-    --primary-active: #c93232;
-    --primary-light: #fff5f5;
-    --primary-tint: #fed7d7;
-    --primary-gradient: linear-gradient(135deg, #f05454 0%, #ff7676 100%);
-    --primary-glow: rgba(240, 84, 84, 0.22);
-    --border-color: #fee2e2;
-    --bg-soft: #fcf4f4;
-}
-
-/* 2. Cam Fastfood & Snack (Orange) */
-:root[data-color="orange"] {
-    --primary-color: #ff7a00;
-    --primary-hover: #e66a00;
-    --primary-active: #cc5c00;
-    --primary-light: #fff8f0;
-    --primary-tint: #fed7aa;
-    --primary-gradient: linear-gradient(135deg, #ff7a00 0%, #ff9f43 100%);
-    --primary-glow: rgba(255, 122, 0, 0.22);
-    --border-color: #ffedd5;
-    --bg-soft: #fff7ed;
-}
-
-/* 3. Xanh Healthy & Món Chay (Emerald) */
-:root[data-color="emerald"] {
-    --primary-color: #10b981;
-    --primary-hover: #059669;
-    --primary-active: #047857;
-    --primary-light: #f0fdf4;
-    --primary-tint: #bbf7d0;
-    --primary-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
-    --primary-glow: rgba(16, 185, 129, 0.22);
-    --border-color: #dcfce7;
-    --bg-soft: #f0fdf4;
-}
-
-/* 4. Tím Trà Sữa & Đồ Ngọt (Royal) */
-:root[data-color="royal"] {
-    --primary-color: #8b5cf6;
-    --primary-hover: #7c3aed;
-    --primary-active: #6d28d9;
-    --primary-light: #f5f3ff;
-    --primary-tint: #ddd6fe;
-    --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-    --primary-glow: rgba(139, 92, 246, 0.22);
-    --border-color: #ede9fe;
-    --bg-soft: #f5f3ff;
-}
-
-/* 5. Xanh Biển Tươi (Ocean) */
-:root[data-color="ocean"] {
-    --primary-color: #0284c7;
-    --primary-hover: #0369a1;
-    --primary-active: #075985;
-    --primary-light: #f0f9ff;
-    --primary-tint: #bae6fd;
-    --primary-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-    --primary-glow: rgba(2, 132, 199, 0.22);
-    --border-color: #e0f2fe;
-    --bg-soft: #f0f9ff;
-}
-
-/* ==========================================================================
    DARK MODE SYSTEM TOKENS [data-theme="dark"]
    ========================================================================== */
 :root[data-theme="dark"] {
@@ -137,38 +68,9 @@
     --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.55);
     --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.65);
     --shadow-card-hover: 0 16px 32px rgba(0, 0, 0, 0.75);
-}
 
-/* Dark mode overrides for primary tints */
-:root[data-theme="dark"][data-color="coral"],
-:root[data-theme="dark"]:not([data-color]) {
     --primary-light: #2c1618;
     --primary-tint: #4d2328;
-    --border-color: #3b2226;
-}
-
-:root[data-theme="dark"][data-color="orange"] {
-    --primary-light: #2c1b10;
-    --primary-tint: #4d2c16;
-    --border-color: #3b2718;
-}
-
-:root[data-theme="dark"][data-color="emerald"] {
-    --primary-light: #0d281f;
-    --primary-tint: #164e3c;
-    --border-color: #17382d;
-}
-
-:root[data-theme="dark"][data-color="royal"] {
-    --primary-light: #1f1833;
-    --primary-tint: #3b2866;
-    --border-color: #2a2046;
-}
-
-:root[data-theme="dark"][data-color="ocean"] {
-    --primary-light: #0c2338;
-    --primary-tint: #164064;
-    --border-color: #15324c;
 }
 
 /* Base Styles & Reset */
@@ -9405,46 +9307,6 @@ select.form-control,
     box-shadow: var(--shadow-sm);
 }
 
-/* Color Swatches */
-.theme-color-swatches {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.theme-swatch-btn {
-    position: relative;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background-color: var(--swatch-color);
-    border: 3px solid var(--bg-card);
-    box-shadow: 0 0 0 1px var(--border-color), 0 2px 6px rgba(0, 0, 0, 0.12);
-    cursor: pointer;
-    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
-}
-
-.theme-swatch-btn:hover {
-    transform: scale(1.15);
-}
-
-.theme-swatch-btn.active {
-    transform: scale(1.15);
-    box-shadow: 0 0 0 2px var(--swatch-color), 0 4px 12px var(--primary-glow);
-}
-
-.theme-swatch-btn.active::after {
-    content: '\f00c';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    color: #ffffff;
-    font-size: 0.75rem;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
 
 .theme-popover-footer {
     padding-top: 10px;
@@ -9658,75 +9520,6 @@ select.form-control,
     font-size: 0.76rem;
     color: var(--text-muted);
     margin-top: 2px;
-}
-
-/* Color List */
-.appearance-color-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.app-color-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 18px;
-    background: var(--bg-soft);
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    text-align: left;
-    transition: var(--transition);
-    width: 100%;
-}
-
-.app-color-item:hover {
-    border-color: var(--primary-tint);
-    transform: translateX(4px);
-}
-
-.app-color-item.active {
-    border-color: var(--primary-color);
-    background: var(--primary-light);
-    box-shadow: 0 4px 14px var(--primary-glow);
-}
-
-.app-color-circle {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.app-color-details {
-    flex: 1;
-}
-
-.app-color-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--text-main);
-    margin-bottom: 2px;
-}
-
-.app-color-tagline {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-.app-color-check-icon {
-    font-size: 1.25rem;
-    color: var(--primary-color);
-    opacity: 0;
-    transform: scale(0.6);
-    transition: var(--transition);
-}
-
-.app-color-item.active .app-color-check-icon {
-    opacity: 1;
-    transform: scale(1);
 }
 
 .appearance-footer-actions {

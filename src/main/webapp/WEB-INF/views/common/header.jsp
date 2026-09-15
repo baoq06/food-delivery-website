@@ -16,12 +16,10 @@
         (function() {
             try {
                 var savedTheme = localStorage.getItem('utee_theme') || 'light';
-                var savedColor = localStorage.getItem('utee_color') || 'coral';
                 var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 var effectiveTheme = savedTheme === 'system' ? (systemDark ? 'dark' : 'light') : savedTheme;
                 
                 document.documentElement.setAttribute('data-theme', effectiveTheme);
-                document.documentElement.setAttribute('data-color', savedColor);
                 document.documentElement.setAttribute('data-theme-setting', savedTheme);
             } catch(e) {}
         })();

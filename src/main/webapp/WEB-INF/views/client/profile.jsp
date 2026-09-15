@@ -971,65 +971,6 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Bảng màu ẩm thực tuyển chọn -->
-                <div class="appearance-card">
-                    <div class="appearance-card-header">
-                        <div class="app-card-title-group">
-                            <div class="app-card-icon"><i class="fa-solid fa-palette"></i></div>
-                            <div>
-                                <h3 class="appearance-card-title">Tông màu ẩm thực (Food Palettes)</h3>
-                                <p class="appearance-card-desc">Chọn phong cách màu sắc kích thích thị giác món ăn theo sở thích của bạn.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="appearance-color-list">
-                        <button type="button" class="app-color-item" data-color="coral">
-                            <span class="app-color-circle" style="background: linear-gradient(135deg, #f05454 0%, #ff7676 100%);"></span>
-                            <div class="app-color-details">
-                                <div class="app-color-name">Đỏ San Hô Utee (Mặc định)</div>
-                                <div class="app-color-tagline">Rực rỡ, ấm cúng và tôn vinh mọi món ngon chuẩn vị</div>
-                            </div>
-                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
-                        </button>
-
-                        <button type="button" class="app-color-item" data-color="orange">
-                            <span class="app-color-circle" style="background: linear-gradient(135deg, #ff7a00 0%, #ff9f43 100%);"></span>
-                            <div class="app-color-details">
-                                <div class="app-color-name">Cam Năng Động (Fastfood &amp; Snack)</div>
-                                <div class="app-color-tagline">Tràn trề năng lượng, kích thích sự thèm ăn tuyệt đối</div>
-                            </div>
-                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
-                        </button>
-
-                        <button type="button" class="app-color-item" data-color="emerald">
-                            <span class="app-color-circle" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);"></span>
-                            <div class="app-color-details">
-                                <div class="app-color-name">Xanh Healthy (Món Chay &amp; Eat Clean)</div>
-                                <div class="app-color-tagline">Tươi mát, thanh lọc tự nhiên và bảo vệ sức khỏe</div>
-                            </div>
-                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
-                        </button>
-
-                        <button type="button" class="app-color-item" data-color="royal">
-                            <span class="app-color-circle" style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);"></span>
-                            <div class="app-color-details">
-                                <div class="app-color-name">Tím Trà Sữa (Bánh Ngọt &amp; Trendy)</div>
-                                <div class="app-color-tagline">Ngọt ngào, trẻ trung và chuẩn phong cách Gen Z</div>
-                            </div>
-                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
-                        </button>
-
-                        <button type="button" class="app-color-item" data-color="ocean">
-                            <span class="app-color-circle" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);"></span>
-                            <div class="app-color-details">
-                                <div class="app-color-name">Xanh Biển Tươi (Hải Sản &amp; Nước Ép)</div>
-                                <div class="app-color-tagline">Sảng khoái, phóng khoáng và ngập tràn hương vị biển cả</div>
-                            </div>
-                            <i class="fa-solid fa-circle-check app-color-check-icon"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Reset Button -->
                 <div class="appearance-footer-actions">
                     <button type="button" class="btn btn-outline" id="btnResetThemeProfile">
