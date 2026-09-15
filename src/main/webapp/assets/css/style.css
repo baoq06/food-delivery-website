@@ -8972,38 +8972,269 @@ select.form-control,
 /* ==========================================================================
    UI/UX PRO MAX: FULL CUSTOMER REVIEWS & COMMENTS SECTION
    ========================================================================== */
+.section-food-reviews {
+    margin-top: 52px;
+}
+
+.reviews-header-block {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reviews-title-wrap {
+    flex: 1;
+    min-width: 280px;
+}
+
 .rating-highlight-pill {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     background: #ffffff;
-    border: 1px solid var(--border-color);
-    padding: 8px 16px;
+    border: 1.5px solid #fed7aa;
+    padding: 10px 18px;
     border-radius: var(--radius-full);
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     font-weight: 700;
     color: var(--text-main);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.08);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* 2-Column Reviews Layout */
+.food-reviews-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 36px;
+    align-items: start;
+}
+
+/* Left: Sticky Summary Scorecard */
+.reviews-summary-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 28px 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    position: sticky;
+    top: 96px;
+}
+
+.summary-score-box {
+    text-align: center;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 22px;
+}
+
+.big-score-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+}
+
+.big-score-num {
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 1;
+    color: #1e293b;
+    letter-spacing: -0.03em;
+}
+
+.big-score-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.big-score-max {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #94a3b8;
+    line-height: 1;
+}
+
+.summary-stars {
+    display: flex;
+    gap: 3px;
+    color: #f59e0b;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+.summary-count-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    background: #f8fafc;
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid #e2e8f0;
+    margin-top: 12px;
+}
+
+/* Breakdown Bars */
+.rating-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.breakdown-label {
+    width: 36px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #334155;
+    font-size: 0.84rem;
+    flex-shrink: 0;
+}
+
+.breakdown-label i {
+    color: #f59e0b;
+    font-size: 0.72rem;
+}
+
+.breakdown-progress {
+    flex: 1;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: var(--radius-full);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.breakdown-val {
+    width: 32px;
+    text-align: right;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+/* Trust Guarantee Note */
+.summary-guarantee-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 14px;
+}
+
+.guarantee-note-icon {
+    color: #16a34a;
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.guarantee-note-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.8rem;
+    color: #166534;
+    line-height: 1.45;
+}
+
+.guarantee-note-text strong {
+    font-weight: 700;
+    color: #14532d;
+    font-size: 0.85rem;
+}
+
+/* Right: Reviews Stream */
+.reviews-stream-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: 100%;
+}
+
+.reviews-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.filter-chip:hover,
+.filter-chip.active {
+    border-color: var(--primary-color);
+    background: #fff5f5;
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px var(--primary-glow);
 }
 
 .full-reviews-list {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
 }
 
 .full-review-card {
     background: #ffffff;
-    border-radius: var(--radius-md);
+    border-radius: 18px;
     border: 1px solid var(--border-color);
-    padding: 20px 24px;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
+    padding: 22px 26px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    transition: all 0.25s ease;
+    width: 100%;
 }
 
 .full-review-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: rgba(240, 84, 84, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border-color: rgba(240, 84, 84, 0.25);
+    transform: translateY(-2px);
 }
 
 .full-review-header {
@@ -9037,6 +9268,15 @@ select.form-control,
     flex-shrink: 0;
 }
 
+.reviewer-avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #e2e8f0;
+}
+
 .reviewer-name-row {
     display: flex;
     align-items: center;
@@ -9051,42 +9291,44 @@ select.form-control,
 }
 
 .verified-order-badge {
-    background: #e6f9ed;
-    color: #10ac84;
+    background: #ecfdf5;
+    color: #059669;
     font-size: 0.72rem;
-    font-weight: 800;
+    font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    border: 1px solid #a3e9b9;
+    border: 1px solid #a7f3d0;
 }
 
 .reviewer-date {
     font-size: 0.8rem;
+    color: #94a3b8;
 }
 
 .reviewer-rating-box {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    background: #fffbeb;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid #fef3c7;
 }
 
 .review-stars-group {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     display: flex;
     gap: 2px;
+    color: #f59e0b;
 }
 
 .review-score-tag {
-    background: #fff8eb;
     color: #b45309;
-    padding: 3px 10px;
-    border-radius: var(--radius-full);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 800;
-    border: 1px solid #fed7aa;
 }
 
 .full-review-content {
@@ -9094,10 +9336,35 @@ select.form-control,
 }
 
 .full-review-comment {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--text-main);
+    font-size: 0.96rem;
+    line-height: 1.68;
+    color: #334155;
     margin: 0;
+}
+
+.full-review-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed #f1f5f9;
+}
+
+.review-dish-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: #64748b;
+    background: #f8fafc;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.review-dish-tag strong {
+    color: #1e293b;
 }
 
 .full-review-ordered-pill {
@@ -9115,3 +9382,50 @@ select.form-control,
 .full-review-ordered-pill strong {
     color: var(--text-main);
 }
+
+.reviews-empty-card {
+    background: #ffffff;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 20px;
+    padding: 48px 32px;
+    text-align: center;
+}
+
+.reviews-empty-card .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #f8fafc;
+    color: #94a3b8;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.reviews-empty-card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.reviews-empty-card p {
+    color: #64748b;
+    font-size: 0.92rem;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* Responsive collapse for reviews */
+@media (max-width: 991px) {
+    .food-reviews-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+    .reviews-summary-card {
+        position: static;
+    }
+}
+

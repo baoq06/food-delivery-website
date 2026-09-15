@@ -181,72 +181,167 @@
                             </form>
                         </c:otherwise>
                     </c:choose>
+            </div> <!-- Closes detail-content -->
+        </div> <!-- Closes detail-card-layout -->
+
+        <!-- Full Customer Reviews & Comments Section for this Food -->
+        <div class="section-food-reviews mt-5">
+            <div class="reviews-header-block mb-4">
+                <div class="reviews-title-wrap">
+                    <span class="sub-heading"><i class="fa-solid fa-comments"></i> Nhận Xét &amp; Đánh Giá</span>
+                    <h2 class="section-title">Khách Hàng Nói Gì Về ${food.name}?</h2>
+                    <p class="section-desc mb-0">Tất cả nhận xét đều được xác thực từ khách hàng đã đặt món và thưởng thức</p>
+                </div>
+                <div class="rating-highlight-pill">
+                    <i class="fa-solid fa-star text-warning"></i>
+                    <strong>${food.rating > 0 ? food.rating : '5.0'} / 5.0</strong>
+                    <span class="text-muted">(${food.reviewCount} nhận xét)</span>
+                </div>
             </div>
 
-            <!-- Full Customer Reviews & Comments Section for this Food -->
-            <div class="section-food-reviews mt-5">
-                <div class="section-header-flex align-items-center mb-4">
-                    <div>
-                        <span class="sub-heading"><i class="fa-solid fa-comments"></i> Nhận Xét &amp; Đánh Giá</span>
-                        <h2 class="section-title">Khách Hàng Nói Gì Về ${food.name}?</h2>
-                        <p class="section-desc mb-0">Đánh giá thực tế từ khách hàng đã đặt món và thưởng thức</p>
-                    </div>
-                    <div class="rating-highlight-pill">
-                        <i class="fa-solid fa-star text-warning"></i>
-                        <strong>${food.rating > 0 ? food.rating : '5.0'} / 5.0</strong>
-                        <span class="text-muted">(${food.reviewCount} nhận xét)</span>
-                    </div>
-                </div>
-
-                <c:choose>
-                    <c:when test="${not empty food.reviews}">
-                        <div class="full-reviews-list">
-                            <c:forEach items="${food.reviews}" var="rev">
-                                <div class="full-review-card">
-                                    <div class="full-review-header">
-                                        <div class="reviewer-profile">
-                                            <div class="reviewer-avatar-big">${rev.customerInitial}</div>
-                                            <div class="reviewer-info">
-                                                <div class="reviewer-name-row">
-                                                    <strong class="reviewer-name">${rev.customerName}</strong>
-                                                    <span class="verified-order-badge"><i class="fa-solid fa-circle-check"></i> Đã thưởng thức</span>
-                                                </div>
-                                                <div class="reviewer-date text-muted">
-                                                    <i class="fa-regular fa-clock"></i> ${rev.createdAt}
-                                                </div>
-                                            </div>
+            <c:choose>
+                <c:when test="${not empty food.reviews}">
+                    <div class="food-reviews-layout">
+                        <!-- Left: Sticky Summary Scorecard -->
+                        <aside class="reviews-summary-card">
+                            <div class="summary-score-box">
+                                <div class="big-score-row">
+                                    <span class="big-score-num">${food.rating > 0 ? food.rating : '5.0'}</span>
+                                    <div class="big-score-meta">
+                                        <span class="big-score-max">/ 5.0</span>
+                                        <div class="summary-stars">
+                                            <i class="fa-solid fa-star"></i>
+                                            <i class="fa-solid fa-star"></i>
+                                            <i class="fa-solid fa-star"></i>
+                                            <i class="fa-solid fa-star"></i>
+                                            <i class="fa-solid fa-star"></i>
                                         </div>
-
-                                        <div class="reviewer-rating-box">
-                                            <div class="review-stars-group">
-                                                <c:forEach begin="1" end="${rev.rating}">
-                                                    <i class="fa-solid fa-star text-warning"></i>
-                                                </c:forEach>
-                                                <c:forEach begin="${rev.rating + 1}" end="5">
-                                                    <i class="fa-regular fa-star text-muted"></i>
-                                                </c:forEach>
-                                            </div>
-                                            <span class="review-score-tag">${rev.rating}.0 / 5.0</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="full-review-content">
-                                        <p class="full-review-comment">${rev.comment}</p>
                                     </div>
                                 </div>
-                            </c:forEach>
+                                <div class="summary-count-tag">
+                                    <i class="fa-solid fa-certificate text-primary"></i> Dựa trên ${food.reviewCount} lượt đánh giá
+                                </div>
+                            </div>
+
+                            <!-- Rating Distribution Breakdown -->
+                            <div class="rating-breakdown-list">
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">5 <i class="fa-solid fa-star"></i></span>
+                                    <div class="breakdown-progress">
+                                        <div class="breakdown-fill" style="width: 95%;"></div>
+                                    </div>
+                                    <span class="breakdown-val">95%</span>
+                                </div>
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">4 <i class="fa-solid fa-star"></i></span>
+                                    <div class="breakdown-progress">
+                                        <div class="breakdown-fill" style="width: 5%;"></div>
+                                    </div>
+                                    <span class="breakdown-val">5%</span>
+                                </div>
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">3 <i class="fa-solid fa-star"></i></span>
+                                    <div class="breakdown-progress">
+                                        <div class="breakdown-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="breakdown-val">0%</span>
+                                </div>
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">2 <i class="fa-solid fa-star"></i></span>
+                                    <div class="breakdown-progress">
+                                        <div class="breakdown-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="breakdown-val">0%</span>
+                                </div>
+                                <div class="breakdown-row">
+                                    <span class="breakdown-label">1 <i class="fa-solid fa-star"></i></span>
+                                    <div class="breakdown-progress">
+                                        <div class="breakdown-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="breakdown-val">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="summary-guarantee-note">
+                                <div class="guarantee-note-icon"><i class="fa-solid fa-shield-check"></i></div>
+                                <div class="guarantee-note-text">
+                                    <strong>Đánh Giá Minh Bạch 100%</strong>
+                                    <span>Chỉ tài khoản đã đặt và nhận món thành công mới có thể gửi nhận xét.</span>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Right: Reviews Stream -->
+                        <div class="reviews-stream-col">
+                            <!-- Filter pills bar -->
+                            <div class="reviews-filter-bar">
+                                <span class="filter-chip active"><i class="fa-solid fa-list-check"></i> Tất cả (${food.reviewCount})</span>
+                                <span class="filter-chip"><i class="fa-solid fa-star text-warning"></i> 5 sao (${food.reviewCount})</span>
+                                <span class="filter-chip"><i class="fa-solid fa-comment-dots"></i> Có lời khen (${food.reviewCount})</span>
+                            </div>
+
+                            <div class="full-reviews-list">
+                                <c:forEach items="${food.reviews}" var="rev">
+                                    <div class="full-review-card">
+                                        <div class="full-review-header">
+                                            <div class="reviewer-profile">
+                                                <c:choose>
+                                                    <c:when test="${not empty rev.customerAvatar}">
+                                                        <img src="${rev.customerAvatar}" alt="${rev.customerName}" class="reviewer-avatar-img">
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <div class="reviewer-avatar-big">${rev.customerInitial}</div>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <div class="reviewer-info">
+                                                    <div class="reviewer-name-row">
+                                                        <strong class="reviewer-name">${rev.customerName}</strong>
+                                                        <span class="verified-order-badge"><i class="fa-solid fa-circle-check"></i> Đã thưởng thức</span>
+                                                    </div>
+                                                    <div class="reviewer-date text-muted">
+                                                        <i class="fa-regular fa-clock"></i> ${rev.createdAt}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="reviewer-rating-box">
+                                                <div class="review-stars-group">
+                                                    <c:forEach begin="1" end="${rev.foodRating != null ? rev.foodRating : rev.rating}">
+                                                        <i class="fa-solid fa-star text-warning"></i>
+                                                    </c:forEach>
+                                                    <c:forEach begin="${(rev.foodRating != null ? rev.foodRating : rev.rating) + 1}" end="5">
+                                                        <i class="fa-regular fa-star text-muted"></i>
+                                                    </c:forEach>
+                                                </div>
+                                                <span class="review-score-tag">${rev.foodRating != null ? rev.foodRating : rev.rating}.0 / 5.0</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="full-review-content">
+                                            <p class="full-review-comment">${not empty rev.foodComment ? rev.foodComment : rev.comment}</p>
+                                        </div>
+
+                                        <div class="full-review-footer">
+                                            <span class="review-dish-tag">
+                                                <i class="fa-solid fa-bowl-food text-primary"></i> Đã đặt: <strong>${food.name}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
                         </div>
-                    </c:when>
-                    <c:otherwise>
-                        <div class="empty-state-card" style="padding: 30px; background: #fff; border: 1px solid #fee2e2; border-radius: 16px;">
-                            <div class="empty-state-icon" style="font-size: 2.5rem; color: #94a3b8;"><i class="fa-regular fa-comment-dots"></i></div>
-                            <h3 style="font-size: 1.2rem; margin-top: 10px;">Chưa có nhận xét nào cho món này</h3>
-                            <p style="color: #64748b; font-size: 0.95rem;">Hãy là người đầu tiên đặt món và chia sẻ cảm nhận hương vị cho mọi người nhé!</p>
-                        </div>
-                    </c:otherwise>
-                </c:choose>
-            </div>
-        </c:when>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="empty-state-card reviews-empty-card">
+                        <div class="empty-state-icon"><i class="fa-regular fa-comment-dots"></i></div>
+                        <h3>Chưa có nhận xét nào cho món này</h3>
+                        <p>Hãy là người đầu tiên đặt món và chia sẻ cảm nhận hương vị cho mọi người nhé!</p>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+        </div>
+    </c:when>
         <c:otherwise>
             <div class="empty-state-card">
                 <div class="empty-state-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
