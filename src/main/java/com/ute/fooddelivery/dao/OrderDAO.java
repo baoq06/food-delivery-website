@@ -345,7 +345,7 @@ public class OrderDAO {
         String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
                      "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
                      "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
-                     "r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
+                     "r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url " +
                      "FROM orders o " +
                      "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
                      "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
@@ -389,6 +389,7 @@ public class OrderDAO {
                         review.setFoodComment(rs.getString("food_comment"));
                         review.setDriverRating((Integer) rs.getObject("driver_rating"));
                         review.setDriverComment(rs.getString("driver_comment"));
+                        try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
                         order.setReview(review);
                     }
                     
@@ -858,6 +859,87 @@ public class OrderDAO {
             System.err.println("Lỗi khi lấy chi tiết các món của đơn hàng: " + e.getMessage());
         }
         return items;
+    }
+
+    public Order getCustomerOrderForReview(int orderId, int userId) {
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.address AS restaurant_address, " +
+            "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, r.created_at AS review_created_at " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi2.order_id, f2.restaurant_id, r2.name, r2.image_url, r2.address " +
+            "    FROM order_items oi2 " +
+            "    JOIN foods f2 ON oi2.food_id = f2.food_id " +
+            "    JOIN restaurants r2 ON f2.restaurant_id = r2.restaurant_id " +
+            "    WHERE oi2.order_id = ? LIMIT 1 " +
+            ") rest ON o.order_id = rest.order_id " +
+            "WHERE o.order_id = ? AND o.user_id = ?";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+                            order.setRestaurantId((Integer) rs.getObject("restaurant_id"));
+                            order.setRestaurantName(rs.getString("restaurant_name"));
+                            order.setRestaurantImage(rs.getString("restaurant_image"));
+                            order.setRestaurantAddress(rs.getString("restaurant_address"));
+
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                review.setFoodRating((Integer) rs.getObject("food_rating"));
+                                review.setFoodComment(rs.getString("food_comment"));
+                                review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                                review.setDriverComment(rs.getString("driver_comment"));
+                                try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
+                                review.setCreatedAt(rs.getTimestamp("review_created_at"));
+                                order.setReview(review);
+                            }
+
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            return order;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thông tin đơn hàng đánh giá: " + e.getMessage());
+        }
+        return null;
     }
 
     public boolean cancelOrderByCustomer(int orderId, int userId) {

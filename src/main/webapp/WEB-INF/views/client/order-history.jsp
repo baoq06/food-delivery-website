@@ -78,83 +78,42 @@
                         </div>
                     </div>
                     
-                    <!-- Phần đánh giá đơn hàng -->
-                    <c:if test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
-                        <c:choose>
-                            <c:when test="${not empty order.review}">
-                                <div class="rating-section" style="background: #fffdf5; border-color: #ffe082; padding: 16px; border-radius: 12px;">
-                                    <h6 class="text-warning font-weight-bold mb-2"><i class="fa-solid fa-star"></i> Đánh giá của bạn cho đơn hàng này:</h6>
-                                    <div class="row g-2" style="font-size: 0.9rem;">
-                                        <div class="col-md-6">
-                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
-                                                <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
-                                                    <i class="fa-solid fa-utensils me-1"></i> Món ăn &amp; Quán: ⭐ ${order.review.foodRating}/5 sao
-                                                </div>
-                                                <div style="color: #475569; font-style: italic;">"${order.review.foodComment}"</div>
-                                            </div>
+                    <!-- Phần đánh giá đơn hàng & Nút thao tác -->
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
+                        <div>
+                            <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 600;">
+                                <i class="fa-solid fa-cart-plus me-1"></i> Đặt lại món
+                            </a>
+                        </div>
+                        <c:if test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
+                            <c:choose>
+                                <c:when test="${not empty order.review}">
+                                    <div class="order-review-done-bar m-0" style="flex: 1; max-width: 550px;">
+                                        <div class="review-done-left">
+                                            <span class="review-badge-pill">
+                                                <i class="fa-solid fa-circle-check"></i> Đã đánh giá
+                                            </span>
+                                            <span class="review-stars-summary">
+                                                <span class="score-item"><i class="fa-solid fa-utensils text-danger"></i> Món: <strong>${order.review.foodRating}★</strong></span>
+                                                <span class="score-divider">•</span>
+                                                <span class="score-item"><i class="fa-solid fa-motorcycle text-primary"></i> Tài xế: <strong>${order.review.driverRating}★</strong></span>
+                                            </span>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div style="background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #fef3c7;">
-                                                <div style="font-weight: 700; color: #d97706; margin-bottom: 2px;">
-                                                    <i class="fa-solid fa-motorcycle me-1"></i> Tài xế Shipper: ⭐ ${order.review.driverRating}/5 sao
-                                                </div>
-                                                <div style="color: #475569; font-style: italic;">"${order.review.driverComment}"</div>
-                                            </div>
-                                        </div>
+                                        <a href="${pageContext.request.contextPath}/order-review?orderId=${order.id}" class="btn-review-view-detail" title="Xem chi tiết nhận xét">
+                                            <span>Xem chi tiết</span>
+                                            <i class="fa-solid fa-chevron-right"></i>
+                                        </a>
                                     </div>
-                                </div>
-                            </c:when>
-                            
-                            <c:otherwise>
-                                <div class="rating-section" style="background: #f8fafc; border-color: #cbd5e1; padding: 16px; border-radius: 12px;">
-                                    <h6 class="text-primary mb-3"><i class="fa-solid fa-comment-dots"></i> Đánh giá trải nghiệm Món ăn &amp; Tài xế Shipper</h6>
-                                    <form action="${pageContext.request.contextPath}/client/orders" method="POST">
-                                        <input type="hidden" name="action" value="rate">
-                                        <input type="hidden" name="orderId" value="${order.id}">
-                                        <input type="hidden" name="driverId" value="${order.driverId != null ? order.driverId : 0}">
-                                        
-                                        <div class="row g-3">
-                                            <div class="col-md-6">
-                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fa-solid fa-utensils text-danger me-1"></i> 1. Đánh giá món ăn:
-                                                    </label>
-                                                    <select name="foodRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>
-                                                        <option value="5" selected>⭐⭐⭐⭐⭐ (5 sao)</option>
-                                                        <option value="4">⭐⭐⭐⭐ (4 sao)</option>
-                                                        <option value="3">⭐⭐⭐ (3 sao)</option>
-                                                        <option value="2">⭐⭐ (2 sao)</option>
-                                                        <option value="1">⭐ (1 sao)</option>
-                                                    </select>
-                                                    <input type="text" name="foodComment" class="form-control form-control-sm" placeholder="Ghi chú về món ăn..." required>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-6">
-                                                <div style="background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                                    <label class="form-label fw-bold text-dark mb-1" style="font-size: 0.85rem;">
-                                                        <i class="fa-solid fa-motorcycle text-primary me-1"></i> 2. Đánh giá shipper:
-                                                    </label>
-                                                    <select name="driverRating" class="form-select form-select-sm mb-2" style="font-weight: 700; color: #b45309;" required>
-                                                        <option value="5" selected>⭐⭐⭐⭐⭐ (5 sao)</option>
-                                                        <option value="4">⭐⭐⭐⭐ (4 sao)</option>
-                                                        <option value="3">⭐⭐⭐ (3 sao)</option>
-                                                        <option value="2">⭐⭐ (2 sao)</option>
-                                                        <option value="1">⭐ (1 sao)</option>
-                                                    </select>
-                                                    <input type="text" name="driverComment" class="form-control form-control-sm" placeholder="Ghi chú về shipper..." required>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="text-end mt-3">
-                                            <button type="submit" class="btn btn-warning px-4" style="border-radius: 50px; font-weight: 700;">Gửi Đánh Giá</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                    </c:if>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/order-review?orderId=${order.id}" class="btn btn-review-cta" title="Đánh giá món ăn & dịch vụ shipper">
+                                        <i class="fa-solid fa-star"></i>
+                                        <span>Đánh giá đơn hàng</span>
+                                    </a>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
+                    </div>
                 </div>
             </c:forEach>
         </c:otherwise>

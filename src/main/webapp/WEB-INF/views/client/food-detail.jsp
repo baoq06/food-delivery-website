@@ -319,6 +319,18 @@
 
                                         <div class="full-review-content">
                                             <p class="full-review-comment">${not empty rev.foodComment ? rev.foodComment : rev.comment}</p>
+                                            <c:if test="${not empty rev.imageUrl}">
+                                                <div class="review-photo-attachment">
+                                                    <img src="${pageContext.request.contextPath}${rev.imageUrl}" 
+                                                         alt="Ảnh chụp thực tế từ khách hàng" 
+                                                         class="review-customer-photo" 
+                                                         onclick="openReviewImageModal('${pageContext.request.contextPath}${rev.imageUrl}')" 
+                                                         title="Nhấn để phóng to ảnh món ăn thực tế" />
+                                                    <span class="review-photo-badge">
+                                                        <i class="fa-solid fa-camera"></i> Ảnh thực tế
+                                                    </span>
+                                                </div>
+                                            </c:if>
                                         </div>
 
                                         <div class="full-review-footer">
@@ -387,6 +399,15 @@
     </c:if>
 </div>
 
+<!-- Lightbox Modal for Review Photos -->
+<div id="reviewPhotoModal" class="review-lightbox-modal" onclick="closeReviewImageModal()">
+    <div class="lightbox-modal-content" onclick="event.stopPropagation()">
+        <button type="button" class="btn-lightbox-close" onclick="closeReviewImageModal()">&times;</button>
+        <img id="lightboxModalImg" src="" alt="Ảnh món ăn thực tế" class="lightbox-full-img">
+        <div class="lightbox-caption"><i class="fa-solid fa-camera text-warning me-1"></i> Ảnh chụp thực tế từ khách hàng Utee Express</div>
+    </div>
+</div>
+
 <script>
 function increaseQty() {
     const input = document.getElementById('detailQty');
@@ -402,6 +423,25 @@ function decreaseQty() {
         if (val > 1) input.value = val - 1;
     }
 }
+function openReviewImageModal(imgSrc) {
+    const modal = document.getElementById('reviewPhotoModal');
+    const modalImg = document.getElementById('lightboxModalImg');
+    if (modal && modalImg) {
+        modalImg.src = imgSrc;
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeReviewImageModal() {
+    const modal = document.getElementById('reviewPhotoModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeReviewImageModal();
+});
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

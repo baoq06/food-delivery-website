@@ -48,6 +48,9 @@ public class Review implements Serializable {
     @Column(name = "driver_comment")
     private String driverComment;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @Column(name = "created_at")
     private Timestamp createdAt;
 
@@ -83,6 +86,8 @@ public class Review implements Serializable {
     public void setDriverRating(Integer driverRating) { this.driverRating = driverRating; }
     public String getDriverComment() { return driverComment != null ? driverComment : comment; }
     public void setDriverComment(String driverComment) { this.driverComment = driverComment; }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 

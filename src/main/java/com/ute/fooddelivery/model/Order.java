@@ -93,6 +93,27 @@ public class Order implements Serializable {
     public void setAdminCommission(double adminCommission) { this.adminCommission = adminCommission; }
 
     @Transient
+    private Integer restaurantId;
+
+    @Transient
+    private String restaurantName;
+
+    @Transient
+    private String restaurantImage;
+
+    @Transient
+    private String restaurantAddress;
+
+    public Integer getRestaurantId() { return restaurantId; }
+    public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
+    public String getRestaurantName() { return restaurantName; }
+    public void setRestaurantName(String restaurantName) { this.restaurantName = restaurantName; }
+    public String getRestaurantImage() { return restaurantImage; }
+    public void setRestaurantImage(String restaurantImage) { this.restaurantImage = restaurantImage; }
+    public String getRestaurantAddress() { return restaurantAddress; }
+    public void setRestaurantAddress(String restaurantAddress) { this.restaurantAddress = restaurantAddress; }
+
+    @Transient
     private List<OrderItem> items = new ArrayList<>();
 
     public Order() {

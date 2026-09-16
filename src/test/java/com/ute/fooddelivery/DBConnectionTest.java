@@ -25,6 +25,8 @@ public class DBConnectionTest {
                                        " | MerchConfirmed: " + rs.getBoolean("merchant_confirmed"));
                 }
             }
+            com.ute.fooddelivery.dao.ReviewDAO.ensureReviewImageColumn();
+            System.out.println(">> ensureReviewImageColumn executed successfully!");
         } catch (Exception e) {
             e.printStackTrace();
             fail("Database connection failed: " + e.getMessage());

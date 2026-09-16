@@ -9,10 +9,45 @@ import java.util.Map;
 
 public class ReviewDAO {
 
+    private static volatile boolean columnChecked = false;
+
+    /**
+     * Tự động kiểm tra và thêm cột image_url vào bảng order_reviews nếu chưa tồn tại
+     */
+    public static void ensureReviewImageColumn() {
+        if (columnChecked) return;
+        synchronized (ReviewDAO.class) {
+            if (columnChecked) return;
+            try (Connection conn = DBContext.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                if (conn != null) {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    boolean exists = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "order_reviews", "image_url")) {
+                        if (rs.next()) {
+                            exists = true;
+                        }
+                    }
+                    if (!exists) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE order_reviews ADD COLUMN image_url VARCHAR(500) NULL AFTER driver_comment");
+                        } catch (SQLException ignore) {
+                            // Column might already be added
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Lưu ý khi kiểm tra cột image_url bảng order_reviews: " + e.getMessage());
+            }
+            columnChecked = true;
+        }
+    }
+
     // Thêm đánh giá
     public boolean addReview(Review review) {
-        String sql = "INSERT INTO order_reviews (order_id, customer_id, driver_id, restaurant_id, rating, comment, food_rating, food_comment, driver_rating, driver_comment) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        ensureReviewImageColumn();
+        String sql = "INSERT INTO order_reviews (order_id, customer_id, driver_id, restaurant_id, rating, comment, food_rating, food_comment, driver_rating, driver_comment, image_url) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 // Auto-resolve restaurantId if missing
@@ -48,6 +83,7 @@ public class ReviewDAO {
 
                     if (review.getDriverRating() != null) ps.setInt(9, review.getDriverRating()); else ps.setInt(9, driverR);
                     ps.setString(10, review.getDriverComment() != null ? review.getDriverComment() : review.getComment());
+                    ps.setString(11, review.getImageUrl());
                     
                     return ps.executeUpdate() > 0;
                 }
@@ -60,6 +96,7 @@ public class ReviewDAO {
     
     // Tìm đánh giá theo mã đơn hàng
     public Review getReviewByOrderId(int orderId) {
+        ensureReviewImageColumn();
         String sql = "SELECT * FROM order_reviews WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -79,6 +116,7 @@ public class ReviewDAO {
                     review.setFoodComment(rs.getString("food_comment"));
                     review.setDriverRating((Integer) rs.getObject("driver_rating"));
                     review.setDriverComment(rs.getString("driver_comment"));
+                    try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
                     
                     review.setCreatedAt(rs.getTimestamp("created_at"));
                     return review;
@@ -212,10 +250,11 @@ public class ReviewDAO {
      * Lấy danh sách đánh giá & bình luận của người dùng cho Quán Ăn
      */
     public List<Review> getReviewsByRestaurantId(int restaurantId, int limit) {
+        ensureReviewImageColumn();
         List<Review> list = new ArrayList<>();
         String sql = 
             "SELECT r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
-            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, " +
             "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name, " +
             "       GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') AS ordered_foods " +
             "FROM order_reviews r " +
@@ -225,7 +264,7 @@ public class ReviewDAO {
             "LEFT JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE r.restaurant_id = ? OR f.restaurant_id = ? " +
             "GROUP BY r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
-            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, " +
             "         r.created_at, u.name, o.customer_name " +
             "ORDER BY r.created_at DESC " +
             (limit > 0 ? "LIMIT ?" : "");
@@ -254,10 +293,11 @@ public class ReviewDAO {
      * Lấy danh sách đánh giá & bình luận của người dùng cho Món Ăn
      */
     public List<Review> getReviewsByFoodId(int foodId, int limit) {
+        ensureReviewImageColumn();
         List<Review> list = new ArrayList<>();
         String sql = 
             "SELECT r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
-            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, " +
             "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name, " +
             "       f.name AS food_name " +
             "FROM order_reviews r " +
@@ -267,7 +307,7 @@ public class ReviewDAO {
             "LEFT JOIN orders o ON r.order_id = o.order_id " +
             "WHERE oi.food_id = ? " +
             "GROUP BY r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
-            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "         r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, " +
             "         r.created_at, u.name, o.customer_name, f.name " +
             "ORDER BY r.created_at DESC " +
             (limit > 0 ? "LIMIT ?" : "");
@@ -295,6 +335,7 @@ public class ReviewDAO {
      * Nạp nhanh các đánh giá gần nhất cho nhiều món ăn cùng lúc (tối ưu hiệu năng 1 truy vấn)
      */
     public Map<Integer, List<Review>> getRecentReviewsForFoods(List<Integer> foodIds, int maxPerFood) {
+        ensureReviewImageColumn();
         Map<Integer, List<Review>> map = new HashMap<>();
         if (foodIds == null || foodIds.isEmpty()) return map;
 
@@ -305,7 +346,7 @@ public class ReviewDAO {
 
         String sql = 
             "SELECT oi.food_id, r.review_id, r.order_id, r.customer_id, r.restaurant_id, r.driver_id, " +
-            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, " +
+            "       r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, " +
             "       r.created_at, COALESCE(u.name, o.customer_name, 'Khách hàng Utee') AS cust_name " +
             "FROM order_reviews r " +
             "JOIN order_items oi ON r.order_id = oi.order_id " +
@@ -348,6 +389,7 @@ public class ReviewDAO {
         try { review.setFoodComment(rs.getString("food_comment")); } catch (Exception ignored) {}
         try { review.setDriverRating((Integer) rs.getObject("driver_rating")); } catch (Exception ignored) {}
         try { review.setDriverComment(rs.getString("driver_comment")); } catch (Exception ignored) {}
+        try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
         try { review.setCreatedAt(rs.getTimestamp("created_at")); } catch (Exception ignored) {}
         try { review.setCustomerName(rs.getString("cust_name")); } catch (Exception ignored) {}
         return review;
