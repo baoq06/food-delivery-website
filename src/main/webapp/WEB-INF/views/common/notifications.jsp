@@ -207,6 +207,8 @@
         background: #f05454;
         color: #ffffff;
         text-decoration: none;
+        border: none;
+        cursor: pointer;
         transition: all 0.2s ease;
     }
     .btn-notif-view:hover {
@@ -344,21 +346,20 @@
                             <p class="notif-message">${n.message}</p>
 
                             <div class="notif-footer-actions">
-                                <c:if test="${not empty n.link}">
-                                    <a href="${pageContext.request.contextPath}${n.link}" class="btn-notif-view">
-                                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem chi tiết
-                                    </a>
-                                </c:if>
-
-                                <c:if test="${not n.read}">
-                                    <form action="${pageContext.request.contextPath}/notifications" method="POST" style="display:inline; margin:0;">
-                                        <input type="hidden" name="action" value="markAsRead" />
-                                        <input type="hidden" name="id" value="${n.id}" />
-                                        <button type="submit" class="btn-notif-sub">
-                                            <i class="fa-solid fa-check"></i> Đánh dấu đã đọc
-                                        </button>
-                                    </form>
-                                </c:if>
+                                <c:choose>
+                                    <c:when test="${not empty n.link}">
+                                        <a href="${pageContext.request.contextPath}/notifications?action=readAndRedirect&id=${n.id}&redirect=${n.link}" class="btn-notif-view" title="Xem chi tiết và tự động tính là đã đọc">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem chi tiết
+                                        </a>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:if test="${not n.read}">
+                                            <button type="button" class="btn-notif-view" onclick="markReadAndAcknowledge(${n.id}, this)" title="Xem chi tiết và tự động tính là đã đọc">
+                                                <i class="fa-solid fa-eye"></i> Xem chi tiết
+                                            </button>
+                                        </c:if>
+                                    </c:otherwise>
+                                </c:choose>
 
                                 <form action="${pageContext.request.contextPath}/notifications" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?');">
                                     <input type="hidden" name="action" value="delete" />
@@ -393,5 +394,42 @@
         </c:otherwise>
     </c:choose>
 </div>
+
+<script>
+function markReadAndAcknowledge(notifId, btn) {
+    fetch('${pageContext.request.contextPath}/api/notifications/mark-read?id=' + notifId)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data.success) {
+                var card = btn.closest('.notif-card');
+                if (card) {
+                    card.classList.remove('unread');
+                    card.classList.add('read');
+                    var dot = card.querySelector('.unread-indicator-dot');
+                    if (dot) dot.remove();
+                }
+                btn.remove();
+                // Cập nhật counter thông báo ở thanh menu
+                var badge = document.getElementById('navNotifBadge');
+                var dropBadge = document.getElementById('dropdownNotifBadge');
+                var count = data.unreadCount || 0;
+                [badge, dropBadge].forEach(function(el) {
+                    if (el) {
+                        if (count > 0) {
+                            el.innerText = count > 99 ? '99+' : count;
+                            el.style.display = 'flex';
+                        } else {
+                            el.style.display = 'none';
+                            el.classList.remove('has-unread');
+                        }
+                    }
+                });
+            }
+        })
+        .catch(function(err) {
+            console.error('Lỗi đánh dấu đã đọc:', err);
+        });
+}
+</script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

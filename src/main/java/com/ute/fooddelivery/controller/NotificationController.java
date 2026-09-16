@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "NotificationController", urlPatterns = {"/notifications", "/api/notifications/unread-count"})
+@WebServlet(name = "NotificationController", urlPatterns = {"/notifications", "/api/notifications/unread-count", "/api/notifications/mark-read"})
 public class NotificationController extends HttpServlet {
     private final NotificationDAO notificationDAO = new NotificationDAO();
 
@@ -36,9 +36,46 @@ public class NotificationController extends HttpServlet {
             return;
         }
 
+        // API Endpoint đánh dấu đã đọc một thông báo qua AJAX
+        if ("/api/notifications/mark-read".equalsIgnoreCase(servletPath)) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            if (currentUser == null) {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                resp.getWriter().write("{\"success\":false,\"message\":\"Chưa đăng nhập\"}");
+                return;
+            }
+            try {
+                int id = Integer.parseInt(req.getParameter("id"));
+                notificationDAO.markAsRead(id, currentUser.getId());
+                int count = notificationDAO.getUnreadCount(currentUser.getId());
+                resp.getWriter().write("{\"success\":true,\"unreadCount\":" + count + "}");
+            } catch (Exception e) {
+                resp.getWriter().write("{\"success\":false,\"error\":\"" + e.getMessage() + "\"}");
+            }
+            return;
+        }
+
         // Trang danh sách thông báo
         if (currentUser == null) {
             resp.sendRedirect(req.getContextPath() + "/auth?action=login&redirect=" + req.getServletPath());
+            return;
+        }
+
+        // Xử lý khi người dùng nhấn "Xem chi tiết" -> Tự động đánh dấu đã đọc và chuyển hướng đến trang liên quan
+        String action = req.getParameter("action");
+        if ("readAndRedirect".equalsIgnoreCase(action) || "view".equalsIgnoreCase(action)) {
+            try {
+                int id = Integer.parseInt(req.getParameter("id"));
+                notificationDAO.markAsRead(id, currentUser.getId());
+            } catch (Exception ignored) {}
+
+            String redirect = req.getParameter("redirect");
+            if (redirect != null && !redirect.trim().isEmpty() && !redirect.contains("://")) {
+                resp.sendRedirect(req.getContextPath() + (redirect.startsWith("/") ? redirect : "/" + redirect));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/notifications");
+            }
             return;
         }
 
