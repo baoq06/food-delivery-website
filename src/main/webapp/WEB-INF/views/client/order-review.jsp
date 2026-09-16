@@ -764,9 +764,11 @@
                                     <span style="font-size: 0.95rem; margin-left: 6px; color: #b45309;">(${review.foodRating}/5)</span>
                                 </div>
                             </div>
-                            <div class="reviewed-comment-text">
-                                "${review.foodComment}"
-                            </div>
+                            <c:if test="${not empty review.foodComment and review.foodComment ne 'Món ăn rất ngon, phục vụ chu đáo!'}">
+                                <div class="reviewed-comment-text">
+                                    "${review.foodComment}"
+                                </div>
+                            </c:if>
                             <c:if test="${not empty review.imageUrl}">
                                 <div class="reviewed-photo-display">
                                     <div class="reviewed-photo-label"><i class="fa-solid fa-camera text-warning me-1"></i> Ảnh món ăn chụp thực tế:</div>
@@ -795,9 +797,11 @@
                                     Tài xế phụ trách: <strong>${order.driverName}</strong> (${order.driverPhone})
                                 </div>
                             </c:if>
-                            <div class="reviewed-comment-text">
-                                "${review.driverComment}"
-                            </div>
+                            <c:if test="${not empty review.driverComment and review.driverComment ne 'Giao hàng nhanh và thân thiện!'}">
+                                <div class="reviewed-comment-text">
+                                    "${review.driverComment}"
+                                </div>
+                            </c:if>
                         </div>
 
                         <div class="review-actions-bar" style="margin-top: 24px;">

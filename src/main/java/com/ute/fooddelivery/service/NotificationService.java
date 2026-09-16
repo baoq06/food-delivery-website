@@ -159,12 +159,16 @@ public class NotificationService {
     }
 
     public void notifyMerchantCompleted(Integer customerUserId, Integer shipperUserId, int orderId) {
+        notifyOrderCompleted(customerUserId, shipperUserId, null, orderId);
+    }
+
+    public void notifyOrderCompleted(Integer customerUserId, Integer shipperUserId, Integer merchantUserId, int orderId) {
         if (customerUserId != null && customerUserId > 0) {
             Notification notif = new Notification(
                 customerUserId,
                 orderId,
-                "🎉 Đơn hàng #DH-" + orderId + " hoàn tất!",
-                "Cảm ơn bạn đã thưởng thức ẩm thực tại Utee Delivery! Hãy để lại đánh giá để quán phục vụ tốt hơn nhé.",
+                "🎉 Đơn hàng #DH-" + orderId + " đã hoàn tất!",
+                "Cả bạn và tài xế đã xác nhận đơn hàng thành công! Hãy để lại đánh giá để quán phục vụ tốt hơn nhé.",
                 "ORDER_COMPLETED",
                 "/profile?tab=orders"
             );
@@ -176,9 +180,21 @@ public class NotificationService {
                 shipperUserId,
                 orderId,
                 "💰 Chuyến xe #DH-" + orderId + " đã hoàn tất thành công!",
-                "Chủ cửa hàng đã duyệt hoàn tất đơn hàng. Thù lao giao hàng đã được cập nhật vào ví của bạn!",
+                "Khách hàng đã nhận món và chuyến xe hoàn tất. Bạn đã có thể sẵn sàng nhận chuyến mới!",
                 "ORDER_COMPLETED",
                 "/shipper/dashboard?tab=history"
+            );
+            notificationDAO.createNotification(notif);
+        }
+
+        if (merchantUserId != null && merchantUserId > 0) {
+            Notification notif = new Notification(
+                merchantUserId,
+                orderId,
+                "🎉 Đơn hàng #DH-" + orderId + " đã hoàn tất!",
+                "Shipper và Khách hàng đã cùng xác nhận giao nhận thành công. Đơn hàng đã được tự động hoàn tất và ghi nhận doanh thu.",
+                "ORDER_COMPLETED",
+                "/merchant/orders"
             );
             notificationDAO.createNotification(notif);
         }

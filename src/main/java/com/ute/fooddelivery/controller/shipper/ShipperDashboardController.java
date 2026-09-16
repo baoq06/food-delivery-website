@@ -66,7 +66,17 @@ public class ShipperDashboardController extends HttpServlet {
                         orderDAO.shipperConfirmDelivered(orderId, driver.getId());
                         Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
                         Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
-                        notificationService.notifyShipperDelivered(customerUserId, merchantUserId, orderId, driver.getName());
+                        Order updatedOrder = orderDAO.getOrderById(orderId);
+                        if (updatedOrder != null && "DELIVERED".equalsIgnoreCase(updatedOrder.getStatus())) {
+                            // Cả 2 bên đều đã xác nhận -> Đơn đã tự động hoàn tất ngay lập tức
+                            driver.setStatus("AVAILABLE");
+                            session.setAttribute("shipperActive", true);
+                            session.setAttribute("driverStatus", "AVAILABLE");
+                            notificationService.notifyOrderCompleted(customerUserId, user.getId(), merchantUserId, orderId);
+                        } else {
+                            // Mới chỉ có Shipper báo đã giao, đang chờ khách xác nhận đã nhận món
+                            notificationService.notifyShipperDelivered(customerUserId, merchantUserId, orderId, driver.getName());
+                        }
                     }
                 } else if ("CANCELLED".equalsIgnoreCase(status)) {
                     orderDAO.updateOrderStatus(orderId, "CANCELLED");

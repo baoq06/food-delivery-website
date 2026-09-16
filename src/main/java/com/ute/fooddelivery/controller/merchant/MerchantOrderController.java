@@ -64,21 +64,19 @@ public class MerchantOrderController extends HttpServlet {
                     return;
                 }
 
-                // Điều kiện kép: Shipper đã giao VÀ Khách đã nhận
-                if (!currentOrder.isShipperDelivered() || !currentOrder.isCustomerConfirmed()) {
-                    req.getSession().setAttribute("flashError", "Không thể duyệt hoàn thành: Đơn hàng cần được cả Shipper xác nhận đã giao VÀ Khách hàng xác nhận đã nhận món!");
+                if ("DELIVERED".equalsIgnoreCase(currentOrder.getStatus())) {
+                    req.getSession().setAttribute("flashMessage", "Đơn hàng #" + orderId + " đã được hoàn tất thành công!");
                     resp.sendRedirect(req.getContextPath() + "/merchant/orders");
                     return;
                 }
 
                 boolean success = orderDAO.merchantCompleteOrder(orderId);
                 if (success) {
-                    // Bắn thông báo hoàn tất đến Khách và Shipper
                     Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
                     Integer shipperUserId = orderDAO.getDriverUserIdByOrderId(orderId);
-                    notificationService.notifyMerchantCompleted(customerUserId, shipperUserId, orderId);
+                    notificationService.notifyOrderCompleted(customerUserId, shipperUserId, null, orderId);
 
-                    req.getSession().setAttribute("flashMessage", "Đã duyệt hoàn thành đơn hàng #" + orderId + "! Đơn hàng đã được chính thức ghi nhận vào doanh thu của quán.");
+                    req.getSession().setAttribute("flashMessage", "Đã hoàn thành đơn hàng #" + orderId + "! Đơn hàng đã được chính thức ghi nhận vào doanh thu của quán.");
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể duyệt hoàn tất đơn hàng!");
                 }

@@ -17,6 +17,10 @@ import java.util.Map;
 
 public class OrderDAO {
 
+    public OrderDAO() {
+        syncCompletedOrders();
+    }
+
     public int createOrder(Order order, List<OrderItem> items) {
         String insertOrderSql = 
             "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_delivered, merchant_completed) " +
@@ -1018,12 +1022,36 @@ public class OrderDAO {
         return false;
     }
 
+    private static boolean syncedOrdersOnStartup = false;
+
+    public static synchronized void syncCompletedOrders() {
+        if (syncedOrdersOnStartup) return;
+        syncedOrdersOnStartup = true;
+        String sql = "UPDATE orders SET status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1 " +
+                     "WHERE customer_confirmed = 1 AND shipper_delivered = 1 AND status != 'CANCELLED' AND (status != 'DELIVERED' OR merchant_completed = 0)";
+        try (Connection conn = DBContext.getConnection();
+             Statement stmt = conn.createStatement()) {
+            int count = stmt.executeUpdate(sql);
+            if (count > 0) {
+                System.out.println(">> [OrderDAO] Đã tự động đồng bộ " + count + " đơn đủ điều kiện hoàn tất.");
+                stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id IN " +
+                                   "(SELECT DISTINCT driver_id FROM orders WHERE customer_confirmed = 1 AND shipper_delivered = 1 AND status = 'DELIVERED' AND driver_id IS NOT NULL AND driver_id > 0)");
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi syncCompletedOrders: " + e.getMessage());
+        }
+    }
+
     public boolean shipperConfirmDelivered(int orderId) {
         String sql = "UPDATE orders SET shipper_delivered = 1 WHERE order_id = ? AND status != 'CANCELLED'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
-            return ps.executeUpdate() > 0;
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
         } catch (Exception e) {
             System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
         }
@@ -1036,7 +1064,11 @@ public class OrderDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             ps.setInt(2, driverId);
-            return ps.executeUpdate() > 0;
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
         } catch (Exception e) {
             System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
         }
@@ -1048,7 +1080,11 @@ public class OrderDAO {
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
-            return ps.executeUpdate() > 0;
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
         } catch (Exception e) {
             System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
         }
@@ -1061,7 +1097,11 @@ public class OrderDAO {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             ps.setInt(2, userId);
-            return ps.executeUpdate() > 0;
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
         } catch (Exception e) {
             System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
         }
@@ -1069,56 +1109,87 @@ public class OrderDAO {
     }
 
     public boolean confirmMerchantOrder(int orderId) {
-        return merchantCompleteOrder(orderId);
+        return checkAndAutoCompleteOrder(orderId);
     }
 
     /**
-     * Chủ cửa hàng duyệt đơn đã hoàn thành:
-     * BẮT BUỘC: Phải được shipper xác nhận đã giao (shipper_delivered = 1)
-     * VÀ khách hàng xác nhận đã nhận (customer_confirmed = 1).
+     * Tự động hoàn tất đơn hàng khi cả Shipper đã xác nhận giao VÀ Khách hàng đã xác nhận nhận món:
+     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1.
+     * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
+     * Không còn yêu cầu chủ quán phải duyệt thủ công đơn mới hoàn thành.
      */
-    public boolean merchantCompleteOrder(int orderId) {
+    public boolean checkAndAutoCompleteOrder(int orderId) {
         String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
-                boolean ready = false;
+                boolean shipDelivered = false;
+                boolean custConfirmed = false;
                 int driverId = 0;
+                String currentStatus = null;
+
                 try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
                     psCheck.setInt(1, orderId);
                     try (ResultSet rs = psCheck.executeQuery()) {
                         if (rs.next()) {
-                            boolean shipDelivered = rs.getBoolean("shipper_delivered");
-                            boolean custConfirmed = rs.getBoolean("customer_confirmed");
+                            shipDelivered = rs.getBoolean("shipper_delivered");
+                            custConfirmed = rs.getBoolean("customer_confirmed");
                             driverId = rs.getInt("driver_id");
-                            ready = shipDelivered && custConfirmed;
+                            currentStatus = rs.getString("status");
                         }
                     }
                 }
 
-                if (!ready) {
-                    System.err.println("Chưa thể duyệt hoàn thành đơn #" + orderId + ": Cần cả Shipper và Khách cùng xác nhận!");
+                if ("CANCELLED".equalsIgnoreCase(currentStatus)) {
                     return false;
                 }
 
-                String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
-                try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
-                    psUpdate.setInt(1, orderId);
-                    int updated = psUpdate.executeUpdate();
-                    if (updated > 0) {
-                        // Giải phóng shipper về AVAILABLE để tiếp tục nhận cuốc mới
-                        if (driverId > 0) {
-                            String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
-                            try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                                psDriver.setInt(1, driverId);
-                                psDriver.executeUpdate();
-                            } catch (Exception ignored) {}
+                // Khi CẢ Shipper và Khách hàng đều đã xác nhận -> Hoàn tất đơn tự động ngay lập tức
+                if (shipDelivered && custConfirmed) {
+                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+                    try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                        psUpdate.setInt(1, orderId);
+                        int updated = psUpdate.executeUpdate();
+                        if (updated > 0 || "DELIVERED".equalsIgnoreCase(currentStatus)) {
+                            // Giải phóng shipper về AVAILABLE để tiếp tục nhận cuốc mới
+                            if (driverId > 0) {
+                                String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
+                                try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                                    psDriver.setInt(1, driverId);
+                                    psDriver.executeUpdate();
+                                } catch (Exception ignored) {}
+                            }
+                            return true;
                         }
-                        return true;
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi chủ quán duyệt hoàn tất đơn: " + e.getMessage());
+            System.err.println("Lỗi khi tự động hoàn tất đơn #" + orderId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Dành cho chủ quán nếu muốn bấm hoàn tất đơn (hoặc xử lý ngoại lệ):
+     */
+    public boolean merchantCompleteOrder(int orderId) {
+        String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+            psUpdate.setInt(1, orderId);
+            int updated = psUpdate.executeUpdate();
+            if (updated > 0) {
+                Order o = getOrderById(orderId);
+                if (o != null && o.getDriverId() != null && o.getDriverId() > 0) {
+                    try (PreparedStatement psDriver = conn.prepareStatement("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?")) {
+                        psDriver.setInt(1, o.getDriverId());
+                        psDriver.executeUpdate();
+                    } catch (Exception ignored) {}
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi chủ quán hoàn tất đơn: " + e.getMessage());
         }
         return false;
     }

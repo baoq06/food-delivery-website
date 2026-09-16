@@ -218,11 +218,18 @@
                                                     </div>
                                                     <div>
                                                         <c:choose>
-                                                            <c:when test="${order.merchantCompleted}">
+                                                            <c:when test="${order.merchantCompleted or order.status eq 'DELIVERED'}">
                                                                 <span class="badge bg-success text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-sack-dollar"></i> Đã tính doanh thu</span>
                                                             </c:when>
-                                                            <c:when test="${order.readyForMerchantComplete}">
-                                                                <span class="badge bg-warning text-dark py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-bell"></i> Sẵn sàng duyệt</span>
+                                                            <c:when test="${order.status eq 'SHIPPING'}">
+                                                                <c:choose>
+                                                                    <c:when test="${order.shipperDelivered and not order.customerConfirmed}">
+                                                                        <span class="badge bg-info text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-clock"></i> Chờ khách nhận</span>
+                                                                    </c:when>
+                                                                    <c:when test="${order.customerConfirmed and not order.shipperDelivered}">
+                                                                        <span class="badge bg-info text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-clock"></i> Chờ shipper giao</span>
+                                                                    </c:when>
+                                                                </c:choose>
                                                             </c:when>
                                                         </c:choose>
                                                     </div>
@@ -263,19 +270,20 @@
 
                                                 <c:if test="${order.status eq 'SHIPPING'}">
                                                     <c:choose>
-                                                        <c:when test="${order.readyForMerchantComplete}">
-                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" style="display:inline;">
-                                                                <input type="hidden" name="action" value="completeOrder" />
-                                                                <input type="hidden" name="orderId" value="${order.id}" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-delivered shadow-sm" style="animation: pulse 1.5s infinite;" title="Cả Shipper và Khách đã xác nhận. Bấm để duyệt hoàn tất và ghi nhận doanh thu!">
-                                                                    <i class="fa-solid fa-circle-check"></i> Duyệt Hoàn Tất Đơn
-                                                                </button>
-                                                            </form>
+                                                        <c:when test="${order.shipperDelivered and not order.customerConfirmed}">
+                                                            <span class="badge bg-info-subtle text-info border border-info-subtle py-1 px-2" style="font-size: 0.78rem;" title="Shipper đã giao đến nơi, đang chờ khách xác nhận đã nhận món để tự động hoàn tất đơn">
+                                                                <i class="fa-solid fa-hourglass-half me-1"></i> Chờ khách nhận
+                                                            </span>
+                                                        </c:when>
+                                                        <c:when test="${order.customerConfirmed and not order.shipperDelivered}">
+                                                            <span class="badge bg-info-subtle text-info border border-info-subtle py-1 px-2" style="font-size: 0.78rem;" title="Khách đã nhận được hàng, đang chờ shipper bấm xác nhận đã giao để tự động hoàn tất đơn">
+                                                                <i class="fa-solid fa-hourglass-half me-1"></i> Chờ shipper giao
+                                                            </span>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <button type="button" class="btn-mo-action" disabled title="Cần cả Shipper báo đã giao VÀ Khách xác nhận đã nhận mới có thể duyệt hoàn tất!" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; cursor: not-allowed;">
-                                                                <i class="fa-solid fa-hourglass-half"></i> Chờ 2 bên xác nhận
-                                                            </button>
+                                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.78rem;" title="Shipper đang vận chuyển món ăn đến khách hàng">
+                                                                <i class="fa-solid fa-truck-fast me-1"></i> Đang giao hàng
+                                                            </span>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </c:if>

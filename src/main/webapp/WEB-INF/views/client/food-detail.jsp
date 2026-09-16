@@ -318,7 +318,10 @@
                                         </div>
 
                                         <div class="full-review-content">
-                                            <p class="full-review-comment">${not empty rev.foodComment ? rev.foodComment : rev.comment}</p>
+                                            <c:set var="userComment" value="${not empty rev.foodComment ? rev.foodComment : rev.comment}" />
+                                            <c:if test="${not empty userComment and userComment ne 'Món ăn rất ngon, phục vụ chu đáo!' and userComment ne 'Đánh giá tốt'}">
+                                                <p class="full-review-comment">${userComment}</p>
+                                            </c:if>
                                             <c:if test="${not empty rev.imageUrl}">
                                                 <div class="review-photo-attachment">
                                                     <img src="${pageContext.request.contextPath}${rev.imageUrl}" 

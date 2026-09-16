@@ -151,8 +151,6 @@ public class OrderReviewController extends HttpServlet {
             }
             if (foodComment != null && !foodComment.trim().isEmpty()) {
                 fullFoodComment.append(foodComment.trim());
-            } else if (fullFoodComment.length() == 0) {
-                fullFoodComment.append(foodRating >= 4 ? "Món ăn rất ngon, phục vụ chu đáo!" : "Chất lượng cần cải thiện.");
             }
 
             StringBuilder fullDriverComment = new StringBuilder();
@@ -161,8 +159,6 @@ public class OrderReviewController extends HttpServlet {
             }
             if (driverComment != null && !driverComment.trim().isEmpty()) {
                 fullDriverComment.append(driverComment.trim());
-            } else if (fullDriverComment.length() == 0) {
-                fullDriverComment.append(driverRating >= 4 ? "Giao hàng nhanh và thân thiện!" : "Cần cải thiện thời gian giao.");
             }
 
             // Xử lý upload ảnh chụp món ăn (nếu khách hàng đính kèm)
@@ -176,17 +172,20 @@ public class OrderReviewController extends HttpServlet {
                 System.err.println("Lưu ý khi xử lý file upload ảnh review: " + imgEx.getMessage());
             }
 
+            String finalFoodComment = fullFoodComment.toString().trim();
+            String finalDriverComment = fullDriverComment.toString().trim();
+
             Review review = new Review();
             review.setOrderId(orderId);
             review.setCustomerId(currentUser.getId());
             review.setDriverId(order.getDriverId());
             review.setRestaurantId(order.getRestaurantId());
             review.setFoodRating(foodRating);
-            review.setFoodComment(fullFoodComment.toString());
+            review.setFoodComment(finalFoodComment);
             review.setDriverRating(driverRating);
-            review.setDriverComment(fullDriverComment.toString());
+            review.setDriverComment(finalDriverComment);
             review.setRating((foodRating + driverRating) / 2);
-            review.setComment(fullFoodComment.toString());
+            review.setComment(finalFoodComment);
             review.setImageUrl(imageUrl);
 
             boolean success = reviewDAO.addReview(review);

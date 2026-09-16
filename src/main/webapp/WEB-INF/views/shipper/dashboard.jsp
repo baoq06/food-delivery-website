@@ -696,7 +696,7 @@
                                                 <c:when test="${activeOrder.shipperDelivered}">
                                                     <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" style="border-radius: 50px;">
                                                         <i class="fa-solid fa-circle-check text-success"></i>
-                                                        <span class="fw-bold">Bạn đã bấm xác nhận giao xong!</span>
+                                                        <span class="fw-bold">Bạn đã bấm xác nhận giao xong! (Đang chờ khách bấm xác nhận đã nhận món để hoàn tất)</span>
                                                     </div>
                                                 </c:when>
                                                 <c:otherwise>

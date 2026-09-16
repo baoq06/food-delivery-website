@@ -76,13 +76,14 @@ public class ReviewDAO {
                     if (overall < 1) overall = 1;
 
                     ps.setInt(5, overall);
-                    ps.setString(6, review.getComment() != null ? review.getComment() : (review.getFoodComment() != null ? review.getFoodComment() : "Đánh giá tốt"));
+                    String cmt = review.getComment() != null ? review.getComment() : (review.getFoodComment() != null ? review.getFoodComment() : "");
+                    ps.setString(6, cmt);
 
                     if (review.getFoodRating() != null) ps.setInt(7, review.getFoodRating()); else ps.setInt(7, foodR);
-                    ps.setString(8, review.getFoodComment() != null ? review.getFoodComment() : review.getComment());
+                    ps.setString(8, review.getFoodComment() != null ? review.getFoodComment() : "");
 
                     if (review.getDriverRating() != null) ps.setInt(9, review.getDriverRating()); else ps.setInt(9, driverR);
-                    ps.setString(10, review.getDriverComment() != null ? review.getDriverComment() : review.getComment());
+                    ps.setString(10, review.getDriverComment() != null ? review.getDriverComment() : "");
                     ps.setString(11, review.getImageUrl());
                     
                     return ps.executeUpdate() > 0;

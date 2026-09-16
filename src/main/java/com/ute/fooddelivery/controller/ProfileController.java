@@ -245,7 +245,14 @@ public class ProfileController extends HttpServlet {
                         com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
                         Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
                         Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
-                        notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
+                        com.ute.fooddelivery.model.Order updatedOrder = oDAO.getOrderById(orderId);
+                        if (updatedOrder != null && "DELIVERED".equalsIgnoreCase(updatedOrder.getStatus())) {
+                            // Cả 2 bên đều đã xác nhận -> Đơn đã tự động hoàn tất
+                            notifSvc.notifyOrderCompleted(currentUser.getId(), shipperUserId, merchantUserId, orderId);
+                        } else {
+                            // Mới chỉ có Khách xác nhận, chờ shipper xác nhận
+                            notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
+                        }
                     } catch (Exception ignored) {}
                     resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
                 } else {
