@@ -1,0 +1,264 @@
+/* ==========================================================================
+   VNAddressPicker Styles - UI/UX Pro Max Standard
+   Chuẩn hóa giao diện bộ chọn địa chỉ hành chính Việt Nam
+   ========================================================================== */
+
+.vn-address-picker-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 1rem;
+    font-family: inherit;
+}
+
+.vn-address-picker-card:focus-within {
+    border-color: #ff4757;
+    box-shadow: 0 6px 20px rgba(255, 71, 87, 0.08);
+}
+
+/* Header */
+.vn-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.vn-picker-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.vn-picker-icon {
+    color: #ff4757;
+    font-size: 1.05rem;
+}
+
+.vn-toggle-manual-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.vn-toggle-manual-btn:hover {
+    background: #fff;
+    color: #ff4757;
+    border-color: #ff4757;
+}
+
+.vn-toggle-manual-btn.active {
+    background: #fff5f5;
+    color: #ff4757;
+    border-color: #ffccd0;
+}
+
+/* Form layout */
+.vn-select-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .vn-select-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+.vn-field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.vn-street-item {
+    margin-bottom: 12px;
+}
+
+.vn-field-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.vn-req {
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* Select wrapper with custom arrow */
+.vn-select-wrapper,
+.vn-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.vn-form-select,
+.vn-form-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 36px 0 12px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #1e293b;
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.vn-form-input {
+    padding: 0 14px 0 38px;
+}
+
+.vn-form-select:hover:not(:disabled),
+.vn-form-input:hover {
+    border-color: #cbd5e1;
+}
+
+.vn-form-select:focus,
+.vn-form-input:focus {
+    border-color: #ff4757;
+    box-shadow: 0 0 0 3px rgba(255, 71, 87, 0.15);
+    background-color: #ffffff;
+}
+
+.vn-form-select:disabled {
+    background-color: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+}
+
+.vn-select-arrow {
+    position: absolute;
+    right: 12px;
+    pointer-events: none;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.vn-input-icon {
+    position: absolute;
+    left: 12px;
+    pointer-events: none;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+/* Live Preview box */
+.vn-picker-preview {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.vn-preview-tag {
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #059669;
+    display: flex;
+    align-items: center;
+}
+
+.vn-preview-text {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.vn-placeholder-hint {
+    font-size: 0.82rem;
+    font-weight: normal;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Dark mode support if container or body is in dark mode */
+body.dark-mode .vn-address-picker-card,
+[data-theme="dark"] .vn-address-picker-card {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-mode .vn-picker-header,
+[data-theme="dark"] .vn-picker-header {
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .vn-picker-title,
+[data-theme="dark"] .vn-picker-title {
+    color: #f8fafc;
+}
+
+body.dark-mode .vn-field-label,
+[data-theme="dark"] .vn-field-label {
+    color: #cbd5e1;
+}
+
+body.dark-mode .vn-form-select,
+body.dark-mode .vn-form-input,
+[data-theme="dark"] .vn-form-select,
+[data-theme="dark"] .vn-form-input {
+    background-color: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+body.dark-mode .vn-form-select:disabled,
+[data-theme="dark"] .vn-form-select:disabled {
+    background-color: #1e293b;
+    color: #64748b;
+}
+
+body.dark-mode .vn-picker-preview,
+[data-theme="dark"] .vn-picker-preview {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+body.dark-mode .vn-preview-text,
+[data-theme="dark"] .vn-preview-text {
+    color: #f8fafc;
+}

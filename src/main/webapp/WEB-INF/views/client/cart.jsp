@@ -100,8 +100,9 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="receiverAddress">Địa chỉ giao hàng chi tiết *</label>
-                                <input type="text" id="receiverAddress" name="receiverAddress" class="form-control" required placeholder="Số nhà, tên đường, phường/xã, quận..." 
+                                <label class="form-label">Địa chỉ giao hàng chi tiết *</label>
+                                <div id="cartVNAddressPicker"></div>
+                                <input type="hidden" id="receiverAddress" name="receiverAddress" required 
                                        value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : sessionScope.currentUser.address}' />">
                             </div>
 
@@ -204,7 +205,17 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('cartVNAddressPicker') && typeof VNAddressPicker !== 'undefined') {
+        VNAddressPicker.init({
+            container: 'cartVNAddressPicker',
+            targetInput: 'receiverAddress',
+            initialAddress: document.getElementById('receiverAddress') ? document.getElementById('receiverAddress').value : ''
+        });
+    }
+});
 let hasDiscount = false;
 const baseTotal = ${totalBill != null ? totalBill : 0};
 

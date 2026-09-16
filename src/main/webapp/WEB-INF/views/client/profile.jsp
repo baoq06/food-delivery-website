@@ -435,10 +435,11 @@
 
                     <div class="form-group">
                         <label class="form-label" for="address">${(user.seller or user.role eq 'SELLER') ? 'Địa chỉ liên hệ cá nhân' : 'Địa chỉ giao hàng mặc định'} <span class="required-star">*</span></label>
-                        <div class="input-icon-wrap">
-                            <i class="fa-solid fa-location-dot input-icon input-icon-textarea"></i>
-                            <textarea id="address" name="address" class="form-control textarea-address" rows="3" required placeholder="Nhập số nhà, tên đường, phường/xã, quận/huyện...">${not empty stickyAddress ? stickyAddress : user.address}</textarea>
-                        </div>
+                        
+                        <!-- Bộ chọn địa chỉ hành chính Việt Nam (API 63 Tỉnh/Thành) -->
+                        <div id="customerVNAddressPicker"></div>
+                        <input type="hidden" id="address" name="address" value="<c:out value='${not empty stickyAddress ? stickyAddress : user.address}' />" required />
+
                         <span class="form-help-text">${(user.seller or user.role eq 'SELLER') ? 'Địa chỉ cá nhân của chủ tài khoản' : 'Địa chỉ giao hàng chính xác giúp tài xế tìm đường nhanh hơn'}</span>
                     </div>
 
@@ -826,7 +827,7 @@
         </div>
     </div>
 </div>
-
+<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
 function switchTab(tabId) {
     // Ẩn tất cả panes
@@ -929,6 +930,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     checkProfileChanges();
+
+    // Khởi tạo VNAddressPicker cho hồ sơ khách hàng
+    if (document.getElementById('customerVNAddressPicker') && typeof VNAddressPicker !== 'undefined') {
+        VNAddressPicker.init({
+            container: 'customerVNAddressPicker',
+            targetInput: 'address',
+            initialAddress: document.getElementById('address') ? document.getElementById('address').value : '',
+            onChange: function(result) {
+                checkProfileChanges();
+            }
+        });
+    }
 });
 </script>
 

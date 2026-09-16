@@ -479,14 +479,10 @@
 
                             <!-- 3. PHẦN RIÊNG: KHÁCH HÀNG (CUSTOMER) -->
                             <div id="step4CustomerFields" style="display: block;">
-                                <div class="auth-field-group">
-                                    <label for="customerAddress" class="auth-field-label">Địa chỉ giao hàng mặc định *</label>
-                                    <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-solid fa-location-dot"></i></span>
-                                        <input type="text" id="customerAddress" class="auth-field-input" 
-                                               value="<c:out value='${stickyRegAddress}' />"
-                                               placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">
-                                    </div>
+                                <div class="auth-field-group mb-3">
+                                    <label class="auth-field-label">Địa chỉ giao hàng mặc định *</label>
+                                    <div id="regCustomerVNAddressPicker"></div>
+                                    <input type="hidden" id="customerAddress" value="<c:out value='${stickyRegAddress}' />" />
                                 </div>
 
                                 <div class="auth-field-group">
@@ -620,14 +616,10 @@
                                     </div>
                                 </div>
 
-                                <div class="auth-field-group">
-                                    <label for="sellerAddress" class="auth-field-label">Địa chỉ nhà hàng / quán ăn *</label>
-                                    <div class="auth-field-control">
-                                        <span class="auth-field-icon"><i class="fa-solid fa-map-location-dot"></i></span>
-                                        <input type="text" id="sellerAddress" class="auth-field-input" 
-                                               value="<c:out value='${stickyRegAddress}' />"
-                                               placeholder="Số nhà, tên đường nơi quán ăn đặt trụ sở...">
-                                    </div>
+                                <div class="auth-field-group mb-3">
+                                    <label class="auth-field-label">Địa chỉ nhà hàng / quán ăn *</label>
+                                    <div id="regSellerVNAddressPicker"></div>
+                                    <input type="hidden" id="sellerAddress" value="<c:out value='${stickyRegAddress}' />" />
                                 </div>
 
                                 <div class="auth-fields-row-2">
@@ -710,6 +702,7 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
 let currentStep = 1;
 let selectedRole = '<c:out value="${not empty stickyAccountType ? stickyAccountType : 'CUSTOMER'}" />';
@@ -1180,20 +1173,38 @@ function fillDemo(user, pass) {
     }
 }
 
-// Tự động chuyển sang tab Đăng ký nếu URL có hash #register hoặc đang có lỗi đăng ký
-<c:choose>  
-    <c:when test="${activeTab eq 'registerTab'}">
-        switchAuthTab('registerTab');
-        <c:if test="${currentStep != null && currentStep == 4}">
-            goToStep(4);
-        </c:if>
-    </c:when>
-    <c:otherwise>
-        if (window.location.hash === '#register') {
+    // Tự động chuyển sang tab Đăng ký nếu URL có hash #register hoặc đang có lỗi đăng ký
+    <c:choose>  
+        <c:when test="${activeTab eq 'registerTab'}">
             switchAuthTab('registerTab');
+            <c:if test="${currentStep != null && currentStep == 4}">
+                goToStep(4);
+            </c:if>
+        </c:when>
+        <c:otherwise>
+            if (window.location.hash === '#register') {
+                switchAuthTab('registerTab');
+            }
+        </c:otherwise>
+    </c:choose>
+
+    // Khởi tạo VNAddressPicker cho đăng ký khách hàng & chủ quán
+    if (typeof VNAddressPicker !== 'undefined') {
+        if (document.getElementById('regCustomerVNAddressPicker')) {
+            VNAddressPicker.init({
+                container: 'regCustomerVNAddressPicker',
+                targetInput: 'customerAddress',
+                initialAddress: document.getElementById('customerAddress') ? document.getElementById('customerAddress').value : ''
+            });
         }
-    </c:otherwise>
-</c:choose>
+        if (document.getElementById('regSellerVNAddressPicker')) {
+            VNAddressPicker.init({
+                container: 'regSellerVNAddressPicker',
+                targetInput: 'sellerAddress',
+                initialAddress: document.getElementById('sellerAddress') ? document.getElementById('sellerAddress').value : ''
+            });
+        }
+    }
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

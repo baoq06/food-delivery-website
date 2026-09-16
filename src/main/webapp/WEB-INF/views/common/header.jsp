@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Main CSS with Cache Busting -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=<%= System.currentTimeMillis() %>">
+    <!-- Vietnam Address Picker CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/vn-address-picker.css?v=<%= System.currentTimeMillis() %>">
 </head>
 <body>
 <jsp:include page="/WEB-INF/views/common/navbar.jsp">

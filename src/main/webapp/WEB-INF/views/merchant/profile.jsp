@@ -51,8 +51,11 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <label class="form-label fw-bold mb-1">Địa chỉ quán ăn</label>
-                        <input type="text" name="address" value="${currentRestaurant.address}" class="form-control" style="border-radius: 10px;" />
+                        <label class="form-label fw-bold mb-1">Địa chỉ quán ăn <span class="text-danger">*</span></label>
+                        
+                        <!-- Bộ chọn địa chỉ hành chính Việt Nam cho quán ăn -->
+                        <div id="merchantVNAddressPicker"></div>
+                        <input type="hidden" id="merchantAddress" name="address" value="<c:out value='${currentRestaurant.address}' />" required />
                     </div>
 
                     <div class="form-group mb-3">
@@ -113,6 +116,7 @@
     </div>
 </div>
 
+<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
     function previewProfileImage(url) {
         const img = document.getElementById('storeBannerImg');
@@ -120,6 +124,22 @@
             img.src = url.trim();
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('merchantVNAddressPicker') && typeof VNAddressPicker !== 'undefined') {
+            VNAddressPicker.init({
+                container: 'merchantVNAddressPicker',
+                targetInput: 'merchantAddress',
+                initialAddress: document.getElementById('merchantAddress') ? document.getElementById('merchantAddress').value : '',
+                onChange: function(res) {
+                    const previewAddr = document.getElementById('previewStoreAddr');
+                    if (previewAddr) {
+                        previewAddr.textContent = (res && res.fullAddress && res.fullAddress.trim().length > 0) ? res.fullAddress : 'Chưa cập nhật địa chỉ';
+                    }
+                }
+            });
+        }
+    });
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
