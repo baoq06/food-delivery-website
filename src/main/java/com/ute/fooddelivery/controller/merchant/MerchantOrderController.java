@@ -137,6 +137,13 @@ public class MerchantOrderController extends HttpServlet {
                     return;
                 }
 
+                // Chặn gán nếu shipper này đã có 3 đơn đang chờ nhận
+                if (orderDAO.countPendingAssignedOrders(driverId) >= 3) {
+                    req.getSession().setAttribute("flashError", "Tài xế này đã được gán tối đa 3 đơn đang chờ nhận! Vui lòng chọn tài xế khác hoặc đợi tài xế phản hồi.");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    return;
+                }
+
                 boolean success = merchantService.assignDriver(orderId, driverId);
                 if (success) {
                     // Gửi thông báo đến Shipper vừa được gán

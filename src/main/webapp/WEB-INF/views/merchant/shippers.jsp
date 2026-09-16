@@ -96,6 +96,11 @@
                                             <c:choose>
                                                 <c:when test="${driver.status eq 'AVAILABLE'}">
                                                     <span class="badge badge-done"><span class="dot-pulse"></span> Sẵn Sàng Nhận</span>
+                                                    <c:if test="${driver.pendingOrderCount > 0}">
+                                                        <span class="badge ${driver.pendingOrderCount >= 3 ? 'badge-cancelled' : 'badge-warning'}" style="margin-left: 4px; font-size: 0.75rem;">
+                                                            ${driver.pendingOrderCount}/3 chờ nhận
+                                                        </span>
+                                                    </c:if>
                                                 </c:when>
                                                 <c:when test="${driver.status eq 'BUSY'}">
                                                     <span class="badge badge-shipping"><i class="fa-solid fa-clock me-1"></i> Đang Bận Giao</span>
@@ -116,9 +121,14 @@
                                             <div class="d-inline-flex gap-2 justify-content-end align-items-center">
                                                 <c:if test="${driver.status eq 'AVAILABLE'}">
                                                     <c:choose>
+                                                        <c:when test="${driver.pendingOrderCount >= 3}">
+                                                            <button type="button" class="btn btn-secondary btn-sm d-inline-flex align-items-center gap-1" disabled title="Tài xế đã nhận tối đa 3 đơn chờ nhận" style="opacity: 0.65; cursor: not-allowed;">
+                                                                <i class="fa-solid fa-ban"></i> Đã đủ 3 đơn chờ
+                                                            </button>
+                                                        </c:when>
                                                         <c:when test="${not empty unassignedOrders}">
                                                             <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" onclick="openDispatchModal(${driver.id}, '${driver.name}')">
-                                                                <i class="fa-solid fa-paper-plane"></i> Giao Đơn
+                                                                <i class="fa-solid fa-paper-plane"></i> Giao Đơn <c:if test="${driver.pendingOrderCount > 0}">(${driver.pendingOrderCount}/3)</c:if>
                                                             </button>
                                                         </c:when>
                                                         <c:otherwise>

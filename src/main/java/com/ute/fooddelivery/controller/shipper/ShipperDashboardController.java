@@ -165,9 +165,10 @@ public class ShipperDashboardController extends HttpServlet {
         }
 
         if (driver != null) {
-            // Đơn đang được gán chờ Shipper xác nhận nhận cuốc
-            Order pendingAssignedOrder = orderDAO.getPendingAssignedOrderForDriver(driver.getId());
-            req.setAttribute("pendingAssignedOrder", pendingAssignedOrder);
+            // Đơn đang được gán chờ Shipper xác nhận nhận cuốc (tối đa 3 đơn, xếp theo thời gian cũ nhất lên trước)
+            List<Order> pendingAssignedOrders = orderDAO.getPendingAssignedOrdersForDriver(driver.getId());
+            req.setAttribute("pendingAssignedOrders", pendingAssignedOrders);
+            req.setAttribute("pendingAssignedOrder", pendingAssignedOrders.isEmpty() ? null : pendingAssignedOrders.get(0));
 
             // Đơn đang giao (SHIPPING)
             List<Order> activeOrders = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");

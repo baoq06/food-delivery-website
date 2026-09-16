@@ -1,5 +1,6 @@
 package com.ute.fooddelivery.controller.merchant;
 
+import com.ute.fooddelivery.dao.OrderDAO;
 import com.ute.fooddelivery.model.Driver;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.Restaurant;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @WebServlet(name = "MerchantShipperController", urlPatterns = {"/merchant/shippers"})
 public class MerchantShipperController extends HttpServlet {
     private final MerchantService merchantService = new MerchantService();
+    private final OrderDAO orderDAO = new OrderDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -86,6 +88,12 @@ public class MerchantShipperController extends HttpServlet {
             if ("assign".equalsIgnoreCase(action)) {
                 int driverId = Integer.parseInt(req.getParameter("driverId"));
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
+
+                if (orderDAO.countPendingAssignedOrders(driverId) >= 3) {
+                    req.getSession().setAttribute("flashError", "Tài xế này đã được gán tối đa 3 đơn đang chờ nhận! Vui lòng chọn tài xế khác hoặc đợi tài xế phản hồi.");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/shippers");
+                    return;
+                }
 
                 boolean success = merchantService.assignDriver(orderId, driverId);
                 if (success) {

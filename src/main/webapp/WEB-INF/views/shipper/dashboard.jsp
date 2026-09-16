@@ -578,58 +578,94 @@
             <!-- TAB 1: NHẬN ĐƠN & ĐIỀU PHỐI (dispatch) -->
             <!-- ============================================================= -->
             <c:if test="${activeTab eq 'dispatch' or empty activeTab}">
-                <!-- ĐƠN HÀNG QUÁN VỪA CHỈ ĐỊNH (CẦN SHIPPER XÁC NHẬN NHẬN CUỐC) -->
-                <c:if test="${not empty pendingAssignedOrder}">
-                    <div class="shipper-card mb-4" style="border: 2px solid #f59e0b; background: #fffdf5; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);">
-                        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <!-- DANH SÁCH ĐƠN HÀNG QUÁN VỪA CHỈ ĐỊNH (CẦN SHIPPER XÁC NHẬN NHẬN CUỐC) -->
+                <c:if test="${not empty pendingAssignedOrders}">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
                             <div class="d-flex align-items-center gap-2">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
-                                    <i class="fa-solid fa-bell fa-shake"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0; font-weight: 800; font-size: 1.15rem; color: #fff;">QUÁN VỪA CHỈ ĐỊNH BẠN GIAO ĐƠN!</h4>
-                                    <p style="margin: 2px 0 0 0; font-size: 0.82rem; opacity: 0.95;">Quán đang đợi bạn bấm đồng ý nhận để bắt đầu chế biến món ăn.</p>
-                                </div>
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-2 fw-bold" style="font-size: 0.95rem;">
+                                    <i class="fa-solid fa-bell fa-shake me-1"></i> ${pendingAssignedOrders.size()} đơn quán đã gán đang chờ bạn nhận
+                                </span>
+                                <small class="text-muted">(Xếp theo thứ tự gán trước đến sau - tối đa 3 đơn)</small>
                             </div>
-                            <span class="badge bg-white text-warning fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.85rem;">
-                                ⏳ Chờ bạn phản hồi
-                            </span>
                         </div>
-                        <div style="padding: 24px;">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
-                                    <span class="text-muted small">Mã đơn hàng:</span>
-                                    <div class="fw-bold fs-6 text-dark">#FZ-${pendingAssignedOrder.id}</div>
+
+                        <div class="d-flex flex-column gap-3">
+                            <c:forEach items="${pendingAssignedOrders}" var="pOrder" varStatus="loop">
+                                <div class="shipper-card" style="border: 2px solid ${loop.first ? '#f59e0b' : '#cbd5e1'}; background: ${loop.first ? '#fffdf5' : '#ffffff'}; box-shadow: 0 6px 18px rgba(0,0,0,0.06); border-radius: 14px; overflow: hidden;">
+                                    <div style="background: ${loop.first ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : '#475569'}; color: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 800;">
+                                                #${loop.index + 1}
+                                            </div>
+                                            <div>
+                                                <h4 style="margin: 0; font-weight: 800; font-size: 1.05rem; color: #fff;">
+                                                    <c:choose>
+                                                        <c:when test="${loop.first}">
+                                                            QUÁN CHỈ ĐỊNH ĐƠN #FZ-${pOrder.id} (Ưu tiên - Đơn đến trước)
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            QUÁN CHỈ ĐỊNH ĐƠN #FZ-${pOrder.id}
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </h4>
+                                                <p style="margin: 2px 0 0 0; font-size: 0.8rem; opacity: 0.95;">
+                                                    Thời gian tạo: <fmt:formatDate value="${pOrder.createdAt}" pattern="HH:mm dd/MM/yyyy" />
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span class="badge ${loop.first ? 'bg-white text-warning' : 'bg-light text-dark'} fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.82rem;">
+                                            ⏳ Chờ bạn phản hồi
+                                        </span>
+                                    </div>
+                                    <div style="padding: 20px;">
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-3 col-6">
+                                                <span class="text-muted small">Mã đơn:</span>
+                                                <div class="fw-bold fs-6 text-dark">#FZ-${pOrder.id}</div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <span class="text-muted small">Khách nhận:</span>
+                                                <div class="fw-bold fs-6 text-dark">${pOrder.customerName} (${pOrder.phone})</div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <span class="text-muted small">Thu hộ COD:</span>
+                                                <div class="fw-bold fs-6 text-danger"><fmt:formatNumber value="${pOrder.totalAmount}" pattern="#,###" /> đ</div>
+                                            </div>
+                                            <div class="col-md-3 col-6">
+                                                <span class="text-muted small">Thanh toán:</span>
+                                                <div class="fw-bold text-dark">${pOrder.paymentMethod}</div>
+                                            </div>
+                                            <div class="col-12">
+                                                <span class="text-muted small">Địa chỉ giao hàng:</span>
+                                                <div class="fw-semibold text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i> ${pOrder.address}</div>
+                                            </div>
+                                            <c:if test="${not empty pOrder.note}">
+                                                <div class="col-12">
+                                                    <span class="text-muted small">Ghi chú của khách:</span>
+                                                    <div class="small text-muted italic bg-light p-2 rounded">${pOrder.note}</div>
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                        <div class="d-flex gap-3 flex-wrap">
+                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 2; min-width: 200px;">
+                                                <input type="hidden" name="action" value="acceptOrder">
+                                                <input type="hidden" name="orderId" value="${pOrder.id}">
+                                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold" style="border-radius: 50px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.25);">
+                                                    <i class="fa-solid fa-check-double me-2"></i> NHẬN ĐƠN #FZ-${pOrder.id}
+                                                </button>
+                                            </form>
+                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 1; min-width: 130px;" onsubmit="return confirm('Bạn có chắc muốn từ chối cuốc xe #FZ-${pOrder.id}? Quán sẽ gán tài xế khác.');">
+                                                <input type="hidden" name="action" value="declineOrder">
+                                                <input type="hidden" name="orderId" value="${pOrder.id}">
+                                                <button type="submit" class="btn btn-outline-danger w-100 py-2 fw-semibold" style="border-radius: 50px;">
+                                                    <i class="fa-solid fa-xmark me-1"></i> Từ chối
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <span class="text-muted small">Khách nhận:</span>
-                                    <div class="fw-bold fs-6 text-dark">${pendingAssignedOrder.customerName} (${pendingAssignedOrder.phone})</div>
-                                </div>
-                                <div class="col-md-4">
-                                    <span class="text-muted small">Thu hộ COD:</span>
-                                    <div class="fw-bold fs-5 text-danger"><fmt:formatNumber value="${pendingAssignedOrder.totalAmount}" pattern="#,###" /> đ</div>
-                                </div>
-                                <div class="col-12">
-                                    <span class="text-muted small">Địa chỉ giao hàng:</span>
-                                    <div class="fw-semibold text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i> ${pendingAssignedOrder.address}</div>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-3 flex-wrap">
-                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 2; min-width: 220px;">
-                                    <input type="hidden" name="action" value="acceptOrder">
-                                    <input type="hidden" name="orderId" value="${pendingAssignedOrder.id}">
-                                    <button type="submit" class="btn btn-success btn-lg w-100 py-3" style="border-radius: 50px; font-weight: 800; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3);">
-                                        <i class="fa-solid fa-check-double me-2"></i> ĐỒNG Ý NHẬN GIAO ĐƠN NÀY
-                                    </button>
-                                </form>
-                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 1; min-width: 150px;" onsubmit="return confirm('Bạn có chắc muốn từ chối cuốc xe này? Quán sẽ gán tài xế khác.');">
-                                    <input type="hidden" name="action" value="declineOrder">
-                                    <input type="hidden" name="orderId" value="${pendingAssignedOrder.id}">
-                                    <button type="submit" class="btn btn-outline-danger btn-lg w-100 py-3" style="border-radius: 50px; font-weight: 700;">
-                                        <i class="fa-solid fa-xmark me-1"></i> Từ chối
-                                    </button>
-                                </form>
-                            </div>
+                            </c:forEach>
                         </div>
                     </div>
                 </c:if>

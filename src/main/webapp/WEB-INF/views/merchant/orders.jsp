@@ -355,7 +355,23 @@
                     <label class="form-label fw-bold mb-2">Chọn tài xế đang trực tuyến:</label>
                     <select name="driverId" class="form-select form-control" required style="border-radius: 10px; height: 44px;">
                         <c:forEach var="d" items="${availableDrivers}">
-                            <option value="${d.id}">🏍️ ${d.name} (${d.phone}) - [Sẵn sàng nhận]</option>
+                            <c:choose>
+                                <c:when test="${d.pendingOrderCount >= 3}">
+                                    <option value="${d.id}" disabled style="color: #94a3b8; background-color: #f1f5f9;">
+                                        🏍️ ${d.name} (${d.phone}) - [ĐÃ ĐỦ 3 ĐƠN CHỜ NHẬN (Tối đa)]
+                                    </option>
+                                </c:when>
+                                <c:when test="${d.pendingOrderCount > 0}">
+                                    <option value="${d.id}">
+                                        🏍️ ${d.name} (${d.phone}) - [Đang chờ nhận ${d.pendingOrderCount}/3 đơn]
+                                    </option>
+                                </c:when>
+                                <c:otherwise>
+                                    <option value="${d.id}">
+                                        🏍️ ${d.name} (${d.phone}) - [Sẵn sàng - 0/3 đơn chờ]
+                                    </option>
+                                </c:otherwise>
+                            </c:choose>
                         </c:forEach>
                     </select>
                 </div>
