@@ -12,13 +12,17 @@ public class DriverDAO {
 
     public List<Driver> getAllDrivers() {
         List<Driver> list = new ArrayList<>();
-        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers ORDER BY status ASC, driver_id ASC";
+        String query = "SELECT d.driver_id, d.user_id, d.name, d.phone, d.status, d.license_plate, d.vehicle_type, " +
+                       "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
+                       "FROM drivers d ORDER BY d.status ASC, d.driver_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
                      ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        list.add(mapResultSetToDriver(rs));
+                        Driver driver = mapResultSetToDriver(rs);
+                        driver.setPendingOrderCount(rs.getInt("pending_count"));
+                        list.add(driver);
                     }
                 }
             }
@@ -30,13 +34,17 @@ public class DriverDAO {
 
     public List<Driver> getAvailableDrivers() {
         List<Driver> list = new ArrayList<>();
-        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE status = 'AVAILABLE' ORDER BY driver_id ASC";
+        String query = "SELECT d.driver_id, d.user_id, d.name, d.phone, d.status, d.license_plate, d.vehicle_type, " +
+                       "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
+                       "FROM drivers d WHERE d.status = 'AVAILABLE' ORDER BY d.driver_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
                      ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
-                        list.add(mapResultSetToDriver(rs));
+                        Driver driver = mapResultSetToDriver(rs);
+                        driver.setPendingOrderCount(rs.getInt("pending_count"));
+                        list.add(driver);
                     }
                 }
             }

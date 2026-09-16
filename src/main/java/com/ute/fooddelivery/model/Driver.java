@@ -168,6 +168,16 @@ public class Driver implements Serializable {
         this.avatar = avatar;
     }
 
+    private int pendingOrderCount = 0;
+
+    public int getPendingOrderCount() {
+        return pendingOrderCount;
+    }
+
+    public void setPendingOrderCount(int pendingOrderCount) {
+        this.pendingOrderCount = pendingOrderCount;
+    }
+
     public boolean isAvailable() {
         return "AVAILABLE".equalsIgnoreCase(this.status);
     }

@@ -320,29 +320,58 @@ public class OrderDAO {
         return null;
     }
 
-    public Order getPendingAssignedOrderForDriver(int driverId) {
-        // Tìm đơn hàng được Quán gán đích danh cho tài xế này nhưng tài xế chưa xác nhận nhận cuốc
-        String sql = "SELECT order_id, customer_name, address, total_amount, phone FROM orders " +
-                     "WHERE driver_id = ? AND shipper_accepted = 0 AND status != 'CANCELLED' " +
-                     "ORDER BY created_at DESC LIMIT 1";
+    public int countPendingAssignedOrders(int driverId) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND shipper_accepted = 0 AND status != 'CANCELLED'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, driverId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm đơn chờ của shipper #" + driverId + ": " + e.getMessage());
+        }
+        return 0;
+    }
+
+    public List<Order> getPendingAssignedOrdersForDriver(int driverId) {
+        // Tìm danh sách các đơn hàng được Quán gán đích danh cho tài xế này nhưng tài xế chưa xác nhận nhận cuốc
+        // Đơn cũ hơn ưu tiên hiện ở trên trước -> ORDER BY created_at ASC, tối đa 3 đơn
+        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, payment_method, status, created_at FROM orders " +
+                     "WHERE driver_id = ? AND shipper_accepted = 0 AND status != 'CANCELLED' " +
+                     "ORDER BY created_at ASC LIMIT 3";
+        List<Order> list = new ArrayList<>();
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
                     Order order = new Order();
                     order.setId(rs.getInt("order_id"));
+                    order.setUserId(rs.getInt("user_id"));
                     order.setCustomerName(rs.getString("customer_name"));
-                    order.setAddress(rs.getString("address"));
-                    order.setTotalAmount(rs.getDouble("total_amount"));
                     order.setPhone(rs.getString("phone"));
-                    return order;
+                    order.setAddress(rs.getString("address"));
+                    order.setNote(rs.getString("note"));
+                    order.setTotalAmount(rs.getDouble("total_amount"));
+                    order.setPaymentMethod(rs.getString("payment_method"));
+                    order.setStatus(rs.getString("status"));
+                    order.setCreatedAt(rs.getTimestamp("created_at"));
+                    order.setDriverId(driverId);
+                    list.add(order);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return list;
+    }
+
+    public Order getPendingAssignedOrderForDriver(int driverId) {
+        List<Order> list = getPendingAssignedOrdersForDriver(driverId);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public List<Order> getOrdersByUser(int userId) {
@@ -972,6 +1001,11 @@ public class OrderDAO {
     }
 
     public boolean assignDriver(int orderId, int driverId) {
+        // Quán chỉ được gán cho 1 shipper tối đa 3 đơn khi shipper đó chưa nhận đơn nào
+        if (countPendingAssignedOrders(driverId) >= 3) {
+            System.err.println("Không thể gán đơn #" + orderId + " cho shipper #" + driverId + ": Shipper đã đạt tối đa 3 đơn chờ nhận!");
+            return false;
+        }
         String sql = "UPDATE orders SET driver_id = ?, shipper_accepted = 0 WHERE order_id = ? AND status != 'CANCELLED'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
