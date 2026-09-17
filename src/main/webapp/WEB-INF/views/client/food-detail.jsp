@@ -116,6 +116,61 @@
                     </form>
                 </div>
             </div>
+            
+            <!-- NEW: Customer Reviews Section -->
+            <div class="reviews-section" style="margin-top: 40px; padding: 25px; background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="m-0" style="font-size: 1.4rem; font-weight: 700; color: #2c3e50;">
+                        <i class="fa-solid fa-comments text-primary" style="margin-right: 8px;"></i> Nhận Xét Của Khách Hàng
+                    </h3>
+                    <div style="font-size: 1.1rem; font-weight: 600;">
+                        <span style="color: #ffc107;"><i class="fa-solid fa-star"></i> 4.9</span>
+                        <span class="text-muted" style="font-size: 0.9em; font-weight: 400;">(250+ đánh giá)</span>
+                    </div>
+                </div>
+                
+                <div class="review-list">
+                    <!-- Dummy Review 1 -->
+                    <div class="review-item" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
+                                <div>
+                                    <strong style="display: block; color: #333; font-size: 1rem;">Nguyễn Văn A</strong>
+                                    <div class="stars" style="color: #ffc107; font-size: 0.85em;">
+                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted"><i class="fa-regular fa-clock"></i> 12/09/2026</small>
+                        </div>
+                        <p class="mb-0 text-secondary" style="line-height: 1.6; font-size: 0.95rem;">Món ăn rất ngon, thời gian giao hàng siêu nhanh. Đóng gói rất cẩn thận, shipper lịch sự và nhiệt tình. Món vẫn còn nóng hổi khi nhận được. Sẽ ủng hộ quán dài dài!</p>
+                    </div>
+
+                    <!-- Dummy Review 2 -->
+                    <div class="review-item" style="border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; margin-bottom: 15px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026024d" alt="User" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
+                                <div>
+                                    <strong style="display: block; color: #333; font-size: 1rem;">Trần Thị Bầu</strong>
+                                    <div class="stars" style="color: #ffc107; font-size: 0.85em;">
+                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted"><i class="fa-regular fa-clock"></i> 10/09/2026</small>
+                        </div>
+                        <p class="mb-0 text-secondary" style="line-height: 1.6; font-size: 0.95rem;">Hương vị đậm đà, vừa miệng. Tuy nhiên phần nước chấm hơi ít so với khẩu vị của mình. Lần sau đặt sẽ note xin thêm phần sốt. Đánh giá 4 sao về trải nghiệm hương vị!</p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-primary" style="border-radius: 20px; font-weight: 500; padding: 8px 24px;">
+                        <i class="fa-solid fa-angles-down text-primary"></i> Tải Thêm Đánh Giá
+                    </button>
+                </div>
+            </div>
         </c:when>
         <c:otherwise>
             <div class="empty-state-card">

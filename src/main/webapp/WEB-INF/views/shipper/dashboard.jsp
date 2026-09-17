@@ -272,6 +272,123 @@
                         </c:when>
                     </c:choose>
 
+                    <!-- NEW UI: Lịch sử giao hàng chi tiết & Đánh giá khách hàng (Chỉ về mặt UI) -->
+                    <div style="margin-top: 40px; margin-bottom: 20px;">
+                        <ul class="nav nav-tabs" id="driverTabs" role="tablist" style="margin-bottom: 20px;">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab" style="font-weight: 600; color: #333;"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Lịch Sử Lộ Trình</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" style="font-weight: 600; color: #333;"><i class="fa-solid fa-star text-warning"></i> Nhận Xét Khách Hàng</button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content" id="driverTabsContent">
+                            <!-- Tab 1: Lịch Sử Lộ Trình Giao Hàng Chi Tiết -->
+                            <div class="tab-pane fade show active" id="history" role="tabpanel">
+                                <div class="card" style="border: 1px solid #e0e0e0; box-shadow: none; border-radius: 8px;">
+                                    <div class="card-body">
+                                        <!-- Mẫu đơn hoàn thành -->
+                                        <div style="border-bottom: 1px dashed #ccc; padding-bottom: 20px; margin-bottom: 20px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                                <h6 style="margin: 0; font-weight: 700; color: #0056b3; font-size: 1.1rem;">Đơn hàng #FZ-8829 <span class="badge bg-success" style="font-size: 0.75em; margin-left: 10px; vertical-align: middle;"><i class="fa-solid fa-check"></i> Hoàn thành</span></h6>
+                                                <small class="text-muted"><i class="fa-regular fa-clock"></i> 10:45 AM, Hôm nay</small>
+                                            </div>
+                                            <!-- Timeline dọc chi tiết -->
+                                            <div style="position: relative; padding-left: 20px; border-left: 2px solid #28a745; margin-left: 10px; font-size: 0.95em;">
+                                                <div style="position: relative; margin-bottom: 20px;">
+                                                    <span style="position: absolute; left: -27px; top: 0; background: #fff; border: 2px solid #28a745; width: 14px; height: 14px; border-radius: 50%;"></span>
+                                                    <strong class="text-dark">10:15 AM - Nhận Cuốc & Di chuyển</strong>
+                                                    <p class="text-muted" style="margin: 3px 0 0;">Điểm đến: Cơm Tấm Sà Bì Chưởng (Cách 1.2km)</p>
+                                                </div>
+                                                <div style="position: relative; margin-bottom: 20px;">
+                                                    <span style="position: absolute; left: -27px; top: 0; background: #fff; border: 2px solid #28a745; width: 14px; height: 14px; border-radius: 50%;"></span>
+                                                    <strong class="text-dark">10:25 AM - Lấy Món Thành Công</strong>
+                                                    <p class="text-muted" style="margin: 3px 0 0;">Đang trên đường đến địa chỉ khách (Đường Lê Duẩn, Q.1)</p>
+                                                </div>
+                                                <div style="position: relative;">
+                                                    <span style="position: absolute; left: -27px; top: 0; background: #28a745; border: 2px solid #28a745; width: 14px; height: 14px; border-radius: 50%;"></span>
+                                                    <strong class="text-success">10:45 AM - Giao Hàng Xong</strong>
+                                                    <p class="text-muted" style="margin: 3px 0 0;">Thu tiền mặt (COD): <strong class="text-danger">150,000 đ</strong></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Mẫu đơn bị huỷ/boom -->
+                                        <div>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                                <h6 style="margin: 0; font-weight: 700; color: #0056b3; font-size: 1.1rem;">Đơn hàng #FZ-8815 <span class="badge bg-danger" style="font-size: 0.75em; margin-left: 10px; vertical-align: middle;"><i class="fa-solid fa-xmark"></i> Bị Boom Hàng</span></h6>
+                                                <small class="text-muted"><i class="fa-regular fa-clock"></i> 08:30 AM, Hôm nay</small>
+                                            </div>
+                                            <!-- Timeline dọc chi tiết -->
+                                            <div style="position: relative; padding-left: 20px; border-left: 2px solid #dc3545; margin-left: 10px; font-size: 0.95em;">
+                                                <div style="position: relative; margin-bottom: 20px;">
+                                                    <span style="position: absolute; left: -27px; top: 0; background: #fff; border: 2px solid #28a745; width: 14px; height: 14px; border-radius: 50%;"></span>
+                                                    <strong class="text-dark">08:10 AM - Lấy Món Tại Quán</strong>
+                                                    <p class="text-muted" style="margin: 3px 0 0;">Bún Bò Huế (Q.3)</p>
+                                                </div>
+                                                <div style="position: relative;">
+                                                    <span style="position: absolute; left: -27px; top: 0; background: #dc3545; border: 2px solid #dc3545; width: 14px; height: 14px; border-radius: 50%;"></span>
+                                                    <strong class="text-danger">08:30 AM - Huỷ Đơn</strong>
+                                                    <p class="text-muted" style="margin: 3px 0 0;">Khách gọi không bắt máy, đã báo cáo về tổng đài hỗ trợ.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Tab 2: Nhận Xét Của Khách Hàng -->
+                            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                                <div class="card" style="border: 1px solid #e0e0e0; box-shadow: none; border-radius: 8px;">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-4" style="gap: 20px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+                                            <div style="font-size: 3rem; font-weight: 700; color: #333; line-height: 1;">4.8</div>
+                                            <div>
+                                                <div style="color: #ffc107; font-size: 1.3rem;">
+                                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+                                                </div>
+                                                <div class="text-muted" style="font-size: 0.95em; margin-top: 5px;"><i class="fa-solid fa-user"></i> Dựa trên 120 điểm đánh giá</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Item Review 1 -->
+                                        <div style="background: #fdfdfd; border: 1px solid #f0f0f0; padding: 18px; border-radius: 8px; margin-bottom: 15px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                                <div>
+                                                    <strong style="font-size: 1.05rem; color: #000;">Chị Mai Phương <span class="text-muted" style="font-size: 0.8em; font-weight: normal;">(Đơn #FZ-8700)</span></strong>
+                                                    <div style="color: #ffc107; font-size: 0.85em; margin-top: 3px;">
+                                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">Hôm qua</small>
+                                            </div>
+                                            <p style="margin: 0 0 12px; font-size: 0.95em; color: #444; line-height: 1.5;">Chú shipper chạy xe rất cẩn thận, tới nơi gọi điện lịch sự vui vẻ. Đồ ăn còn nóng hổi không bị đổ nước lèo. Tuyệt vời!</p>
+                                            <div>
+                                                <span class="badge" style="background: #e3f2fd; color: #0d6efd; font-weight: 500; font-size: 0.8rem; padding: 6px 10px; border-radius: 20px;"><i class="fa-solid fa-smile"></i> Lịch sự</span>
+                                                <span class="badge" style="background: #e3f2fd; color: #0d6efd; font-weight: 500; font-size: 0.8rem; padding: 6px 10px; border-radius: 20px;"><i class="fa-solid fa-bolt"></i> Giao nhanh</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Item Review 2 -->
+                                        <div style="background: #fdfdfd; border: 1px solid #f0f0f0; padding: 18px; border-radius: 8px; margin-bottom: 10px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                                <div>
+                                                    <strong style="font-size: 1.05rem; color: #000;">Nguyễn Anh Tuấn <span class="text-muted" style="font-size: 0.8em; font-weight: normal;">(Đơn #FZ-8605)</span></strong>
+                                                    <div style="color: #ffc107; font-size: 0.85em; margin-top: 3px;">
+                                                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i>
+                                                    </div>
+                                                </div>
+                                                <small class="text-muted">3 ngày trước</small>
+                                            </div>
+                                            <p style="margin: 0; font-size: 0.95em; color: #444; line-height: 1.5;">Giao hàng đúng giờ, nhưng hộp bị móp nhẹ một góc, điểm cộng lớn là anh shipper chủ động xin lỗi. Mình vẫn rate 4 sao.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
