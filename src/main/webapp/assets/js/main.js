@@ -432,9 +432,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     createFlyingParabolicItem(sourceImgEl, targetCart, data.foodImage);
                 }
 
-                // 2. Cập nhật số lượng trên Navbar badge
+                // 2. Cập nhật số lượng trên Navbar badge và Mobile Bottom Nav
                 if (navCartBadge) {
                     navCartBadge.innerText = data.cartCount;
+                }
+                const bottomCartBadge = document.getElementById("bottomCartBadge");
+                if (bottomCartBadge) {
+                    bottomCartBadge.innerText = data.cartCount;
+                    if (data.cartCount > 0) bottomCartBadge.classList.remove("d-none");
+                }
+                const drawerBadge = document.querySelector(".drawer-badge");
+                if (drawerBadge) {
+                    drawerBadge.innerText = data.cartCount;
                 }
 
                 // 3. Cập nhật thanh Floating Mini-Cart ghim đáy
@@ -486,6 +495,45 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }, 1000);
             });
+        }
+    });
+
+    // ==========================================================================
+    // Mobile Drawer (Offcanvas Menu) Toggle Logic
+    // ==========================================================================
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const mobileDrawer = document.getElementById("mobileDrawer");
+    const mobileDrawerBackdrop = document.getElementById("mobileDrawerBackdrop");
+    const mobileDrawerClose = document.getElementById("mobileDrawerClose");
+
+    function openMobileDrawer() {
+        if (mobileDrawer && mobileDrawerBackdrop) {
+            mobileDrawer.classList.add("open");
+            mobileDrawerBackdrop.classList.add("open");
+            document.body.classList.add("drawer-open");
+        }
+    }
+
+    function closeMobileDrawer() {
+        if (mobileDrawer && mobileDrawerBackdrop) {
+            mobileDrawer.classList.remove("open");
+            mobileDrawerBackdrop.classList.remove("open");
+            document.body.classList.remove("drawer-open");
+        }
+    }
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener("click", openMobileDrawer);
+    }
+    if (mobileDrawerClose) {
+        mobileDrawerClose.addEventListener("click", closeMobileDrawer);
+    }
+    if (mobileDrawerBackdrop) {
+        mobileDrawerBackdrop.addEventListener("click", closeMobileDrawer);
+    }
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && mobileDrawer && mobileDrawer.classList.contains("open")) {
+            closeMobileDrawer();
         }
     });
 });

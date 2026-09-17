@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>${param.title != null ? param.title : "Utee - Đặt món ngon giao tận nơi trong 30 phút"}</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">

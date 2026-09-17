@@ -410,7 +410,195 @@
                         </c:otherwise>
                     </c:choose>
                 </div>
+
+                <!-- Hamburger Button for Mobile -->
+                <button type="button" class="btn-hamburger" id="mobileMenuToggle" aria-label="Mở menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </c:otherwise>
         </c:choose>
     </div>
 </nav>
+
+<c:if test="${not isAuth}">
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-header">
+            <a href="${pageContext.request.contextPath}/home" class="mobile-drawer-brand">
+                <img src="${pageContext.request.contextPath}/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="mobile-drawer-logo">
+            </a>
+            <button type="button" class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Đóng menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            <c:choose>
+                <c:when test="${not empty sessionScope.currentUser}">
+                    <div class="mobile-user-card">
+                        <div class="mobile-user-avatar">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </div>
+                        <div class="mobile-user-info">
+                            <strong class="mobile-user-name">${sessionScope.currentUser.fullName}</strong>
+                            <span class="mobile-user-phone">${sessionScope.currentUser.phone != null ? sessionScope.currentUser.phone : sessionScope.currentUser.email}</span>
+                        </div>
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div class="mobile-auth-box">
+                        <p>Đăng nhập để nhận ưu đãi đến 50K!</p>
+                        <div class="mobile-auth-btns">
+                            <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-primary btn-sm w-100">Đăng nhập</a>
+                            <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-outline btn-sm w-100">Đăng ký</a>
+                        </div>
+                    </div>
+                </c:otherwise>
+            </c:choose>
+
+            <!-- Mobile Quick Search Form -->
+            <form action="${pageContext.request.contextPath}/foods" method="GET" class="mobile-drawer-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="search" placeholder="Tìm món ăn, trà sữa, pizza..." value="${param.search}">
+                <button type="submit">Tìm</button>
+            </form>
+
+            <div class="mobile-drawer-nav-group">
+                <div class="drawer-group-title">Khám Phá</div>
+                <ul class="mobile-drawer-links">
+                    <li>
+                        <a href="${pageContext.request.contextPath}/home" class="${pageContext.request.servletPath eq '' or pageContext.request.servletPath eq '/home' ? 'active' : ''}">
+                            <i class="fa-solid fa-house text-primary"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/foods" class="${pageContext.request.servletPath eq '/foods' ? 'active' : ''}">
+                            <i class="fa-solid fa-utensils text-success"></i> Thực đơn đa dạng
+                        </a>
+                    </li>
+                    <c:if test="${not isSeller and not isShipperActive}">
+                        <li>
+                            <a href="${pageContext.request.contextPath}/cart" class="${pageContext.request.servletPath eq '/cart' ? 'active' : ''}">
+                                <i class="fa-solid fa-bag-shopping text-warning"></i> Giỏ hàng của bạn
+                                <span class="drawer-badge">${sessionScope.cart != null ? sessionScope.cart.size() : 0}</span>
+                            </a>
+                        </li>
+                    </c:if>
+                    <li>
+                        <a href="${pageContext.request.contextPath}/notifications" class="${pageContext.request.servletPath eq '/notifications' ? 'active' : ''}">
+                            <i class="fa-solid fa-bell text-warning"></i> Thông báo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <c:if test="${not empty sessionScope.currentUser}">
+                <div class="mobile-drawer-nav-group">
+                    <div class="drawer-group-title">Tài Khoản</div>
+                    <ul class="mobile-drawer-links">
+                        <li>
+                            <a href="${pageContext.request.contextPath}/profile">
+                                <i class="fa-solid fa-id-card text-primary"></i> Thông tin cá nhân
+                            </a>
+                        </li>
+                        <c:if test="${not isSeller and not isShipperActive}">
+                            <li>
+                                <a href="${pageContext.request.contextPath}/profile?tab=orders">
+                                    <i class="fa-solid fa-clock-rotate-left text-info"></i> Đơn hàng đã đặt
+                                </a>
+                            </li>
+                        </c:if>
+                        <c:if test="${sessionScope.currentUser.seller}">
+                            <li>
+                                <a href="${pageContext.request.contextPath}/merchant/dashboard">
+                                    <i class="fa-solid fa-store text-success"></i> Kênh Quán Ăn
+                                </a>
+                            </li>
+                        </c:if>
+                        <c:if test="${isShipper}">
+                            <li>
+                                <a href="${pageContext.request.contextPath}/shipper/dashboard">
+                                    <i class="fa-solid fa-motorcycle text-success"></i> Bảng điều khiển tài xế
+                                </a>
+                            </li>
+                        </c:if>
+                        <c:if test="${sessionScope.currentUser.role eq 'ADMIN'}">
+                            <li>
+                                <a href="${pageContext.request.contextPath}/admin/dashboard">
+                                    <i class="fa-solid fa-shield-halved text-danger"></i> Quản trị hệ thống
+                                </a>
+                            </li>
+                        </c:if>
+                        <li>
+                            <a href="${pageContext.request.contextPath}/auth?action=logout" class="text-danger">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </c:if>
+
+            <div class="mobile-drawer-footer">
+                <div class="drawer-hotline">
+                    <i class="fa-solid fa-headset text-primary"></i>
+                    <span>Tổng đài CSKH: <strong>1900 6868</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Fixed Bottom) -->
+    <nav class="mobile-bottom-nav">
+        <a href="${pageContext.request.contextPath}/home" class="bottom-nav-item ${pageContext.request.servletPath eq '' or pageContext.request.servletPath eq '/home' ? 'active' : ''}">
+            <i class="fa-solid fa-house"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a href="${pageContext.request.contextPath}/foods" class="bottom-nav-item ${pageContext.request.servletPath eq '/foods' ? 'active' : ''}">
+            <i class="fa-solid fa-utensils"></i>
+            <span>Thực đơn</span>
+        </a>
+        <c:choose>
+            <c:when test="${isSeller}">
+                <a href="${pageContext.request.contextPath}/merchant/dashboard" class="bottom-nav-item ${pageContext.request.servletPath.startsWith('/merchant') ? 'active' : ''}">
+                    <i class="fa-solid fa-store"></i>
+                    <span>Kênh Quán</span>
+                </a>
+            </c:when>
+            <c:when test="${isShipper and isShipperActive}">
+                <a href="${pageContext.request.contextPath}/shipper/dashboard" class="bottom-nav-item ${pageContext.request.servletPath.startsWith('/shipper') ? 'active' : ''}">
+                    <i class="fa-solid fa-motorcycle"></i>
+                    <span>Nhận Đơn</span>
+                </a>
+            </c:when>
+            <c:otherwise>
+                <a href="${pageContext.request.contextPath}/cart" class="bottom-nav-item ${pageContext.request.servletPath eq '/cart' ? 'active' : ''}">
+                    <div class="bottom-nav-icon-wrap">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <c:set var="cartCount" value="${sessionScope.cart != null ? sessionScope.cart.size() : 0}" />
+                        <span class="bottom-cart-badge ${cartCount > 0 ? '' : 'd-none'}" id="bottomCartBadge">${cartCount}</span>
+                    </div>
+                    <span>Giỏ hàng</span>
+                </a>
+            </c:otherwise>
+        </c:choose>
+        <c:choose>
+            <c:when test="${not empty sessionScope.currentUser}">
+                <a href="${pageContext.request.contextPath}/profile" class="bottom-nav-item ${pageContext.request.servletPath eq '/profile' ? 'active' : ''}">
+                    <i class="fa-solid fa-circle-user"></i>
+                    <span>Tài khoản</span>
+                </a>
+            </c:when>
+            <c:otherwise>
+                <a href="${pageContext.request.contextPath}/auth?action=login" class="bottom-nav-item ${pageContext.request.servletPath eq '/auth' ? 'active' : ''}">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Đăng nhập</span>
+                </a>
+            </c:otherwise>
+        </c:choose>
+    </nav>
+</c:if>
