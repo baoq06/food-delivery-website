@@ -177,6 +177,31 @@
     color: #94a3b8;
 }
 
+.vn-input-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    font-size: 0.8rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.vn-input-clear:hover {
+    color: #ffffff;
+    background-color: #ef4444;
+}
+
 /* Live Preview box */
 .vn-picker-preview {
     background: #f8fafc;
@@ -185,8 +210,15 @@
     padding: 10px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     transition: all 0.2s ease;
+}
+
+.vn-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
 }
 
 .vn-preview-tag {
@@ -197,6 +229,25 @@
     color: #059669;
     display: flex;
     align-items: center;
+}
+
+.vn-badge-synced {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #0d9488;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    padding: 2px 8px;
+    border-radius: 12px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-2px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .vn-preview-text {
@@ -261,4 +312,23 @@ body.dark-mode .vn-picker-preview,
 body.dark-mode .vn-preview-text,
 [data-theme="dark"] .vn-preview-text {
     color: #f8fafc;
+}
+
+body.dark-mode .vn-input-clear,
+[data-theme="dark"] .vn-input-clear {
+    background: #334155;
+    color: #94a3b8;
+}
+
+body.dark-mode .vn-input-clear:hover,
+[data-theme="dark"] .vn-input-clear:hover {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+body.dark-mode .vn-badge-synced,
+[data-theme="dark"] .vn-badge-synced {
+    background: rgba(13, 148, 136, 0.15);
+    border-color: rgba(13, 148, 136, 0.3);
+    color: #2dd4bf;
 }
