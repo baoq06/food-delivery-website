@@ -69,9 +69,18 @@ public class ShipperDashboardController extends HttpServlet {
                         Order updatedOrder = orderDAO.getOrderById(orderId);
                         if (updatedOrder != null && "DELIVERED".equalsIgnoreCase(updatedOrder.getStatus())) {
                             // Cả 2 bên đều đã xác nhận -> Đơn đã tự động hoàn tất ngay lập tức
-                            driver.setStatus("AVAILABLE");
-                            session.setAttribute("shipperActive", true);
-                            session.setAttribute("driverStatus", "AVAILABLE");
+                            List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+                            boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
+                            if (!stillHasActive) {
+                                driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
+                                driver.setStatus("AVAILABLE");
+                                session.setAttribute("shipperActive", true);
+                                session.setAttribute("driverStatus", "AVAILABLE");
+                            } else {
+                                driver.setStatus("BUSY");
+                                session.setAttribute("shipperActive", true);
+                                session.setAttribute("driverStatus", "BUSY");
+                            }
                             notificationService.notifyOrderCompleted(customerUserId, user.getId(), merchantUserId, orderId);
                         } else {
                             // Mới chỉ có Shipper báo đã giao, đang chờ khách xác nhận đã nhận món
@@ -80,10 +89,18 @@ public class ShipperDashboardController extends HttpServlet {
                     }
                 } else if ("CANCELLED".equalsIgnoreCase(status)) {
                     orderDAO.updateOrderStatus(orderId, "CANCELLED");
-                    driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
-                    if (driver != null) driver.setStatus("AVAILABLE");
-                    session.setAttribute("shipperActive", true);
-                    session.setAttribute("driverStatus", "AVAILABLE");
+                    List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+                    boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
+                    if (!stillHasActive) {
+                        driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
+                        if (driver != null) driver.setStatus("AVAILABLE");
+                        session.setAttribute("shipperActive", true);
+                        session.setAttribute("driverStatus", "AVAILABLE");
+                    } else {
+                        if (driver != null) driver.setStatus("BUSY");
+                        session.setAttribute("shipperActive", true);
+                        session.setAttribute("driverStatus", "BUSY");
+                    }
                 } else if ("SHIPPING".equalsIgnoreCase(status)) {
                     orderDAO.updateOrderStatus(orderId, "SHIPPING");
                     driverDAO.updateStatusByUserId(user.getId(), "BUSY");
@@ -172,6 +189,7 @@ public class ShipperDashboardController extends HttpServlet {
 
             // Đơn đang giao (SHIPPING)
             List<Order> activeOrders = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+            req.setAttribute("activeOrders", activeOrders);
             if (!activeOrders.isEmpty()) {
                 req.setAttribute("activeOrder", activeOrders.get(0));
             }

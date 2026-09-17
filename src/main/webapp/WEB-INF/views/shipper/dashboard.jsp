@@ -416,8 +416,8 @@
                 <div class="shipper-nav">
                     <a href="${pageContext.request.contextPath}/shipper/dashboard" class="shipper-nav-item ${activeTab eq 'dispatch' or empty activeTab ? 'active' : ''}">
                         <span><i class="fa-solid fa-gauge-high me-2 text-primary" style="width: 22px;"></i> Nhận đơn &amp; Điều phối</span>
-                        <c:if test="${not empty activeOrder}">
-                            <span class="shipper-nav-badge">1 đơn</span>
+                        <c:if test="${not empty activeOrders}">
+                            <span class="shipper-nav-badge" style="background: #2563eb; color: #fff;">${activeOrders.size()} đơn</span>
                         </c:if>
                     </a>
                     <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=income" class="shipper-nav-item ${activeTab eq 'income' ? 'active' : ''}">
@@ -671,124 +671,171 @@
                 </c:if>
 
                 <c:choose>
-                    <c:when test="${not empty activeOrder}">
-                        <!-- CHI TIẾT ĐƠN HÀNG ĐANG GIAO & VÒNG ĐỜI -->
-                        <div class="shipper-card" style="border: 2px solid #3b82f6;">
-                            <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                <div>
-                                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9;">Đơn hàng đang thực hiện</span>
-                                    <h3 style="margin: 2px 0 0 0; font-size: 1.35rem; font-weight: 800; color: #fff;">
-                                        <i class="fa-solid fa-box-open me-2"></i> Mã đơn: #FZ-${activeOrder.id}
-                                    </h3>
-                                </div>
-                                <div>
-                                    <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 14px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
-                                        <i class="fa-solid fa-motorcycle me-1"></i> Đang vận chuyển
+                    <c:when test="${not empty activeOrders}">
+                        <!-- DANH SÁCH TẤT CẢ CÁC ĐƠN HÀNG ĐANG VẬN CHUYỂN (GIAO GHÉP ĐƠN) -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge rounded-pill bg-primary px-3 py-2 fw-bold" style="font-size: 0.95rem;">
+                                        <i class="fa-solid fa-motorcycle me-1"></i> ${activeOrders.size()} đơn hàng đang vận chuyển
                                     </span>
+                                    <c:if test="${activeOrders.size() > 1}">
+                                        <small class="text-muted fw-semibold">(Giao ghép đơn - Bấm "Báo Đã Giao" cho từng đơn tùy theo lộ trình di chuyển)</small>
+                                    </c:if>
                                 </div>
+                                <c:if test="${activeOrders.size() > 1}">
+                                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">
+                                        <i class="fa-solid fa-route text-primary me-1"></i> Tối ưu tuyến đường giao ghép
+                                    </span>
+                                </c:if>
                             </div>
 
-                            <div style="display: flex; flex-wrap: wrap;">
-                                <!-- Left Column: Order details & Action Buttons -->
-                                <div style="flex: 1.2; min-width: 300px; padding: 24px;">
-                                    <div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
-                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                                            <span style="font-weight: 700; color: #1e293b; font-size: 1.05rem;">
-                                                <i class="fa-solid fa-user text-primary me-2"></i> ${activeOrder.customerName}
-                                            </span>
-                                            <a href="tel:${activeOrder.phone}" class="btn btn-outline btn-sm" style="border-radius: 50px; font-weight: 700; color: #10ac84; border-color: #10ac84;">
-                                                <i class="fa-solid fa-phone me-1"></i> Gọi khách: ${activeOrder.phone}
-                                            </a>
-                                        </div>
-                                        <div style="font-size: 0.95rem; color: #334155; margin-bottom: 8px;">
-                                            <i class="fa-solid fa-location-dot text-danger me-2"></i> <strong>Địa chỉ giao:</strong> ${activeOrder.address}
-                                        </div>
-                                        <c:if test="${not empty activeOrder.note}">
-                                            <div style="font-size: 0.88rem; color: #64748b; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                                                <i class="fa-solid fa-note-sticky text-warning me-1"></i> <strong>Ghi chú:</strong> ${activeOrder.note}
+                            <div class="d-flex flex-column gap-4">
+                                <c:forEach items="${activeOrders}" var="activeOrder" varStatus="actLoop">
+                                    <!-- CHI TIẾT TỪNG ĐƠN HÀNG ĐANG GIAO & VÒNG ĐỜI -->
+                                    <div class="shipper-card" style="border: 2px solid ${activeOrder.shipperDelivered ? '#10ac84' : '#3b82f6'}; box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+                                        <div style="background: ${activeOrder.shipperDelivered ? 'linear-gradient(135deg, #059669 0%, #10ac84 100%)' : 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)'}; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; font-weight: 800;">
+                                                    #${actLoop.index + 1}
+                                                </div>
+                                                <div>
+                                                    <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9;">
+                                                        <c:choose>
+                                                            <c:when test="${activeOrders.size() > 1}">Chuyến xe ghép #${actLoop.index + 1}</c:when>
+                                                            <c:otherwise>Đơn hàng đang thực hiện</c:otherwise>
+                                                        </c:choose>
+                                                    </span>
+                                                    <h3 style="margin: 2px 0 0 0; font-size: 1.35rem; font-weight: 800; color: #fff;">
+                                                        <i class="fa-solid fa-box-open me-2"></i> Mã đơn: #FZ-${activeOrder.id}
+                                                    </h3>
+                                                </div>
                                             </div>
-                                        </c:if>
-                                    </div>
-
-                                    <!-- Payment & COD Summary -->
-                                    <div style="display: flex; justify-content: space-between; align-items: center; background: #fff5f5; border: 1px solid #fee2e2; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px;">
-                                        <div>
-                                            <span style="font-size: 0.85rem; color: #64748b;">Phương thức: <strong>${activeOrder.paymentMethod}</strong></span>
-                                            <div style="font-size: 1.15rem; font-weight: 800; color: #1e293b;">Tiền thu hộ Khách (COD):</div>
-                                        </div>
-                                        <div style="font-size: 1.6rem; font-weight: 900; color: #dc2626;">
-                                            <fmt:formatNumber value="${activeOrder.totalAmount}" pattern="#,###" /> đ
-                                        </div>
-                                    </div>
-
-                                    <!-- Lifecycle Action Buttons -->
-                                    <div style="border-top: 1px dashed #e2e8f0; padding-top: 20px;">
-                                        <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 12px;">
-                                            Cập nhật tiến trình chuyến đi:
-                                        </div>
-                                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                                            <!-- Button 1: Xác nhận Đã giao tận tay -->
-                                            <c:choose>
-                                                <c:when test="${activeOrder.shipperDelivered}">
-                                                    <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" style="border-radius: 50px;">
-                                                        <i class="fa-solid fa-circle-check text-success"></i>
-                                                        <span class="fw-bold">Bạn đã bấm xác nhận giao xong! (Đang chờ khách bấm xác nhận đã nhận món để hoàn tất)</span>
-                                                    </div>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1;">
-                                                        <input type="hidden" name="action" value="confirmDelivered">
-                                                        <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                        <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận bạn đã giao món ăn tận nơi cho khách?');">
-                                                            <i class="fa-solid fa-check-circle me-1"></i> Báo Đã Giao Cho Khách
-                                                        </button>
-                                                    </form>
-                                                </c:otherwise>
-                                            </c:choose>
-
-                                            <!-- Button 2: Khách boom hàng / Hủy -->
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn này?');">
-                                                <input type="hidden" name="action" value="updateOrder">
-                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                <input type="hidden" name="status" value="CANCELLED">
-                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
-                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố / Hủy Cuốc
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Right Column: Simulated GPS Map and Progress -->
-                                <div style="flex: 1; min-width: 280px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
-                                    <div>
-                                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
-                                            <i class="fa-solid fa-location-crosshairs text-primary me-2"></i> Lộ Trình Vận Chuyển
-                                        </h4>
-                                        <div style="position: relative; padding-left: 28px; margin-bottom: 24px;">
-                                            <!-- Step 1: Merchant -->
-                                            <div style="position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #10ac84;"></div>
-                                            <div style="border-left: 2px solid #cbd5e1; position: absolute; left: 6px; top: 18px; bottom: 10px;"></div>
-                                            <div style="margin-bottom: 20px;">
-                                                <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">Lấy món tại Quán ăn</div>
-                                                <div style="font-size: 0.85rem; color: #64748b;">Đã hoàn thành lấy món</div>
-                                            </div>
-
-                                            <!-- Step 2: On the road -->
-                                            <div style="position: absolute; left: 0; top: 58px; width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; animation: radarWave 1.5s infinite;"></div>
                                             <div>
-                                                <div style="font-weight: 700; color: #3b82f6; font-size: 0.95rem;">Đang trên đường đến nhà khách</div>
-                                                <div style="font-size: 0.85rem; color: #64748b;">${activeOrder.address}</div>
+                                                <c:choose>
+                                                    <c:when test="${activeOrder.shipperDelivered}">
+                                                        <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
+                                                            <i class="fa-solid fa-circle-check me-1"></i> ĐÃ BÁO GIAO XONG (Chờ khách)
+                                                        </span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
+                                                            <i class="fa-solid fa-motorcycle me-1"></i> Đang vận chuyển
+                                                        </span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                        </div>
+
+                                        <div style="display: flex; flex-wrap: wrap;">
+                                            <!-- Left Column: Order details & Action Buttons -->
+                                            <div style="flex: 1.2; min-width: 300px; padding: 24px;">
+                                                <div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                                        <span style="font-weight: 700; color: #1e293b; font-size: 1.05rem;">
+                                                            <i class="fa-solid fa-user text-primary me-2"></i> ${activeOrder.customerName}
+                                                        </span>
+                                                        <a href="tel:${activeOrder.phone}" class="btn btn-outline btn-sm" style="border-radius: 50px; font-weight: 700; color: #10ac84; border-color: #10ac84;">
+                                                            <i class="fa-solid fa-phone me-1"></i> Gọi khách: ${activeOrder.phone}
+                                                        </a>
+                                                    </div>
+                                                    <div style="font-size: 0.95rem; color: #334155; margin-bottom: 8px;">
+                                                        <i class="fa-solid fa-location-dot text-danger me-2"></i> <strong>Địa chỉ giao:</strong> ${activeOrder.address}
+                                                    </div>
+                                                    <c:if test="${not empty activeOrder.note}">
+                                                        <div style="font-size: 0.88rem; color: #64748b; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                                                            <i class="fa-solid fa-note-sticky text-warning me-1"></i> <strong>Ghi chú:</strong> ${activeOrder.note}
+                                                        </div>
+                                                    </c:if>
+                                                </div>
+
+                                                <!-- Payment & COD Summary -->
+                                                <div style="display: flex; justify-content: space-between; align-items: center; background: #fff5f5; border: 1px solid #fee2e2; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px;">
+                                                    <div>
+                                                        <span style="font-size: 0.85rem; color: #64748b;">Phương thức: <strong>${activeOrder.paymentMethod}</strong></span>
+                                                        <div style="font-size: 1.15rem; font-weight: 800; color: #1e293b;">Tiền thu hộ Khách (COD):</div>
+                                                    </div>
+                                                    <div style="font-size: 1.6rem; font-weight: 900; color: #dc2626;">
+                                                        <fmt:formatNumber value="${activeOrder.totalAmount}" pattern="#,###" /> đ
+                                                    </div>
+                                                </div>
+
+                                                <!-- Lifecycle Action Buttons -->
+                                                <div style="border-top: 1px dashed #e2e8f0; padding-top: 20px;">
+                                                    <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 12px;">
+                                                        Cập nhật tiến trình cho đơn #FZ-${activeOrder.id}:
+                                                    </div>
+                                                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                                        <!-- Button 1: Xác nhận Đã giao tận tay -->
+                                                        <c:choose>
+                                                            <c:when test="${activeOrder.shipperDelivered}">
+                                                                <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" style="border-radius: 50px;">
+                                                                    <i class="fa-solid fa-circle-check text-success"></i>
+                                                                    <span class="fw-bold">Bạn đã bấm xác nhận giao xong đơn #FZ-${activeOrder.id}! (Đang chờ khách bấm xác nhận đã nhận món)</span>
+                                                                </div>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1;">
+                                                                    <input type="hidden" name="action" value="confirmDelivered">
+                                                                    <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                                    <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận bạn đã giao món ăn đơn #FZ-${activeOrder.id} tận nơi cho khách?');">
+                                                                        <i class="fa-solid fa-check-circle me-1"></i> Báo Đã Giao Đơn #FZ-${activeOrder.id}
+                                                                    </button>
+                                                                </form>
+                                                            </c:otherwise>
+                                                        </c:choose>
+
+                                                        <!-- Button 2: Khách boom hàng / Hủy -->
+                                                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn #FZ-${activeOrder.id}?');">
+                                                            <input type="hidden" name="action" value="updateOrder">
+                                                            <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                            <input type="hidden" name="status" value="CANCELLED">
+                                                            <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
+                                                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố / Hủy Cuốc
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Right Column: Simulated GPS Map and Progress -->
+                                            <div style="flex: 1; min-width: 280px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+                                                <div>
+                                                    <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
+                                                        <i class="fa-solid fa-location-crosshairs text-primary me-2"></i> Lộ Trình Vận Chuyển Đơn #FZ-${activeOrder.id}
+                                                    </h4>
+                                                    <div style="position: relative; padding-left: 28px; margin-bottom: 24px;">
+                                                        <!-- Step 1: Merchant -->
+                                                        <div style="position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #10ac84;"></div>
+                                                        <div style="border-left: 2px solid #cbd5e1; position: absolute; left: 6px; top: 18px; bottom: 10px;"></div>
+                                                        <div style="margin-bottom: 20px;">
+                                                            <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">Lấy món tại Quán ăn</div>
+                                                            <div style="font-size: 0.85rem; color: #64748b;">Đã hoàn thành lấy món</div>
+                                                        </div>
+
+                                                        <!-- Step 2: On the road -->
+                                                        <div style="position: absolute; left: 0; top: 58px; width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; animation: radarWave 1.5s infinite;"></div>
+                                                        <div>
+                                                            <div style="font-weight: 700; color: #3b82f6; font-size: 0.95rem;">
+                                                                <c:choose>
+                                                                    <c:when test="${activeOrder.shipperDelivered}">Đã giao đến địa chỉ khách</c:when>
+                                                                    <c:otherwise>Đang trên đường đến nhà khách</c:otherwise>
+                                                                </c:choose>
+                                                            </div>
+                                                            <div style="font-size: 0.85rem; color: #64748b;">${activeOrder.address}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
+                                                    <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;">Thù lao nhận được cho chuyến này:</div>
+                                                    <div style="font-size: 1.3rem; font-weight: 800; color: #10ac84;">+15.000 đ</div>
+                                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">*Tự động cộng vào ví sau khi đơn hoàn tất</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
-                                        <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;">Thù lao nhận được cho chuyến này:</div>
-                                        <div style="font-size: 1.3rem; font-weight: 800; color: #10ac84;">+15.000 đ</div>
-                                        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">*Tự động cộng vào ví sau khi đơn hoàn tất</div>
-                                    </div>
-                                </div>
+                                </c:forEach>
                             </div>
                         </div>
                     </c:when>
