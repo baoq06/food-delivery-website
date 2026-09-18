@@ -1184,13 +1184,26 @@ public class OrderDAO {
                         psUpdate.setInt(1, orderId);
                         int updated = psUpdate.executeUpdate();
                         if (updated > 0 || "DELIVERED".equalsIgnoreCase(currentStatus)) {
-                            // Giải phóng shipper về AVAILABLE để tiếp tục nhận cuốc mới
+                            // Giải phóng shipper về AVAILABLE nếu không còn đơn SHIPPING nào khác
                             if (driverId > 0) {
-                                String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
-                                try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                                    psDriver.setInt(1, driverId);
-                                    psDriver.executeUpdate();
+                                boolean hasOtherShipping = false;
+                                String sqlCheckOther = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND status = 'SHIPPING' AND order_id != ?";
+                                try (PreparedStatement psOther = conn.prepareStatement(sqlCheckOther)) {
+                                    psOther.setInt(1, driverId);
+                                    psOther.setInt(2, orderId);
+                                    try (ResultSet rsOther = psOther.executeQuery()) {
+                                        if (rsOther.next() && rsOther.getInt(1) > 0) {
+                                            hasOtherShipping = true;
+                                        }
+                                    }
                                 } catch (Exception ignored) {}
+                                if (!hasOtherShipping) {
+                                    String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
+                                    try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                                        psDriver.setInt(1, driverId);
+                                        psDriver.executeUpdate();
+                                    } catch (Exception ignored) {}
+                                }
                             }
                             return true;
                         }
