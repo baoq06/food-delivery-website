@@ -5,16 +5,24 @@ import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Restaurant;
 import com.ute.fooddelivery.service.CategoryService;
 import com.ute.fooddelivery.service.MerchantService;
+import com.ute.fooddelivery.utils.UploadUtils;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @WebServlet(name = "MerchantFoodController", urlPatterns = {"/merchant/foods"})
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2,
+    maxFileSize = 1024 * 1024 * 10,
+    maxRequestSize = 1024 * 1024 * 25
+)
 public class MerchantFoodController extends HttpServlet {
     private final MerchantService merchantService = new MerchantService();
     private final CategoryService categoryService = new CategoryService();
@@ -72,6 +80,20 @@ public class MerchantFoodController extends HttpServlet {
         String action = req.getParameter("action");
 
         try {
+            // Xử lý tệp hình ảnh tải lên nếu có
+            Part imageFilePart = null;
+            try {
+                imageFilePart = req.getPart("imageFile");
+            } catch (Exception ignored) {}
+
+            String uploadedImageUrl = null;
+            if (imageFilePart != null && imageFilePart.getSize() > 0) {
+                String savedRelPath = UploadUtils.saveUploadedFile(imageFilePart, "foods", req);
+                if (savedRelPath != null) {
+                    uploadedImageUrl = req.getContextPath() + savedRelPath;
+                }
+            }
+
             if ("add".equalsIgnoreCase(action)) {
                 String name = req.getParameter("name");
                 String priceStr = req.getParameter("price");
@@ -79,6 +101,10 @@ public class MerchantFoodController extends HttpServlet {
                 String description = req.getParameter("description");
                 String imageUrl = req.getParameter("imageUrl");
                 boolean isAvailable = req.getParameter("isAvailable") != null;
+
+                if (uploadedImageUrl != null) {
+                    imageUrl = uploadedImageUrl;
+                }
 
                 if (name != null && !name.trim().isEmpty() && priceStr != null && catIdStr != null) {
                     double price = Double.parseDouble(priceStr.trim());
@@ -116,6 +142,10 @@ public class MerchantFoodController extends HttpServlet {
                 String description = req.getParameter("description");
                 String imageUrl = req.getParameter("imageUrl");
                 boolean isAvailable = req.getParameter("isAvailable") != null;
+
+                if (uploadedImageUrl != null) {
+                    imageUrl = uploadedImageUrl;
+                }
 
                 Food food = new Food(
                     foodId,

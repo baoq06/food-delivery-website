@@ -24,6 +24,12 @@ public class DBConnectionTest {
                                        " | CustConfirmed: " + rs.getBoolean("customer_confirmed") + 
                                        " | MerchConfirmed: " + rs.getBoolean("merchant_confirmed"));
                 }
+                try (Statement stmt2 = conn.createStatement();
+                     ResultSet rs2 = stmt2.executeQuery("SELECT u.username, u.role, r.restaurant_id, r.name FROM users u JOIN restaurants r ON u.user_id = r.user_id LIMIT 3")) {
+                    while (rs2.next()) {
+                        System.out.println("MERCHANT USER: " + rs2.getString("username") + " | Rest: " + rs2.getString("name"));
+                    }
+                }
             }
             com.ute.fooddelivery.dao.ReviewDAO.ensureReviewImageColumn();
             System.out.println(">> ensureReviewImageColumn executed successfully!");
