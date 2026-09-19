@@ -4413,24 +4413,65 @@ button, input, select, textarea {
     background: #f05454;
 }
 
+.auth-stepper {
+    display: none !important;
+}
+
 .auth-role-icon-box {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
+    font-size: 1.18rem;
     flex-shrink: 0;
-    transition: all 0.22s;
+    transition: all 0.22s ease;
+    color: #64748b;
 }
 
-.auth-role-card.selected .auth-role-icon-box {
-    background: #fee2e2;
-    border-color: #fca5a5;
-    transform: scale(1.04);
+.auth-role-icon-box.role-icon-customer {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+
+.auth-role-icon-box.role-icon-seller {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+}
+
+.auth-role-icon-box.role-icon-shipper {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.auth-role-card.selected .auth-role-icon-box.role-icon-customer {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+    transform: scale(1.05);
+}
+
+.auth-role-card.selected .auth-role-icon-box.role-icon-seller {
+    background: #d97706;
+    color: #ffffff;
+    border-color: #b45309;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.28);
+    transform: scale(1.05);
+}
+
+.auth-role-card.selected .auth-role-icon-box.role-icon-shipper {
+    background: #059669;
+    color: #ffffff;
+    border-color: #047857;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.28);
+    transform: scale(1.05);
 }
 
 .auth-role-info {

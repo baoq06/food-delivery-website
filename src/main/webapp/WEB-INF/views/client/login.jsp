@@ -202,10 +202,10 @@
                         <!-- Thanh Lọc Theo Vai Trò (Role Tabs) -->
                         <div class="quick-role-tabs">
                             <button type="button" class="quick-role-tab active" onclick="filterQuickRole('ALL', this)">Tất cả</button>
-                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('ADMIN', this)">👑 Quản trị</button>
-                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SELLER', this)">🏪 Quán ăn</button>
-                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SHIPPER', this)">🛵 Shipper</button>
-                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('CUSTOMER', this)">👤 Khách</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('ADMIN', this)"><i class="fa-solid fa-shield-halved me-1"></i> Quản trị</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SELLER', this)"><i class="fa-solid fa-store me-1"></i> Quán ăn</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SHIPPER', this)"><i class="fa-solid fa-motorcycle me-1"></i> Shipper</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('CUSTOMER', this)"><i class="fa-solid fa-user me-1"></i> Khách</button>
                         </div>
 
                         <!-- Danh Sách Toàn Bộ Người Dùng Trong Database (Cuộn Mượt Mà) -->
@@ -259,9 +259,16 @@
                                                 <strong class="quick-user-fullname">Quản Trị Viên (Admin)</strong>
                                                 <span class="quick-user-role-badge role-admin">ADMIN</span>
                                             </div>
-                                            <div class="quick-user-meta"><span class="quick-user-uname">@admin</span> • Mật khẩu: <code>123456</code></div>
+                                            <div class="quick-user-meta">
+                                                <span class="quick-user-uname">@admin</span>
+                                                <span class="quick-user-meta-dot">•</span>
+                                                <span class="quick-user-pass">Mật khẩu: <code>123456</code></span>
+                                            </div>
                                         </div>
-                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('admin', '123456', true)"><i class="fa-solid fa-bolt"></i> Vào ngay</button>
+                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('admin', '123456', true)">
+                                            <i class="fa-solid fa-bolt"></i>
+                                            <span>Vào ngay</span>
+                                        </button>
                                     </div>
                                     <div class="quick-user-row" data-role="SELLER" data-username="bepviet" data-name="chủ quán bếp việt" onclick="applyQuickUser('bepviet', '123456', false)">
                                         <div class="quick-user-avatar role-seller"><i class="fa-solid fa-store"></i></div>
@@ -309,16 +316,16 @@
                     <div class="auth-demo-inline" style="margin-top: 8px;">
                         <span class="auth-demo-label"><i class="fa-solid fa-bolt-lightning"></i> Thử nhanh:</span>
                         <button type="button" class="auth-demo-chip" onclick="applyQuickUser('customer', '123456', false)" title="Điền tài khoản Khách hàng">
-                            <span>👤 Khách</span>
+                            <span><i class="fa-solid fa-user me-1"></i> Khách</span>
                         </button>
                         <button type="button" class="auth-demo-chip" onclick="applyQuickUser('bepviet', '123456', false)" title="Điền tài khoản Quán ăn">
-                            <span>🏪 Quán ăn</span>
+                            <span><i class="fa-solid fa-store me-1"></i> Quán ăn</span>
                         </button>
                         <button type="button" class="auth-demo-chip" onclick="applyQuickUser('kaitokid', '123456', false)" title="Điền tài khoản Shipper">
-                            <span>🛵 Shipper</span>
+                            <span><i class="fa-solid fa-motorcycle me-1"></i> Shipper</span>
                         </button>
                         <button type="button" class="auth-demo-chip" onclick="applyQuickUser('admin', '123456', false)" title="Điền tài khoản Quản trị">
-                            <span>👑 Admin</span>
+                            <span><i class="fa-solid fa-shield-halved me-1"></i> Admin</span>
                         </button>
                     </div>
                 </div>
@@ -332,33 +339,7 @@
             <!-- ==============================
                  FORM 2: ĐĂNG KÝ (REGISTER)
                  ============================== -->
-            <!-- ==============================
-                 FORM 2: ĐĂNG KÝ (REGISTER 4-STEP WIZARD)
-                 ============================== -->
             <div id="registerTab" class="auth-tab-view">
-                <!-- Stepper Progress Header -->
-                <div class="auth-stepper" id="authStepper">
-                    <div class="auth-stepper-progress-bg">
-                        <div class="auth-stepper-progress-bar" id="stepperProgressBar"></div>
-                    </div>
-                    <div class="auth-stepper-step active" id="stepIndicator1">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-user-tag"></i></div>
-                        <span class="auth-stepper-title">1. Vai trò</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator2">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-phone"></i></div>
-                        <span class="auth-stepper-title">2. Số ĐT</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator3">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-key"></i></div>
-                        <span class="auth-stepper-title">3. OTP</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator4">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-address-card"></i></div>
-                        <span class="auth-stepper-title">4. Thông tin</span>
-                    </div>
-                </div>
-
                 <form action="${pageContext.request.contextPath}/auth" method="POST" enctype="multipart/form-data" class="auth-form-body" id="registerForm" novalidate onsubmit="return validateFinalRegisterForm()">
                     <input type="hidden" name="action" value="register">
                     <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
@@ -379,7 +360,9 @@
                             <!-- Role 1: Customer -->
                             <div class="auth-role-card ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'selected' : ''}" 
                                  id="roleCardCustomer" onclick="selectRole('CUSTOMER')">
-                                <div class="auth-role-icon-box">👤</div>
+                                <div class="auth-role-icon-box role-icon-customer">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Khách hàng</span>
@@ -393,7 +376,9 @@
                             <!-- Role 2: Seller / Merchant -->
                             <div class="auth-role-card ${stickyAccountType eq 'SELLER' ? 'selected' : ''}" 
                                  id="roleCardSeller" onclick="selectRole('SELLER')">
-                                <div class="auth-role-icon-box">🏪</div>
+                                <div class="auth-role-icon-box role-icon-seller">
+                                    <i class="fa-solid fa-store"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Quán ăn / Nhà hàng</span>
@@ -407,7 +392,9 @@
                             <!-- Role 3: Shipper -->
                             <div class="auth-role-card ${stickyAccountType eq 'SHIPPER' ? 'selected' : ''}" 
                                  id="roleCardShipper" onclick="selectRole('SHIPPER')">
-                                <div class="auth-role-icon-box">🛵</div>
+                                <div class="auth-role-icon-box role-icon-shipper">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Tài xế giao hàng (Shipper)</span>
@@ -439,7 +426,7 @@
                             <label class="auth-field-label" for="wizardPhoneInput">Số điện thoại di động *</label>
                             <div class="auth-phone-input-wrap">
                                 <div class="auth-phone-prefix">
-                                    <span>🇻🇳</span>
+                                    <span style="font-weight: 800; font-size: 0.74rem; background: #fee2e2; color: #dc2626; padding: 2px 5px; border-radius: 4px; line-height: 1;">VN</span>
                                     <span>+84</span>
                                 </div>
                                 <input type="tel" id="wizardPhoneInput" class="auth-phone-field" 
@@ -869,7 +856,7 @@ function switchAuthTab(tabId) {
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
         if (title) title.innerText = 'Tạo tài khoản';
-        if (desc) desc.innerText = '4 bước nhanh chóng để gia nhập Utee';
+        if (desc) desc.innerText = 'Đăng ký tài khoản mới để gia nhập Utee';
     }
 }
 
@@ -900,7 +887,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'none';
         sellDiv.style.display = 'block';
         if (badge) {
-            badge.innerText = '🏪 Quán ăn / Nhà hàng';
+            badge.innerHTML = '<i class="fa-solid fa-store me-1"></i> Quán ăn / Nhà hàng';
             badge.style.background = '#fef3c7';
             badge.style.color = '#b45309';
         }
@@ -910,7 +897,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'block';
         sellDiv.style.display = 'none';
         if (badge) {
-            badge.innerText = '🛵 Tài xế Shipper';
+            badge.innerHTML = '<i class="fa-solid fa-motorcycle me-1"></i> Tài xế Shipper';
             badge.style.background = '#d1fae5';
             badge.style.color = '#065f46';
         }
@@ -920,7 +907,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'none';
         sellDiv.style.display = 'none';
         if (badge) {
-            badge.innerText = '👤 Khách hàng';
+            badge.innerHTML = '<i class="fa-solid fa-user me-1"></i> Khách hàng';
             badge.style.background = '#eff6ff';
             badge.style.color = '#2563eb';
         }

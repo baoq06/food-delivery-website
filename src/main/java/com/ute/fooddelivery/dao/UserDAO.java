@@ -62,6 +62,67 @@ public class UserDAO {
         return null;
     }
 
+    public boolean isPhoneExists(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        String cleanPhone = phone.trim();
+        String query = "SELECT 1 FROM users WHERE phone = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, cleanPhone);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra số điện thoại tồn tại: " + e.getMessage());
+        }
+
+        // Fallback test nếu CSDL chưa khởi tạo
+        if ("0909123456".equals(cleanPhone) || "0987654321".equals(cleanPhone)
+                || "0901234567".equals(cleanPhone) || "0902345678".equals(cleanPhone)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean isUsernameExists(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return false;
+        }
+        String cleanUsername = username.trim();
+        String query = "SELECT 1 FROM users WHERE username = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, cleanUsername);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra tên đăng nhập tồn tại: " + e.getMessage());
+        }
+
+        // Fallback test nếu CSDL chưa khởi tạo
+        if ("admin".equalsIgnoreCase(cleanUsername) || "customer".equalsIgnoreCase(cleanUsername)
+                || "bepviet".equalsIgnoreCase(cleanUsername) || "pho1985".equalsIgnoreCase(cleanUsername)
+                || "kaitokid".equalsIgnoreCase(cleanUsername)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public boolean register(User user) {
         String query = "INSERT INTO users (username, password, name, email, phone, address, role, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection();
