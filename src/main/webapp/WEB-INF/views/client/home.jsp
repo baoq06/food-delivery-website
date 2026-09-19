@@ -334,11 +334,11 @@
                                     </a>
                                 </c:when>
                                 <c:otherwise>
-                                    <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
+                                    <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form ajax-cart-form" data-food-id="${food.id}">
                                         <input type="hidden" name="action" value="add">
                                         <input type="hidden" name="foodId" value="${food.id}">
                                         <input type="hidden" name="quantity" value="1">
-                                        <button type="submit" class="btn-add-cart" title="Thêm vào giỏ hàng">
+                                        <button type="submit" class="btn-add-cart btn-ajax-add" title="Thêm vào giỏ hàng">
                                             <i class="fa-solid fa-cart-plus"></i>
                                             <span>Đặt món</span>
                                         </button>

@@ -182,6 +182,13 @@
             </c:choose>
         </a>
 
+        <c:if test="${not isAuth}">
+            <a href="${pageContext.request.contextPath}/foods" class="nav-mobile-location-pill" title="Địa điểm giao hàng">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>TP. Thủ Đức</span>
+            </a>
+        </c:if>
+
         <c:choose>
             <c:when test="${isAuth}">
                 <!-- Simplified Auth Top Navigation -->

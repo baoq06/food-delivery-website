@@ -411,19 +411,44 @@
     </div>
 </div>
 
+<!-- Mobile Sticky Bottom CTA Order Bar (Chuẩn UI/UX Mobile Food App) -->
+<c:if test="${not isMerchantUser}">
+    <div class="mobile-detail-sticky-bar">
+        <div class="stepper-box" style="display: inline-flex; align-items: center;">
+            <button type="button" class="stepper-btn" onclick="decreaseQty()">-</button>
+            <span id="mobileStickyQty" style="font-weight: 800; min-width: 32px; text-align: center; font-size: 1rem; color: var(--text-main);">1</span>
+            <button type="button" class="stepper-btn" onclick="increaseQty()">+</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-add-full" onclick="document.querySelector('.detail-order-form') ? document.querySelector('.detail-order-form').submit() : null;">
+            <i class="fa-solid fa-cart-plus me-1"></i>
+            <span>Thêm vào giỏ</span>
+        </button>
+    </div>
+</c:if>
+
 <script>
+document.body.classList.add('page-food-detail');
+
 function increaseQty() {
     const input = document.getElementById('detailQty');
+    const stickyQty = document.getElementById('mobileStickyQty');
     if (input) {
         let val = parseInt(input.value) || 1;
-        if (val < 50) input.value = val + 1;
+        if (val < 50) {
+            input.value = val + 1;
+            if (stickyQty) stickyQty.innerText = input.value;
+        }
     }
 }
 function decreaseQty() {
     const input = document.getElementById('detailQty');
+    const stickyQty = document.getElementById('mobileStickyQty');
     if (input) {
         let val = parseInt(input.value) || 1;
-        if (val > 1) input.value = val - 1;
+        if (val > 1) {
+            input.value = val - 1;
+            if (stickyQty) stickyQty.innerText = input.value;
+        }
     }
 }
 function openReviewImageModal(imgSrc) {
