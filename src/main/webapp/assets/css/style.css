@@ -3724,21 +3724,404 @@ button, input, select, textarea {
     box-shadow: 0 3px 10px rgba(240, 84, 84, 0.2);
 }
 
+/* Minimalist Inline Demo Quick Chips & Dropdown Wrap */
+.auth-quick-login-wrap {
+    position: relative;
+    margin-top: 12px;
+    z-index: 50;
+}
+
+.auth-quick-login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.auth-quick-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.auth-quick-sub-count {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Toggle Trigger Button */
+.auth-quick-dropdown-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: left;
+    font-family: var(--font-body);
+    user-select: none;
+}
+
+.auth-quick-dropdown-toggle:hover {
+    border-color: #f05454;
+    background: #fffcfc;
+    box-shadow: 0 2px 8px rgba(240, 84, 84, 0.08);
+}
+
+.auth-quick-dropdown-toggle.active,
+.auth-quick-dropdown-toggle[aria-expanded="true"] {
+    border-color: #f05454;
+    box-shadow: 0 0 0 3px rgba(240, 84, 84, 0.14);
+    background: #ffffff;
+}
+
+.quick-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    flex: 1;
+}
+
+.quick-toggle-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #fff1f2;
+    color: #f05454;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.quick-toggle-text {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quick-toggle-arrow {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.auth-quick-dropdown-toggle.active .quick-toggle-arrow,
+.auth-quick-dropdown-toggle[aria-expanded="true"] .quick-toggle-arrow {
+    transform: rotate(180deg);
+    color: #f05454;
+}
+
+/* Floating Dropdown Box */
+.auth-quick-dropdown-box {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    padding: 10px;
+    z-index: 1050;
+    animation: quickDropdownIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-quick-dropdown-box.drop-up {
+    top: auto;
+    bottom: calc(100% + 6px);
+    animation: quickDropdownInUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes quickDropdownIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes quickDropdownInUp {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Search Bar in Dropdown */
+.quick-dropdown-search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.quick-dropdown-search-bar .search-icon {
+    position: absolute;
+    left: 11px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+.quick-search-input {
+    width: 100%;
+    height: 34px;
+    padding: 0 28px 0 32px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    color: var(--text-main);
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    font-family: var(--font-body);
+}
+
+.quick-search-input:focus {
+    outline: none;
+    border-color: #f05454;
+    background: #ffffff;
+    box-shadow: 0 0 0 2.5px rgba(240, 84, 84, 0.12);
+}
+
+.quick-search-clear {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.quick-search-clear:hover {
+    color: #475569;
+}
+
+/* Role Filter Tabs */
+.quick-role-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.quick-role-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.quick-role-tab {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.73rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s ease;
+}
+
+.quick-role-tab:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.quick-role-tab.active {
+    background: #f05454;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(240, 84, 84, 0.28);
+}
+
+/* User Scrollable List */
+.quick-users-list {
+    max-height: 210px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 2px;
+}
+
+.quick-users-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.quick-users-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.quick-user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.quick-user-row:hover {
+    background: #fff8f6;
+    border-color: #ffdcd4;
+    transform: translateX(2px);
+}
+
+.quick-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+    margin-right: 10px;
+}
+
+.quick-user-avatar.role-admin { background: #fef3c7; color: #b45309; }
+.quick-user-avatar.role-seller { background: #ffedd5; color: #c2410c; }
+.quick-user-avatar.role-shipper { background: #d1fae5; color: #047857; }
+.quick-user-avatar.role-customer { background: #eff6ff; color: #2563eb; }
+
+.quick-user-info {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+.quick-user-name-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.quick-user-fullname {
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.quick-user-role-badge {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 8px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.quick-user-role-badge.role-admin { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.quick-user-role-badge.role-seller { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
+.quick-user-role-badge.role-shipper { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.quick-user-role-badge.role-customer { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+.quick-user-meta {
+    font-size: 0.72rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.quick-user-uname {
+    color: #0284c7;
+    font-weight: 600;
+}
+
+.quick-user-pass code {
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #475569;
+}
+
+.quick-login-now-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fff1f2;
+    color: #e11d48;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+    padding: 4px 9px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.quick-login-now-btn:hover {
+    background: #e11d48;
+    color: #ffffff;
+    border-color: #e11d48;
+    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.28);
+    transform: scale(1.04);
+}
+
+.quick-user-no-result {
+    padding: 20px 10px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.quick-user-no-result i {
+    font-size: 1.4rem;
+    color: #cbd5e1;
+}
+
 /* Minimalist Inline Demo Quick Chips */
 .auth-demo-inline {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 14px;
-    padding: 8px 12px;
+    margin-top: 8px;
+    padding: 6px 10px;
     background: #fff9f6;
     border: 1px dashed rgba(240, 84, 84, 0.25);
     border-radius: 10px;
 }
 
 .auth-demo-label {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 700;
     color: #c2410c;
     display: flex;
@@ -3751,8 +4134,8 @@ button, input, select, textarea {
     background: #ffffff;
     border: 1px solid #fed7aa;
     border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 0.78rem;
+    padding: 2.5px 8px;
+    font-size: 0.76rem;
     font-weight: 600;
     color: var(--text-main);
     cursor: pointer;

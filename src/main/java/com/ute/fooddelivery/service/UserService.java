@@ -45,5 +45,9 @@ public class UserService {
     public boolean registerShipper(User user, String licensePlate, String vehicleType, String idCardFront, String idCardBack, String vehicleDoc, String avatarUrl) {
         return userDAO.registerShipper(user, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatarUrl);
     }
+
+    public java.util.List<User> getAllUsers() {
+        return userDAO.getAllUsers();
+    }
 }
 

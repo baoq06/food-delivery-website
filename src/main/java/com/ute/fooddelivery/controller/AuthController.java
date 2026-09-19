@@ -63,6 +63,7 @@ public class AuthController extends HttpServlet {
             req.setAttribute("cookieRemember", true);
         }
 
+        req.setAttribute("allUsers", userService.getAllUsers());
         req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
     }
 
@@ -125,6 +126,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 req.setAttribute("stickyUsername", username);
                 req.setAttribute("stickyRemember", remember != null);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
             }
         } else if ("register".equalsIgnoreCase(action)) {
@@ -239,6 +241,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.setAttribute("currentStep", 4);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
@@ -272,6 +275,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.setAttribute("currentStep", 4);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
