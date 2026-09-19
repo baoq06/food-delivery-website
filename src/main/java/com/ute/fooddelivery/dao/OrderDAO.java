@@ -23,8 +23,8 @@ public class OrderDAO {
 
     public int createOrder(Order order, List<OrderItem> items) {
         String insertOrderSql = 
-            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_delivered, merchant_completed) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0)";
+            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0)";
         String insertItemSql = 
             "INSERT INTO order_items (order_id, food_id, quantity, unit_price, subtotal) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -48,8 +48,10 @@ public class OrderDAO {
                 psOrder.setString(4, order.getAddress());
                 psOrder.setString(5, order.getNote());
                 psOrder.setDouble(6, order.getTotalAmount());
-                psOrder.setString(7, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
-                psOrder.setString(8, "PENDING");
+                psOrder.setDouble(7, order.getShippingFee() > 0 ? order.getShippingFee() : 15000.0);
+                psOrder.setDouble(8, order.getDistanceKm() > 0 ? order.getDistanceKm() : 2.0);
+                psOrder.setString(9, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
+                psOrder.setString(10, "PENDING");
 
                 int affected = psOrder.executeUpdate();
                 if (affected > 0) {
@@ -225,14 +227,14 @@ public class OrderDAO {
 
 
     public Order getOrderById(int orderId) {
-        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
+        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setInt(1, orderId);
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            return new Order(
+                            Order order = new Order(
                                 rs.getInt("order_id"),
                                 rs.getInt("user_id"),
                                 rs.getString("customer_name"),
@@ -250,6 +252,10 @@ public class OrderDAO {
                                 rs.getBoolean("shipper_delivered"),
                                 rs.getBoolean("merchant_completed")
                             );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
+                            return order;
                         }
                     }
                 }
@@ -266,31 +272,35 @@ public class OrderDAO {
         stats.put("totalEarnings", 0.0);
         stats.put("todayTrips", 0);
         stats.put("todayEarnings", 0.0);
-        // Giả sử mỗi chuyến hoàn thành được 15,000 VND tiền ship
-        double feePerTrip = 15000.0;
         
-        String sql = "SELECT DATE(created_at) as order_date, COUNT(order_id) as trips " +
+        String sql = "SELECT DATE(created_at) as order_date, COUNT(order_id) as trips, " +
+                     "COALESCE(SUM(COALESCE(shipping_fee, 15000)), 0) as earnings " +
                      "FROM orders WHERE driver_id = ? AND status = 'DELIVERED' GROUP BY DATE(created_at)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, driverId);
             try (ResultSet rs = ps.executeQuery()) {
                 int totalTrips = 0;
+                double totalEarnings = 0.0;
                 int todayTrips = 0;
+                double todayEarnings = 0.0;
                 String todayStr = new java.sql.Date(System.currentTimeMillis()).toString();
                 
                 while (rs.next()) {
                     int trips = rs.getInt("trips");
+                    double earn = rs.getDouble("earnings");
                     String oDate = rs.getString("order_date");
                     totalTrips += trips;
+                    totalEarnings += earn;
                     if (todayStr.equals(oDate)) {
                         todayTrips += trips;
+                        todayEarnings += earn;
                     }
                 }
                 stats.put("totalTrips", totalTrips);
-                stats.put("totalEarnings", totalTrips * feePerTrip);
+                stats.put("totalEarnings", totalEarnings);
                 stats.put("todayTrips", todayTrips);
-                stats.put("todayEarnings", todayTrips * feePerTrip);
+                stats.put("todayEarnings", todayEarnings);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -375,9 +385,9 @@ public class OrderDAO {
     }
 
     public List<Order> getOrdersByUser(int userId) {
-        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.status, o.created_at, " +
+        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.shipping_fee, o.distance_km, o.status, o.created_at, " +
                      "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
-                     "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+                     "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
                      "r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url " +
                      "FROM orders o " +
                      "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
@@ -396,11 +406,14 @@ public class OrderDAO {
                     order.setAddress(rs.getString("address"));
                     order.setPhone(rs.getString("phone"));
                     order.setTotalAmount(rs.getDouble("total_amount"));
+                    try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                    try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
                     order.setStatus(rs.getString("status"));
                     order.setCreatedAt(rs.getTimestamp("created_at"));
                     order.setCustomerConfirmed(rs.getBoolean("customer_confirmed"));
                     order.setMerchantConfirmed(rs.getBoolean("merchant_confirmed"));
                     order.setShipperAccepted(rs.getBoolean("shipper_accepted"));
+                    try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                     order.setShipperDelivered(rs.getBoolean("shipper_delivered"));
                     order.setMerchantCompleted(rs.getBoolean("merchant_completed"));
                     order.setDriverId(rs.getInt("driver_id"));
@@ -439,16 +452,20 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "                o.total_amount, o.shipping_fee, o.distance_km, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
-            "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "                o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "                r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.driver_id = ? "
         );
         if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
-            sql.append("AND o.status = ? ");
+            if ("SHIPPING".equalsIgnoreCase(statusFilter)) {
+                sql.append("AND (o.status = 'SHIPPING' OR (o.shipper_accepted = 1 AND o.shipper_delivered = 0 AND o.status != 'CANCELLED')) ");
+            } else {
+                sql.append("AND o.status = ? ");
+            }
         }
         sql.append("ORDER BY o.created_at DESC");
 
@@ -456,7 +473,7 @@ public class OrderDAO {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
                     ps.setInt(1, driverId);
-                    if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter)) {
+                    if (statusFilter != null && !statusFilter.isEmpty() && !"ALL".equalsIgnoreCase(statusFilter) && !"SHIPPING".equalsIgnoreCase(statusFilter)) {
                         ps.setString(2, statusFilter.trim().toUpperCase());
                     }
                     try (ResultSet rs = ps.executeQuery()) {
@@ -474,6 +491,9 @@ public class OrderDAO {
                                 rs.getBoolean("shipper_delivered"),
                                 rs.getBoolean("merchant_completed")
                             );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             int reviewId = rs.getInt("review_id");
                             if (!rs.wasNull()) {
                                 com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
@@ -793,8 +813,8 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         String sql = 
             "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
-            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "       o.total_amount, o.shipping_fee, o.distance_km, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "       d.name AS driver_name, d.phone AS driver_phone, " +
             "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
@@ -827,6 +847,9 @@ public class OrderDAO {
                                 rs.getBoolean("shipper_delivered"),
                                 rs.getBoolean("merchant_completed")
                             );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
 
@@ -1061,19 +1084,64 @@ public class OrderDAO {
     public static synchronized void syncCompletedOrders() {
         if (syncedOrdersOnStartup) return;
         syncedOrdersOnStartup = true;
-        String sql = "UPDATE orders SET status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1 " +
-                     "WHERE customer_confirmed = 1 AND shipper_delivered = 1 AND status != 'CANCELLED' AND (status != 'DELIVERED' OR merchant_completed = 0)";
-        try (Connection conn = DBContext.getConnection();
-             Statement stmt = conn.createStatement()) {
-            int count = stmt.executeUpdate(sql);
-            if (count > 0) {
-                System.out.println(">> [OrderDAO] Đã tự động đồng bộ " + count + " đơn đủ điều kiện hoàn tất.");
-                stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id IN " +
-                                   "(SELECT DISTINCT driver_id FROM orders WHERE customer_confirmed = 1 AND shipper_delivered = 1 AND status = 'DELIVERED' AND driver_id IS NOT NULL AND driver_id > 0)");
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return;
+            try (Statement stmt = conn.createStatement()) {
+                // Tự động kiểm tra và thêm các cột mới nếu CSDL chưa có (Migration an toàn)
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN shipping_fee DOUBLE NOT NULL DEFAULT 15000"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN distance_km DOUBLE NOT NULL DEFAULT 2.0"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN shipper_picked_up TINYINT(1) DEFAULT 0"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_latitude DOUBLE DEFAULT 10.8510"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_longitude DOUBLE DEFAULT 106.7725"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_address VARCHAR(255) DEFAULT '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh'"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN last_location_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN latitude DOUBLE DEFAULT 10.8505"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN longitude DOUBLE DEFAULT 106.7719"); } catch (Exception ignored) {}
+
+                // Quy tắc mới: Chỉ cần shipper_delivered = 1 là đơn đủ điều kiện hoàn tất
+                String sql = "UPDATE orders SET status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1 " +
+                             "WHERE shipper_delivered = 1 AND status != 'CANCELLED' AND (status != 'DELIVERED' OR merchant_completed = 0)";
+                int count = stmt.executeUpdate(sql);
+                if (count > 0) {
+                    System.out.println(">> [OrderDAO] Đã tự động đồng bộ " + count + " đơn shipper đã giao sang trạng thái DELIVERED.");
+                    stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id IN " +
+                                       "(SELECT DISTINCT driver_id FROM orders WHERE shipper_delivered = 1 AND status = 'DELIVERED' AND driver_id IS NOT NULL AND driver_id > 0)");
+                }
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi syncCompletedOrders: " + e.getMessage());
         }
+    }
+
+    /**
+     * BƯỚC MỚI: Shipper xác nhận đã lấy món ăn từ quán
+     */
+    public boolean shipperConfirmPickedUp(int orderId) {
+        String sql = "UPDATE orders SET shipper_picked_up = 1, status = 'SHIPPING' WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã lấy món: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * BƯỚC MỚI: Shipper xác nhận đã lấy món ăn từ quán (kèm xác thực driverId)
+     */
+    public boolean shipperConfirmPickedUp(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_picked_up = 1, status = 'SHIPPING' WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã lấy món: " + e.getMessage());
+        }
+        return false;
     }
 
     public boolean shipperConfirmDelivered(int orderId) {
@@ -1147,17 +1215,17 @@ public class OrderDAO {
     }
 
     /**
-     * Tự động hoàn tất đơn hàng khi cả Shipper đã xác nhận giao VÀ Khách hàng đã xác nhận nhận món:
+     * Tự động hoàn tất đơn hàng:
+     * Quy tắc thực tế: CHỈ CẦN SHIPPER BÁO ĐÃ GIAO (shipper_delivered == true) là đơn hoàn tất ngay lập tức!
      * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1.
      * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
-     * Không còn yêu cầu chủ quán phải duyệt thủ công đơn mới hoàn thành.
+     * - Khách hàng vẫn có thể bấm "Đã nhận món" sau đó mà không làm nghẽn tiến trình.
      */
     public boolean checkAndAutoCompleteOrder(int orderId) {
         String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 boolean shipDelivered = false;
-                boolean custConfirmed = false;
                 int driverId = 0;
                 String currentStatus = null;
 
@@ -1166,7 +1234,6 @@ public class OrderDAO {
                     try (ResultSet rs = psCheck.executeQuery()) {
                         if (rs.next()) {
                             shipDelivered = rs.getBoolean("shipper_delivered");
-                            custConfirmed = rs.getBoolean("customer_confirmed");
                             driverId = rs.getInt("driver_id");
                             currentStatus = rs.getString("status");
                         }
@@ -1177,8 +1244,8 @@ public class OrderDAO {
                     return false;
                 }
 
-                // Khi CẢ Shipper và Khách hàng đều đã xác nhận -> Hoàn tất đơn tự động ngay lập tức
-                if (shipDelivered && custConfirmed) {
+                // Khi Shipper đã xác nhận giao -> Hoàn tất đơn tự động ngay lập tức
+                if (shipDelivered) {
                     String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
                     try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                         psUpdate.setInt(1, orderId);

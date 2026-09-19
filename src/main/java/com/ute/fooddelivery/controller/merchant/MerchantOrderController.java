@@ -38,7 +38,7 @@ public class MerchantOrderController extends HttpServlet {
         }
 
         List<Order> orders = merchantService.getOrders(restaurantId, statusFilter);
-        List<Driver> availableDrivers = merchantService.getAvailableDrivers();
+        List<Driver> availableDrivers = driverDAO.findNearestDrivers(restaurant.getLatitude(), restaurant.getLongitude());
 
         req.setAttribute("orders", orders);
         req.setAttribute("selectedStatus", statusFilter);
@@ -164,6 +164,36 @@ public class MerchantOrderController extends HttpServlet {
                     req.getSession().setAttribute("flashMessage", "Đã gán tài xế cho đơn hàng #" + orderId + "! Đang chờ tài xế xác nhận nhận cuốc giao.");
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
+                }
+            } else if ("autoAssignNearest".equalsIgnoreCase(action)) {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
+                double restLat = restaurant != null ? restaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+                double restLng = restaurant != null ? restaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+
+                List<Driver> nearest = driverDAO.findNearestDrivers(restLat, restLng);
+                if (!nearest.isEmpty()) {
+                    Driver nearestDriver = nearest.get(0);
+                    boolean success = merchantService.assignDriver(orderId, nearestDriver.getId());
+                    if (success) {
+                        try {
+                            if (nearestDriver.getUserId() != null) {
+                                Order curOrder = merchantService.getOrderById(orderId);
+                                notificationService.notifyOrderAssignedToShipper(
+                                    nearestDriver.getUserId(),
+                                    orderId,
+                                    curOrder != null ? curOrder.getTotalAmount() : 0,
+                                    curOrder != null ? curOrder.getAddress() : "TP.HCM"
+                                );
+                            }
+                        } catch (Exception ignored) {}
+                        double dist = nearestDriver.getDistanceToTarget() != null ? nearestDriver.getDistanceToTarget() : 0.8;
+                        req.getSession().setAttribute("flashMessage", "Đã tự động dò tìm & gán tài xế gần quán nhất: " + nearestDriver.getName() + " (Cách quán " + String.format(java.util.Locale.US, "%.1f", dist) + " km)!");
+                    } else {
+                        req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
+                    }
+                } else {
+                    req.getSession().setAttribute("flashError", "Không tìm thấy tài xế nào khả dụng quanh khu vực quán!");
                 }
             }
         } catch (Exception e) {

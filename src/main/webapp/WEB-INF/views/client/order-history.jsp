@@ -55,7 +55,16 @@
                         <c:choose>
                             <c:when test="${order.status eq 'DELIVERED'}"><span class="order-status status-delivered"><i class="fa-solid fa-check"></i> Hoàn thành</span></c:when>
                             <c:when test="${order.status eq 'CANCELLED'}"><span class="order-status status-cancelled"><i class="fa-solid fa-xmark"></i> Đã hủy</span></c:when>
-                            <c:when test="${order.status eq 'SHIPPING'}"><span class="order-status status-shipping"><i class="fa-solid fa-motorcycle"></i> Đang giao hàng</span></c:when>
+                            <c:when test="${order.status eq 'SHIPPING'}">
+                                <c:choose>
+                                    <c:when test="${order.shipperPickedUp}">
+                                        <span class="order-status status-shipping"><i class="fa-solid fa-motorcycle"></i> Đang giao tới bạn</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="order-status status-shipping" style="background: #fff7ed; color: #c2410c;"><i class="fa-solid fa-store"></i> Shipper đang lấy món</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:when>
                             <c:otherwise><span class="order-status status-pending">Đang xử lý</span></c:otherwise>
                         </c:choose>
                     </div>
@@ -63,6 +72,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong><i class="fa-solid fa-location-dot text-danger"></i> Giao đến:</strong> ${order.address}</p>
+                            <p><strong><i class="fa-solid fa-route text-primary"></i> Cự ly &amp; Phí giao:</strong> ${order.distanceKm != null ? order.distanceKm : 2.0} km (Cước ship: <fmt:formatNumber value="${order.shippingFee != null ? order.shippingFee : 15000}" pattern="#,###"/> đ)</p>
                             <p><strong><i class="fa-solid fa-money-bill-wave text-success"></i> Phương thức thanh toán:</strong> COD</p>
                             <h5 class="mt-3">Tổng cộng: <strong class="text-danger"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/> đ</strong></h5>
                         </div>

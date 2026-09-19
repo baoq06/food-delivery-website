@@ -56,6 +56,8 @@ CREATE TABLE `restaurants` (
     `address` VARCHAR(255) DEFAULT 'TP. Hồ Chí Minh',
     `image_url` VARCHAR(500) DEFAULT NULL,
     `status` VARCHAR(20) DEFAULT 'OPEN', -- 'OPEN', 'CLOSED'
+    `latitude` DOUBLE DEFAULT 10.8505,
+    `longitude` DOUBLE DEFAULT 106.7719,
     CONSTRAINT `fk_restaurants_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE
@@ -104,6 +106,10 @@ CREATE TABLE `drivers` (
     `status` VARCHAR(20) DEFAULT 'AVAILABLE', -- 'AVAILABLE', 'BUSY', 'OFFLINE'
     `license_plate` VARCHAR(30) DEFAULT '59-X3 999.99',
     `vehicle_type` VARCHAR(50) DEFAULT 'Xe máy',
+    `current_latitude` DOUBLE DEFAULT 10.8510,
+    `current_longitude` DOUBLE DEFAULT 106.7725,
+    `current_address` VARCHAR(255) DEFAULT '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh',
+    `last_location_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_drivers_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE
@@ -119,6 +125,8 @@ CREATE TABLE `orders` (
     `address` VARCHAR(255) NOT NULL,
     `note` TEXT,
     `total_amount` DOUBLE NOT NULL DEFAULT 0,
+    `shipping_fee` DOUBLE NOT NULL DEFAULT 15000,
+    `distance_km` DOUBLE NOT NULL DEFAULT 2.0,
     `payment_method` VARCHAR(20) DEFAULT 'COD', -- 'COD', 'QR', 'CARD'
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,
@@ -126,6 +134,7 @@ CREATE TABLE `orders` (
     `customer_confirmed` TINYINT(1) DEFAULT 0, -- Khách hàng xác nhận đã nhận được món
     `merchant_confirmed` TINYINT(1) DEFAULT 0, -- Merchant xác nhận đã xử lý đơn
     `shipper_accepted` TINYINT(1) DEFAULT 0,   -- Shipper xác nhận nhận giao đơn
+    `shipper_picked_up` TINYINT(1) DEFAULT 0,  -- Shipper xác nhận đã lấy món ăn từ quán
     `shipper_delivered` TINYINT(1) DEFAULT 0,  -- Shipper xác nhận đã giao tận tay khách
     `merchant_completed` TINYINT(1) DEFAULT 0, -- Merchant duyệt hoàn thành đơn cuối cùng (để tính doanh thu)
     CONSTRAINT `fk_orders_users`

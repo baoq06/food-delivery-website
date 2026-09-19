@@ -49,6 +49,12 @@ public class ThreePartyOrderFlowTest {
             if (d != null) {
                 testDriverId = d.getId();
                 driverDAO.updateStatus(testDriverId, "AVAILABLE");
+                // Dọn sạch các đơn treo cũ của driver test để không bị tính là đang giao đơn khác
+                try (Connection conn = DBContext.getConnection();
+                     PreparedStatement psClean = conn.prepareStatement("UPDATE orders SET status = 'DELIVERED', shipper_delivered = 1 WHERE driver_id = ? AND status = 'SHIPPING'")) {
+                    psClean.setInt(1, testDriverId);
+                    psClean.executeUpdate();
+                } catch (Exception ignored) {}
             }
         }
 
@@ -132,9 +138,13 @@ public class ThreePartyOrderFlowTest {
         assertTrue("Cần testDriverId hợp lệ", testDriverId > 0);
 
         // =========================================================================
-        // BƯỚC 1: KHÁCH ĐẶT ĐƠN HÀNG MỚI
+        // BƯỚC 1: KHÁCH ĐẶT ĐƠN HÀNG MỚI (KÈM TÍNH PHÍ SHIP THEO KM)
         // =========================================================================
-        double testAmount = 189000.0;
+        double testDistance = 3.5; // 3.5 km
+        double calculatedShippingFee = com.ute.fooddelivery.utils.GeoLocationUtils.calculateShippingFee(testDistance);
+        assertEquals("Phí ship cho 3.5km (làm tròn lên 4km) phải là 25.000đ", 25000.0, calculatedShippingFee, 0.01);
+
+        double testAmount = 189000.0 + calculatedShippingFee;
         try (Connection conn = DBContext.getConnection()) {
             int foodId = 1;
             try (PreparedStatement psFood = conn.prepareStatement("SELECT food_id FROM foods WHERE restaurant_id = ? LIMIT 1")) {
@@ -146,11 +156,13 @@ public class ThreePartyOrderFlowTest {
                 }
             }
 
-            String sql = "INSERT INTO orders (user_id, customer_name, total_amount, status, address, phone, payment_method, note, shipper_accepted, shipper_delivered, merchant_completed, customer_confirmed, merchant_confirmed) " +
-                    "VALUES (?, 'Khách Hàng Kiểm Thử', ?, 'PENDING', '123 Đường Kiểm Thử, TP.Thủ Đức', '0912345678', 'COD', 'Đơn test 3 bên', 0, 0, 0, 0, 0)";
+            String sql = "INSERT INTO orders (user_id, customer_name, total_amount, status, address, phone, payment_method, note, shipper_accepted, shipper_delivered, merchant_completed, customer_confirmed, merchant_confirmed, shipping_fee, distance_km, shipper_picked_up) " +
+                    "VALUES (?, 'Khách Hàng Kiểm Thử', ?, 'PENDING', '123 Đường Kiểm Thử, TP.Thủ Đức', '0912345678', 'COD', 'Đơn test 3 bên', 0, 0, 0, 0, 0, ?, ?, 0)";
             try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, testCustomerId);
                 ps.setDouble(2, testAmount);
+                ps.setDouble(3, calculatedShippingFee);
+                ps.setDouble(4, testDistance);
                 ps.executeUpdate();
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
@@ -164,8 +176,8 @@ public class ThreePartyOrderFlowTest {
                 try (PreparedStatement psItem = conn.prepareStatement(sqlItem)) {
                     psItem.setInt(1, testOrderId);
                     psItem.setInt(2, foodId);
-                    psItem.setDouble(3, testAmount / 2.0);
-                    psItem.setDouble(4, testAmount);
+                    psItem.setDouble(3, 189000.0 / 2.0);
+                    psItem.setDouble(4, 189000.0);
                     psItem.executeUpdate();
                 }
             }
@@ -175,15 +187,23 @@ public class ThreePartyOrderFlowTest {
         Order initialOrder = orderDAO.getOrderById(testOrderId);
         assertNotNull(initialOrder);
         assertEquals("PENDING", initialOrder.getStatus());
+        assertEquals(25000.0, initialOrder.getShippingFee(), 0.01);
+        assertEquals(3.5, initialOrder.getDistanceKm(), 0.01);
         assertFalse("shipper_accepted ban đầu phải = false", initialOrder.isShipperAccepted());
+        assertFalse("shipper_picked_up ban đầu phải = false", initialOrder.isShipperPickedUp());
         assertFalse("shipper_delivered ban đầu phải = false", initialOrder.isShipperDelivered());
         assertFalse("customer_confirmed ban đầu phải = false", initialOrder.isCustomerConfirmed());
         assertFalse("merchant_completed ban đầu phải = false", initialOrder.isMerchantCompleted());
         assertFalse("Quán chưa thể bắt đầu nấu nếu chưa có shipper xác nhận", initialOrder.canStartCooking());
 
         // =========================================================================
-        // BƯỚC 2: QUÁN GÁN TÀI XẾ SHIIPER KHẢ DỤNG
+        // BƯỚC 2: QUÁN GÁN TÀI XẾ SHIPPER THEO THUẬT TOÁN CỰ LY
         // =========================================================================
+        // Cập nhật vị trí test cho driver
+        driverDAO.updateLocation(testDriverId, 10.850721, 106.771960, "HCMUTE, Võ Văn Ngân, TP. Thủ Đức");
+        List<Driver> nearestList = driverDAO.findNearestDrivers(10.850000, 106.770000);
+        assertNotNull("Danh sách tài xế gần quán", nearestList);
+
         boolean assigned = orderDAO.assignDriver(testOrderId, testDriverId);
         assertTrue("Gán shipper cho đơn hàng thành công", assigned);
 
@@ -205,7 +225,7 @@ public class ThreePartyOrderFlowTest {
 
         Order acceptedOrder = orderDAO.getOrderById(testOrderId);
         assertTrue("shipper_accepted lúc này phải = true", acceptedOrder.isShipperAccepted());
-        assertTrue("Quán BÂY GIỜ ĐÃ ĐỦ ĐIỀU KIỆN để bắt đầu nấu & giao", acceptedOrder.canStartCooking());
+        assertTrue("Quán BÂY GIỜ ĐÃ ĐỦ ĐIỀU KIỆN để bắt đầu nấu", acceptedOrder.canStartCooking());
 
         // Radar của driver không còn hiển thị đơn này là 'chờ gán' nữa vì đã nhận rồi
         Order pendingAfterAccept = orderDAO.getPendingAssignedOrderForDriver(testDriverId);
@@ -216,46 +236,44 @@ public class ThreePartyOrderFlowTest {
         assertEquals("BUSY", d.getStatus());
 
         // =========================================================================
-        // BƯỚC 4: QUÁN CHUYỂN SANG ĐANG CHẾ BIẾN & GIAO SHIPPER
+        // BƯỚC 4: QUÁN XÁC NHẬN MÓN ĂN & BÀN GIAO
         // =========================================================================
-        boolean cooking = orderDAO.updateOrderStatus(testOrderId, "SHIPPING");
-        assertTrue("Quán chuyển sang SHIPPING thành công", cooking);
-
-        Order shippingOrder = orderDAO.getOrderById(testOrderId);
-        assertEquals("SHIPPING", shippingOrder.getStatus());
-        assertFalse("Chưa hoàn tất xác nhận 2 bên", shippingOrder.isReadyForMerchantComplete());
+        boolean cooking = orderDAO.updateOrderStatus(testOrderId, "CONFIRMED");
+        assertTrue("Quán xác nhận đơn", cooking);
 
         // =========================================================================
-        // BƯỚC 5: SHIPPER VÀ KHÁCH HÀNG XÁC NHẬN ĐỘC LẬP
+        // BƯỚC 5: SHIPPER ĐẾN QUÁN & XÁC NHẬN ĐÃ LẤY MÓN TỪ QUÁN (BƯỚC MỚI)
         // =========================================================================
-        // 5a. Shipper báo đã giao tới nơi
-        boolean shipperDone = orderDAO.shipperConfirmDelivered(testOrderId);
+        boolean pickedUp = orderDAO.shipperConfirmPickedUp(testOrderId, testDriverId);
+        assertTrue("Shipper xác nhận đã lấy món từ quán thành công", pickedUp);
+
+        Order afterPickedUpOrder = orderDAO.getOrderById(testOrderId);
+        assertTrue("shipper_picked_up phải = true", afterPickedUpOrder.isShipperPickedUp());
+        assertEquals("SHIPPING", afterPickedUpOrder.getStatus());
+
+        // =========================================================================
+        // BƯỚC 6: SHIPPER BÁO ĐÃ GIAO XONG CHO KHÁCH -> ĐƠN HOÀN TẤT NGAY LẬP TỨC
+        // =========================================================================
+        boolean shipperDone = orderDAO.shipperConfirmDelivered(testOrderId, testDriverId);
         assertTrue("Shipper xác nhận giao thành công", shipperDone);
 
-        Order afterShipperDelivered = orderDAO.getOrderById(testOrderId);
-        assertTrue("shipper_delivered phải = true", afterShipperDelivered.isShipperDelivered());
-        assertFalse("Khách chưa nhận nên readyForMerchantComplete vẫn phải = false", afterShipperDelivered.isReadyForMerchantComplete());
+        Order finalDeliveredOrder = orderDAO.getOrderById(testOrderId);
+        assertTrue("shipper_delivered phải = true", finalDeliveredOrder.isShipperDelivered());
+        assertEquals("Đơn hàng hoàn tất ngay lập tức thành DELIVERED không cần đợi khách", "DELIVERED", finalDeliveredOrder.getStatus());
+        assertTrue("merchant_completed tự động set = true để tính doanh thu", finalDeliveredOrder.isMerchantCompleted());
 
-        // 5b. Khách hàng xác nhận đã nhận được món
-        boolean customerDone = orderDAO.confirmCustomerOrder(testOrderId);
-        assertTrue("Khách hàng bấm xác nhận nhận món thành công", customerDone);
-
-        Order afterBothConfirmed = orderDAO.getOrderById(testOrderId);
-        assertTrue("customer_confirmed phải = true", afterBothConfirmed.isCustomerConfirmed());
-        assertTrue("CẢ 2 BÊN ĐÃ XÁC NHẬN -> SẴN SÀNG ĐỂ QUÁN DUYỆT HOÀN TẤT!", afterBothConfirmed.isReadyForMerchantComplete());
-
-        // =========================================================================
-        // BƯỚC 6: CHỦ QUÁN DUYỆT HOÀN THÀNH ĐƠN HÀNG -> GHI NHẬN DOANH THU
-        // =========================================================================
-        boolean completed = orderDAO.merchantCompleteOrder(testOrderId);
-        assertTrue("Chủ quán duyệt hoàn tất đơn thành công", completed);
-
-        Order finalOrder = orderDAO.getOrderById(testOrderId);
-        assertEquals("DELIVERED", finalOrder.getStatus());
-        assertTrue("merchant_completed phải = true", finalOrder.isMerchantCompleted());
-
-        // Tài xế được tự động trả về AVAILABLE sau khi đơn hoàn tất
+        // Tài xế được tự động giải phóng về AVAILABLE sau khi hoàn thành đơn
         Driver driverAfterFinish = driverDAO.getDriverById(testDriverId);
-        assertEquals("AVAILABLE", driverAfterFinish.getStatus());
+        assertEquals("Tài xế sẵn sàng nhận đơn mới", "AVAILABLE", driverAfterFinish.getStatus());
+
+        // =========================================================================
+        // BƯỚC 7: KHÁCH VẪN CÓ THỂ XÁC NHẬN ĐÃ NHẬN MÓN & ĐÁNH GIÁ (TÙY CHỌN, KHÔNG BẮT BUỘC)
+        // =========================================================================
+        boolean customerDone = orderDAO.confirmCustomerOrder(testOrderId);
+        assertTrue("Khách bấm xác nhận nhận món", customerDone);
+
+        Order finalCustomerConfirmed = orderDAO.getOrderById(testOrderId);
+        assertTrue("customer_confirmed = true", finalCustomerConfirmed.isCustomerConfirmed());
+        assertEquals("DELIVERED", finalCustomerConfirmed.getStatus());
     }
 }

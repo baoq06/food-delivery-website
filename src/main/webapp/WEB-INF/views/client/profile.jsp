@@ -561,15 +561,24 @@
                                                         <i class="fa-solid fa-circle-check"></i> Bạn đã nhận hàng thành công
                                                     </span>
                                                 </c:when>
-                                                <c:when test="${order.shipperDelivered}">
-                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold" style="font-size: 0.76rem;">
-                                                        <i class="fa-solid fa-bell fa-shake me-1"></i> Shipper đã đến nơi - Vui lòng xác nhận nhận món!
+                                                <c:when test="${order.shipperDelivered or order.status eq 'DELIVERED'}">
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold" style="font-size: 0.78rem;">
+                                                        <i class="fa-solid fa-circle-check me-1"></i> Shipper đã giao thành công! Bạn có thể đánh giá trải nghiệm
                                                     </span>
                                                 </c:when>
                                                 <c:when test="${order.status eq 'SHIPPING'}">
-                                                    <span class="text-warning fw-bold">
-                                                        <i class="fa-solid fa-motorcycle"></i> Shipper đang trên đường giao tới bạn
-                                                    </span>
+                                                    <c:choose>
+                                                        <c:when test="${order.shipperPickedUp}">
+                                                            <span class="text-warning fw-bold">
+                                                                <i class="fa-solid fa-motorcycle"></i> Shipper đã lấy món &amp; đang trên đường giao tới bạn
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-warning fw-bold" style="color: #ea580c !important;">
+                                                                <i class="fa-solid fa-store"></i> Shipper đang di chuyển đến quán để lấy món
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:when>
                                                 <c:when test="${order.shipperAccepted}">
                                                     <span class="text-info fw-bold">
@@ -683,6 +692,9 @@
                                     <div class="order-total-block">
                                         <span class="total-label">Tổng thanh toán:</span>
                                         <span class="total-amount">${String.format("%,.0f", order.totalAmount)} đ</span>
+                                        <small class="text-muted d-block" style="font-size: 0.78rem;">
+                                            (Đã gồm phí ship: ${String.format("%,.0f", order.shippingFee != null ? order.shippingFee : 15000)} đ • ${order.distanceKm != null ? order.distanceKm : 2.0} km)
+                                        </small>
                                     </div>
 
                                     <div class="order-actions">

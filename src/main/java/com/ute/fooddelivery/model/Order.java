@@ -62,8 +62,17 @@ public class Order implements Serializable {
     @Column(name = "merchant_confirmed")
     private boolean merchantConfirmed;
 
+    @Column(name = "shipping_fee")
+    private double shippingFee = 15000.0;
+
+    @Column(name = "distance_km")
+    private double distanceKm = 2.0;
+
     @Column(name = "shipper_accepted")
     private boolean shipperAccepted;
+
+    @Column(name = "shipper_picked_up")
+    private boolean shipperPickedUp;
 
     @Column(name = "shipper_delivered")
     private boolean shipperDelivered;
@@ -310,11 +319,35 @@ public class Order implements Serializable {
     }
 
     /**
-     * Kiểm tra đơn đã sẵn sàng để Chủ quán duyệt hoàn thành hay chưa:
-     * Cần cả Shipper xác nhận đã giao VÀ Khách hàng xác nhận đã nhận món.
+     * Kiểm tra đơn đã sẵn sàng để hoàn thành:
+     * Chỉ cần Shipper xác nhận đã giao hàng tận tay cho khách (Khách không bắt buộc phải bấm nhận món).
      */
     public boolean isReadyForMerchantComplete() {
-        return shipperDelivered && customerConfirmed;
+        return shipperDelivered;
+    }
+
+    public boolean isShipperPickedUp() {
+        return shipperPickedUp;
+    }
+
+    public void setShipperPickedUp(boolean shipperPickedUp) {
+        this.shipperPickedUp = shipperPickedUp;
+    }
+
+    public double getShippingFee() {
+        return shippingFee;
+    }
+
+    public void setShippingFee(double shippingFee) {
+        this.shippingFee = shippingFee;
+    }
+
+    public double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(double distanceKm) {
+        this.distanceKm = distanceKm;
     }
 
     /**

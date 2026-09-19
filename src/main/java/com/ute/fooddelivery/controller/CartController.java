@@ -72,6 +72,21 @@ public class CartController extends HttpServlet {
             return;
         }
 
+        int restaurantId = 1;
+        if (session != null) {
+            @SuppressWarnings("unchecked")
+            Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
+            if (cart != null && !cart.isEmpty()) {
+                for (CartItem ci : cart.values()) {
+                    if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
+                        restaurantId = ci.getFood().getRestaurantId();
+                        break;
+                    }
+                }
+            }
+        }
+        req.setAttribute("cartRestaurantId", restaurantId);
+
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
 
@@ -257,7 +272,22 @@ public class CartController extends HttpServlet {
                     ));
                 }
 
-                double shippingFee = 15000;
+                int restaurantId = 1;
+                for (CartItem ci : cart.values()) {
+                    if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
+                        restaurantId = ci.getFood().getRestaurantId();
+                        break;
+                    }
+                }
+
+                com.ute.fooddelivery.dao.RestaurantDAO restaurantDAO = new com.ute.fooddelivery.dao.RestaurantDAO();
+                com.ute.fooddelivery.model.Restaurant restaurant = restaurantDAO.getRestaurantById(restaurantId);
+                double restLat = restaurant != null ? restaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+                double restLng = restaurant != null ? restaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+
+                double[] custCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(receiverAddress);
+                double distanceKm = com.ute.fooddelivery.utils.GeoLocationUtils.calculateRouteDistance(restLat, restLng, custCoords[0], custCoords[1]);
+                double shippingFee = com.ute.fooddelivery.utils.GeoLocationUtils.calculateShippingFee(distanceKm);
                 double totalBill = subtotalBill + shippingFee;
 
                 Integer userId = currentUser.getId();
@@ -268,6 +298,8 @@ public class CartController extends HttpServlet {
                 order.setPhone(receiverPhone.trim());
                 order.setAddress(receiverAddress.trim());
                 order.setNote(receiverNote != null ? receiverNote.trim() : "");
+                order.setShippingFee(shippingFee);
+                order.setDistanceKm(distanceKm);
                 order.setTotalAmount(totalBill);
                 order.setPaymentMethod(paymentMethod != null ? paymentMethod : "COD");
 

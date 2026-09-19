@@ -56,36 +56,51 @@ public class ShipperDashboardController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
                 return;
             }
+        } else if ("confirmPickedUp".equals(action)) {
+            try {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                if (driver != null) {
+                    boolean success = orderDAO.shipperConfirmPickedUp(orderId, driver.getId());
+                    if (success) {
+                        driverDAO.updateStatusByUserId(user.getId(), "BUSY");
+                        driver.setStatus("BUSY");
+                        session.setAttribute("shipperActive", true);
+                        session.setAttribute("driverStatus", "BUSY");
+
+                        Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        notificationService.notifyOrderShipping(customerUserId, user.getId(), orderId);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
+            return;
         } else if ("updateOrder".equals(action) || "confirmDelivered".equals(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String status = req.getParameter("status");
                 if ("confirmDelivered".equals(action) || "DELIVERED".equalsIgnoreCase(status)) {
-                    // Shipper xác nhận đã giao hàng tận nơi cho khách
+                    // Shipper xác nhận đã giao hàng tận nơi cho khách -> Đơn hoàn tất ngay lập tức
                     if (driver != null) {
                         orderDAO.shipperConfirmDelivered(orderId, driver.getId());
                         Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
                         Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
-                        Order updatedOrder = orderDAO.getOrderById(orderId);
-                        if (updatedOrder != null && "DELIVERED".equalsIgnoreCase(updatedOrder.getStatus())) {
-                            // Cả 2 bên đều đã xác nhận -> Đơn đã tự động hoàn tất ngay lập tức
-                            List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
-                            boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
-                            if (!stillHasActive) {
-                                driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
-                                driver.setStatus("AVAILABLE");
-                                session.setAttribute("shipperActive", true);
-                                session.setAttribute("driverStatus", "AVAILABLE");
-                            } else {
-                                driver.setStatus("BUSY");
-                                session.setAttribute("shipperActive", true);
-                                session.setAttribute("driverStatus", "BUSY");
-                            }
-                            notificationService.notifyOrderCompleted(customerUserId, user.getId(), merchantUserId, orderId);
+
+                        List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+                        boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
+                        if (!stillHasActive) {
+                            driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
+                            driver.setStatus("AVAILABLE");
+                            session.setAttribute("shipperActive", true);
+                            session.setAttribute("driverStatus", "AVAILABLE");
                         } else {
-                            // Mới chỉ có Shipper báo đã giao, đang chờ khách xác nhận đã nhận món
-                            notificationService.notifyShipperDelivered(customerUserId, merchantUserId, orderId, driver.getName());
+                            driver.setStatus("BUSY");
+                            session.setAttribute("shipperActive", true);
+                            session.setAttribute("driverStatus", "BUSY");
                         }
+                        notificationService.notifyOrderCompleted(customerUserId, user.getId(), merchantUserId, orderId);
                     }
                 } else if ("CANCELLED".equalsIgnoreCase(status)) {
                     orderDAO.updateOrderStatus(orderId, "CANCELLED");

@@ -47,7 +47,7 @@ public class RestaurantDAO {
     }
 
     private static final String BASE_QUERY = 
-        "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, r.status, " +
+        "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, r.status, r.latitude, r.longitude, " +
         "       COALESCE(sub_rev.avg_rating, 0.0) AS avg_rating, " +
         "       COALESCE(sub_rev.review_count, 0) AS review_count, " +
         "       COALESCE(sub_ord.total_orders, 0) AS total_orders " +
@@ -271,6 +271,14 @@ public class RestaurantDAO {
             r.setRating(rs.getDouble("avg_rating"));
             r.setReviewCount(rs.getInt("review_count"));
             r.setTotalOrders(rs.getInt("total_orders"));
+        } catch (Exception ignored) {}
+        try {
+            double lat = rs.getDouble("latitude");
+            if (!rs.wasNull()) r.setLatitude(lat);
+        } catch (Exception ignored) {}
+        try {
+            double lng = rs.getDouble("longitude");
+            if (!rs.wasNull()) r.setLongitude(lng);
         } catch (Exception ignored) {}
         return r;
     }
