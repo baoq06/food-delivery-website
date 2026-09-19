@@ -100,10 +100,18 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Địa chỉ giao hàng chi tiết *</label>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label mb-0">Địa chỉ giao hàng chi tiết *</label>
+                                    <button type="button" id="btnCartGPS" class="btn btn-sm btn-outline-primary" style="font-size: 0.78rem; border-radius: 20px; padding: 2px 10px;" onclick="locateUserForShipping()">
+                                        <i class="fa-solid fa-location-crosshairs me-1"></i> Định vị GPS của tôi
+                                    </button>
+                                </div>
                                 <div id="cartVNAddressPicker"></div>
                                 <input type="hidden" id="receiverAddress" name="receiverAddress" required 
                                        value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : sessionScope.currentUser.address}' />">
+                                <div id="shippingDistanceNotice" class="p-2 mt-2 rounded" style="font-size: 0.82rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; display: none;">
+                                    <i class="fa-solid fa-route me-1 text-success"></i> <span id="distText">Đang tính cự ly...</span>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -207,30 +215,144 @@
 
 <script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
+let currentShippingFee = 15000;
+let hasDiscount = false;
+const baseTotal = ${totalBill != null ? totalBill : 0};
+const cartRestId = ${cartRestaurantId != null ? cartRestaurantId : 1};
+
+function recalculateGrandTotal() {
+    const finalTotalDisplay = document.getElementById('finalTotalDisplay');
+    const discountAmount = hasDiscount ? 15000 : 0;
+    const finalTotal = Math.max(0, baseTotal + currentShippingFee - discountAmount);
+    if (finalTotalDisplay) {
+        finalTotalDisplay.innerText = finalTotal.toLocaleString('vi-VN') + ' đ';
+    }
+}
+
+function updateShippingFeeFromAddress(addressText, lat, lng) {
+    if (!addressText || addressText.trim().length < 3) return;
+    
+    let url = '${pageContext.request.contextPath}/api/shipping-fee?restaurantId=' + cartRestId + '&address=' + encodeURIComponent(addressText);
+    if (lat && lng) {
+        url += '&lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng);
+    }
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                currentShippingFee = data.shippingFee;
+                const feeSpan = document.getElementById('shippingFee');
+                if (feeSpan) {
+                    feeSpan.innerText = data.formattedFee;
+                }
+                const noticeBox = document.getElementById('shippingDistanceNotice');
+                const distText = document.getElementById('distText');
+                if (noticeBox && distText) {
+                    noticeBox.style.display = 'block';
+                    distText.innerHTML = '<strong>Khoảng cách giao:</strong> ' + data.distanceKm + ' km (Ước tính ' + data.estimatedMinutes + ' phút) &bull; <strong>Cước ship:</strong> ' + data.formattedFee;
+                }
+                recalculateGrandTotal();
+            }
+        })
+        .catch(err => console.error('Lỗi tính phí ship:', err));
+}
+
+function locateUserForShipping() {
+    const btn = document.getElementById('btnCartGPS');
+    if (!navigator.geolocation) {
+        alert('Trình duyệt của bạn không hỗ trợ định vị GPS!');
+        return;
+    }
+    
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang lấy tọa độ...';
+        btn.disabled = true;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            
+            // Thử lấy tên địa chỉ qua Reverse Geocoding
+            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi')
+                .then(r => r.json())
+                .then(geoData => {
+                    let fullAddr = geoData && geoData.display_name ? geoData.display_name : ('Vị trí GPS (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + '), TP. Hồ Chí Minh');
+                    const addrInput = document.getElementById('receiverAddress');
+                    if (addrInput) {
+                        addrInput.value = fullAddr;
+                    }
+                    updateShippingFeeFromAddress(fullAddr, lat, lng);
+                    if (btn) {
+                        btn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i> Đã nhận vị trí';
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fa-solid fa-location-crosshairs me-1"></i> Định vị GPS của tôi';
+                            btn.disabled = false;
+                        }, 3000);
+                    }
+                })
+                .catch(() => {
+                    const fallbackAddr = 'Vị trí GPS (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + '), TP. Hồ Chí Minh';
+                    const addrInput = document.getElementById('receiverAddress');
+                    if (addrInput) {
+                        addrInput.value = fallbackAddr;
+                    }
+                    updateShippingFeeFromAddress(fallbackAddr, lat, lng);
+                    if (btn) {
+                        btn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i> Đã nhận vị trí';
+                        btn.disabled = false;
+                    }
+                });
+        },
+        function(err) {
+            alert('Không thể truy cập GPS: ' + err.message + '. Bạn có thể chọn địa chỉ từ danh sách.');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-location-crosshairs me-1"></i> Định vị GPS của tôi';
+                btn.disabled = false;
+            }
+        },
+        { timeout: 8000 }
+    );
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    const addrInput = document.getElementById('receiverAddress');
     if (document.getElementById('cartVNAddressPicker') && typeof VNAddressPicker !== 'undefined') {
         VNAddressPicker.init({
             container: 'cartVNAddressPicker',
             targetInput: 'receiverAddress',
-            initialAddress: document.getElementById('receiverAddress') ? document.getElementById('receiverAddress').value : ''
+            initialAddress: addrInput ? addrInput.value : ''
         });
     }
+
+    if (addrInput && addrInput.value) {
+        updateShippingFeeFromAddress(addrInput.value);
+    }
+
+    // Quan sát thay đổi địa chỉ từ picker
+    if (addrInput) {
+        let lastVal = addrInput.value;
+        setInterval(function() {
+            if (addrInput.value && addrInput.value !== lastVal) {
+                lastVal = addrInput.value;
+                updateShippingFeeFromAddress(lastVal);
+            }
+        }, 800);
+    }
 });
-let hasDiscount = false;
-const baseTotal = ${totalBill != null ? totalBill : 0};
 
 function applyCoupon() {
     const code = document.getElementById('couponCode').value.trim().toUpperCase();
     const msg = document.getElementById('couponMsg');
     const discountRow = document.getElementById('discountRow');
-    const finalTotalDisplay = document.getElementById('finalTotalDisplay');
 
     if (code === 'VINDELI15' || code === 'VINDELI30' || code === 'WELCOME' || code === 'DELI15' || code === 'FOODZONE30') {
         hasDiscount = true;
         msg.innerHTML = '<span style="color: #10ac84; font-weight: 600;"><i class="fa-solid fa-check"></i> Áp dụng mã thành công! Giảm 15.000đ phí giao hàng.</span>';
-        discountRow.style.display = 'flex';
-        let newTotal = baseTotal; // 15000 shipping - 15000 discount = 0
-        finalTotalDisplay.innerText = newTotal.toLocaleString('vi-VN') + ' đ';
+        if (discountRow) discountRow.style.display = 'flex';
+        recalculateGrandTotal();
     } else {
         msg.innerHTML = '<span style="color: #ee5253; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> Mã ưu đãi không hợp lệ hoặc đã hết hạn!</span>';
     }

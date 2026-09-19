@@ -8,7 +8,9 @@
 </jsp:include>
 
 <div class="admin-dashboard-container">
-    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
+    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp">
+        <jsp:param name="activeTab" value="shippers" />
+    </jsp:include>
 
     <div class="container pb-5">
         <!-- Toolbar Bộ Lọc Shipper -->
@@ -88,9 +90,16 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="text-muted small">
-                                                <i class="fa-solid fa-location-dot text-danger me-1"></i> TP. Hồ Chí Minh (Q.1, Q.3, Bình Thạnh)
-                                            </span>
+                                            <div>
+                                                <span class="text-dark small fw-semibold">
+                                                    <i class="fa-solid fa-location-dot text-danger me-1"></i> ${not empty driver.currentAddress ? driver.currentAddress : 'Khu vực TP. Hồ Chí Minh'}
+                                                </span>
+                                                <c:if test="${not empty driver.currentLatitude}">
+                                                    <small class="text-muted d-block font-monospace" style="font-size: 0.75rem;">
+                                                        GPS: ${driver.currentLatitude}, ${driver.currentLongitude}
+                                                    </small>
+                                                </c:if>
+                                            </div>
                                         </td>
                                         <td>
                                             <c:choose>

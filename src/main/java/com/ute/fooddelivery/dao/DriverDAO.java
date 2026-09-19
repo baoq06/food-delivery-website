@@ -227,7 +227,123 @@ public class DriverDAO {
             avatar = rs.getString("avatar");
         } catch (Exception ignored) {}
 
-        return new Driver(driverId, userId, name, phone, status, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatar);
+        Driver driver = new Driver(driverId, userId, name, phone, status, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatar);
+
+        try {
+            double lat = rs.getDouble("current_latitude");
+            if (!rs.wasNull()) driver.setCurrentLatitude(lat);
+        } catch (Exception ignored) {}
+        try {
+            double lng = rs.getDouble("current_longitude");
+            if (!rs.wasNull()) driver.setCurrentLongitude(lng);
+        } catch (Exception ignored) {}
+        try {
+            String addr = rs.getString("current_address");
+            if (addr != null && !addr.trim().isEmpty()) driver.setCurrentAddress(addr);
+        } catch (Exception ignored) {}
+        try {
+            driver.setLastLocationUpdated(rs.getTimestamp("last_location_updated"));
+        } catch (Exception ignored) {}
+
+        return driver;
+    }
+
+    /**
+     * Cập nhật vị trí thời gian thực (GPS) của tài xế
+     */
+    public boolean updateLocation(int driverId, double lat, double lng, String address) {
+        String query = "UPDATE drivers SET current_latitude = ?, current_longitude = ?, current_address = ?, last_location_updated = CURRENT_TIMESTAMP WHERE driver_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setDouble(1, lat);
+            ps.setDouble(2, lng);
+            ps.setString(3, address != null ? address : "TP. Thủ Đức, TP. Hồ Chí Minh");
+            ps.setInt(4, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật tọa độ tài xế #" + driverId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Cập nhật vị trí thời gian thực theo userId
+     */
+    public boolean updateLocationByUserId(int userId, double lat, double lng, String address) {
+        String query = "UPDATE drivers SET current_latitude = ?, current_longitude = ?, current_address = ?, last_location_updated = CURRENT_TIMESTAMP WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setDouble(1, lat);
+            ps.setDouble(2, lng);
+            ps.setString(3, address != null ? address : "TP. Thủ Đức, TP. Hồ Chí Minh");
+            ps.setInt(4, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật tọa độ tài xế qua User ID #" + userId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Lấy danh sách tài xế đang SẴN SÀNG (AVAILABLE) và KHÔNG ĐANG GIAO ĐƠN NÀO
+     */
+    public List<Driver> getAvailableDriversWithoutActiveOrders() {
+        List<Driver> list = new ArrayList<>();
+        String query = "SELECT d.*, " +
+                       "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
+                       "FROM drivers d " +
+                       "WHERE d.status = 'AVAILABLE' " +
+                       "AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.driver_id = d.driver_id AND o.status = 'SHIPPING') " +
+                       "AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 1 AND o.shipper_delivered = 0 AND o.status != 'CANCELLED') " +
+                       "ORDER BY d.driver_id ASC";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int pendingCount = rs.getInt("pending_count");
+                        if (pendingCount < 3) {
+                            Driver driver = mapResultSetToDriver(rs);
+                            driver.setPendingOrderCount(pendingCount);
+                            list.add(driver);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách tài xế không bận giao đơn: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * THUẬT TOÁN TÌM SHIPPER GẦN QUÁN NHẤT KHÔNG ĐANG GIAO ĐƠN NÀO:
+     * 1. Lọc các tài xế AVAILABLE, không bận đơn nào khác.
+     * 2. Dò đường và đo cự ly (km) từ tọa độ hiện tại của mỗi shipper đến quán ăn (Haversine + OSRM).
+     * 3. Sắp xếp danh sách tài xế tăng dần theo cự ly (tài xế gần quán nhất đứng đầu tiên).
+     */
+    public List<Driver> findNearestDrivers(double restaurantLat, double restaurantLng) {
+        List<Driver> candidates = getAvailableDriversWithoutActiveOrders();
+        if (candidates.isEmpty()) {
+            // Nếu không có tài xế hoàn toàn rảnh, lấy tài xế AVAILABLE có pending_count < 3
+            candidates = getAvailableDrivers();
+        }
+
+        for (Driver d : candidates) {
+            double dLat = d.getCurrentLatitude();
+            double dLng = d.getCurrentLongitude();
+            double distance = com.ute.fooddelivery.utils.GeoLocationUtils.calculateRouteDistance(dLat, dLng, restaurantLat, restaurantLng);
+            d.setDistanceToTarget(distance);
+        }
+
+        // Sắp xếp tăng dần theo khoảng cách đến quán
+        candidates.sort((d1, d2) -> {
+            Double dist1 = d1.getDistanceToTarget() != null ? d1.getDistanceToTarget() : 999.0;
+            Double dist2 = d2.getDistanceToTarget() != null ? d2.getDistanceToTarget() : 999.0;
+            return dist1.compareTo(dist2);
+        });
+
+        return candidates;
     }
 }
 

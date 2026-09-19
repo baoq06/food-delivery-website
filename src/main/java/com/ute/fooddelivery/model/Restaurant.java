@@ -48,6 +48,12 @@ public class Restaurant implements Serializable {
     @Column(name = "close_time")
     private String closeTime; // Ví dụ: '22:00'
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Transient
     private double rating;
 
@@ -211,5 +217,21 @@ public class Restaurant implements Serializable {
         if (reviewCount <= 0 || ratingBreakdown == null) return 0;
         int count = ratingBreakdown.getOrDefault(star, 0);
         return (int) Math.round(((double) count / reviewCount) * 100);
+    }
+
+    public Double getLatitude() {
+        return latitude != null ? latitude : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude != null ? longitude : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 }

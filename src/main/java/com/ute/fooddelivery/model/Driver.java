@@ -46,6 +46,20 @@ public class Driver implements Serializable {
     @Column(name = "avatar")
     private String avatar;
 
+    @Column(name = "current_latitude")
+    private Double currentLatitude;
+
+    @Column(name = "current_longitude")
+    private Double currentLongitude;
+
+    @Column(name = "current_address")
+    private String currentAddress;
+
+    @Column(name = "last_location_updated")
+    private java.sql.Timestamp lastLocationUpdated;
+
+    private Double distanceToTarget; // Khoảng cách tới Quán ăn (km) - phục vụ hiển thị & thuật toán radar
+
     public Driver() {
     }
 
@@ -180,5 +194,45 @@ public class Driver implements Serializable {
 
     public boolean isAvailable() {
         return "AVAILABLE".equalsIgnoreCase(this.status);
+    }
+
+    public Double getCurrentLatitude() {
+        return currentLatitude != null ? currentLatitude : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+    }
+
+    public void setCurrentLatitude(Double currentLatitude) {
+        this.currentLatitude = currentLatitude;
+    }
+
+    public Double getCurrentLongitude() {
+        return currentLongitude != null ? currentLongitude : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+    }
+
+    public void setCurrentLongitude(Double currentLongitude) {
+        this.currentLongitude = currentLongitude;
+    }
+
+    public String getCurrentAddress() {
+        return currentAddress != null ? currentAddress : "1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh";
+    }
+
+    public void setCurrentAddress(String currentAddress) {
+        this.currentAddress = currentAddress;
+    }
+
+    public java.sql.Timestamp getLastLocationUpdated() {
+        return lastLocationUpdated;
+    }
+
+    public void setLastLocationUpdated(java.sql.Timestamp lastLocationUpdated) {
+        this.lastLocationUpdated = lastLocationUpdated;
+    }
+
+    public Double getDistanceToTarget() {
+        return distanceToTarget;
+    }
+
+    public void setDistanceToTarget(Double distanceToTarget) {
+        this.distanceToTarget = distanceToTarget;
     }
 }

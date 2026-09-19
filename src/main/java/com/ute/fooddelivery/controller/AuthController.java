@@ -63,6 +63,7 @@ public class AuthController extends HttpServlet {
             req.setAttribute("cookieRemember", true);
         }
 
+        req.setAttribute("allUsers", userService.getAllUsers());
         req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
     }
 
@@ -125,6 +126,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("errorMessage", "Tên đăng nhập hoặc mật khẩu không chính xác!");
                 req.setAttribute("stickyUsername", username);
                 req.setAttribute("stickyRemember", remember != null);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
             }
         } else if ("register".equalsIgnoreCase(action)) {
@@ -209,6 +211,10 @@ public class AuthController extends HttpServlet {
                 validationError = "Mật khẩu bảo mật phải có ít nhất 6 ký tự!";
             } else if (!phone.trim().matches("^0[0-9]{9,10}$")) {
                 validationError = "Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam 10-11 chữ số bắt đầu bằng số 0.";
+            } else if (userService.isPhoneExists(phone.trim())) {
+                validationError = "Số điện thoại " + phone.trim() + " đã được đăng ký tài khoản! Vui lòng sử dụng số điện thoại khác.";
+            } else if (userService.isUsernameExists(username.trim())) {
+                validationError = "Tên đăng nhập '" + username.trim() + "' đã được sử dụng! Vui lòng chọn tên khác.";
             } else if (isSellerReg && (restaurantName == null || restaurantName.trim().isEmpty())) {
                 validationError = "Chủ quán vui lòng nhập Tên quán ăn / Nhà hàng của bạn!";
             } else if (isShipperReg && (licensePlate == null || licensePlate.trim().isEmpty())) {
@@ -239,6 +245,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.setAttribute("currentStep", 4);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
@@ -258,7 +265,7 @@ public class AuthController extends HttpServlet {
             }
 
             if (!created) {
-                req.setAttribute("errorMessage", "Tên đăng nhập '" + username + "' đã được sử dụng! Vui lòng chọn tên khác.");
+                req.setAttribute("errorMessage", "Đăng ký không thành công! Tên đăng nhập hoặc số điện thoại có thể đã tồn tại trong hệ thống.");
                 req.setAttribute("stickyRegFullName", fullName);
                 req.setAttribute("stickyRegPhone", phone);
                 req.setAttribute("stickyRegAddress", address);
@@ -272,6 +279,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
                 req.setAttribute("currentStep", 4);
+                req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
             }
@@ -312,6 +320,12 @@ public class AuthController extends HttpServlet {
         String phone = req.getParameter("phone");
         if (phone == null || !phone.trim().matches("^0[0-9]{9,10}$")) {
             resp.getWriter().write("{\"success\":false,\"message\":\"Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam 10 chữ số (bắt đầu bằng 0).\"}");
+            return;
+        }
+
+        // Kiểm tra số điện thoại đã tồn tại trong hệ thống chưa
+        if (userService.isPhoneExists(phone.trim())) {
+            resp.getWriter().write("{\"success\":false,\"message\":\"Số điện thoại " + phone.trim() + " đã được đăng ký tài khoản! Vui lòng đăng nhập hoặc sử dụng số khác.\"}");
             return;
         }
 

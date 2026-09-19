@@ -107,4 +107,19 @@ public class RealDataVerificationTest {
             assertTrue("Food must belong to active restaurant", f.getRestaurantId() == 1 || f.getRestaurantId() == 2);
         }
     }
+
+    @Test
+    public void testCheckDuplicatePhoneAndUsername() {
+        UserDAO userDAO = new UserDAO();
+        // Kiểm tra với số điện thoại đã tồn tại
+        assertTrue("Số 0909123456 phải báo là đã tồn tại", userDAO.isPhoneExists("0909123456"));
+        assertTrue("Số 0987654321 phải báo là đã tồn tại", userDAO.isPhoneExists("0987654321"));
+
+        // Kiểm tra với số điện thoại chưa tồn tại
+        assertFalse("Số 0999999999 không được báo là đã tồn tại", userDAO.isPhoneExists("0999999999"));
+
+        // Kiểm tra tên đăng nhập
+        assertTrue("Username 'admin' phải báo đã tồn tại", userDAO.isUsernameExists("admin"));
+        assertFalse("Username 'nonexistent_user_9999' không được báo là đã tồn tại", userDAO.isUsernameExists("nonexistent_user_9999"));
+    }
 }

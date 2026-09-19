@@ -38,7 +38,9 @@ public class MerchantOrderController extends HttpServlet {
         }
 
         List<Order> orders = merchantService.getOrders(restaurantId, statusFilter);
-        List<Driver> availableDrivers = merchantService.getAvailableDrivers();
+        double restLat = (restaurant.getLatitude() != null) ? restaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+        double restLng = (restaurant.getLongitude() != null) ? restaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+        List<Driver> availableDrivers = driverDAO.findNearestDrivers(restLat, restLng);
 
         req.setAttribute("orders", orders);
         req.setAttribute("selectedStatus", statusFilter);
@@ -51,6 +53,10 @@ public class MerchantOrderController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         String action = req.getParameter("action");
+        String redirectUrl = req.getParameter("redirectUrl");
+        if (redirectUrl == null || redirectUrl.trim().isEmpty()) {
+            redirectUrl = req.getContextPath() + "/merchant/orders";
+        }
 
         try {
             if ("merchantConfirm".equalsIgnoreCase(action) || "completeOrder".equalsIgnoreCase(action) ||
@@ -60,13 +66,13 @@ public class MerchantOrderController extends HttpServlet {
 
                 if (currentOrder == null) {
                     req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
-                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    resp.sendRedirect(redirectUrl);
                     return;
                 }
 
                 if ("DELIVERED".equalsIgnoreCase(currentOrder.getStatus())) {
                     req.getSession().setAttribute("flashMessage", "Đơn hàng #" + orderId + " đã được hoàn tất thành công!");
-                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    resp.sendRedirect(redirectUrl);
                     return;
                 }
 
@@ -87,7 +93,7 @@ public class MerchantOrderController extends HttpServlet {
                 Order currentOrder = merchantService.getOrderById(orderId);
                 if (currentOrder == null) {
                     req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
-                    resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                    resp.sendRedirect(redirectUrl);
                     return;
                 }
 
@@ -95,14 +101,14 @@ public class MerchantOrderController extends HttpServlet {
                 if ("CONFIRMED".equalsIgnoreCase(newStatus) || "SHIPPING".equalsIgnoreCase(newStatus)) {
                     if (currentOrder.getDriverId() == null || currentOrder.getDriverId() <= 0) {
                         req.getSession().setAttribute("flashError", "Vui lòng gán tài xế shipper khả dụng trước khi nhận chế biến đơn hàng!");
-                        resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                        resp.sendRedirect(redirectUrl);
                         return;
                     }
 
                     // BẮT BUỘC: Đợi shipper xác nhận nhận giao đơn đó
                     if (!currentOrder.isShipperAccepted()) {
                         req.getSession().setAttribute("flashError", "Chưa thể bắt đầu chế biến: Vui lòng đợi tài xế xác nhận nhận cuốc xe giao đơn này!");
-                        resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+                        resp.sendRedirect(redirectUrl);
                         return;
                     }
                 }
@@ -165,11 +171,41 @@ public class MerchantOrderController extends HttpServlet {
                 } else {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
                 }
+            } else if ("autoAssignNearest".equalsIgnoreCase(action)) {
+                int orderId = Integer.parseInt(req.getParameter("orderId"));
+                Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
+                double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+                double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+
+                List<Driver> nearest = driverDAO.findNearestDrivers(restLat, restLng);
+                if (!nearest.isEmpty()) {
+                    Driver nearestDriver = nearest.get(0);
+                    boolean success = merchantService.assignDriver(orderId, nearestDriver.getId());
+                    if (success) {
+                        try {
+                            if (nearestDriver.getUserId() != null) {
+                                Order curOrder = merchantService.getOrderById(orderId);
+                                notificationService.notifyOrderAssignedToShipper(
+                                    nearestDriver.getUserId(),
+                                    orderId,
+                                    curOrder != null ? curOrder.getTotalAmount() : 0,
+                                    curOrder != null ? curOrder.getAddress() : "TP.HCM"
+                                );
+                            }
+                        } catch (Exception ignored) {}
+                        double dist = nearestDriver.getDistanceToTarget() != null ? nearestDriver.getDistanceToTarget() : 0.8;
+                        req.getSession().setAttribute("flashMessage", "Đã tự động dò tìm & gán tài xế gần quán nhất: " + nearestDriver.getName() + " (Cách quán " + String.format(java.util.Locale.US, "%.1f", dist) + " km)!");
+                    } else {
+                        req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
+                    }
+                } else {
+                    req.getSession().setAttribute("flashError", "Không tìm thấy tài xế nào khả dụng quanh khu vực quán!");
+                }
             }
         } catch (Exception e) {
             req.getSession().setAttribute("flashError", "Có lỗi xảy ra: " + e.getMessage());
         }
 
-        resp.sendRedirect(req.getContextPath() + "/merchant/orders");
+        resp.sendRedirect(redirectUrl);
     }
 }

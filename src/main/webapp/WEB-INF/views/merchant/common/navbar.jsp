@@ -44,29 +44,38 @@
             </div>
         </div>
 
-        <!-- Modern Floating Navigation Tabs Bar -->
+        <!-- Active Tab Determination (via param.activeTab or URI fallback) -->
+        <c:set var="curActive" value="${param.activeTab}" />
+        <c:if test="${empty curActive}">
+            <c:set var="reqUri" value="${pageContext.request.requestURI}" />
+            <c:choose>
+                <c:when test="${reqUri.endsWith('/merchant/dashboard') or reqUri.contains('/dashboard.jsp')}"><c:set var="curActive" value="dashboard" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/orders') or reqUri.contains('/orders.jsp')}"><c:set var="curActive" value="orders" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/foods') or reqUri.contains('/foods.jsp')}"><c:set var="curActive" value="foods" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/revenue') or reqUri.contains('/revenue.jsp')}"><c:set var="curActive" value="revenue" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/profile') or reqUri.contains('/profile.jsp')}"><c:set var="curActive" value="profile" /></c:when>
+            </c:choose>
+        </c:if>
+
+        <!-- Modern Floating Navigation Tabs Bar (5 Balanced Tabs) -->
         <div class="merchant-tabs-bar">
-            <a href="${pageContext.request.contextPath}/merchant/dashboard" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/dashboard' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/merchant/dashboard" class="merchant-tab-btn ${curActive eq 'dashboard' ? 'active' : ''}">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Tổng quan</span>
             </a>
-            <a href="${pageContext.request.contextPath}/merchant/orders" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/orders' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/merchant/orders" class="merchant-tab-btn ${curActive eq 'orders' ? 'active' : ''}">
                 <i class="fa-solid fa-receipt"></i>
                 <span>Đơn hàng</span>
             </a>
-            <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/foods' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-tab-btn ${curActive eq 'foods' ? 'active' : ''}">
                 <i class="fa-solid fa-bowl-food"></i>
                 <span>Thực đơn món</span>
             </a>
-            <a href="${pageContext.request.contextPath}/merchant/revenue" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/revenue' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/merchant/revenue" class="merchant-tab-btn ${curActive eq 'revenue' ? 'active' : ''}">
                 <i class="fa-solid fa-chart-line"></i>
                 <span>Doanh thu</span>
             </a>
-            <a href="${pageContext.request.contextPath}/merchant/shippers" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/shippers' ? 'active' : ''}">
-                <i class="fa-solid fa-motorcycle"></i>
-                <span>Tài xế shipper</span>
-            </a>
-            <a href="${pageContext.request.contextPath}/merchant/profile" class="merchant-tab-btn ${pageContext.request.servletPath eq '/merchant/profile' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/merchant/profile" class="merchant-tab-btn ${curActive eq 'profile' ? 'active' : ''}">
                 <i class="fa-solid fa-gear"></i>
                 <span>Cài đặt quán</span>
             </a>

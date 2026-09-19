@@ -574,6 +574,148 @@
                 </div>
             </div>
 
+            <!-- 2. SHIPPER GPS LOCATION WIDGET -->
+            <div class="shipper-card" style="padding: 20px 24px; margin-bottom: 24px; border: 1px solid #e0e7ff; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px;">Định Vị Tọa Độ &amp; Thuật Toán Điều Phối</div>
+                            <h4 style="margin: 2px 0 0 0; font-size: 1.1rem; font-weight: 800; color: #1e293b;">
+                                Vị Trí Hiện Tại Của Bạn:
+                                <span id="currentLocDisplay" style="color: #2563eb; font-weight: 700;">
+                                    ${not empty driver.currentAddress ? driver.currentAddress : 'Số 1 Võ Văn Ngân, Linh Chiểu, TP. Thủ Đức'}
+                                </span>
+                            </h4>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" id="btnGetRealGps" class="btn btn-primary btn-sm" style="border-radius: 50px; font-weight: 700; padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);">
+                            <i class="fa-solid fa-satellite-dish"></i> Bật GPS Máy Thật
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 0.88rem; color: #475569;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span><i class="fa-solid fa-compass text-primary"></i> Tọa độ: <code id="gpsCoordsText" style="background: #e2e8f0; padding: 3px 8px; border-radius: 6px; color: #0f172a; font-weight: 600;">${not empty driver.currentLatitude ? driver.currentLatitude : '10.850721'}, ${not empty driver.currentLongitude ? driver.currentLongitude : '106.771960'}</code></span>
+                        <span>•</span>
+                        <span><i class="fa-solid fa-clock-rotate-left text-muted"></i> Cập nhật: <small id="gpsUpdatedTime" class="text-muted"><fmt:formatDate value="${driver.lastLocationUpdated}" pattern="HH:mm dd/MM" /></small></span>
+                    </div>
+
+                    <!-- Giả lập vị trí nhanh quanh TP. Thủ Đức để test/demo nhiều tài xế -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="mockLocationSelect" style="font-weight: 600; font-size: 0.84rem; color: #334155; margin: 0;">Mô phỏng vị trí:</label>
+                        <select id="mockLocationSelect" class="form-select form-select-sm" style="border-radius: 8px; font-size: 0.84rem; padding: 4px 10px; max-width: 240px;">
+                            <option value="10.850721,106.771960|Đại học Sư phạm Kỹ thuật TP.HCM (HCMUTE), TP. Thủ Đức" selected>HCMUTE (Võ Văn Ngân)</option>
+                            <option value="10.854882,106.758476|Chợ Thủ Đức, Kha Vạn Cân, TP. Thủ Đức">Chợ Thủ Đức (Kha Vạn Cân)</option>
+                            <option value="10.847153,106.775824|Vincom Plaza Lê Văn Việt, Hiệp Phú, TP. Thủ Đức">Vincom Lê Văn Việt</option>
+                            <option value="10.875225,106.800725|Ký túc xá Khu A ĐHQG-HCM, Linh Trung, TP. Thủ Đức">KTX Khu A ĐHQG-HCM</option>
+                            <option value="10.827618,106.721448|Gigamall Phạm Văn Đồng, Hiệp Bình Chánh, TP. Thủ Đức">Gigamall Phạm Văn Đồng</option>
+                            <option value="10.793836,106.721863|Landmark 81, Vinhomes Central Park, Bình Thạnh">Landmark 81, Bình Thạnh</option>
+                            <option value="10.772097,106.698317|Chợ Bến Thành, Quận 1, TP.HCM">Chợ Bến Thành, Q1</option>
+                        </select>
+                        <button type="button" id="btnApplyMockLocation" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 600; padding: 4px 10px;">
+                            Đặt vị trí
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    function sendLocationUpdate(lat, lng, address) {
+                        const formData = new URLSearchParams();
+                        formData.append('lat', lat);
+                        formData.append('lng', lng);
+                        formData.append('latitude', lat);
+                        formData.append('longitude', lng);
+                        if (address) formData.append('address', address);
+
+                        const btnMock = document.getElementById('btnApplyMockLocation');
+                        const originalBtnText = btnMock ? btnMock.innerHTML : '';
+                        if (btnMock) {
+                            btnMock.disabled = true;
+                            btnMock.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+                        }
+
+                        fetch('${pageContext.request.contextPath}/shipper/api/location', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: formData.toString()
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (btnMock) {
+                                btnMock.disabled = false;
+                                btnMock.innerHTML = originalBtnText;
+                            }
+                            if (data.status === 'success') {
+                                document.getElementById('currentLocDisplay').innerText = data.address || address;
+                                document.getElementById('gpsCoordsText').innerText = parseFloat(lat).toFixed(6) + ', ' + parseFloat(lng).toFixed(6);
+                                document.getElementById('gpsUpdatedTime').innerText = 'Vừa xong';
+                                alert('✅ Đã đặt vị trí thành công:\n' + (data.address || address) + '\n\nHệ thống sẽ dùng tọa độ này để tính khoảng cách và gán đơn gần bạn nhất!');
+                            } else {
+                                alert('Không thể cập nhật vị trí: ' + (data.message || 'Lỗi'));
+                            }
+                        })
+                        .catch(err => {
+                            if (btnMock) {
+                                btnMock.disabled = false;
+                                btnMock.innerHTML = originalBtnText;
+                            }
+                            console.error(err);
+                            alert('Lỗi kết nối cập nhật tọa độ!');
+                        });
+                    }
+
+                    // Nút GPS Thật
+                    const btnGps = document.getElementById('btnGetRealGps');
+                    if (btnGps) {
+                        btnGps.addEventListener('click', function() {
+                            if (!navigator.geolocation) {
+                                alert('Trình duyệt của bạn không hỗ trợ Geolocation API.');
+                                return;
+                            }
+                            btnGps.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang dò GPS...';
+                            btnGps.disabled = true;
+                            navigator.geolocation.getCurrentPosition(
+                                function(pos) {
+                                    btnGps.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Bật GPS Máy Thật';
+                                    btnGps.disabled = false;
+                                    const lat = pos.coords.latitude;
+                                    const lng = pos.coords.longitude;
+                                    sendLocationUpdate(lat, lng, 'Vị trí GPS thiết bị (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')');
+                                },
+                                function(err) {
+                                    btnGps.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> Bật GPS Máy Thật';
+                                    btnGps.disabled = false;
+                                    alert('Không lấy được GPS (' + err.message + '). Bạn có thể dùng bộ chọn mô phỏng bên cạnh!');
+                                },
+                                { enableHighAccuracy: true, timeout: 8000 }
+                            );
+                        });
+                    }
+
+                    // Nút Mock Location
+                    const btnMock = document.getElementById('btnApplyMockLocation');
+                    const selMock = document.getElementById('mockLocationSelect');
+                    if (btnMock && selMock) {
+                        btnMock.addEventListener('click', function() {
+                            const val = selMock.value;
+                            const parts = val.split('|');
+                            const coords = parts[0].split(',');
+                            const lat = parseFloat(coords[0]);
+                            const lng = parseFloat(coords[1]);
+                            const addr = parts[1];
+                            sendLocationUpdate(lat, lng, addr);
+                        });
+                    }
+                });
+            </script>
+
             <!-- ============================================================= -->
             <!-- TAB 1: NHẬN ĐƠN & ĐIỀU PHỐI (dispatch) -->
             <!-- ============================================================= -->
@@ -614,9 +756,14 @@
                                                 </p>
                                             </div>
                                         </div>
-                                        <span class="badge ${loop.first ? 'bg-white text-warning' : 'bg-light text-dark'} fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.82rem;">
-                                            ⏳ Chờ bạn phản hồi
-                                        </span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-white text-primary fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.82rem;">
+                                                <i class="fa-solid fa-route me-1"></i> Cự ly: ${pOrder.distanceKm != null ? pOrder.distanceKm : 2.0} km
+                                            </span>
+                                            <span class="badge ${loop.first ? 'bg-white text-warning' : 'bg-light text-dark'} fw-bold px-3 py-2 rounded-pill shadow-sm" style="font-size: 0.82rem;">
+                                                ⏳ Chờ bạn phản hồi
+                                            </span>
+                                        </div>
                                     </div>
                                     <div style="padding: 20px;">
                                         <div class="row g-3 mb-3">
@@ -633,8 +780,8 @@
                                                 <div class="fw-bold fs-6 text-danger"><fmt:formatNumber value="${pOrder.totalAmount}" pattern="#,###" /> đ</div>
                                             </div>
                                             <div class="col-md-3 col-6">
-                                                <span class="text-muted small">Thanh toán:</span>
-                                                <div class="fw-bold text-dark">${pOrder.paymentMethod}</div>
+                                                <span class="text-muted small">Cước ship bạn nhận:</span>
+                                                <div class="fw-bold fs-6 text-success">+<fmt:formatNumber value="${pOrder.shippingFee != null ? pOrder.shippingFee : 15000}" pattern="#,###" /> đ</div>
                                             </div>
                                             <div class="col-12">
                                                 <span class="text-muted small">Địa chỉ giao hàng:</span>
@@ -680,7 +827,7 @@
                                         <i class="fa-solid fa-motorcycle me-1"></i> ${activeOrders.size()} đơn hàng đang vận chuyển
                                     </span>
                                     <c:if test="${activeOrders.size() > 1}">
-                                        <small class="text-muted fw-semibold">(Giao ghép đơn - Bấm "Báo Đã Giao" cho từng đơn tùy theo lộ trình di chuyển)</small>
+                                        <small class="text-muted fw-semibold">(Giao ghép đơn - Bấm các bước cho từng đơn tùy theo lộ trình di chuyển)</small>
                                     </c:if>
                                 </div>
                                 <c:if test="${activeOrders.size() > 1}">
@@ -693,8 +840,8 @@
                             <div class="d-flex flex-column gap-4">
                                 <c:forEach items="${activeOrders}" var="activeOrder" varStatus="actLoop">
                                     <!-- CHI TIẾT TỪNG ĐƠN HÀNG ĐANG GIAO & VÒNG ĐỜI -->
-                                    <div class="shipper-card" style="border: 2px solid ${activeOrder.shipperDelivered ? '#10ac84' : '#3b82f6'}; box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
-                                        <div style="background: ${activeOrder.shipperDelivered ? 'linear-gradient(135deg, #059669 0%, #10ac84 100%)' : 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)'}; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                    <div class="shipper-card" style="border: 2px solid ${activeOrder.shipperDelivered ? '#10ac84' : (!activeOrder.shipperPickedUp ? '#f59e0b' : '#3b82f6')}; box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-radius: 16px; overflow: hidden;">
+                                        <div style="background: ${activeOrder.shipperDelivered ? 'linear-gradient(135deg, #059669 0%, #10ac84 100%)' : (!activeOrder.shipperPickedUp ? 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' : 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)')}; color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                                             <div class="d-flex align-items-center gap-3">
                                                 <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.05rem; font-weight: 800;">
                                                     #${actLoop.index + 1}
@@ -715,12 +862,17 @@
                                                 <c:choose>
                                                     <c:when test="${activeOrder.shipperDelivered}">
                                                         <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
-                                                            <i class="fa-solid fa-circle-check me-1"></i> ĐÃ BÁO GIAO XONG (Chờ khách)
+                                                            <i class="fa-solid fa-circle-check me-1"></i> ĐÃ HOÀN TẤT GIAO HÀNG
+                                                        </span>
+                                                    </c:when>
+                                                    <c:when test="${not activeOrder.shipperPickedUp}">
+                                                        <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
+                                                            <i class="fa-solid fa-store me-1"></i> BƯỚC 1: ĐẾN QUÁN LẤY MÓN
                                                         </span>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(4px); padding: 6px 16px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;">
-                                                            <i class="fa-solid fa-motorcycle me-1"></i> Đang vận chuyển
+                                                            <i class="fa-solid fa-motorcycle me-1"></i> BƯỚC 2: ĐANG GIAO ĐẾN KHÁCH
                                                         </span>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -742,6 +894,9 @@
                                                     <div style="font-size: 0.95rem; color: #334155; margin-bottom: 8px;">
                                                         <i class="fa-solid fa-location-dot text-danger me-2"></i> <strong>Địa chỉ giao:</strong> ${activeOrder.address}
                                                     </div>
+                                                    <div style="font-size: 0.9rem; color: #2563eb; margin-bottom: 8px;">
+                                                        <i class="fa-solid fa-road me-2"></i> <strong>Cự ly ước tính:</strong> ${activeOrder.distanceKm != null ? activeOrder.distanceKm : 2.0} km
+                                                    </div>
                                                     <c:if test="${not empty activeOrder.note}">
                                                         <div style="font-size: 0.88rem; color: #64748b; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
                                                             <i class="fa-solid fa-note-sticky text-warning me-1"></i> <strong>Ghi chú:</strong> ${activeOrder.note}
@@ -760,40 +915,54 @@
                                                     </div>
                                                 </div>
 
-                                                <!-- Lifecycle Action Buttons -->
+                                                <!-- Lifecycle Action Buttons theo luồng chuẩn: BƯỚC 1 (LẤY MÓN) -> BƯỚC 2 (GIAO HÀNG HOÀN TẤT) -->
                                                 <div style="border-top: 1px dashed #e2e8f0; padding-top: 20px;">
                                                     <div style="font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 12px;">
-                                                        Cập nhật tiến trình cho đơn #FZ-${activeOrder.id}:
+                                                        Thao tác đơn hàng #FZ-${activeOrder.id}:
                                                     </div>
                                                     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                                                        <!-- Button 1: Xác nhận Đã giao tận tay -->
                                                         <c:choose>
                                                             <c:when test="${activeOrder.shipperDelivered}">
-                                                                <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3" style="border-radius: 50px;">
+                                                                <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3 w-100" style="border-radius: 50px;">
                                                                     <i class="fa-solid fa-circle-check text-success"></i>
-                                                                    <span class="fw-bold">Bạn đã bấm xác nhận giao xong đơn #FZ-${activeOrder.id}! (Đang chờ khách bấm xác nhận đã nhận món)</span>
+                                                                    <span class="fw-bold">Bạn đã giao hoàn tất đơn hàng #FZ-${activeOrder.id}! Doanh thu đã được ghi nhận vào ví.</span>
                                                                 </div>
                                                             </c:when>
+
+                                                            <%-- BƯỚC 1: NẾU CHƯA LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ LẤY MÓN --%>
+                                                            <c:when test="${not activeOrder.shipperPickedUp}">
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                    <input type="hidden" name="action" value="confirmPickedUp">
+                                                                    <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                                    <button type="submit" class="btn btn-warning w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="return confirm('Xác nhận bạn đã đến quán và nhận đủ món ăn cho đơn #FZ-${activeOrder.id}?');">
+                                                                        <i class="fa-solid fa-utensils me-2"></i> 1. XÁC NHẬN ĐÃ LẤY MÓN TỪ QUÁN
+                                                                    </button>
+                                                                </form>
+                                                            </c:when>
+
+                                                            <%-- BƯỚC 2: ĐÃ LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ GIAO CHO KHÁCH (HOÀN TẤT NGAY) --%>
                                                             <c:otherwise>
-                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1;">
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
                                                                     <input type="hidden" name="action" value="confirmDelivered">
                                                                     <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                                    <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);" onclick="return confirm('Xác nhận bạn đã giao món ăn đơn #FZ-${activeOrder.id} tận nơi cho khách?');">
-                                                                        <i class="fa-solid fa-check-circle me-1"></i> Báo Đã Giao Đơn #FZ-${activeOrder.id}
+                                                                    <button type="submit" class="btn btn-success w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);" onclick="return confirm('Xác nhận bạn đã giao món ăn tận nơi cho khách #FZ-${activeOrder.id}? Đơn hàng sẽ hoàn tất ngay lập tức.');">
+                                                                        <i class="fa-solid fa-circle-check me-2"></i> 2. XÁC NHẬN ĐÃ GIAO CHO KHÁCH
                                                                     </button>
                                                                 </form>
                                                             </c:otherwise>
                                                         </c:choose>
 
-                                                        <!-- Button 2: Khách boom hàng / Hủy -->
-                                                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn #FZ-${activeOrder.id}?');">
-                                                            <input type="hidden" name="action" value="updateOrder">
-                                                            <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                            <input type="hidden" name="status" value="CANCELLED">
-                                                            <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
-                                                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố / Hủy Cuốc
-                                                            </button>
-                                                        </form>
+                                                        <!-- Button Báo Sự Cố / Hủy Cuốc (chỉ hiện khi chưa giao) -->
+                                                        <c:if test="${not activeOrder.shipperDelivered}">
+                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn #FZ-${activeOrder.id}?');">
+                                                                <input type="hidden" name="action" value="updateOrder">
+                                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                                <input type="hidden" name="status" value="CANCELLED">
+                                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 12px 18px;">
+                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố
+                                                                </button>
+                                                            </form>
+                                                        </c:if>
                                                     </div>
                                                 </div>
                                             </div>
@@ -802,24 +971,29 @@
                                             <div style="flex: 1; min-width: 280px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
                                                 <div>
                                                     <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 16px;">
-                                                        <i class="fa-solid fa-location-crosshairs text-primary me-2"></i> Lộ Trình Vận Chuyển Đơn #FZ-${activeOrder.id}
+                                                        <i class="fa-solid fa-location-crosshairs text-primary me-2"></i> Lộ Trình 2 Chặng Đơn #FZ-${activeOrder.id}
                                                     </h4>
                                                     <div style="position: relative; padding-left: 28px; margin-bottom: 24px;">
-                                                        <!-- Step 1: Merchant -->
-                                                        <div style="position: absolute; left: 0; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #10ac84;"></div>
-                                                        <div style="border-left: 2px solid #cbd5e1; position: absolute; left: 6px; top: 18px; bottom: 10px;"></div>
-                                                        <div style="margin-bottom: 20px;">
-                                                            <div style="font-weight: 700; color: #0f172a; font-size: 0.95rem;">Lấy món tại Quán ăn</div>
-                                                            <div style="font-size: 0.85rem; color: #64748b;">Đã hoàn thành lấy món</div>
+                                                        <!-- Chặng 1: Đến quán nhận món -->
+                                                        <div style="position: absolute; left: 0; top: 2px; width: 16px; height: 16px; border-radius: 50%; ${activeOrder.shipperPickedUp ? 'background: #10ac84;' : 'background: #f59e0b; animation: radarWave 1.5s infinite;'}"></div>
+                                                        <div style="border-left: 2px solid ${activeOrder.shipperPickedUp ? '#10ac84' : '#cbd5e1'}; position: absolute; left: 7px; top: 18px; bottom: 20px;"></div>
+                                                        <div style="margin-bottom: 24px;">
+                                                            <div style="font-weight: 700; font-size: 0.95rem; color: ${activeOrder.shipperPickedUp ? '#10ac84' : '#d97706'};">
+                                                                ${activeOrder.shipperPickedUp ? '✓ Đã nhận món tại Quán ăn' : '⏳ Đang di chuyển đến Quán ăn'}
+                                                            </div>
+                                                            <div style="font-size: 0.85rem; color: #64748b;">
+                                                                ${activeOrder.shipperPickedUp ? 'Món ăn đã được bàn giao cho tài xế' : 'Vui lòng đến quán và bấm xác nhận lấy món'}
+                                                            </div>
                                                         </div>
 
-                                                        <!-- Step 2: On the road -->
-                                                        <div style="position: absolute; left: 0; top: 58px; width: 14px; height: 14px; border-radius: 50%; background: #3b82f6; animation: radarWave 1.5s infinite;"></div>
+                                                        <!-- Chặng 2: Giao tận tay khách -->
+                                                        <div style="position: absolute; left: 0; top: 68px; width: 16px; height: 16px; border-radius: 50%; ${activeOrder.shipperDelivered ? 'background: #10ac84;' : (activeOrder.shipperPickedUp ? 'background: #3b82f6; animation: radarWave 1.5s infinite;' : 'background: #cbd5e1;')}"></div>
                                                         <div>
-                                                            <div style="font-weight: 700; color: #3b82f6; font-size: 0.95rem;">
+                                                            <div style="font-weight: 700; font-size: 0.95rem; color: ${activeOrder.shipperDelivered ? '#10ac84' : (activeOrder.shipperPickedUp ? '#3b82f6' : '#94a3b8')};">
                                                                 <c:choose>
-                                                                    <c:when test="${activeOrder.shipperDelivered}">Đã giao đến địa chỉ khách</c:when>
-                                                                    <c:otherwise>Đang trên đường đến nhà khách</c:otherwise>
+                                                                    <c:when test="${activeOrder.shipperDelivered}">✓ Đã giao tận tay cho khách</c:when>
+                                                                    <c:when test="${activeOrder.shipperPickedUp}">🛵 Đang trên đường đến nhà khách</c:when>
+                                                                    <c:otherwise>Chờ lấy món xong sẽ giao</c:otherwise>
                                                                 </c:choose>
                                                             </div>
                                                             <div style="font-size: 0.85rem; color: #64748b;">${activeOrder.address}</div>
@@ -828,9 +1002,14 @@
                                                 </div>
 
                                                 <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; text-align: center;">
-                                                    <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;">Thù lao nhận được cho chuyến này:</div>
-                                                    <div style="font-size: 1.3rem; font-weight: 800; color: #10ac84;">+15.000 đ</div>
-                                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">*Tự động cộng vào ví sau khi đơn hoàn tất</div>
+                                                    <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 4px;">Thù lao cước ship bạn nhận:</div>
+                                                    <div style="font-size: 1.4rem; font-weight: 800; color: #10ac84;">
+                                                        +<fmt:formatNumber value="${activeOrder.shippingFee != null ? activeOrder.shippingFee : 15000}" pattern="#,###" /> đ
+                                                    </div>
+                                                    <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">
+                                                        Cự ly: <strong>${activeOrder.distanceKm != null ? activeOrder.distanceKm : 2.0} km</strong>
+                                                    </div>
+                                                    <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 4px;">*Tự động cộng vào ví ngay sau khi báo giao xong</div>
                                                 </div>
                                             </div>
                                         </div>

@@ -168,20 +168,166 @@
                     </button>
                 </form>
 
-                <div class="auth-demo-inline">
-                    <span class="auth-demo-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Thử nhanh:</span>
-                    <button type="button" class="auth-demo-chip" onclick="fillDemo('customer', '123456')">
-                        <span>👤 Khách hàng</span>
+                <!-- ===================================================================
+                     KHU VỰC ĐĂNG NHẬP NHANH - DROPDOWN MENU TẤT CẢ USER TRONG DATABASE
+                     =================================================================== -->
+                <div class="auth-quick-login-wrap" id="authQuickLoginWrap">
+                    <div class="auth-quick-login-header">
+                        <span class="auth-quick-label">
+                            <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Đăng nhập nhanh:
+                        </span>
+                        <span class="auth-quick-sub-count">${not empty allUsers ? allUsers.size() : 5} tài khoản trong DB</span>
+                    </div>
+
+                    <!-- Nút Bấm Kích Hoạt Dropdown Menu -->
+                    <button type="button" class="auth-quick-dropdown-toggle" id="quickLoginDropdownToggle" onclick="toggleQuickLoginDropdown(event)" aria-expanded="false" aria-haspopup="true">
+                        <div class="quick-toggle-left">
+                            <span class="quick-toggle-icon"><i class="fa-solid fa-users"></i></span>
+                            <span class="quick-toggle-text" id="quickToggleDisplay">Chọn tài khoản từ CSDL để đăng nhập nhanh...</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down quick-toggle-arrow" id="quickDropdownArrow"></i>
                     </button>
-                    <button type="button" class="auth-demo-chip" onclick="fillDemo('bepviet', '123456')">
-                        <span>🏪 Người bán hàng</span>
-                    </button>
-                    <button type="button" class="auth-demo-chip" onclick="fillDemo('kaitokid', '123456')">
-                        <span>🛵 Shipper</span>
-                    </button>
-                    <button type="button" class="auth-demo-chip" onclick="fillDemo('admin', '123456')">
-                        <span>⚡ Quản trị</span>
-                    </button>
+
+                    <!-- Dropdown Menu Box (Nổi bồng bềnh, hỗ trợ Tìm kiếm & Lọc theo Role) -->
+                    <div class="auth-quick-dropdown-box" id="quickLoginDropdownBox" style="display: none;">
+                        <!-- Thanh Tìm Kiếm Trực Tiếp Trong Dropdown -->
+                        <div class="quick-dropdown-search-bar">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="quickUserSearchInput" class="quick-search-input" 
+                                   placeholder="Tìm tên, username (@admin, @bepviet)..." 
+                                   oninput="handleQuickUserSearch(this.value)">
+                            <button type="button" class="quick-search-clear" id="quickSearchClearBtn" onclick="clearQuickUserSearch()" style="display:none;">&times;</button>
+                        </div>
+
+                        <!-- Thanh Lọc Theo Vai Trò (Role Tabs) -->
+                        <div class="quick-role-tabs">
+                            <button type="button" class="quick-role-tab active" onclick="filterQuickRole('ALL', this)">Tất cả</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('ADMIN', this)"><i class="fa-solid fa-shield-halved me-1"></i> Quản trị</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SELLER', this)"><i class="fa-solid fa-store me-1"></i> Quán ăn</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('SHIPPER', this)"><i class="fa-solid fa-motorcycle me-1"></i> Shipper</button>
+                            <button type="button" class="quick-role-tab" onclick="filterQuickRole('CUSTOMER', this)"><i class="fa-solid fa-user me-1"></i> Khách</button>
+                        </div>
+
+                        <!-- Danh Sách Toàn Bộ Người Dùng Trong Database (Cuộn Mượt Mà) -->
+                        <div class="quick-users-list" id="quickUsersScrollList">
+                            <c:choose>
+                                <c:when test="${not empty allUsers}">
+                                    <c:forEach var="u" items="${allUsers}">
+                                        <div class="quick-user-row" 
+                                             data-role="${u.role}" 
+                                             data-username="${u.username.toLowerCase()}" 
+                                             data-name="${u.fullName.toLowerCase()}"
+                                             onclick="applyQuickUser('${u.username}', '${not empty u.password ? u.password : '123456'}', false)">
+                                            
+                                            <div class="quick-user-avatar role-${u.role.toLowerCase()}">
+                                                <c:choose>
+                                                    <c:when test="${u.role eq 'ADMIN'}"><i class="fa-solid fa-shield-halved"></i></c:when>
+                                                    <c:when test="${u.role eq 'SELLER'}"><i class="fa-solid fa-store"></i></c:when>
+                                                    <c:when test="${u.role eq 'SHIPPER'}"><i class="fa-solid fa-motorcycle"></i></c:when>
+                                                    <c:otherwise><i class="fa-solid fa-user"></i></c:otherwise>
+                                                </c:choose>
+                                            </div>
+
+                                            <div class="quick-user-info">
+                                                <div class="quick-user-name-line">
+                                                    <strong class="quick-user-fullname">${u.fullName}</strong>
+                                                    <span class="quick-user-role-badge role-${u.role.toLowerCase()}">${u.role}</span>
+                                                </div>
+                                                <div class="quick-user-meta">
+                                                    <span class="quick-user-uname">@${u.username}</span>
+                                                    <span class="quick-user-meta-dot">•</span>
+                                                    <span class="quick-user-pass">Mật khẩu: <code>${not empty u.password ? u.password : '123456'}</code></span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Nút Đăng Nhập Ngay 1-Click -->
+                                            <button type="button" class="quick-login-now-btn" 
+                                                    title="Đăng nhập ngay với tài khoản này"
+                                                    onclick="event.stopPropagation(); applyQuickUser('${u.username}', '${not empty u.password ? u.password : '123456'}', true)">
+                                                <i class="fa-solid fa-bolt"></i>
+                                                <span>Vào ngay</span>
+                                            </button>
+                                        </div>
+                                    </c:forEach>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- Fallback nếu allUsers chưa load kịp -->
+                                    <div class="quick-user-row" data-role="ADMIN" data-username="admin" data-name="quản trị viên" onclick="applyQuickUser('admin', '123456', false)">
+                                        <div class="quick-user-avatar role-admin"><i class="fa-solid fa-shield-halved"></i></div>
+                                        <div class="quick-user-info">
+                                            <div class="quick-user-name-line">
+                                                <strong class="quick-user-fullname">Quản Trị Viên (Admin)</strong>
+                                                <span class="quick-user-role-badge role-admin">ADMIN</span>
+                                            </div>
+                                            <div class="quick-user-meta">
+                                                <span class="quick-user-uname">@admin</span>
+                                                <span class="quick-user-meta-dot">•</span>
+                                                <span class="quick-user-pass">Mật khẩu: <code>123456</code></span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('admin', '123456', true)">
+                                            <i class="fa-solid fa-bolt"></i>
+                                            <span>Vào ngay</span>
+                                        </button>
+                                    </div>
+                                    <div class="quick-user-row" data-role="SELLER" data-username="bepviet" data-name="chủ quán bếp việt" onclick="applyQuickUser('bepviet', '123456', false)">
+                                        <div class="quick-user-avatar role-seller"><i class="fa-solid fa-store"></i></div>
+                                        <div class="quick-user-info">
+                                            <div class="quick-user-name-line">
+                                                <strong class="quick-user-fullname">Chủ Quán Bếp Việt</strong>
+                                                <span class="quick-user-role-badge role-seller">SELLER</span>
+                                            </div>
+                                            <div class="quick-user-meta"><span class="quick-user-uname">@bepviet</span> • Mật khẩu: <code>123456</code></div>
+                                        </div>
+                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('bepviet', '123456', true)"><i class="fa-solid fa-bolt"></i> Vào ngay</button>
+                                    </div>
+                                    <div class="quick-user-row" data-role="SHIPPER" data-username="kaitokid" data-name="kiệt gia shipper" onclick="applyQuickUser('kaitokid', '123456', false)">
+                                        <div class="quick-user-avatar role-shipper"><i class="fa-solid fa-motorcycle"></i></div>
+                                        <div class="quick-user-info">
+                                            <div class="quick-user-name-line">
+                                                <strong class="quick-user-fullname">Kiệt Gia (Shipper)</strong>
+                                                <span class="quick-user-role-badge role-shipper">SHIPPER</span>
+                                            </div>
+                                            <div class="quick-user-meta"><span class="quick-user-uname">@kaitokid</span> • Mật khẩu: <code>123456</code></div>
+                                        </div>
+                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('kaitokid', '123456', true)"><i class="fa-solid fa-bolt"></i> Vào ngay</button>
+                                    </div>
+                                    <div class="quick-user-row" data-role="CUSTOMER" data-username="customer" data-name="nguyễn văn khách" onclick="applyQuickUser('customer', '123456', false)">
+                                        <div class="quick-user-avatar role-customer"><i class="fa-solid fa-user"></i></div>
+                                        <div class="quick-user-info">
+                                            <div class="quick-user-name-line">
+                                                <strong class="quick-user-fullname">Nguyễn Văn Khách</strong>
+                                                <span class="quick-user-role-badge role-customer">CUSTOMER</span>
+                                            </div>
+                                            <div class="quick-user-meta"><span class="quick-user-uname">@customer</span> • Mật khẩu: <code>123456</code></div>
+                                        </div>
+                                        <button type="button" class="quick-login-now-btn" onclick="event.stopPropagation(); applyQuickUser('customer', '123456', true)"><i class="fa-solid fa-bolt"></i> Vào ngay</button>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                            <div id="quickUserNoResult" class="quick-user-no-result" style="display: none;">
+                                <i class="fa-solid fa-user-slash"></i>
+                                <span>Không tìm thấy người dùng phù hợp</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shortcut Chips Nhanh 4 Vai Trò Phổ Biến -->
+                    <div class="auth-demo-inline" style="margin-top: 8px;">
+                        <span class="auth-demo-label"><i class="fa-solid fa-bolt-lightning"></i> Thử nhanh:</span>
+                        <button type="button" class="auth-demo-chip" onclick="applyQuickUser('customer', '123456', false)" title="Điền tài khoản Khách hàng">
+                            <span><i class="fa-solid fa-user me-1"></i> Khách</span>
+                        </button>
+                        <button type="button" class="auth-demo-chip" onclick="applyQuickUser('bepviet', '123456', false)" title="Điền tài khoản Quán ăn">
+                            <span><i class="fa-solid fa-store me-1"></i> Quán ăn</span>
+                        </button>
+                        <button type="button" class="auth-demo-chip" onclick="applyQuickUser('kaitokid', '123456', false)" title="Điền tài khoản Shipper">
+                            <span><i class="fa-solid fa-motorcycle me-1"></i> Shipper</span>
+                        </button>
+                        <button type="button" class="auth-demo-chip" onclick="applyQuickUser('admin', '123456', false)" title="Điền tài khoản Quản trị">
+                            <span><i class="fa-solid fa-shield-halved me-1"></i> Admin</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="auth-tab-switch-footer">
@@ -193,33 +339,7 @@
             <!-- ==============================
                  FORM 2: ĐĂNG KÝ (REGISTER)
                  ============================== -->
-            <!-- ==============================
-                 FORM 2: ĐĂNG KÝ (REGISTER 4-STEP WIZARD)
-                 ============================== -->
             <div id="registerTab" class="auth-tab-view">
-                <!-- Stepper Progress Header -->
-                <div class="auth-stepper" id="authStepper">
-                    <div class="auth-stepper-progress-bg">
-                        <div class="auth-stepper-progress-bar" id="stepperProgressBar"></div>
-                    </div>
-                    <div class="auth-stepper-step active" id="stepIndicator1">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-user-tag"></i></div>
-                        <span class="auth-stepper-title">1. Vai trò</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator2">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-phone"></i></div>
-                        <span class="auth-stepper-title">2. Số ĐT</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator3">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-key"></i></div>
-                        <span class="auth-stepper-title">3. OTP</span>
-                    </div>
-                    <div class="auth-stepper-step" id="stepIndicator4">
-                        <div class="auth-stepper-circle"><i class="fa-solid fa-address-card"></i></div>
-                        <span class="auth-stepper-title">4. Thông tin</span>
-                    </div>
-                </div>
-
                 <form action="${pageContext.request.contextPath}/auth" method="POST" enctype="multipart/form-data" class="auth-form-body" id="registerForm" novalidate onsubmit="return validateFinalRegisterForm()">
                     <input type="hidden" name="action" value="register">
                     <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
@@ -240,7 +360,9 @@
                             <!-- Role 1: Customer -->
                             <div class="auth-role-card ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'selected' : ''}" 
                                  id="roleCardCustomer" onclick="selectRole('CUSTOMER')">
-                                <div class="auth-role-icon-box">👤</div>
+                                <div class="auth-role-icon-box role-icon-customer">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Khách hàng</span>
@@ -254,7 +376,9 @@
                             <!-- Role 2: Seller / Merchant -->
                             <div class="auth-role-card ${stickyAccountType eq 'SELLER' ? 'selected' : ''}" 
                                  id="roleCardSeller" onclick="selectRole('SELLER')">
-                                <div class="auth-role-icon-box">🏪</div>
+                                <div class="auth-role-icon-box role-icon-seller">
+                                    <i class="fa-solid fa-store"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Quán ăn / Nhà hàng</span>
@@ -268,7 +392,9 @@
                             <!-- Role 3: Shipper -->
                             <div class="auth-role-card ${stickyAccountType eq 'SHIPPER' ? 'selected' : ''}" 
                                  id="roleCardShipper" onclick="selectRole('SHIPPER')">
-                                <div class="auth-role-icon-box">🛵</div>
+                                <div class="auth-role-icon-box role-icon-shipper">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
                                 <div class="auth-role-info">
                                     <div class="auth-role-header">
                                         <span class="auth-role-title">Tài xế giao hàng (Shipper)</span>
@@ -300,7 +426,7 @@
                             <label class="auth-field-label" for="wizardPhoneInput">Số điện thoại di động *</label>
                             <div class="auth-phone-input-wrap">
                                 <div class="auth-phone-prefix">
-                                    <span>🇻🇳</span>
+                                    <span style="font-weight: 800; font-size: 0.74rem; background: #fee2e2; color: #dc2626; padding: 2px 5px; border-radius: 4px; line-height: 1;">VN</span>
                                     <span>+84</span>
                                 </div>
                                 <input type="tel" id="wizardPhoneInput" class="auth-phone-field" 
@@ -730,7 +856,7 @@ function switchAuthTab(tabId) {
         tabRegister.classList.add('active');
         tabLogin.classList.remove('active');
         if (title) title.innerText = 'Tạo tài khoản';
-        if (desc) desc.innerText = '4 bước nhanh chóng để gia nhập Utee';
+        if (desc) desc.innerText = 'Đăng ký tài khoản mới để gia nhập Utee';
     }
 }
 
@@ -761,7 +887,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'none';
         sellDiv.style.display = 'block';
         if (badge) {
-            badge.innerText = '🏪 Quán ăn / Nhà hàng';
+            badge.innerHTML = '<i class="fa-solid fa-store me-1"></i> Quán ăn / Nhà hàng';
             badge.style.background = '#fef3c7';
             badge.style.color = '#b45309';
         }
@@ -771,7 +897,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'block';
         sellDiv.style.display = 'none';
         if (badge) {
-            badge.innerText = '🛵 Tài xế Shipper';
+            badge.innerHTML = '<i class="fa-solid fa-motorcycle me-1"></i> Tài xế Shipper';
             badge.style.background = '#d1fae5';
             badge.style.color = '#065f46';
         }
@@ -781,7 +907,7 @@ function updateStep4RoleUI() {
         shipDiv.style.display = 'none';
         sellDiv.style.display = 'none';
         if (badge) {
-            badge.innerText = '👤 Khách hàng';
+            badge.innerHTML = '<i class="fa-solid fa-user me-1"></i> Khách hàng';
             badge.style.background = '#eff6ff';
             badge.style.color = '#2563eb';
         }
@@ -1164,14 +1290,162 @@ function togglePasswordVisibility(inputId, btn) {
 }
 
 function fillDemo(user, pass) {
-    const userField = document.getElementById('loginUsername');
-    const passField = document.getElementById('loginPassword');
-    if (userField && passField) {
-        userField.value = user;
-        passField.value = pass;
-        userField.focus();
+    applyQuickUser(user, pass, false);
+}
+
+// =========================================================================
+// Quick Login Dropdown Menu Control Logic
+// =========================================================================
+let currentQuickRoleFilter = 'ALL';
+
+function toggleQuickLoginDropdown(event) {
+    if (event) event.stopPropagation();
+    const dropdownBox = document.getElementById('quickLoginDropdownBox');
+    const toggleBtn = document.getElementById('quickLoginDropdownToggle');
+    if (!dropdownBox || !toggleBtn) return;
+
+    const isVisible = dropdownBox.style.display === 'block';
+    if (isVisible) {
+        closeQuickDropdown();
+    } else {
+        openQuickDropdown();
     }
 }
+
+function openQuickDropdown() {
+    const dropdownBox = document.getElementById('quickLoginDropdownBox');
+    const toggleBtn = document.getElementById('quickLoginDropdownToggle');
+    const wrap = document.getElementById('authQuickLoginWrap');
+    if (!dropdownBox || !toggleBtn) return;
+
+    // Smart positioning: if bottom is close to viewport bottom, drop up
+    if (wrap) {
+        const rect = wrap.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        if (spaceBelow < 280) {
+            dropdownBox.classList.add('drop-up');
+        } else {
+            dropdownBox.classList.remove('drop-up');
+        }
+    }
+
+    dropdownBox.style.display = 'block';
+    toggleBtn.classList.add('active');
+    toggleBtn.setAttribute('aria-expanded', 'true');
+
+    // Auto-focus search input
+    const searchInput = document.getElementById('quickUserSearchInput');
+    if (searchInput) {
+        setTimeout(() => searchInput.focus(), 50);
+    }
+}
+
+function closeQuickDropdown() {
+    const dropdownBox = document.getElementById('quickLoginDropdownBox');
+    const toggleBtn = document.getElementById('quickLoginDropdownToggle');
+    if (dropdownBox) dropdownBox.style.display = 'none';
+    if (toggleBtn) {
+        toggleBtn.classList.remove('active');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+    }
+}
+
+function handleQuickUserSearch(keyword) {
+    keyword = (keyword || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('quickSearchClearBtn');
+    if (clearBtn) {
+        clearBtn.style.display = keyword ? 'block' : 'none';
+    }
+
+    const rows = document.querySelectorAll('#quickUsersScrollList .quick-user-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const role = row.getAttribute('data-role');
+        const username = row.getAttribute('data-username') || '';
+        const name = row.getAttribute('data-name') || '';
+
+        const roleMatch = (currentQuickRoleFilter === 'ALL' || role === currentQuickRoleFilter);
+        const searchMatch = !keyword || username.includes(keyword) || name.includes(keyword);
+
+        if (roleMatch && searchMatch) {
+            row.style.display = 'flex';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const noResult = document.getElementById('quickUserNoResult');
+    if (noResult) {
+        noResult.style.display = (visibleCount === 0) ? 'flex' : 'none';
+    }
+}
+
+function clearQuickUserSearch() {
+    const searchInput = document.getElementById('quickUserSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+    }
+    handleQuickUserSearch('');
+}
+
+function filterQuickRole(role, btn) {
+    currentQuickRoleFilter = role;
+    const tabs = document.querySelectorAll('.quick-role-tabs .quick-role-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    const searchInput = document.getElementById('quickUserSearchInput');
+    const keyword = searchInput ? searchInput.value : '';
+    handleQuickUserSearch(keyword);
+}
+
+function applyQuickUser(username, password, autoSubmit) {
+    const userField = document.getElementById('loginUsername');
+    const passField = document.getElementById('loginPassword');
+    const displaySpan = document.getElementById('quickToggleDisplay');
+
+    if (userField && passField) {
+        userField.value = username;
+        passField.value = password;
+        userField.focus();
+    }
+
+    if (displaySpan) {
+        displaySpan.innerHTML = '<strong style="color:#0284c7">@' + username + '</strong> (Đã chọn - sẵn sàng đăng nhập)';
+    }
+
+    closeQuickDropdown();
+
+    if (autoSubmit) {
+        const form = document.getElementById('loginForm');
+        if (form) {
+            const submitBtn = form.querySelector('.auth-primary-submit-btn');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang đăng nhập...';
+                submitBtn.style.opacity = '0.85';
+                submitBtn.disabled = true;
+            }
+            form.submit();
+        }
+    }
+}
+
+// Click outside or ESC key to dismiss Quick Login Dropdown
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('authQuickLoginWrap');
+    if (wrap && !wrap.contains(e.target)) {
+        closeQuickDropdown();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeQuickDropdown();
+    }
+});
 
     // Tự động chuyển sang tab Đăng ký nếu URL có hash #register hoặc đang có lỗi đăng ký
     <c:choose>  

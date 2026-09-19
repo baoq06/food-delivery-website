@@ -14,6 +14,14 @@ public class UserService {
         return userDAO.register(user);
     }
 
+    public boolean isPhoneExists(String phone) {
+        return userDAO.isPhoneExists(phone);
+    }
+
+    public boolean isUsernameExists(String username) {
+        return userDAO.isUsernameExists(username);
+    }
+
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
         return userDAO.registerSeller(user, restaurantName, restaurantAddress);
     }
@@ -44,6 +52,10 @@ public class UserService {
 
     public boolean registerShipper(User user, String licensePlate, String vehicleType, String idCardFront, String idCardBack, String vehicleDoc, String avatarUrl) {
         return userDAO.registerShipper(user, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatarUrl);
+    }
+
+    public java.util.List<User> getAllUsers() {
+        return userDAO.getAllUsers();
     }
 }
 
