@@ -8,7 +8,9 @@
 </jsp:include>
 
 <div class="admin-dashboard-container">
-    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
+    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp">
+        <jsp:param name="activeTab" value="foods" />
+    </jsp:include>
 
     <div class="container pb-5">
         <!-- Toolbar Tìm Kiếm, Lọc Danh Mục & Nút Đăng Món Mới -->

@@ -5,7 +5,9 @@
 </jsp:include>
 
 <div class="admin-dashboard-container">
-    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp" />
+    <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp">
+        <jsp:param name="activeTab" value="profile" />
+    </jsp:include>
 
     <div class="container pb-5">
         <div class="merchant-grid-split" style="margin-top: 18px;">
