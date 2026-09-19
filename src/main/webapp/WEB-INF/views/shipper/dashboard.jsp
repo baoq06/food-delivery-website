@@ -628,9 +628,18 @@
                 document.addEventListener("DOMContentLoaded", function() {
                     function sendLocationUpdate(lat, lng, address) {
                         const formData = new URLSearchParams();
+                        formData.append('lat', lat);
+                        formData.append('lng', lng);
                         formData.append('latitude', lat);
                         formData.append('longitude', lng);
                         if (address) formData.append('address', address);
+
+                        const btnMock = document.getElementById('btnApplyMockLocation');
+                        const originalBtnText = btnMock ? btnMock.innerHTML : '';
+                        if (btnMock) {
+                            btnMock.disabled = true;
+                            btnMock.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+                        }
 
                         fetch('${pageContext.request.contextPath}/shipper/api/location', {
                             method: 'POST',
@@ -639,16 +648,24 @@
                         })
                         .then(r => r.json())
                         .then(data => {
+                            if (btnMock) {
+                                btnMock.disabled = false;
+                                btnMock.innerHTML = originalBtnText;
+                            }
                             if (data.status === 'success') {
                                 document.getElementById('currentLocDisplay').innerText = data.address || address;
                                 document.getElementById('gpsCoordsText').innerText = parseFloat(lat).toFixed(6) + ', ' + parseFloat(lng).toFixed(6);
                                 document.getElementById('gpsUpdatedTime').innerText = 'Vừa xong';
-                                alert('Đã cập nhật tọa độ thành công! Hệ thống điều phối sẽ tìm quán gần bạn nhất.');
+                                alert('✅ Đã đặt vị trí thành công:\n' + (data.address || address) + '\n\nHệ thống sẽ dùng tọa độ này để tính khoảng cách và gán đơn gần bạn nhất!');
                             } else {
                                 alert('Không thể cập nhật vị trí: ' + (data.message || 'Lỗi'));
                             }
                         })
                         .catch(err => {
+                            if (btnMock) {
+                                btnMock.disabled = false;
+                                btnMock.innerHTML = originalBtnText;
+                            }
                             console.error(err);
                             alert('Lỗi kết nối cập nhật tọa độ!');
                         });

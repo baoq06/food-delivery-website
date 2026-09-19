@@ -1042,7 +1042,7 @@ public class OrderDAO {
     }
 
     public boolean shipperAcceptOrder(int orderId, int driverId) {
-        String sql = "UPDATE orders SET shipper_accepted = 1 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET shipper_accepted = 1, status = CASE WHEN status = 'PENDING' THEN 'CONFIRMED' ELSE status END WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {

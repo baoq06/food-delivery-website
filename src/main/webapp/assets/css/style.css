@@ -6354,6 +6354,49 @@ a,
     }
 }
 
+.merchant-dashboard-bottom-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 992px) {
+    .merchant-dashboard-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.merchant-quick-action-tile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.merchant-quick-action-tile:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
 /* Merchant Clean Table Card */
 .admin-table-card {
     background: #ffffff;
@@ -8907,51 +8950,76 @@ select.form-control,
     overflow-x: auto;
 }
 
-@media (min-width: 1100px) {
-    .merchant-table-wrapper {
-        overflow-x: visible;
-    }
+.merchant-table-wrapper,
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+}
+
+/* Modern sleek custom scrollbar for horizontal table scrolling */
+.merchant-table-wrapper::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.merchant-table-wrapper::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 999px;
+}
+
+.merchant-table-wrapper::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
+.merchant-table-wrapper::-webkit-scrollbar-thumb:hover,
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .merchant-order-table {
     width: 100%;
-    table-layout: fixed;
+    min-width: 1160px;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 0.88rem;
 }
 
-/* Column Width Allocations - 100% Total */
+/* Column Width Allocations - Prevent text overlap across all viewports */
 .merchant-order-table th.col-mo-code,
 .merchant-order-table td.col-mo-code {
-    width: 8.5%;
+    width: 125px;
+    min-width: 125px;
 }
 .merchant-order-table th.col-mo-customer,
 .merchant-order-table td.col-mo-customer {
-    width: 20%;
+    min-width: 230px;
 }
 .merchant-order-table th.col-mo-items,
 .merchant-order-table td.col-mo-items {
-    width: 16.5%;
+    min-width: 180px;
 }
 .merchant-order-table th.col-mo-amount,
 .merchant-order-table td.col-mo-amount {
-    width: 9%;
+    width: 135px;
+    min-width: 135px;
 }
 .merchant-order-table th.col-mo-driver,
 .merchant-order-table td.col-mo-driver {
-    width: 12%;
+    min-width: 185px;
 }
 .merchant-order-table th.col-mo-status,
 .merchant-order-table td.col-mo-status {
-    width: 15%;
-    min-width: 145px;
-    padding-right: 18px;
+    min-width: 180px;
+    padding-right: 14px;
 }
 .merchant-order-table th.col-mo-actions,
 .merchant-order-table td.col-mo-actions {
-    width: 19%;
-    min-width: 175px;
+    min-width: 185px;
     padding-left: 10px;
     padding-right: 14px;
     text-align: right;
@@ -9364,8 +9432,335 @@ select.form-control,
 .btn-mo-action-cancel:hover {
     background: #fee2e2;
     border-color: #f87171;
+.btn-mo-action-accept-auto {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 3px 12px rgba(16, 185, 129, 0.35);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    letter-spacing: 0.2px;
+}
+
+.btn-mo-action-accept-auto:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+.btn-mo-action-reject {
+    background: #ffffff;
+    border: 1.5px solid #fecaca;
     color: #dc2626;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-mo-action-reject:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
+    color: #b91c1c;
     transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Radar Scanning Animation Modal (UI/UX Pro Max)
+   ========================================================================== */
+.radar-search-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: radarModalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 16px;
+}
+
+.radar-search-modal-box {
+    background: #ffffff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+    animation: radarModalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+}
+
+@keyframes radarModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes radarModalScaleUp {
+    from { opacity: 0; transform: scale(0.92) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.radar-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.radar-modal-close:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.radar-modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.6px;
+    margin-bottom: 8px;
+    border: 1px solid #bfdbfe;
+}
+
+.radar-modal-title {
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.3px;
+}
+
+.radar-modal-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0 0 16px 0;
+}
+
+/* Radar Screen Container */
+.radar-screen-wrap {
+    position: relative;
+    width: 210px;
+    height: 210px;
+    margin: 0 auto 16px auto;
+}
+
+.radar-circle-outer {
+    width: 210px;
+    height: 210px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+    border: 2px solid rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(15, 23, 42, 0.8);
+}
+
+.radar-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    pointer-events: none;
+}
+
+.radar-ring-1 { width: 68px; height: 68px; }
+.radar-ring-2 { width: 128px; height: 128px; }
+.radar-ring-3 { width: 180px; height: 180px; border-style: dashed; }
+
+/* Radar Sweep Rotating Beam */
+.radar-sweep-beam {
+    position: absolute;
+    width: 105px;
+    height: 105px;
+    top: 0;
+    right: 0;
+    transform-origin: bottom left;
+    background: conic-gradient(from 0deg at bottom left, rgba(59, 130, 246, 0.6) 0deg, rgba(59, 130, 246, 0.1) 45deg, transparent 75deg);
+    animation: radarSweep 1.6s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes radarSweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Center Restaurant Anchor */
+.radar-center-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f05454 0%, #ff6b6b 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.88rem;
+    z-index: 5;
+    box-shadow: 0 0 16px rgba(240, 84, 84, 0.7);
+}
+
+.radar-center-label {
+    font-size: 0.6rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-top: 2px;
+}
+
+/* Simulated Shipper Blips */
+.radar-blip {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.25);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    z-index: 4;
+    animation: blipPulse 1.6s infinite;
+}
+
+.radar-blip-1 { top: 32px; left: 40px; animation-delay: 0.2s; }
+.radar-blip-2 { top: 40px; right: 36px; animation-delay: 0.8s; }
+.radar-blip-3 { bottom: 36px; left: 54px; animation-delay: 1.2s; }
+
+@keyframes blipPulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; box-shadow: 0 0 4px #22c55e; }
+    50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 10px #22c55e; }
+}
+
+/* Success Overlay */
+.radar-success-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    animation: radarFadeIn 0.25s ease;
+}
+
+.radar-success-circle {
+    font-size: 3.8rem;
+    color: #22c55e;
+    filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.6));
+    animation: radarPopSuccess 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes radarPopSuccess {
+    0% { transform: scale(0.3); opacity: 0; }
+    70% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Progress & Status */
+.radar-progress-box {
+    margin-bottom: 12px;
+}
+
+.radar-dynamic-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+}
+
+.radar-progress-bar-wrap {
+    width: 100%;
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.radar-progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    border-radius: 4px;
+    transition: width 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Found Shipper Card */
+.radar-found-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    animation: radarFadeIn 0.3s ease;
+}
+
+.radar-found-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #15803d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.radar-found-name {
+    font-size: 0.92rem;
+    color: #0f172a;
+}
+
+.radar-found-alert {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #b45309;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-align: center;
 }
 
 

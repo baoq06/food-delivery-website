@@ -12,8 +12,7 @@ import java.util.Map;
 public class RestaurantDAO {
 
     public Restaurant getRestaurantByUserId(int userId) {
-        String query = "SELECT restaurant_id, user_id, name, description, phone, address, image_url, status " +
-                       "FROM restaurants WHERE user_id = ?";
+        String query = BASE_QUERY + "WHERE r.user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -43,7 +42,10 @@ public class RestaurantDAO {
         Restaurant first = getRestaurantById(1);
         if (first != null) return first;
 
-        return new Restaurant(1, userId, "Bếp Việt Quán", "Chuyên các món cơm tấm, món Việt đậm đà chuẩn vị quê nhà.", "0901234567", "45 Lê Lợi, P. Bến Nghé, Q.1, TP. HCM", "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60", "OPEN");
+        Restaurant defaultRest = new Restaurant(1, userId, "Bếp Việt Quán", "Chuyên các món cơm tấm, món Việt đậm đà chuẩn vị quê nhà.", "0901234567", "45 Lê Lợi, P. Bến Nghé, Q.1, TP. HCM", "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60", "OPEN");
+        defaultRest.setLatitude(com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT);
+        defaultRest.setLongitude(com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG);
+        return defaultRest;
     }
 
     private static final String BASE_QUERY = 
@@ -280,6 +282,13 @@ public class RestaurantDAO {
             double lng = rs.getDouble("longitude");
             if (!rs.wasNull()) r.setLongitude(lng);
         } catch (Exception ignored) {}
+
+        // Fallback an toàn nếu database chưa có tọa độ
+        if (r.getLatitude() == null || r.getLongitude() == null || (r.getLatitude() == 0 && r.getLongitude() == 0)) {
+            double[] coords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(r.getAddress());
+            r.setLatitude(coords[0]);
+            r.setLongitude(coords[1]);
+        }
         return r;
     }
 }

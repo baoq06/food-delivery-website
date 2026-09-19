@@ -56,11 +56,19 @@ public class ShipperLocationAPI extends HttpServlet {
 
         try {
             String latStr = req.getParameter("lat");
+            if (latStr == null || latStr.trim().isEmpty()) {
+                latStr = req.getParameter("latitude");
+            }
+
             String lngStr = req.getParameter("lng");
+            if (lngStr == null || lngStr.trim().isEmpty()) {
+                lngStr = req.getParameter("longitude");
+            }
+
             String address = req.getParameter("address");
 
             if (latStr == null || lngStr == null || latStr.trim().isEmpty() || lngStr.trim().isEmpty()) {
-                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Tọa độ không hợp lệ\"}");
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Tọa độ không hợp lệ (thiếu lat/lng)\"}");
                 return;
             }
 
@@ -75,11 +83,14 @@ public class ShipperLocationAPI extends HttpServlet {
             if (driver != null) {
                 boolean ok = driverDAO.updateLocation(driver.getId(), lat, lng, address.trim());
                 if (ok) {
-                    resp.getWriter().write("{\"status\":\"success\", \"message\":\"Đã cập nhật vị trí GPS thành công\"}");
+                    String json = String.format(java.util.Locale.US,
+                        "{\"status\":\"success\", \"message\":\"Đã cập nhật vị trí GPS thành công\", \"lat\":%.6f, \"lng\":%.6f, \"address\":\"%s\"}",
+                        lat, lng, address.trim().replace("\"", "\\\""));
+                    resp.getWriter().write(json);
                     return;
                 }
             }
-            resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không thể cập nhật vị trí\"}");
+            resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không thể cập nhật vị trí vào CSDL\"}");
         } catch (Exception e) {
             resp.getWriter().write("{\"status\":\"error\", \"message\":\"" + e.getMessage().replace("\"", "\\\"") + "\"}");
         }

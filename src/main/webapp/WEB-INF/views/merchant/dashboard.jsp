@@ -58,101 +58,335 @@
             </div>
         </div>
 
-        <!-- Bento Grid: Bảng Đơn Gần Đây (Rộng hơn) & Top Món Bán Chạy (Gọn hơn) -->
-        <div class="merchant-dashboard-grid">
-            <!-- Cột Trái: Đơn Gần Đây -->
-            <div class="admin-table-card">
-                <div class="admin-table-header">
-                    <div>
-                        <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Hàng Gần Đây Của Quán</h3>
-                        <span class="table-card-sub">Theo dõi tiến độ nhận đơn, chế biến và bàn giao shipper</span>
-                    </div>
-                    <a href="${pageContext.request.contextPath}/merchant/orders" class="btn-merchant-quick">
-                        <span>Xem tất cả</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+        <!-- BẢNG ĐƠN HÀNG GẦN ĐÂY CỦA QUÁN (Full Width Card) -->
+        <div class="admin-table-card mb-4">
+            <div class="admin-table-header">
+                <div>
+                    <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Hàng Gần Đây Của Quán</h3>
+                    <span class="table-card-sub">Theo dõi tiến độ nhận đơn, chế biến và bàn giao shipper theo thời gian thực</span>
                 </div>
+                <a href="${pageContext.request.contextPath}/merchant/orders" class="btn-merchant-quick">
+                    <span>Xem tất cả đơn hàng</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
 
-                <div class="table-responsive">
-                    <table class="admin-data-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 90px;">Mã Đơn</th>
-                                <th style="width: 160px;">Khách Hàng</th>
-                                <th>Món Đặt</th>
-                                <th style="width: 120px;">Tổng Tiền</th>
-                                <th style="width: 130px;">Trạng Thái</th>
-                                <th style="width: 130px;">Tài Xế</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:choose>
-                                <c:when test="${not empty recentOrders}">
-                                    <c:forEach var="order" items="${recentOrders}">
-                                        <tr>
-                                            <td><strong style="color: #0f172a;">#DH-${order.id}</strong></td>
-                                            <td>
-                                                <strong style="color: #1e293b;">${order.customerName}</strong><br/>
-                                                <small class="text-muted"><i class="fa-solid fa-phone"></i> ${order.phone}</small>
-                                            </td>
-                                            <td>
-                                                <div style="font-size: 0.86rem; line-height: 1.4;">
-                                                    <c:forEach var="item" items="${order.items}" varStatus="loop">
-                                                        <span>${item.foodName} &times; <strong>${item.quantity}</strong><c:if test="${not loop.last}">, </c:if></span>
-                                                    </c:forEach>
+            <div class="merchant-table-wrapper">
+                <table class="merchant-order-table">
+                    <thead>
+                        <tr>
+                            <th class="col-mo-code"><i class="fa-solid fa-hashtag me-1"></i> Mã &amp; Giờ Đặt</th>
+                            <th class="col-mo-customer"><i class="fa-solid fa-user me-1"></i> Khách Hàng &amp; Địa Chỉ</th>
+                            <th class="col-mo-items"><i class="fa-solid fa-utensils me-1"></i> Món Quán Đặt</th>
+                            <th class="col-mo-amount"><i class="fa-solid fa-wallet me-1"></i> Tổng Tiền</th>
+                            <th class="col-mo-driver"><i class="fa-solid fa-motorcycle me-1"></i> Tài Xế Shipper</th>
+                            <th class="col-mo-status"><i class="fa-solid fa-tags me-1"></i> Trạng Thái</th>
+                            <th class="col-mo-actions text-end"><i class="fa-solid fa-sliders me-1"></i> Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:choose>
+                            <c:when test="${not empty recentOrders}">
+                                <c:forEach var="order" items="${recentOrders}">
+                                    <tr>
+                                        <!-- Cột 1: Mã Đơn & Thời Gian -->
+                                        <td class="col-mo-code">
+                                            <span class="mo-code-badge">#DH-${order.id}</span>
+                                            <div class="mo-time-wrap">
+                                                <span class="mo-time-hour">
+                                                    <i class="fa-regular fa-clock text-muted"></i>
+                                                    <fmt:formatDate value="${order.createdAt}" pattern="HH:mm" />
+                                                </span>
+                                                <span class="mo-time-date">
+                                                    <fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy" />
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- Cột 2: Khách Hàng & Địa Chỉ -->
+                                        <td class="col-mo-customer">
+                                            <div class="mo-customer-name">${order.customerName}</div>
+                                            <a href="tel:${order.phone}" class="mo-customer-phone" title="Gọi cho khách hàng">
+                                                <i class="fa-solid fa-phone"></i> ${order.phone}
+                                            </a>
+                                            <div class="mo-customer-address" title="${order.address}">
+                                                <i class="fa-solid fa-location-dot"></i> ${order.address}
+                                            </div>
+                                            <c:if test="${not empty order.note}">
+                                                <div class="mo-customer-note" title="${order.note}">
+                                                    <i class="fa-solid fa-comment-dots"></i>
+                                                    <span>${order.note}</span>
                                                 </div>
-                                            </td>
-                                            <td class="font-weight-bold text-primary">
+                                            </c:if>
+                                        </td>
+
+                                        <!-- Cột 3: Món Đặt Của Quán -->
+                                        <td class="col-mo-items">
+                                            <div class="mo-items-box">
+                                                <c:forEach var="item" items="${order.items}">
+                                                    <div class="mo-item-row">
+                                                        <span class="mo-item-name">${item.foodName}</span>
+                                                        <span class="mo-item-qty">&times; ${item.quantity}</span>
+                                                    </div>
+                                                </c:forEach>
+                                            </div>
+                                        </td>
+
+                                        <!-- Cột 4: Tổng Tiền & Phương Thức -->
+                                        <td class="col-mo-amount">
+                                            <div class="mo-amount-val">
                                                 <fmt:formatNumber value="${order.totalAmount}" type="number" /> đ
-                                            </td>
-                                            <td>
-                                                <span class="badge ${order.status eq 'DELIVERED' ? 'badge-done' : (order.status eq 'SHIPPING' ? 'badge-shipping' : (order.status eq 'PENDING' ? 'badge-pending' : (order.status eq 'CANCELLED' ? 'badge-cancelled' : 'badge-confirmed')))}">
+                                            </div>
+                                            <div>
+                                                <span class="mo-pay-badge ${order.paymentMethod eq 'CASH' ? 'badge-cod' : 'badge-vietqr'}">
+                                                    <i class="fa-solid ${order.paymentMethod eq 'CASH' ? 'fa-money-bill-1' : 'fa-qrcode'}"></i>
+                                                    ${order.paymentMethod}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- Cột 5: Tài Xế Shipper -->
+                                        <td class="col-mo-driver">
+                                            <c:choose>
+                                                <c:when test="${not empty order.driverName}">
+                                                    <div class="mo-driver-info">
+                                                        <div class="mo-driver-avatar" title="Tài xế giao hàng">
+                                                            <i class="fa-solid fa-motorcycle"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="mo-driver-name">${order.driverName}</div>
+                                                            <div class="mo-driver-phone">
+                                                                <i class="fa-solid fa-phone-volume me-1" style="font-size: 0.68rem; color: #10b981;"></i>${order.driverPhone}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <c:choose>
+                                                            <c:when test="${order.shipperAccepted}">
+                                                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.72rem;">
+                                                                    <i class="fa-solid fa-check"></i> Tài xế đã nhận
+                                                                </span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 0.72rem;">
+                                                                    <i class="fa-solid fa-hourglass-half"></i> Chờ tài xế nhận
+                                                                </span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                </c:when>
+                                                <c:otherwise>
                                                     <c:choose>
-                                                        <c:when test="${order.status eq 'PENDING'}">Chờ nhận đơn</c:when>
-                                                        <c:when test="${order.status eq 'CONFIRMED'}">Đang chế biến</c:when>
-                                                        <c:when test="${order.status eq 'SHIPPING'}">Đang giao</c:when>
-                                                        <c:when test="${order.status eq 'DELIVERED'}">Hoàn tất</c:when>
-                                                        <c:when test="${order.status eq 'CANCELLED'}">Đã hủy</c:when>
+                                                        <c:when test="${order.status eq 'CANCELLED'}">
+                                                            <span class="text-muted small">Không gán tài xế</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge bg-light text-muted border py-1 px-2" style="font-size: 0.76rem;">
+                                                                <i class="fa-solid fa-clock me-1"></i> Chờ quán nhận đơn
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
+
+                                        <!-- Cột 6: Trạng Thái Đơn Hàng -->
+                                        <td class="col-mo-status">
+                                            <div>
+                                                <span class="mo-status-badge ${order.status eq 'DELIVERED' ? 'status-delivered' : (order.status eq 'SHIPPING' ? 'status-shipping' : (order.status eq 'PENDING' ? 'status-pending' : (order.status eq 'CANCELLED' ? 'status-cancelled' : 'status-confirmed')))}">
+                                                    <c:choose>
+                                                        <c:when test="${order.status eq 'PENDING'}">
+                                                            <c:choose>
+                                                                <c:when test="${empty order.driverName}">
+                                                                    <i class="fa-solid fa-bell fa-shake text-warning"></i> Đơn mới
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <i class="fa-solid fa-hourglass-half"></i> Chờ shipper nhận
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:when>
+                                                        <c:when test="${order.status eq 'CONFIRMED'}"><i class="fa-solid fa-fire-burner"></i> Đang chế biến</c:when>
+                                                        <c:when test="${order.status eq 'SHIPPING'}"><i class="fa-solid fa-truck-fast"></i> Đang giao</c:when>
+                                                        <c:when test="${order.status eq 'DELIVERED'}"><i class="fa-solid fa-circle-check"></i> Hoàn tất</c:when>
+                                                        <c:when test="${order.status eq 'CANCELLED'}"><i class="fa-solid fa-circle-xmark"></i> Đã hủy</c:when>
                                                         <c:otherwise>${order.status}</c:otherwise>
                                                     </c:choose>
                                                 </span>
-                                            </td>
-                                            <td>
+                                            </div>
+                                            <c:if test="${order.status ne 'CANCELLED'}">
+                                                <div class="mt-2 d-flex flex-column gap-1" style="font-size: 0.72rem; line-height: 1.3;">
+                                                    <div>
+                                                        <c:choose>
+                                                            <c:when test="${order.shipperDelivered}">
+                                                                <span class="text-success fw-bold"><i class="fa-solid fa-check"></i> Shipper: Đã giao</span>
+                                                            </c:when>
+                                                            <c:when test="${order.shipperAccepted}">
+                                                                <span class="text-primary"><i class="fa-solid fa-motorcycle"></i> Shipper: Đang giao</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted"><i class="fa-solid fa-circle-dot"></i> Shipper: Chưa nhận</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                    <div>
+                                                        <c:choose>
+                                                            <c:when test="${order.customerConfirmed}">
+                                                                <span class="text-success fw-bold"><i class="fa-solid fa-check"></i> Khách: Đã nhận</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="text-muted"><i class="fa-solid fa-circle-dot"></i> Khách: Chưa nhận</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </div>
+                                                    <div>
+                                                        <c:choose>
+                                                            <c:when test="${order.merchantCompleted or order.status eq 'DELIVERED' or order.shipperDelivered}">
+                                                                <span class="badge bg-success text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-sack-dollar"></i> Đã tính doanh thu</span>
+                                                            </c:when>
+                                                            <c:when test="${order.status eq 'SHIPPING'}">
+                                                                <c:choose>
+                                                                    <c:when test="${order.customerConfirmed and not order.shipperDelivered}">
+                                                                        <span class="badge bg-info text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-clock"></i> Chờ shipper giao</span>
+                                                                    </c:when>
+                                                                    <c:otherwise>
+                                                                        <span class="badge bg-primary text-white py-0 px-1" style="font-size: 0.7rem;"><i class="fa-solid fa-motorcycle"></i> Đang vận chuyển</span>
+                                                                    </c:otherwise>
+                                                                </c:choose>
+                                                            </c:when>
+                                                        </c:choose>
+                                                    </div>
+                                                </div>
+                                            </c:if>
+                                        </td>
+
+                                        <!-- Cột 7: Thao Tác Tiến Trình -->
+                                        <td class="col-mo-actions text-end">
+                                            <div class="mo-actions-group">
                                                 <c:choose>
-                                                    <c:when test="${not empty order.driverName}">
-                                                        <span class="text-success font-weight-bold" style="font-size: 0.85rem;">
-                                                            <i class="fa-solid fa-motorcycle"></i> ${order.driverName}
+                                                    <%-- BƯỚC 1: ĐƠN MỚI CHƯA GÁN SHIPPER -> QUÁN ĐỒNG Ý NHẬN HOẶC TỪ CHỐI --%>
+                                                    <c:when test="${order.status eq 'PENDING' and empty order.driverName}">
+                                                        <div class="d-flex align-items-center gap-1 justify-content-end">
+                                                            <button type="button" class="btn-mo-action btn-mo-action-accept-auto" 
+                                                                    data-order-id="${order.id}" 
+                                                                    data-customer="<c:out value='${order.customerName}' />" 
+                                                                    onclick="handleAutoDispatchBtn(this)" 
+                                                                    title="Quán đồng ý nhận đơn và hệ thống tự động tìm kiếm shipper">
+                                                                <i class="fa-solid fa-circle-check"></i>
+                                                                <span>Đồng Ý Nhận</span>
+                                                            </button>
+                                                            <button type="button" class="btn-mo-action-cancel" 
+                                                                    data-order-id="${order.id}" 
+                                                                    data-customer="<c:out value='${order.customerName}' />" 
+                                                                    onclick="handleRejectBtn(this)" 
+                                                                    title="Từ chối đơn hàng này">
+                                                                <i class="fa-solid fa-ban"></i>
+                                                            </button>
+                                                        </div>
+                                                    </c:when>
+
+                                                    <%-- BƯỚC 2: QUÁN ĐÃ ĐỒNG Ý & ĐÃ GÁN SHIPPER, ĐANG CHỜ SHIPPER PHẢN HỒI (NHẬN/TỪ CHỐI) --%>
+                                                    <c:when test="${not empty order.driverName and not order.shipperAccepted and order.status ne 'CANCELLED'}">
+                                                        <div class="d-flex align-items-center gap-1 justify-content-end">
+                                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.78rem;" title="Đang chờ tài xế bấm nhận đơn trên ứng dụng">
+                                                                <i class="fa-solid fa-hourglass-half fa-spin me-1"></i> Chờ <strong>${order.driverName}</strong> nhận...
+                                                            </span>
+                                                            <button type="button" class="btn-mo-action-cancel" 
+                                                                    data-order-id="${order.id}" 
+                                                                    data-customer="<c:out value='${order.customerName}' />" 
+                                                                    onclick="handleRejectBtn(this)" 
+                                                                    title="Hủy đơn hàng">
+                                                                <i class="fa-solid fa-ban"></i>
+                                                            </button>
+                                                        </div>
+                                                    </c:when>
+
+                                                    <%-- BƯỚC 3: SHIPPER ĐÃ ĐỒNG Ý NHẬN ĐƠN -> QUÁN CHẾ BIẾN & BÀN GIAO --%>
+                                                    <c:when test="${order.shipperAccepted and (order.status eq 'PENDING' or order.status eq 'CONFIRMED')}">
+                                                        <c:if test="${order.status eq 'PENDING'}">
+                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline">
+                                                                <input type="hidden" name="action" value="updateStatus" />
+                                                                <input type="hidden" name="orderId" value="${order.id}" />
+                                                                <input type="hidden" name="newStatus" value="CONFIRMED" />
+                                                                <input type="hidden" name="redirectUrl" value="${pageContext.request.contextPath}/merchant/dashboard" />
+                                                                <button type="submit" class="btn-mo-action btn-mo-action-accept" title="Tài xế đã nhận cuốc! Bắt đầu chế biến món">
+                                                                    <i class="fa-solid fa-fire-burner"></i> Chế Biến
+                                                                </button>
+                                                            </form>
+                                                        </c:if>
+                                                        <c:if test="${order.status eq 'CONFIRMED'}">
+                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline">
+                                                                <input type="hidden" name="action" value="updateStatus" />
+                                                                <input type="hidden" name="orderId" value="${order.id}" />
+                                                                <input type="hidden" name="newStatus" value="SHIPPING" />
+                                                                <input type="hidden" name="redirectUrl" value="${pageContext.request.contextPath}/merchant/dashboard" />
+                                                                <button type="submit" class="btn-mo-action btn-mo-action-ship" title="Món đã xong, bàn giao cho shipper đi giao">
+                                                                    <i class="fa-solid fa-truck-fast"></i> Bàn Giao Shipper
+                                                                </button>
+                                                            </form>
+                                                        </c:if>
+                                                        <button type="button" class="btn-mo-action-cancel" 
+                                                                data-order-id="${order.id}" 
+                                                                data-customer="<c:out value='${order.customerName}' />" 
+                                                                onclick="handleRejectBtn(this)" 
+                                                                title="Hủy đơn hàng này">
+                                                            <i class="fa-solid fa-ban"></i>
+                                                        </button>
+                                                    </c:when>
+
+                                                    <%-- BƯỚC 4: ĐANG GIAO HÀNG / HOÀN TẤT --%>
+                                                    <c:when test="${order.status eq 'SHIPPING'}">
+                                                        <c:choose>
+                                                            <c:when test="${order.shipperDelivered or order.customerConfirmed}">
+                                                                <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline">
+                                                                    <input type="hidden" name="action" value="completeOrder" />
+                                                                    <input type="hidden" name="orderId" value="${order.id}" />
+                                                                    <input type="hidden" name="redirectUrl" value="${pageContext.request.contextPath}/merchant/dashboard" />
+                                                                    <button type="submit" class="btn-mo-action btn-mo-action-complete" title="Xác nhận hoàn tất đơn hàng">
+                                                                        <i class="fa-solid fa-circle-check"></i> Hoàn Tất
+                                                                    </button>
+                                                                </form>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style="font-size: 0.78rem;">
+                                                                    <i class="fa-solid fa-motorcycle me-1"></i> Đang giao hàng
+                                                                </span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:when>
+
+                                                    <c:when test="${order.status eq 'DELIVERED'}">
+                                                        <span class="text-success small fw-bold" style="font-size: 0.82rem;">
+                                                            <i class="fa-solid fa-circle-check"></i> Hoàn tất
                                                         </span>
                                                     </c:when>
+
                                                     <c:when test="${order.status eq 'CANCELLED'}">
-                                                        <span class="text-muted small">Đã hủy</span>
+                                                        <span class="text-muted small" style="font-size: 0.8rem;">Đã hủy</span>
                                                     </c:when>
-                                                    <c:otherwise>
-                                                        <a href="${pageContext.request.contextPath}/merchant/orders" class="text-primary font-weight-bold" style="font-size: 0.82rem;">
-                                                            <i class="fa-solid fa-user-plus"></i> Gán shipper
-                                                        </a>
-                                                    </c:otherwise>
                                                 </c:choose>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </c:when>
-                                <c:otherwise>
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <div style="font-size: 2.2rem; margin-bottom: 8px;">📦</div>
-                                            <strong style="color: #334155;">Chưa có đơn đặt hàng nào phát sinh!</strong>
-                                            <p class="small text-muted mb-0 mt-1">Khi khách đặt món từ quán của bạn, danh sách đơn hàng sẽ xuất hiện trực tiếp tại đây.</p>
+                                            </div>
                                         </td>
                                     </tr>
-                                </c:otherwise>
-                            </c:choose>
-                        </tbody>
-                    </table>
-                </div>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <div style="font-size: 2.2rem; margin-bottom: 8px;">📦</div>
+                                        <strong style="color: #334155;">Chưa có đơn đặt hàng nào phát sinh!</strong>
+                                        <p class="small text-muted mb-0 mt-1">Khi khách đặt món từ quán của bạn, danh sách đơn hàng sẽ xuất hiện trực tiếp tại đây.</p>
+                                    </td>
+                                </tr>
+                            </c:otherwise>
+                        </c:choose>
+                    </tbody>
+                </table>
             </div>
+        </div>
 
-            <!-- Cột Phải: Top Món Bán Chạy & Thao Tác Nhanh -->
+        <!-- Phía Dưới: Top Món Bán Chạy & Lối Tắt Quản Trị Nhanh -->
+        <div class="merchant-dashboard-bottom-grid">
+            <!-- Cột Trái: Top Món Bán Chạy -->
             <div class="admin-table-card">
                 <div class="admin-table-header">
                     <div>
@@ -160,7 +394,7 @@
                         <span class="table-card-sub">Top món ăn được yêu thích nhất</span>
                     </div>
                     <a href="${pageContext.request.contextPath}/merchant/foods" class="btn-merchant-quick">
-                        <span>Xem menu</span>
+                        <span>Xem toàn bộ menu</span>
                     </a>
                 </div>
 
@@ -195,8 +429,264 @@
                     </c:choose>
                 </div>
             </div>
+
+            <!-- Cột Phải: Lối Tắt & Điều Phối Nhanh -->
+            <div class="admin-table-card">
+                <div class="admin-table-header">
+                    <div>
+                        <h3 class="table-card-title"><i class="fa-solid fa-bolt text-warning"></i> Thao Tác &amp; Điều Hành Nhanh</h3>
+                        <span class="table-card-sub">Lối tắt chức năng quan trọng cho chủ quán</span>
+                    </div>
+                </div>
+                <div class="p-3 d-flex flex-column gap-3">
+                    <a href="${pageContext.request.contextPath}/merchant/foods?action=new" class="merchant-quick-action-tile">
+                        <div class="quick-action-icon bg-primary-subtle text-primary">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">Thêm Món Ăn Mới</div>
+                            <small class="text-muted">Cập nhật hình ảnh, giá bán và thực đơn hôm nay</small>
+                        </div>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/revenue" class="merchant-quick-action-tile">
+                        <div class="quick-action-icon bg-success-subtle text-success">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">Báo Cáo Doanh Thu</div>
+                            <small class="text-muted">Xem biểu đồ dòng tiền, đơn hoàn tất và đối soát</small>
+                        </div>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/shippers" class="merchant-quick-action-tile">
+                        <div class="quick-action-icon bg-info-subtle text-info">
+                            <i class="fa-solid fa-motorcycle"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">Đội Ngũ Shipper Trực Tuyến</div>
+                            <small class="text-muted">Xem vị trí GPS và khoảng cách shipper quanh quán</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- =========================================================================
+     RADAR SCANNING MODAL: TỰ ĐỘNG TÌM SHIPPER GẦN QUÁN NHẤT (~1 GIÂY ANIMATION)
+     ========================================================================= -->
+<div id="radarSearchModal" class="radar-search-modal-backdrop" style="display: none;">
+    <div class="radar-search-modal-box">
+        <!-- Close Button (hidden during search, shown if error) -->
+        <button type="button" class="radar-modal-close" id="radarModalCloseBtn" onclick="closeRadarSearchModal()" style="display: none;">&times;</button>
+
+        <!-- Dynamic Header Title -->
+        <div class="radar-modal-header text-center">
+            <span class="radar-modal-badge"><i class="fa-solid fa-satellite-dish fa-spin"></i> AI SMART DISPATCH</span>
+            <h3 class="radar-modal-title" id="radarModalTitle">Đang Tìm Shipper Gần Quán Nhất...</h3>
+            <p class="radar-modal-subtitle" id="radarModalSubtitle">Đơn hàng <strong id="radarOrderCodeText">#DH-0</strong> • Khách: <span id="radarCustomerNameText">...</span></p>
+        </div>
+
+        <!-- Radar Visual Screen Container -->
+        <div class="radar-screen-wrap">
+            <div class="radar-circle-outer">
+                <!-- Concentric Pulsing Rings -->
+                <div class="radar-ring radar-ring-1"></div>
+                <div class="radar-ring radar-ring-2"></div>
+                <div class="radar-ring radar-ring-3"></div>
+
+                <!-- Radar Sweep Beam (Rotating 360deg) -->
+                <div class="radar-sweep-beam"></div>
+
+                <!-- Center Restaurant Icon Anchor -->
+                <div class="radar-center-hub">
+                    <i class="fa-solid fa-store"></i>
+                    <span class="radar-center-label">Quán</span>
+                </div>
+
+                <!-- Simulated Floating Shipper Blips -->
+                <div class="radar-blip radar-blip-1" title="Tài xế A"><i class="fa-solid fa-motorcycle"></i></div>
+                <div class="radar-blip radar-blip-2" title="Tài xế B"><i class="fa-solid fa-motorcycle"></i></div>
+                <div class="radar-blip radar-blip-3" title="Tài xế C"><i class="fa-solid fa-motorcycle"></i></div>
+            </div>
+
+            <!-- Success Checkmark Overlay (Appears when found) -->
+            <div class="radar-success-overlay" id="radarSuccessOverlay" style="display: none;">
+                <div class="radar-success-circle">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Progress & Log Text -->
+        <div class="radar-progress-box text-center">
+            <div class="radar-dynamic-status" id="radarDynamicStatus">
+                <span class="spinner-grow spinner-grow-sm text-primary me-2" role="status" id="radarStatusSpinner"></span>
+                <span id="radarStatusText">Đang quét vị trí GPS các tài xế trong bán kính 3km...</span>
+            </div>
+            <div class="radar-progress-bar-wrap">
+                <div class="radar-progress-bar-fill" id="radarProgressBarFill"></div>
+            </div>
+        </div>
+
+        <!-- Found Result Card (Populated dynamically) -->
+        <div class="radar-found-card" id="radarFoundCard" style="display: none;">
+            <div class="d-flex align-items-center gap-3">
+                <div class="radar-found-avatar">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+                <div class="flex-grow-1 text-start">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <strong class="radar-found-name" id="radarFoundDriverName">Tài Xế Shipper</strong>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle" id="radarFoundDistanceBadge">0.8 km</span>
+                    </div>
+                    <div class="radar-found-meta text-muted small">
+                        <span id="radarFoundDriverPhone"><i class="fa-solid fa-phone me-1"></i> 09xx xxx xxx</span> • 
+                        <span class="text-success"><i class="fa-solid fa-shield-check"></i> Đang trực tuyến</span>
+                    </div>
+                </div>
+            </div>
+            <div class="radar-found-alert mt-2">
+                <i class="fa-solid fa-paper-plane me-1"></i> Đã gửi yêu cầu nhận đơn. Đang chờ tài xế bấm xác nhận trên app...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleAutoDispatchBtn(btn) {
+        const orderId = btn.getAttribute('data-order-id');
+        const customer = btn.getAttribute('data-customer');
+        acceptAndAutoFindShipper(orderId, customer);
+    }
+
+    function handleRejectBtn(btn) {
+        const orderId = btn.getAttribute('data-order-id');
+        const customer = btn.getAttribute('data-customer');
+        rejectOrderPrompt(orderId, customer);
+    }
+
+    function acceptAndAutoFindShipper(orderId, customerName) {
+        const modal = document.getElementById('radarSearchModal');
+        const orderCodeText = document.getElementById('radarOrderCodeText');
+        const customerNameText = document.getElementById('radarCustomerNameText');
+        const statusText = document.getElementById('radarStatusText');
+        const statusSpinner = document.getElementById('radarStatusSpinner');
+        const progressFill = document.getElementById('radarProgressBarFill');
+        const successOverlay = document.getElementById('radarSuccessOverlay');
+        const foundCard = document.getElementById('radarFoundCard');
+        const title = document.getElementById('radarModalTitle');
+        const closeBtn = document.getElementById('radarModalCloseBtn');
+
+        if (orderCodeText) orderCodeText.innerText = '#DH-' + orderId;
+        if (customerNameText) customerNameText.innerText = customerName || '';
+        if (title) title.innerText = 'Đang Tìm Shipper Gần Quán Nhất...';
+        if (statusText) statusText.innerText = 'Đang quét vị trí GPS các tài xế trong bán kính 3km quanh quán...';
+        if (statusSpinner) statusSpinner.style.display = 'inline-block';
+        if (progressFill) { progressFill.style.width = '0%'; progressFill.style.transition = 'width 1.2s cubic-bezier(0.16, 1, 0.3, 1)'; }
+        if (successOverlay) successOverlay.style.display = 'none';
+        if (foundCard) foundCard.style.display = 'none';
+        if (closeBtn) closeBtn.style.display = 'none';
+
+        modal.style.display = 'flex';
+
+        // Start progress bar animation
+        setTimeout(() => { if (progressFill) progressFill.style.width = '75%'; }, 50);
+
+        // After 600ms, update text to simulated step 2
+        setTimeout(() => {
+            if (statusText) statusText.innerText = 'Đang phân tích cự ly & kết nối tài xế sẵn sàng nhận đơn...';
+            if (progressFill) progressFill.style.width = '90%';
+        }, 600);
+
+        // Call API at around 1100ms (to give exactly ~1.1s realistic radar animation)
+        setTimeout(() => {
+            const formData = new URLSearchParams();
+            formData.append('orderId', orderId);
+            formData.append('driverId', 'auto');
+
+            fetch('${pageContext.request.contextPath}/merchant/api/dispatch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (progressFill) progressFill.style.width = '100%';
+                if (data.status === 'success') {
+                    // Show success animation
+                    if (title) title.innerText = '✅ Đã Tìm Thấy Tài Xế Gần Nhất!';
+                    if (statusSpinner) statusSpinner.style.display = 'none';
+                    if (statusText) statusText.innerHTML = '<span class="text-success fw-bold">Tìm kiếm thành công! Đã gửi đơn đến shipper.</span>';
+                    if (successOverlay) successOverlay.style.display = 'flex';
+
+                    if (foundCard) {
+                        document.getElementById('radarFoundDriverName').innerText = data.driverName || 'Tài xế Shipper';
+                        document.getElementById('radarFoundDriverPhone').innerHTML = '<i class="fa-solid fa-phone me-1"></i> ' + (data.driverPhone || '09xx xxx xxx');
+                        document.getElementById('radarFoundDistanceBadge').innerText = (data.distanceKm ? data.distanceKm.toFixed(1) : '0.8') + ' km';
+                        foundCard.style.display = 'block';
+                    }
+
+                    // After 1.2s viewing found shipper card, auto-reload page to reflect new status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1300);
+                } else {
+                    if (title) title.innerText = 'Chưa Tìm Thấy Tài Xế';
+                    if (statusSpinner) statusSpinner.style.display = 'none';
+                    if (statusText) statusText.innerHTML = '<span class="text-danger fw-bold">' + (data.message || 'Chưa có tài xế trực tuyến') + '</span>';
+                    if (closeBtn) closeBtn.style.display = 'flex';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (title) title.innerText = 'Lỗi Kết Nối';
+                if (statusSpinner) statusSpinner.style.display = 'none';
+                if (statusText) statusText.innerHTML = '<span class="text-danger">Không thể kết nối đến máy chủ. Vui lòng thử lại!</span>';
+                if (closeBtn) closeBtn.style.display = 'flex';
+            });
+        }, 1100);
+    }
+
+    function closeRadarSearchModal() {
+        const modal = document.getElementById('radarSearchModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function rejectOrderPrompt(orderId, customerName) {
+        if (confirm('Bạn có chắc chắn muốn TỪ CHỐI đơn hàng #' + orderId + ' của khách ' + customerName + '?\nĐơn hàng sẽ bị hủy và gửi thông báo đến khách.')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '${pageContext.request.contextPath}/merchant/orders';
+
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'updateStatus';
+            form.appendChild(actionInput);
+
+            const orderIdInput = document.createElement('input');
+            orderIdInput.type = 'hidden';
+            orderIdInput.name = 'orderId';
+            orderIdInput.value = orderId;
+            form.appendChild(orderIdInput);
+
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'newStatus';
+            statusInput.value = 'CANCELLED';
+            form.appendChild(statusInput);
+
+            const redirectInput = document.createElement('input');
+            redirectInput.type = 'hidden';
+            redirectInput.name = 'redirectUrl';
+            redirectInput.value = '${pageContext.request.contextPath}/merchant/dashboard';
+            form.appendChild(redirectInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

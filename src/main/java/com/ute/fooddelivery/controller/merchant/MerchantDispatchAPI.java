@@ -48,8 +48,8 @@ public class MerchantDispatchAPI extends HttpServlet {
                 restaurant = restaurantDAO.getRestaurantByUserId(user.getId());
             }
 
-            double restLat = restaurant != null ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
-            double restLng = restaurant != null ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
+            double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
+            double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
 
             // Thuật toán dò tìm tài xế gần quán nhất và không bận đơn nào
             List<Driver> nearestDrivers = driverDAO.findNearestDrivers(restLat, restLng);
@@ -108,12 +108,17 @@ public class MerchantDispatchAPI extends HttpServlet {
                 restaurant = restaurantDAO.getRestaurantByUserId(user.getId());
             }
 
+            Order order = orderDAO.getOrderById(orderId);
+            if (restaurant == null && order != null) {
+                restaurant = restaurantDAO.getRestaurantById(order.getRestaurantId());
+            }
+
             if (driverIdStr != null && !driverIdStr.trim().isEmpty() && !"auto".equalsIgnoreCase(driverIdStr)) {
                 driverId = Integer.parseInt(driverIdStr.trim());
             } else {
                 // Tự động tìm shipper gần quán nhất
-                double restLat = restaurant != null ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
-                double restLng = restaurant != null ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
+                double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
+                double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
                 List<Driver> nearest = driverDAO.findNearestDrivers(restLat, restLng);
                 if (!nearest.isEmpty()) {
                     driverId = nearest.get(0).getId();
@@ -121,7 +126,7 @@ public class MerchantDispatchAPI extends HttpServlet {
             }
 
             if (driverId <= 0) {
-                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy tài xế khả dụng gần quán!\"}");
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Hiện chưa có tài xế nào khả dụng quanh quán! Vui lòng thử lại sau giây lát.\"}");
                 return;
             }
 
@@ -129,7 +134,6 @@ public class MerchantDispatchAPI extends HttpServlet {
             boolean assigned = orderDAO.assignDriver(orderId, driverId);
             if (assigned) {
                 Driver assignedDriver = driverDAO.getDriverById(driverId);
-                Order order = orderDAO.getOrderById(orderId);
 
                 // Gửi thông báo đến Shipper
                 if (assignedDriver != null && assignedDriver.getUserId() != null) {
@@ -141,12 +145,17 @@ public class MerchantDispatchAPI extends HttpServlet {
                     );
                 }
 
+                double dist = assignedDriver != null && assignedDriver.getDistanceToTarget() != null ? assignedDriver.getDistanceToTarget() : 0.8;
+                String phone = assignedDriver != null && assignedDriver.getPhone() != null ? assignedDriver.getPhone() : "";
+
                 resp.getWriter().write(String.format(java.util.Locale.US,
-                    "{\"status\":\"success\", \"message\":\"Đã gán tài xế %s (cách quán %.1f km)\", \"driverId\":%d, \"driverName\":\"%s\"}",
+                    "{\"status\":\"success\", \"message\":\"Đã tìm thấy tài xế %s (cách quán %.1f km)\", \"driverId\":%d, \"driverName\":\"%s\", \"driverPhone\":\"%s\", \"distanceKm\":%.1f}",
                     assignedDriver != null ? assignedDriver.getName().replace("\"", "\\\"") : "Shipper",
-                    assignedDriver != null && assignedDriver.getDistanceToTarget() != null ? assignedDriver.getDistanceToTarget() : 0.8,
+                    dist,
                     driverId,
-                    assignedDriver != null ? assignedDriver.getName().replace("\"", "\\\"") : ""
+                    assignedDriver != null ? assignedDriver.getName().replace("\"", "\\\"") : "",
+                    phone,
+                    dist
                 ));
             } else {
                 resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không thể gán tài xế vào đơn!\"}");
