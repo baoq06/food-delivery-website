@@ -60,73 +60,38 @@
                         </div>
                     </div>
 
-                    <!-- Voucher & Promo Code Section -->
-                    <div class="checkout-box mt-3 cart-voucher-section">
-                        <div class="cart-voucher-header">
-                            <h4><i class="fa-solid fa-ticket text-primary"></i> Khuyến Mãi & Voucher</h4>
-                            <button type="button" class="btn-toggle-vouchers" id="btnToggleVouchers" onclick="toggleVoucherList()">
-                                <i class="fa-solid fa-tags"></i> <span id="toggleVouchersText">Xem ưu đãi có sẵn</span>
-                                <i class="fa-solid fa-chevron-down ms-1" id="toggleVouchersIcon"></i>
+                    <!-- Voucher Action Box (Shopee-Style) -->
+                    <div class="checkout-box mt-3 cart-voucher-compact-box">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-ticket text-danger" style="font-size: 1.35rem;"></i>
+                                <div>
+                                    <strong style="color: #1e293b; font-size: 0.95rem;">Ưu Đãi &amp; Mã Giảm Giá</strong>
+                                    <div class="text-muted" style="font-size: 0.8rem;">Áp dụng tối đa 1 mã freeship &amp; 1 mã món ăn</div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-apply-shopee-promo" onclick="openShopeeVoucherModal()">
+                                <i class="fa-solid fa-ticket me-1"></i> Áp mã ưu đãi
                             </button>
                         </div>
 
-                        <!-- Input Apply Group -->
-                        <div class="voucher-input-group">
-                            <div class="input-icon-wrap">
-                                <i class="fa-solid fa-ticket"></i>
-                                <input type="text" id="couponCode" placeholder="Nhập mã ưu đãi (Ví dụ: UTEE30, UTEE20, FREESHIP)" 
-                                       value="<c:out value='${not empty stickyVoucherCode ? stickyVoucherCode : \"\"}' />" 
-                                       onkeydown="if(event.key==='Enter'){event.preventDefault(); applyCoupon();}">
-                            </div>
-                            <button type="button" class="btn-apply-code" onclick="applyCoupon()">Áp dụng</button>
-                        </div>
-                        <span id="couponMsg" class="coupon-feedback"></span>
-
-                        <!-- Applied Voucher Card (Hiển thị khi mã được áp dụng thành công) -->
-                        <div id="voucherAppliedCard" class="voucher-applied-box" style="display: none;">
+                        <!-- Applied Voucher Card (Hiển thị khi mã được áp dụng) -->
+                        <div id="voucherAppliedCard" class="voucher-applied-box mt-3" style="display: none;">
                             <div class="voucher-applied-info">
                                 <span class="voucher-applied-badge" id="appliedVCode">UTEE</span>
                                 <div class="voucher-applied-text">
                                     <strong id="appliedVTitle">Đã áp dụng giảm giá</strong>
-                                    <p id="appliedVDesc">Ưu đãi giảm trực tiếp vào đơn hàng</p>
+                                    <p id="appliedVDesc" class="mb-0">Ưu đãi giảm trực tiếp vào đơn hàng</p>
                                 </div>
                             </div>
-                            <button type="button" class="btn-remove-voucher" onclick="removeCoupon()" title="Hủy áp dụng mã này">
-                                <i class="fa-solid fa-xmark"></i> Bỏ chọn
-                            </button>
-                        </div>
-
-                        <!-- Available Vouchers List (Danh sách mã có sẵn có thể bấm chọn ngay) -->
-                        <div id="vouchersDropdownList" class="vouchers-dropdown-list" style="display: none;">
-                            <c:forEach items="${availableVouchers}" var="v">
-                                <c:set var="isEligible" value="${totalBill >= v.minOrderAmount}" />
-                                <div class="voucher-card-item ${isEligible ? 'eligible' : 'ineligible'}">
-                                    <div class="v-item-left">
-                                        <div class="v-item-top">
-                                            <span class="v-item-badge">${v.badge}</span>
-                                            <span class="v-item-code">${v.code}</span>
-                                        </div>
-                                        <h5 class="v-item-title">${v.title}</h5>
-                                        <p class="v-item-desc">${v.description}</p>
-                                        <div class="v-item-cond ${isEligible ? 'ready' : 'not-ready'}">
-                                            <c:choose>
-                                                <c:when test="${isEligible}">
-                                                    <i class="fa-solid fa-circle-check"></i> Đủ điều kiện sử dụng
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <i class="fa-solid fa-circle-info"></i> Mua thêm ${String.format("%,.0f", v.minOrderAmount - totalBill)} đ để áp dụng
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-use-voucher" 
-                                            id="btnUse_${v.code}"
-                                            ${not isEligible ? 'disabled' : ''} 
-                                            onclick="selectVoucher('${v.code}')">
-                                        Dùng mã
-                                    </button>
-                                </div>
-                            </c:forEach>
+                            <div class="d-flex gap-2 align-items-center">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="openShopeeVoucherModal()" title="Đổi sang mã khác" style="font-size: 0.78rem; padding: 4px 8px; border-radius: 6px;">
+                                    Đổi mã
+                                </button>
+                                <button type="button" class="btn-remove-voucher" onclick="clearAllVouchers()" title="Hủy áp dụng mã này">
+                                    <i class="fa-solid fa-xmark"></i> Bỏ chọn
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -146,6 +111,8 @@
                         <form id="orderForm" action="${pageContext.request.contextPath}/cart" method="POST">
                             <input type="hidden" name="action" value="checkout">
                             <input type="hidden" id="appliedVoucherCode" name="voucherCode" value="<c:out value='${not empty stickyVoucherCode ? stickyVoucherCode : \"\"}' />">
+                            <input type="hidden" id="shippingVoucherCode" name="shippingVoucherCode" value="<c:out value='${not empty stickyShippingVoucherCode ? stickyShippingVoucherCode : \"\"}' />">
+                            <input type="hidden" id="foodVoucherCode" name="foodVoucherCode" value="<c:out value='${not empty stickyFoodVoucherCode ? stickyFoodVoucherCode : \"\"}' />">
                             <div class="form-group">
                                 <label for="receiverName">Họ và tên người nhận *</label>
                                 <input type="text" id="receiverName" name="receiverName" class="form-control" required placeholder="Nhập tên của bạn..." 
@@ -198,6 +165,18 @@
                                 </div>
                             </div>
 
+                            <!-- Shopee-Style Voucher Selector Bar -->
+                            <div class="shopee-voucher-bar" id="shopeeVoucherBar" onclick="openShopeeVoucherModal()" title="Nhấn để tự do chọn mã giảm giá Utee">
+                                <div class="svb-left">
+                                    <i class="fa-solid fa-ticket svb-icon"></i>
+                                    <span class="svb-title">Utee Voucher</span>
+                                </div>
+                                <div class="svb-right">
+                                    <span class="svb-badge" id="svbBadgeText">Áp mã ưu đãi</span>
+                                    <i class="fa-solid fa-chevron-right svb-arrow"></i>
+                                </div>
+                            </div>
+
                             <div class="order-bill-divider"></div>
 
                             <!-- Bill summary -->
@@ -209,8 +188,16 @@
                                 <span>Phí vận chuyển (30 phút):</span>
                                 <span id="shippingFee">15,000 đ</span>
                             </div>
+                            <div class="summary-line text-success" id="shippingDiscountRow" style="display: none;">
+                                <span><i class="fa-solid fa-motorcycle me-1"></i> Giảm phí vận chuyển (<span id="shippingDiscountCodeDisplay"></span>):</span>
+                                <strong id="shippingDiscountVal">-0 đ</strong>
+                            </div>
+                            <div class="summary-line text-success" id="foodDiscountRow" style="display: none;">
+                                <span><i class="fa-solid fa-utensils me-1"></i> Giảm giá món ăn (<span id="foodDiscountCodeDisplay"></span>):</span>
+                                <strong id="foodDiscountVal">-0 đ</strong>
+                            </div>
                             <div class="summary-line text-success" id="discountRow" style="display: none;">
-                                <span><i class="fa-solid fa-tag me-1"></i> Giảm giá voucher (<span id="discountCodeDisplay"></span>):</span>
+                                <span><i class="fa-solid fa-tag me-1"></i> Tổng giảm ưu đãi (<span id="discountCodeDisplay"></span>):</span>
                                 <strong id="discountVal">-0 đ</strong>
                             </div>
 
@@ -294,143 +281,519 @@
     </div>
 </div>
 
+<!-- Shopee-Style Voucher Modal (Hỗ trợ tối đa 2 mã: 1 Freeship + 1 Giảm Món) -->
+<div id="shopeeVoucherModal" class="shopee-modal-overlay" onclick="handleShopeeOverlayClick(event)">
+    <div class="shopee-modal-dialog" onclick="event.stopPropagation()">
+        <!-- Header -->
+        <div class="shopee-modal-header">
+            <div>
+                <h3><i class="fa-solid fa-ticket"></i> Chọn Utee Voucher</h3>
+                <p class="shopee-header-sub mb-0" style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                    Áp dụng tối đa 1 mã Freeship &amp; 1 mã Giảm Món Ăn
+                </p>
+            </div>
+            <button type="button" class="shopee-modal-close" onclick="closeShopeeVoucherModal()" title="Đóng">&times;</button>
+        </div>
+
+        <!-- Search / Input Bar -->
+        <div class="shopee-input-bar">
+            <div class="input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="shopeeInputCode" placeholder="Nhập mã ưu đãi Utee..." onkeydown="if(event.key==='Enter'){event.preventDefault(); applyShopeeInputCode();}">
+            </div>
+            <button type="button" class="btn-shopee-apply" onclick="applyShopeeInputCode()">Áp Dụng</button>
+        </div>
+        <div id="shopeeInputFeedback" class="shopee-input-feedback" style="display: none;"></div>
+
+        <!-- Body / 2 Dedicated Voucher Slots -->
+        <div class="shopee-modal-body" id="shopeeVoucherList">
+            
+            <!-- SECTION 1: FREESHIP VOUCHERS -->
+            <div class="shopee-slot-group">
+                <div class="shopee-slot-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-motorcycle text-success" style="font-size: 1.15rem;"></i>
+                        <span class="slot-title" style="font-weight: 700; color: #1e293b;">1. Mã Miễn Phí Vận Chuyển</span>
+                    </div>
+                    <span class="slot-badge-limit">Chọn tối đa 1 mã</span>
+                </div>
+
+                <!-- Option: Không dùng mã ship -->
+                <div class="shopee-none-slot-item" onclick="selectCandidateShipping('')">
+                    <label class="d-flex align-items-center justify-content-between w-100 mb-0" style="cursor: pointer;">
+                        <span class="text-muted" style="font-size: 0.86rem;"><i class="fa-solid fa-ban me-1"></i> Không sử dụng mã vận chuyển</span>
+                        <input type="radio" name="shopeeShippingRadio" id="radioShip_none" value="" checked onclick="event.stopPropagation(); selectCandidateShipping('')">
+                    </label>
+                </div>
+
+                <!-- List of Shipping Vouchers -->
+                <c:forEach items="${availableVouchers}" var="v">
+                    <c:if test="${v.freeShip}">
+                        <c:set var="isEligible" value="${totalBill >= v.minOrderAmount}" />
+                        <div class="shopee-ticket-card freeship-card ${isEligible ? 'eligible' : 'ineligible'}" 
+                             id="shopeeCard_${v.code}"
+                             data-code="${v.code}"
+                             data-type="shipping"
+                             data-eligible="${isEligible}"
+                             onclick="${isEligible ? 'selectCandidateShipping(\"' : ''}${isEligible ? v.code : ''}${isEligible ? '\")' : ''}">
+                            <!-- Left Stub -->
+                            <div class="ticket-stub freeship">
+                                <i class="fa-solid fa-motorcycle stub-icon"></i>
+                                <span class="stub-badge">${v.badge}</span>
+                                <span class="stub-code">${v.code}</span>
+                            </div>
+
+                            <!-- Right Details -->
+                            <div class="ticket-content">
+                                <div class="ticket-header">
+                                    <div>
+                                        <h4 class="ticket-title">${v.title}</h4>
+                                        <p class="ticket-desc">${v.description}</p>
+                                    </div>
+                                    <div class="ticket-radio-wrap">
+                                        <input type="radio" name="shopeeShippingRadio" id="radioShip_${v.code}" value="${v.code}"
+                                               ${not isEligible ? 'disabled' : ''}
+                                               onclick="event.stopPropagation(); selectCandidateShipping('${v.code}')">
+                                    </div>
+                                </div>
+                                <div class="ticket-meta">
+                                    <span class="ticket-cond ${isEligible ? '' : 'ineligible'}">
+                                        <c:choose>
+                                            <c:when test="${isEligible}">
+                                                <i class="fa-solid fa-circle-check"></i> Đủ điều kiện sử dụng
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="fa-solid fa-circle-exclamation"></i> Cần thêm ${String.format("%,.0f", v.minOrderAmount - totalBill)} đ
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                    <c:if test="${v.quantity > 0}">
+                                        <span class="wallet-badge-pill">
+                                            <i class="fa-solid fa-bookmark"></i> Số lượng: x${v.quantity}
+                                        </span>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
+                </c:forEach>
+            </div>
+
+            <!-- SECTION 2: FOOD DISCOUNT & RESTAURANT VOUCHERS -->
+            <div class="shopee-slot-group mt-4">
+                <div class="shopee-slot-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-utensils text-danger" style="font-size: 1.15rem;"></i>
+                        <span class="slot-title" style="font-weight: 700; color: #1e293b;">2. Mã Giảm Giá Món Ăn &amp; Quán Ăn</span>
+                    </div>
+                    <span class="slot-badge-limit">Chọn tối đa 1 mã</span>
+                </div>
+
+                <!-- Option: Không dùng mã món -->
+                <div class="shopee-none-slot-item" onclick="selectCandidateFood('')">
+                    <label class="d-flex align-items-center justify-content-between w-100 mb-0" style="cursor: pointer;">
+                        <span class="text-muted" style="font-size: 0.86rem;"><i class="fa-solid fa-ban me-1"></i> Không sử dụng mã giảm món</span>
+                        <input type="radio" name="shopeeFoodRadio" id="radioFood_none" value="" checked onclick="event.stopPropagation(); selectCandidateFood('')">
+                    </label>
+                </div>
+
+                <!-- List of Food Vouchers -->
+                <c:forEach items="${availableVouchers}" var="v">
+                    <c:if test="${not v.freeShip}">
+                        <c:set var="isOrderEligible" value="${totalBill >= v.minOrderAmount}" />
+                        <c:set var="isRestEligible" value="${empty v.restaurantId or v.restaurantId <= 0 or v.restaurantId == cartRestaurantId}" />
+                        <c:set var="isEligible" value="${isOrderEligible and isRestEligible}" />
+                        <div class="shopee-ticket-card food-card ${isEligible ? 'eligible' : 'ineligible'}" 
+                             id="shopeeCard_${v.code}"
+                             data-code="${v.code}"
+                             data-type="food"
+                             data-eligible="${isEligible}"
+                             onclick="${isEligible ? 'selectCandidateFood(\"' : ''}${isEligible ? v.code : ''}${isEligible ? '\")' : ''}">
+                            <!-- Left Stub -->
+                            <div class="ticket-stub ${v.discountType == 'PERCENT' ? 'percent' : ''}">
+                                <i class="fa-solid fa-utensils stub-icon"></i>
+                                <span class="stub-badge">${v.badge}</span>
+                                <span class="stub-code">${v.code}</span>
+                            </div>
+
+                            <!-- Right Details -->
+                            <div class="ticket-content">
+                                <div class="ticket-header">
+                                    <div>
+                                        <h4 class="ticket-title">${v.title}</h4>
+                                        <p class="ticket-desc">${v.description}</p>
+                                        <c:if test="${not empty v.restaurantId and v.restaurantId > 0}">
+                                            <span class="badge-restaurant-promo">
+                                                <i class="fa-solid fa-store me-1"></i> Quán: ${v.restaurantName}
+                                            </span>
+                                        </c:if>
+                                    </div>
+                                    <div class="ticket-radio-wrap">
+                                        <input type="radio" name="shopeeFoodRadio" id="radioFood_${v.code}" value="${v.code}"
+                                               ${not isEligible ? 'disabled' : ''}
+                                               onclick="event.stopPropagation(); selectCandidateFood('${v.code}')">
+                                    </div>
+                                </div>
+                                <div class="ticket-meta">
+                                    <span class="ticket-cond ${isEligible ? '' : 'ineligible'}">
+                                        <c:choose>
+                                            <c:when test="${not isRestEligible}">
+                                                <i class="fa-solid fa-circle-xmark"></i> Chỉ dùng cho quán ${v.restaurantName}
+                                            </c:when>
+                                            <c:when test="${not isOrderEligible}">
+                                                <i class="fa-solid fa-circle-exclamation"></i> Cần thêm ${String.format("%,.0f", v.minOrderAmount - totalBill)} đ
+                                            </c:when>
+                                            <c:otherwise>
+                                                <i class="fa-solid fa-circle-check"></i> Đủ điều kiện sử dụng
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                    <c:if test="${v.quantity > 0}">
+                                        <span class="wallet-badge-pill">
+                                            <i class="fa-solid fa-bookmark"></i> Số lượng: x${v.quantity}
+                                        </span>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+                    </c:if>
+                </c:forEach>
+            </div>
+
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="shopee-modal-footer">
+            <button type="button" class="btn-shopee-none" onclick="clearAllVouchers()" title="Bỏ chọn không áp dụng mã nào">
+                <i class="fa-solid fa-ban"></i> Không áp mã
+            </button>
+            <div class="shopee-footer-right">
+                <button type="button" class="btn-shopee-cancel" onclick="closeShopeeVoucherModal()">Trở lại</button>
+                <button type="button" class="btn-shopee-confirm" onclick="confirmShopeeVouchers()">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
 let currentShippingFee = 15000;
-let activeDiscountAmount = 0;
-let activeVoucherCode = '';
+let activeShippingCode = '';
+let activeFoodCode = '';
+let activeShippingDiscount = 0;
+let activeFoodDiscount = 0;
+let activeTotalDiscount = 0;
+
+let candidateShippingCode = '';
+let candidateFoodCode = '';
+
 const baseTotal = ${totalBill != null ? totalBill : 0};
 const cartRestId = ${cartRestaurantId != null ? cartRestaurantId : 1};
+const currentUserId = ${sessionScope.currentUser != null ? sessionScope.currentUser.id : 0};
+
+function recalculateShippingFeeDisplay() {
+    const feeSpan = document.getElementById('shippingFee');
+    if (!feeSpan) return;
+    if (activeShippingDiscount > 0) {
+        const remainingFee = Math.max(0, currentShippingFee - activeShippingDiscount);
+        feeSpan.innerHTML = '<span style="text-decoration: line-through; color: #94a3b8; font-size: 0.88em; margin-right: 6px;">' + 
+            Math.round(currentShippingFee).toLocaleString('vi-VN') + ' đ</span>' +
+            '<strong style="color: #10ac84;">' + 
+            (remainingFee === 0 ? '0 đ (Miễn phí)' : (Math.round(remainingFee).toLocaleString('vi-VN') + ' đ')) + '</strong>';
+    } else {
+        feeSpan.innerText = Math.round(currentShippingFee).toLocaleString('vi-VN') + ' đ';
+    }
+}
 
 function recalculateGrandTotal() {
+    recalculateShippingFeeDisplay();
     const finalTotalDisplay = document.getElementById('finalTotalDisplay');
-    const finalTotal = Math.max(0, baseTotal + currentShippingFee - activeDiscountAmount);
+    const finalTotal = Math.max(0, baseTotal + currentShippingFee - activeTotalDiscount);
     if (finalTotalDisplay) {
-        finalTotalDisplay.innerText = finalTotal.toLocaleString('vi-VN') + ' đ';
+        finalTotalDisplay.innerText = Math.round(finalTotal).toLocaleString('vi-VN') + ' đ';
     }
 }
 
-function toggleVoucherList() {
-    const list = document.getElementById('vouchersDropdownList');
-    const text = document.getElementById('toggleVouchersText');
-    const icon = document.getElementById('toggleVouchersIcon');
-    if (!list) return;
+function updateShopeeVoucherBar() {
+    const bar = document.getElementById('shopeeVoucherBar');
+    const text = document.getElementById('svbBadgeText');
+    if (!bar || !text) return;
 
-    if (list.style.display === 'none' || list.style.display === '') {
-        list.style.display = 'flex';
-        if (text) text.innerText = 'Thu gọn ưu đãi';
-        if (icon) {
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
+    if (activeTotalDiscount > 0) {
+        bar.classList.add('has-voucher');
+        let label = '';
+        if (activeShippingCode && activeFoodCode) {
+            label = activeShippingCode + ' + ' + activeFoodCode;
+        } else {
+            label = activeShippingCode || activeFoodCode;
         }
+        text.innerHTML = '<span class="svb-applied-tag">-' + Math.round(activeTotalDiscount).toLocaleString('vi-VN') + ' đ</span> ' + label;
     } else {
-        list.style.display = 'none';
-        if (text) text.innerText = 'Xem ưu đãi có sẵn';
-        if (icon) {
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
+        bar.classList.remove('has-voucher');
+        text.innerText = 'Áp mã ưu đãi';
     }
 }
 
-function selectVoucher(code) {
-    const input = document.getElementById('couponCode');
-    if (input) {
-        input.value = code;
+function openShopeeVoucherModal() {
+    candidateShippingCode = activeShippingCode || '';
+    candidateFoodCode = activeFoodCode || '';
+    syncModalRadioSelections();
+    const modal = document.getElementById('shopeeVoucherModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
-    applyCoupon(code);
 }
 
-function applyCoupon(targetCode) {
-    const inputEl = document.getElementById('couponCode');
-    const code = (targetCode || (inputEl ? inputEl.value : '')).trim().toUpperCase();
-    const msg = document.getElementById('couponMsg');
-    const discountRow = document.getElementById('discountRow');
-    const discountVal = document.getElementById('discountVal');
-    const discountCodeDisplay = document.getElementById('discountCodeDisplay');
-    const appliedInput = document.getElementById('appliedVoucherCode');
-    const appliedCard = document.getElementById('voucherAppliedCard');
-    const appliedVCode = document.getElementById('appliedVCode');
-    const appliedVTitle = document.getElementById('appliedVTitle');
-    const appliedVDesc = document.getElementById('appliedVDesc');
+function closeShopeeVoucherModal() {
+    const modal = document.getElementById('shopeeVoucherModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
 
-    if (!code) {
-        if (msg) msg.innerHTML = '<span style="color: #ee5253; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập mã ưu đãi!</span>';
+function handleShopeeOverlayClick(event) {
+    if (event.target && event.target.id === 'shopeeVoucherModal') {
+        closeShopeeVoucherModal();
+    }
+}
+
+function selectCandidateShipping(code) {
+    candidateShippingCode = code || '';
+    syncModalRadioSelections();
+}
+
+function selectCandidateFood(code) {
+    candidateFoodCode = code || '';
+    syncModalRadioSelections();
+}
+
+function syncModalRadioSelections() {
+    // Shipping radios
+    const shipRadios = document.querySelectorAll('input[name="shopeeShippingRadio"]');
+    shipRadios.forEach(r => {
+        r.checked = (r.value === candidateShippingCode);
+    });
+    document.querySelectorAll('.freeship-card').forEach(card => {
+        const code = card.getAttribute('data-code');
+        if (code === candidateShippingCode) card.classList.add('selected');
+        else card.classList.remove('selected');
+    });
+
+    // Food radios
+    const foodRadios = document.querySelectorAll('input[name="shopeeFoodRadio"]');
+    foodRadios.forEach(r => {
+        r.checked = (r.value === candidateFoodCode);
+    });
+    document.querySelectorAll('.food-card').forEach(card => {
+        const code = card.getAttribute('data-code');
+        if (code === candidateFoodCode) card.classList.add('selected');
+        else card.classList.remove('selected');
+    });
+}
+
+function confirmShopeeVouchers() {
+    if (candidateShippingCode || candidateFoodCode) {
+        applyDualVouchers(candidateShippingCode, candidateFoodCode);
+    } else {
+        clearAllVouchers();
+    }
+    closeShopeeVoucherModal();
+}
+
+function clearAllVouchers() {
+    candidateShippingCode = '';
+    candidateFoodCode = '';
+    removeDualVouchers();
+    closeShopeeVoucherModal();
+    if (typeof window.showToast === 'function') {
+        window.showToast('ℹ️ Bạn đã chọn không áp dụng mã giảm giá.');
+    }
+}
+
+function applyDualVouchers(shippingCode, foodCode) {
+    shippingCode = (shippingCode || '').trim().toUpperCase();
+    foodCode = (foodCode || '').trim().toUpperCase();
+
+    if (!shippingCode && !foodCode) {
+        removeDualVouchers();
         return;
     }
 
-    if (msg) msg.innerHTML = '<span style="color: #64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Đang thẩm định mã...</span>';
-
-    const url = '${pageContext.request.contextPath}/api/voucher?action=validate&code=' + encodeURIComponent(code) +
+    const url = '${pageContext.request.contextPath}/api/voucher?action=validate-dual' +
+                '&shippingCode=' + encodeURIComponent(shippingCode) +
+                '&freeshipCode=' + encodeURIComponent(shippingCode) +
+                '&foodCode=' + encodeURIComponent(foodCode) +
                 '&subtotal=' + encodeURIComponent(baseTotal) +
-                '&shippingFee=' + encodeURIComponent(currentShippingFee);
+                '&shippingFee=' + encodeURIComponent(currentShippingFee) +
+                '&restaurantId=' + encodeURIComponent(cartRestId);
 
     fetch(url)
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
             if (data.valid) {
-                activeDiscountAmount = data.discountAmount;
-                activeVoucherCode = data.code || code;
+                activeShippingCode = data.shippingCode || data.appliedFreeshipCode || (data.shippingDiscount > 0 ? shippingCode : '');
+                activeFoodCode = data.foodCode || data.appliedFoodCode || (data.foodDiscount > 0 ? foodCode : '');
+                activeShippingDiscount = data.shippingDiscount || 0;
+                activeFoodDiscount = data.foodDiscount || 0;
+                activeTotalDiscount = data.totalDiscount || 0;
 
-                if (appliedInput) appliedInput.value = activeVoucherCode;
-                if (inputEl) inputEl.value = activeVoucherCode;
-                if (msg) msg.innerHTML = '<span style="color: #10ac84; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> ' + data.message + '</span>';
+                // Hidden form inputs
+                const shipInput = document.getElementById('shippingVoucherCode');
+                const foodInput = document.getElementById('foodVoucherCode');
+                const combinedInput = document.getElementById('appliedVoucherCode');
+                if (shipInput) shipInput.value = activeShippingCode;
+                if (foodInput) foodInput.value = activeFoodCode;
+                if (combinedInput) combinedInput.value = data.combinedCode || '';
 
-                if (discountRow) discountRow.style.display = 'flex';
-                if (discountVal) discountVal.innerText = data.formattedDiscount;
-                if (discountCodeDisplay) discountCodeDisplay.innerText = activeVoucherCode;
-
-                if (appliedCard) appliedCard.style.display = 'flex';
-                if (appliedVCode) appliedVCode.innerText = activeVoucherCode;
-                if (appliedVTitle) appliedVTitle.innerText = 'Đã giảm: ' + Math.abs(data.discountAmount).toLocaleString('vi-VN') + ' đ';
-                if (appliedVDesc) appliedVDesc.innerText = data.title || 'Ưu đãi hợp lệ';
-
-                document.querySelectorAll('.btn-use-voucher').forEach(btn => {
-                    if (btn.id === 'btnUse_' + activeVoucherCode) {
-                        btn.classList.add('active-voucher');
-                        btn.innerText = 'Đang dùng';
+                // Summary lines
+                const shipRow = document.getElementById('shippingDiscountRow');
+                const shipVal = document.getElementById('shippingDiscountVal');
+                const shipDisplay = document.getElementById('shippingDiscountCodeDisplay');
+                if (shipRow && shipVal && shipDisplay) {
+                    if (activeShippingDiscount > 0) {
+                        shipRow.style.display = 'flex';
+                        shipVal.innerText = '-' + Math.round(activeShippingDiscount).toLocaleString('vi-VN') + ' đ';
+                        shipDisplay.innerText = activeShippingCode;
                     } else {
-                        btn.classList.remove('active-voucher');
-                        if (!btn.disabled) btn.innerText = 'Dùng mã';
+                        shipRow.style.display = 'none';
                     }
-                });
+                }
 
+                const foodRow = document.getElementById('foodDiscountRow');
+                const foodVal = document.getElementById('foodDiscountVal');
+                const foodDisplay = document.getElementById('foodDiscountCodeDisplay');
+                if (foodRow && foodVal && foodDisplay) {
+                    if (activeFoodDiscount > 0) {
+                        foodRow.style.display = 'flex';
+                        foodVal.innerText = '-' + Math.round(activeFoodDiscount).toLocaleString('vi-VN') + ' đ';
+                        foodDisplay.innerText = activeFoodCode;
+                    } else {
+                        foodRow.style.display = 'none';
+                    }
+                }
+
+                const totalRow = document.getElementById('discountRow');
+                const totalVal = document.getElementById('discountVal');
+                const totalDisplay = document.getElementById('discountCodeDisplay');
+                if (totalRow && totalVal && totalDisplay) {
+                    if (activeTotalDiscount > 0) {
+                        totalRow.style.display = 'flex';
+                        totalVal.innerText = '-' + Math.round(activeTotalDiscount).toLocaleString('vi-VN') + ' đ';
+                        totalDisplay.innerText = data.combinedCode || '';
+                    } else {
+                        totalRow.style.display = 'none';
+                    }
+                }
+
+                // Applied Card
+                const appliedCard = document.getElementById('voucherAppliedCard');
+                const appliedVCode = document.getElementById('appliedVCode');
+                const appliedVTitle = document.getElementById('appliedVTitle');
+                const appliedVDesc = document.getElementById('appliedVDesc');
+                if (appliedCard && appliedVCode && appliedVTitle && appliedVDesc) {
+                    appliedCard.style.display = 'flex';
+                    appliedVCode.innerText = data.combinedCode || 'VOUCHER';
+                    appliedVTitle.innerText = 'Đã giảm: ' + Math.round(activeTotalDiscount).toLocaleString('vi-VN') + ' đ';
+                    appliedVDesc.innerText = data.message || 'Áp dụng mã ưu đãi thành công';
+                }
+
+                updateShopeeVoucherBar();
                 recalculateGrandTotal();
+
+                if (typeof window.showToast === 'function') {
+                    window.showToast('✅ Đã áp dụng mã: ' + data.combinedCode + ' (Giảm ' + Math.round(activeTotalDiscount).toLocaleString('vi-VN') + ' đ)');
+                }
             } else {
-                if (msg) msg.innerHTML = '<span style="color: #ee5253; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> ' + data.message + '</span>';
+                if (typeof window.showToast === 'function') {
+                    window.showToast('❌ ' + data.message);
+                } else {
+                    alert(data.message);
+                }
             }
         })
         .catch(err => {
-            console.error('Lỗi khi kiểm tra mã voucher:', err);
-            if (msg) msg.innerHTML = '<span style="color: #ee5253; font-weight: 500;"><i class="fa-solid fa-circle-exclamation"></i> Có lỗi khi kết nối máy chủ. Vui lòng thử lại!</span>';
+            console.error('Lỗi khi thẩm định voucher:', err);
+            alert('Có lỗi khi kết nối máy chủ để thẩm định mã.');
         });
 }
 
-function removeCoupon() {
-    activeDiscountAmount = 0;
-    activeVoucherCode = '';
+function removeDualVouchers() {
+    activeShippingCode = '';
+    activeFoodCode = '';
+    activeShippingDiscount = 0;
+    activeFoodDiscount = 0;
+    activeTotalDiscount = 0;
 
-    const input = document.getElementById('couponCode');
-    if (input) input.value = '';
+    const shipInput = document.getElementById('shippingVoucherCode');
+    const foodInput = document.getElementById('foodVoucherCode');
+    const combinedInput = document.getElementById('appliedVoucherCode');
+    if (shipInput) shipInput.value = '';
+    if (foodInput) foodInput.value = '';
+    if (combinedInput) combinedInput.value = '';
 
-    const appliedInput = document.getElementById('appliedVoucherCode');
-    if (appliedInput) appliedInput.value = '';
-
-    const discountRow = document.getElementById('discountRow');
-    if (discountRow) discountRow.style.display = 'none';
+    const shipRow = document.getElementById('shippingDiscountRow');
+    const foodRow = document.getElementById('foodDiscountRow');
+    const totalRow = document.getElementById('discountRow');
+    if (shipRow) shipRow.style.display = 'none';
+    if (foodRow) foodRow.style.display = 'none';
+    if (totalRow) totalRow.style.display = 'none';
 
     const appliedCard = document.getElementById('voucherAppliedCard');
     if (appliedCard) appliedCard.style.display = 'none';
 
-    const msg = document.getElementById('couponMsg');
-    if (msg) msg.innerHTML = '<span style="color: #64748b;"><i class="fa-solid fa-circle-info"></i> Đã hủy áp dụng mã ưu đãi.</span>';
-
-    document.querySelectorAll('.btn-use-voucher').forEach(btn => {
-        btn.classList.remove('active-voucher');
-        if (!btn.disabled) btn.innerText = 'Dùng mã';
-    });
-
+    updateShopeeVoucherBar();
+    syncModalRadioSelections();
     recalculateGrandTotal();
+}
+
+function applyShopeeInputCode() {
+    const input = document.getElementById('shopeeInputCode');
+    const code = (input ? input.value : '').trim().toUpperCase();
+    const fb = document.getElementById('shopeeInputFeedback');
+    if (!code) {
+        if (fb) {
+            fb.style.display = 'block';
+            fb.innerHTML = '<span style="color: #ef4444;"><i class="fa-solid fa-circle-exclamation"></i> Vui lòng nhập mã voucher!</span>';
+        }
+        return;
+    }
+
+    if (fb) {
+        fb.style.display = 'block';
+        fb.innerHTML = '<span style="color: #64748b;"><i class="fa-solid fa-spinner fa-spin"></i> Đang kiểm tra...</span>';
+    }
+
+    const url = '${pageContext.request.contextPath}/api/voucher?action=validate&code=' + encodeURIComponent(code) +
+                '&subtotal=' + encodeURIComponent(baseTotal) +
+                '&shippingFee=' + encodeURIComponent(currentShippingFee) +
+                '&restaurantId=' + encodeURIComponent(cartRestId);
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            if (data.valid) {
+                if (data.isFreeShip) {
+                    candidateShippingCode = data.code || code;
+                } else {
+                    candidateFoodCode = data.code || code;
+                }
+                syncModalRadioSelections();
+                if (fb) {
+                    fb.innerHTML = '<span style="color: #10ac84; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> ' + data.message + ' (Đã chọn vào mục ' + (data.isFreeShip ? 'Freeship' : 'Món ăn') + ')</span>';
+                }
+            } else {
+                if (fb) {
+                    fb.innerHTML = '<span style="color: #ef4444; font-weight: 600;"><i class="fa-solid fa-circle-exclamation"></i> ' + data.message + '</span>';
+                }
+            }
+        })
+        .catch(() => {
+            if (fb) {
+                fb.innerHTML = '<span style="color: #ef4444;">Có lỗi kết nối. Vui lòng thử lại!</span>';
+            }
+        });
 }
 
 function updateShippingFeeFromAddress(addressText, lat, lng) {
@@ -447,7 +810,7 @@ function updateShippingFeeFromAddress(addressText, lat, lng) {
             if (data.status === 'success') {
                 currentShippingFee = data.shippingFee;
                 const feeSpan = document.getElementById('shippingFee');
-                if (feeSpan) {
+                if (feeSpan && activeShippingDiscount === 0) {
                     feeSpan.innerText = data.formattedFee;
                 }
                 const noticeBox = document.getElementById('shippingDistanceNotice');
@@ -456,9 +819,9 @@ function updateShippingFeeFromAddress(addressText, lat, lng) {
                     noticeBox.style.display = 'block';
                     distText.innerHTML = '<strong>Khoảng cách giao:</strong> ' + data.distanceKm + ' km (Ước tính ' + data.estimatedMinutes + ' phút) &bull; <strong>Cước ship:</strong> ' + data.formattedFee;
                 }
-                // Nếu đang dùng mã giảm giá phí ship (FREESHIP), cập nhật lại
-                if (activeVoucherCode === 'FREESHIP') {
-                    applyCoupon('FREESHIP');
+                // Nếu đang dùng mã giảm giá, tính lại theo phí ship mới
+                if (activeShippingCode || activeFoodCode) {
+                    applyDualVouchers(activeShippingCode, activeFoodCode);
                 } else {
                     recalculateGrandTotal();
                 }
@@ -484,7 +847,6 @@ function locateUserForShipping() {
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
             
-            // Thử lấy tên địa chỉ qua Reverse Geocoding
             fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=vi')
                 .then(r => r.json())
                 .then(geoData => {
@@ -540,7 +902,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateShippingFeeFromAddress(addrInput.value);
     }
 
-    // Quan sát thay đổi địa chỉ từ picker
     if (addrInput) {
         let lastVal = addrInput.value;
         setInterval(function() {
@@ -552,9 +913,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Tự động áp dụng lại mã voucher nếu trước đó có lỗi sticky form
+    const shipInput = document.getElementById('shippingVoucherCode');
+    const foodInput = document.getElementById('foodVoucherCode');
     const appliedInput = document.getElementById('appliedVoucherCode');
-    if (appliedInput && appliedInput.value && appliedInput.value.trim().length > 0) {
-        applyCoupon(appliedInput.value.trim());
+    const sVal = shipInput ? shipInput.value.trim() : '';
+    const fVal = foodInput ? foodInput.value.trim() : '';
+    const aVal = appliedInput ? appliedInput.value.trim() : '';
+
+    if (sVal || fVal) {
+        applyDualVouchers(sVal, fVal);
+    } else if (aVal) {
+        if (aVal.indexOf(',') !== -1) {
+            const parts = aVal.split(',');
+            applyDualVouchers(parts[0].trim(), parts[1].trim());
+        } else {
+            applyDualVouchers('', aVal);
+        }
+    } else {
+        updateShopeeVoucherBar();
+    }
+
+    // Đồng bộ Kho Voucher
+    if (typeof window.updateVoucherSaveButtons === 'function') {
+        window.updateVoucherSaveButtons();
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('shopeeVoucherModal');
+        if (modal && modal.classList.contains('active')) {
+            closeShopeeVoucherModal();
+        }
     }
 });
 
@@ -569,3 +959,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
+

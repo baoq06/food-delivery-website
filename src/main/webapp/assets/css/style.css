@@ -13199,4 +13199,785 @@ select.form-control,
     border-color: #22c55e;
 }
 
+/* ==========================================================================
+   Shopee-Style Voucher System (Kho Voucher & Shopee Voucher Modal)
+   ========================================================================== */
+
+/* Saved button state */
+.btn-save-voucher.saved {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+    border-color: #a7f3d0 !important;
+}
+
+/* Shopee Voucher Bar in Checkout */
+.shopee-voucher-bar {
+    background: #ffffff;
+    border: 1.5px dashed #ee4d2d;
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    margin-bottom: 16px;
+    user-select: none;
+}
+
+.shopee-voucher-bar:hover {
+    background: #fff8f6;
+    border-color: #d73211;
+    box-shadow: 0 4px 14px rgba(238, 77, 45, 0.12);
+    transform: translateY(-1px);
+}
+
+.shopee-voucher-bar.has-voucher {
+    background: #fff5f2;
+    border-style: solid;
+    border-color: #ee4d2d;
+}
+
+.svb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.svb-icon {
+    font-size: 1.3rem;
+    color: #ee4d2d;
+}
+
+.svb-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.svb-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.svb-badge {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.svb-applied-tag {
+    background: #fee2e2;
+    color: #ef4444;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 1px solid #fecaca;
+    margin-right: 4px;
+}
+
+.svb-arrow {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    transition: transform 0.2s ease;
+}
+
+.shopee-voucher-bar:hover .svb-arrow {
+    transform: translateX(3px);
+    color: #ee4d2d;
+}
+
+/* Shopee Modal Overlay & Container */
+.shopee-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.shopee-modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.shopee-modal-dialog {
+    width: 100%;
+    max-width: 580px;
+    max-height: 90vh;
+    background: #f8fafc;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    transform: scale(0.94) translateY(10px);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shopee-modal-overlay.active .shopee-modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+.shopee-modal-header {
+    background: #ffffff;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.shopee-modal-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shopee-modal-header h3 i {
+    color: #ee4d2d;
+}
+
+.shopee-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: #64748b;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.shopee-modal-close:hover {
+    color: #0f172a;
+    background: #f1f5f9;
+}
+
+/* Modal Search / Input Bar */
+.shopee-input-bar {
+    background: #ffffff;
+    padding: 12px 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.shopee-input-bar .input-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.shopee-input-bar .input-wrap i {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.shopee-input-bar input {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.shopee-input-bar input:focus {
+    border-color: #ee4d2d;
+    box-shadow: 0 0 0 3px rgba(238, 77, 45, 0.15);
+}
+
+.btn-shopee-apply {
+    background: #ee4d2d;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-shopee-apply:hover {
+    background: #d73211;
+}
+
+.shopee-input-feedback {
+    padding: 0 20px 8px;
+    background: #ffffff;
+    font-size: 0.8rem;
+    min-height: 20px;
+}
+
+/* Shopee Modal Filter Tabs */
+.shopee-filter-tabs {
+    display: flex;
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 16px;
+    gap: 8px;
+}
+
+.shopee-tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2.5px solid transparent;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.shopee-tab-btn:hover {
+    color: #ee4d2d;
+}
+
+.shopee-tab-btn.active {
+    color: #ee4d2d;
+    border-bottom-color: #ee4d2d;
+    font-weight: 700;
+}
+
+.shopee-tab-count {
+    background: #fee2e2;
+    color: #ef4444;
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 800;
+}
+
+/* Modal Body / Voucher Cards List */
+.shopee-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Genuine Shopee Voucher Ticket Card */
+.shopee-ticket-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.shopee-ticket-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+}
+
+.shopee-ticket-card.selected {
+    border-color: #ee4d2d;
+    box-shadow: 0 0 0 1.5px #ee4d2d, 0 4px 12px rgba(238, 77, 45, 0.15);
+}
+
+.shopee-ticket-card.ineligible {
+    opacity: 0.65;
+    background: #fcfcfc;
+}
+
+/* Left Ticket Stub */
+.ticket-stub {
+    width: 110px;
+    background: linear-gradient(145deg, #ff7675, #ee5253);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    text-align: center;
+    position: relative;
+    flex-shrink: 0;
+    border-right: 1.5px dashed rgba(255, 255, 255, 0.85);
+}
+
+.ticket-stub.freeship {
+    background: linear-gradient(145deg, #00b894, #00cec9);
+}
+
+.ticket-stub.percent {
+    background: linear-gradient(145deg, #e17055, #d63031);
+}
+
+/* Semi-circular coupon notches */
+.ticket-stub::before,
+.ticket-stub::after {
+    content: '';
+    position: absolute;
+    right: -7px;
+    width: 14px;
+    height: 14px;
+    background: #f8fafc;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.ticket-stub::before {
+    top: -7px;
+}
+
+.ticket-stub::after {
+    bottom: -7px;
+}
+
+.stub-icon {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.stub-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+.stub-code {
+    font-size: 0.8rem;
+    font-weight: 800;
+    background: rgba(0, 0, 0, 0.18);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+}
+
+/* Right Content */
+.ticket-content {
+    flex: 1;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.ticket-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.ticket-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 3px 0;
+}
+
+.ticket-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.ticket-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.wallet-badge-pill {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-mini-wallet-save {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-mini-wallet-save:hover {
+    color: #b45309;
+    background: #fffbeb;
+}
+
+.btn-mini-wallet-save.saved {
+    color: #059669;
+    background: #ecfdf5;
+}
+
+.ticket-cond {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #15803d;
+}
+
+.ticket-cond.ineligible {
+    color: #d97706;
+}
+
+/* Custom Shopee Radio Button */
+.ticket-radio-wrap {
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+}
+
+.shopee-custom-radio {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.shopee-ticket-card.selected .shopee-custom-radio {
+    border-color: #ee4d2d;
+    background: #ee4d2d;
+}
+
+.shopee-custom-radio::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: none;
+}
+
+.shopee-ticket-card.selected .shopee-custom-radio::after {
+    display: block;
+}
+
+/* Modal Sticky Footer */
+.shopee-modal-footer {
+    background: #ffffff;
+    padding: 14px 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.btn-shopee-none {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-shopee-none:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.shopee-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-shopee-cancel {
+    background: none;
+    border: 1px solid #cbd5e1;
+    color: #64748b;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-shopee-cancel:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+
+.btn-shopee-confirm {
+    background: #ee4d2d;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 28px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(238, 77, 45, 0.25);
+}
+
+.btn-shopee-confirm:hover {
+    background: #d73211;
+    box-shadow: 0 6px 16px rgba(238, 77, 45, 0.35);
+}
+
+/* Compact Cart Voucher Box */
+.cart-voucher-compact-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.btn-apply-shopee-promo {
+    background: #fff1f0;
+    border: 1.5px solid #ffccc7;
+    color: #cf1322;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 6px rgba(207, 19, 34, 0.08);
+}
+
+.btn-apply-shopee-promo:hover {
+    background: #ff4d4f;
+    border-color: #ff4d4f;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 77, 79, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Shopee Dual-Slot Layout */
+.shopee-slot-group {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 14px 8px;
+}
+
+.shopee-slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #cbd5e1;
+}
+
+.slot-badge-limit {
+    background: #e2e8f0;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.shopee-none-slot-item {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.shopee-none-slot-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.shopee-none-slot-item input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ee4d2d;
+    cursor: pointer;
+}
+
+.ticket-radio-wrap input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ee4d2d;
+    cursor: pointer;
+}
+
+.badge-restaurant-promo {
+    display: inline-flex;
+    align-items: center;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+/* Restaurant Gift Banner in restaurant-detail.jsp */
+.restaurant-gift-banner {
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0f6 50%, #fff7ed 100%);
+    border: 1.5px dashed #ff4d4f;
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(255, 77, 79, 0.08);
+}
+
+.gift-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.gift-banner-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff4d4f, #f43f5e);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+    flex-shrink: 0;
+}
+
+.gift-banner-content {
+    flex: 1;
+    min-width: 260px;
+}
+
+.gift-badge {
+    display: inline-block;
+    background: #fee2e2;
+    color: #dc2626;
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.gift-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 2px 0 4px;
+}
+
+.gift-desc {
+    font-size: 0.86rem;
+    color: #475569;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.gift-banner-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.gift-code-badge {
+    background: #ffffff;
+    border: 1.5px solid #ff4d4f;
+    color: #ff4d4f;
+    font-size: 0.92rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 6px rgba(255, 77, 79, 0.12);
+}
+
+.badge-saved-indicator {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #059669;
+}
+
+
+
 

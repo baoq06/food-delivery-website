@@ -103,6 +103,50 @@
                 </div>
             </div>
 
+            <!-- Restaurant Gift Voucher Banner (Tặng mã khi ghé quán) -->
+            <c:choose>
+                <c:when test="${not empty grantedRestaurantVoucher}">
+                    <div class="restaurant-gift-banner mt-4 animate__animated animate__fadeInUp">
+                        <div class="gift-banner-inner">
+                            <div class="gift-banner-icon">
+                                <i class="fa-solid fa-gift"></i>
+                            </div>
+                            <div class="gift-banner-content">
+                                <span class="gift-badge"><i class="fa-solid fa-sparkles"></i> Quà Tặng Tri Ân Độc Quyền</span>
+                                <h3 class="gift-title">Chào mừng bạn đến với ${restaurant.name}!</h3>
+                                <p class="gift-desc">Bạn vừa nhận được mã ưu đãi <strong class="text-danger">${grantedRestaurantVoucher.voucherCode}</strong>: ${grantedRestaurantVoucher.title}. Mã đã được lưu tự động vào <strong>Kho Voucher</strong> của bạn để áp dụng khi đặt món tại quán!</p>
+                            </div>
+                            <div class="gift-banner-action">
+                                <div class="gift-code-badge">
+                                    <i class="fa-solid fa-ticket"></i>
+                                    <span>${grantedRestaurantVoucher.voucherCode}</span>
+                                </div>
+                                <span class="badge-saved-indicator"><i class="fa-solid fa-circle-check text-success"></i> Đã trong kho</span>
+                            </div>
+                        </div>
+                    </div>
+                </c:when>
+                <c:when test="${not empty guestRestaurantPromoCode}">
+                    <div class="restaurant-gift-banner guest-mode mt-4">
+                        <div class="gift-banner-inner">
+                            <div class="gift-banner-icon">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+                            <div class="gift-banner-content">
+                                <span class="gift-badge"><i class="fa-solid fa-tags"></i> Ưu Đãi Quán Ăn</span>
+                                <h3 class="gift-title">Nhận ngay 20.000 đ khi đặt món tại ${restaurant.name}!</h3>
+                                <p class="gift-desc">Đăng nhập tài khoản Utee để tự động nhận mã giảm giá và lưu vào Kho Voucher của bạn.</p>
+                            </div>
+                            <div class="gift-banner-action">
+                                <a href="${pageContext.request.contextPath}/login?redirect=restaurant-detail?id=${restaurant.id}" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Đăng nhập nhận mã
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </c:when>
+            </c:choose>
+
             <!-- Restaurant Menu Items -->
             <div class="section-restaurant-menu mt-5">
                 <div class="section-header-flex align-items-center mb-3">

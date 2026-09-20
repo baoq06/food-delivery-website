@@ -1,40 +1,37 @@
 package com.ute.fooddelivery.model;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
-public class Voucher implements Serializable {
+public class UserVoucher implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public enum DiscountType {
-        FIXED,
-        PERCENT
-    }
-
-    private String code;
+    private int id;
+    private int userId;
+    private String voucherCode;
     private String title;
     private String description;
-    private DiscountType discountType;
+    private Voucher.DiscountType discountType;
     private double discountValue;
     private double minOrderAmount;
     private double maxDiscount;
     private boolean isFreeShip;
     private String badge;
-    private Integer restaurantId;
+    private Integer restaurantId; // null nếu áp dụng toàn sàn, > 0 nếu áp dụng riêng cho quán
     private String restaurantName;
+    private int quantity;
+    private Timestamp createdAt;
+    private Timestamp lastAwardedAt;
 
-    public Voucher() {
+    public UserVoucher() {
     }
 
-    public Voucher(String code, String title, String description, DiscountType discountType, 
-                   double discountValue, double minOrderAmount, double maxDiscount, 
-                   boolean isFreeShip, String badge) {
-        this(code, title, description, discountType, discountValue, minOrderAmount, maxDiscount, isFreeShip, badge, null, null);
-    }
-
-    public Voucher(String code, String title, String description, DiscountType discountType, 
-                   double discountValue, double minOrderAmount, double maxDiscount, 
-                   boolean isFreeShip, String badge, Integer restaurantId, String restaurantName) {
-        this.code = code;
+    public UserVoucher(int userId, String voucherCode, String title, String description,
+                       Voucher.DiscountType discountType, double discountValue, double minOrderAmount,
+                       double maxDiscount, boolean isFreeShip, String badge,
+                       Integer restaurantId, String restaurantName, int quantity) {
+        this.userId = userId;
+        this.voucherCode = voucherCode;
         this.title = title;
         this.description = description;
         this.discountType = discountType;
@@ -45,6 +42,7 @@ public class Voucher implements Serializable {
         this.badge = badge;
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
+        this.quantity = quantity;
     }
 
     public double calculateDiscount(double subtotal, double shippingFee) {
@@ -55,7 +53,7 @@ public class Voucher implements Serializable {
         double discount = 0.0;
         if (isFreeShip) {
             discount = Math.min(shippingFee, discountValue > 0 ? discountValue : shippingFee);
-        } else if (discountType == DiscountType.PERCENT) {
+        } else if (discountType == Voucher.DiscountType.PERCENT) {
             discount = subtotal * (discountValue / 100.0);
             if (maxDiscount > 0 && discount > maxDiscount) {
                 discount = maxDiscount;
@@ -64,26 +62,43 @@ public class Voucher implements Serializable {
             discount = discountValue;
         }
 
-        // Không bao giờ giảm vượt quá tổng tiền thực tế
         double maxPossible = isFreeShip ? shippingFee : subtotal;
         return Math.min(discount, maxPossible);
     }
 
-    public boolean isEligible(double subtotal) {
-        return subtotal >= minOrderAmount;
+    public boolean isEligibleForRestaurant(int cartRestaurantId) {
+        if (restaurantId == null || restaurantId <= 0) {
+            return true; // Áp dụng cho mọi quán
+        }
+        return restaurantId == cartRestaurantId;
     }
 
-    public double getMissingAmount(double subtotal) {
-        if (isEligible(subtotal)) return 0.0;
-        return minOrderAmount - subtotal;
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public String getVoucherCode() {
+        return voucherCode;
     }
 
     public String getCode() {
-        return code;
+        return voucherCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
     }
 
     public String getTitle() {
@@ -102,11 +117,11 @@ public class Voucher implements Serializable {
         this.description = description;
     }
 
-    public DiscountType getDiscountType() {
+    public Voucher.DiscountType getDiscountType() {
         return discountType;
     }
 
-    public void setDiscountType(DiscountType discountType) {
+    public void setDiscountType(Voucher.DiscountType discountType) {
         this.discountType = discountType;
     }
 
@@ -164,5 +179,29 @@ public class Voucher implements Serializable {
 
     public void setRestaurantName(String restaurantName) {
         this.restaurantName = restaurantName;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getLastAwardedAt() {
+        return lastAwardedAt;
+    }
+
+    public void setLastAwardedAt(Timestamp lastAwardedAt) {
+        this.lastAwardedAt = lastAwardedAt;
     }
 }

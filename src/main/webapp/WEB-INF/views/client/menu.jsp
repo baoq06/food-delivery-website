@@ -26,9 +26,12 @@
                 <div class="voucher-decor"><i class="fa-solid fa-ticket"></i></div>
                 <div class="voucher-info">
                     <span class="voucher-tag">Ưu Đãi Đặc Biệt</span>
-                    <div class="voucher-title">Giảm <strong>20.000 đ</strong> đơn từ 100K</div>
+                    <div class="voucher-title">Giảm <strong>20.000 đ</strong> khi đặt món</div>
                     <div class="voucher-code-wrap">
                         <span class="voucher-code" id="menu-voucher-code">UTEE20</span>
+                        <button type="button" class="btn-save-voucher" data-voucher-code="UTEE20" onclick="saveVoucherToWallet('UTEE20')" title="Lưu vào Kho Voucher">
+                            <i class="fa-solid fa-bookmark"></i> <span>Lưu mã</span>
+                        </button>
                         <button type="button" class="btn-copy-voucher" data-code="UTEE20" title="Sao chép mã">
                             <i class="fa-solid fa-copy"></i> <span>Sao chép</span>
                         </button>

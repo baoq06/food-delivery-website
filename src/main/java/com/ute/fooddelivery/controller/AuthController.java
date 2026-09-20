@@ -289,6 +289,16 @@ public class AuthController extends HttpServlet {
             HttpSession session = req.getSession();
             session.setAttribute("currentUser", loggedUser != null ? loggedUser : newUser);
 
+            // Cấp gói voucher chào mừng (UTEE30, UTEE20, FREESHIP, WELCOME, UTEE15) vào Kho Voucher
+            if (loggedUser != null && loggedUser.getId() > 0) {
+                try {
+                    com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
+                    userVoucherDAO.grantWelcomeVouchers(loggedUser.getId());
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi cấp voucher chào mừng: " + e.getMessage());
+                }
+            }
+
             // Xóa session OTP
             session.removeAttribute("regOtp");
             session.removeAttribute("regPhone");

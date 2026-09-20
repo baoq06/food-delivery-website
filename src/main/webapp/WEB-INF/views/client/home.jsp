@@ -114,7 +114,7 @@
                 <div class="promo-icon"><i class="fa-solid fa-ticket"></i></div>
                 <div>
                     <strong>Giảm 30K Đơn Đầu</strong>
-                    <span>Nhập mã: <strong>VINDELI30</strong></span>
+                    <span>Nhập mã: <strong>UTEE30</strong></span>
                 </div>
             </div>
         </div>
@@ -482,16 +482,19 @@
         <div class="promo-banner">
             <div class="promo-content">
                 <span class="promo-pill"><i class="fa-solid fa-gift"></i> ƯU ĐÃI ĐỘC QUYỀN UTEE</span>
-                <h2>Giảm Ngay 30.000đ Cho Đơn Hàng Từ 150.000đ</h2>
-                <p>Thỏa sức đặt món ngon Á - Âu nóng hổi mỗi ngày. Nhập mã voucher độc quyền bên dưới khi thanh toán để được giảm ngay 30K!</p>
+                <h2>Giảm Ngay 30.000đ Khi Đặt Món Tại Utee</h2>
+                <p>Thỏa sức đặt món ngon Á - Âu nóng hổi mỗi ngày. Lưu mã voucher độc quyền vào Kho Mã hoặc sao chép để được giảm ngay 30K!</p>
                 
                 <div class="voucher-copy-card">
                     <div class="voucher-code-tag">
                         <i class="fa-solid fa-ticket"></i>
                         <span id="voucherHomeCode">UTEE30</span>
                     </div>
+                    <button type="button" class="btn-save-voucher" data-voucher-code="UTEE30" onclick="saveVoucherToWallet('UTEE30')">
+                        <i class="fa-solid fa-bookmark"></i> <span>Lưu Vào Kho</span>
+                    </button>
                     <button type="button" class="btn-copy-voucher" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30! Dán vào giỏ hàng ngay.');">
-                        <i class="fa-regular fa-copy"></i> Sao Chép Mã
+                        <i class="fa-regular fa-copy"></i> Sao Chép
                     </button>
                 </div>
 

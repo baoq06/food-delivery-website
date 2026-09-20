@@ -111,6 +111,74 @@ document.addEventListener("DOMContentLoaded", () => {
     window.showToast = showToast;
 
     // ==========================================================================
+    // 3.1. Hệ Thống Kho Voucher (Shopee-Style Voucher Wallet)
+    // ==========================================================================
+    const VOUCHER_WALLET_KEY = "utee_voucher_wallet";
+
+    window.getVoucherWallet = function() {
+        try {
+            const stored = localStorage.getItem(VOUCHER_WALLET_KEY);
+            return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+            return [];
+        }
+    };
+
+    window.isVoucherInWallet = function(code) {
+        if (!code) return false;
+        const wallet = window.getVoucherWallet();
+        return wallet.includes(code.trim().toUpperCase());
+    };
+
+    window.saveVoucherToWallet = function(code) {
+        if (!code) return;
+        const upper = code.trim().toUpperCase();
+        let wallet = window.getVoucherWallet();
+        if (!wallet.includes(upper)) {
+            wallet.push(upper);
+            try {
+                localStorage.setItem(VOUCHER_WALLET_KEY, JSON.stringify(wallet));
+            } catch (e) {
+                console.error("Lỗi khi lưu voucher:", e);
+            }
+        }
+        window.updateVoucherSaveButtons();
+        if (typeof window.showToast === "function") {
+            window.showToast(`✨ Đã lưu mã <strong>${upper}</strong> vào Kho Voucher của bạn! Sẵn sàng dùng khi đặt món.`);
+        }
+    };
+
+    window.removeVoucherFromWallet = function(code) {
+        if (!code) return;
+        const upper = code.trim().toUpperCase();
+        let wallet = window.getVoucherWallet();
+        wallet = wallet.filter(c => c !== upper);
+        try {
+            localStorage.setItem(VOUCHER_WALLET_KEY, JSON.stringify(wallet));
+        } catch (e) {}
+        window.updateVoucherSaveButtons();
+    };
+
+    window.updateVoucherSaveButtons = function() {
+        const wallet = window.getVoucherWallet();
+        document.querySelectorAll(".btn-save-voucher").forEach(btn => {
+            const code = (btn.dataset.voucherCode || "").toUpperCase();
+            if (code && wallet.includes(code)) {
+                btn.classList.add("saved");
+                btn.innerHTML = '<i class="fa-solid fa-bookmark"></i> <span>Đã lưu</span>';
+                btn.title = 'Mã này đã có trong Kho Voucher của bạn';
+            } else {
+                btn.classList.remove("saved");
+                btn.innerHTML = '<i class="fa-regular fa-bookmark"></i> <span>Lưu vào kho</span>';
+                btn.title = 'Lưu vào Kho Voucher';
+            }
+        });
+    };
+
+    // Auto sync save buttons on load
+    window.updateVoucherSaveButtons();
+
+    // ==========================================================================
     // 4. Hỗ trợ Click Toggle cho User Menu & đóng khi click ra ngoài
     // ==========================================================================
     const userMenu = document.querySelector(".user-menu");

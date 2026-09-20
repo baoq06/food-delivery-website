@@ -8,9 +8,11 @@ import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.OrderItem;
 import com.ute.fooddelivery.model.User;
+import com.ute.fooddelivery.model.Voucher;
 import com.ute.fooddelivery.service.FoodService;
 import com.ute.fooddelivery.service.NotificationService;
 import com.ute.fooddelivery.service.OrderService;
+import com.ute.fooddelivery.service.VoucherService;
 import com.ute.fooddelivery.utils.CookieUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,6 +34,7 @@ public class CartController extends HttpServlet {
     private final NotificationService notificationService = new NotificationService();
     private final DriverDAO driverDAO = new DriverDAO();
     private final com.ute.fooddelivery.service.VoucherService voucherService = new com.ute.fooddelivery.service.VoucherService();
+    private final com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
 
@@ -87,7 +90,15 @@ public class CartController extends HttpServlet {
             }
         }
         req.setAttribute("cartRestaurantId", restaurantId);
-        req.setAttribute("availableVouchers", voucherService.getAllVouchers());
+
+        int userId = currentUser != null ? currentUser.getId() : 0;
+        if (userId > 0) {
+            List<com.ute.fooddelivery.model.UserVoucher> uvList = userVoucherDAO.getUserVouchers(userId);
+            req.setAttribute("userVouchers", uvList);
+            req.setAttribute("availableVouchers", uvList);
+        } else {
+            req.setAttribute("availableVouchers", voucherService.getAllVouchers());
+        }
 
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
@@ -237,7 +248,35 @@ public class CartController extends HttpServlet {
                 String receiverAddress = req.getParameter("receiverAddress");
                 String receiverNote = req.getParameter("receiverNote");
                 String paymentMethod = req.getParameter("paymentMethod");
+                String shippingVoucherCode = req.getParameter("shippingVoucherCode");
+                if (shippingVoucherCode == null || shippingVoucherCode.trim().isEmpty()) {
+                    shippingVoucherCode = req.getParameter("freeshipCode");
+                }
+                String foodVoucherCode = req.getParameter("foodVoucherCode");
+                if (foodVoucherCode == null || foodVoucherCode.trim().isEmpty()) {
+                    foodVoucherCode = req.getParameter("foodCode");
+                }
                 String voucherCode = req.getParameter("voucherCode");
+
+                Integer userId = currentUser.getId();
+
+                // Nếu form gửi qua voucherCode (chuỗi đơn hoặc chứa dấu phẩy "FREESHIP, UTEE30")
+                if ((shippingVoucherCode == null || shippingVoucherCode.trim().isEmpty()) &&
+                    (foodVoucherCode == null || foodVoucherCode.trim().isEmpty()) &&
+                    voucherCode != null && !voucherCode.trim().isEmpty()) {
+                    String[] parts = voucherCode.split(",");
+                    for (String p : parts) {
+                        String clean = p.trim();
+                        Voucher v = voucherService.findVoucherForUser(clean, userId);
+                        if (v != null) {
+                            if (v.isFreeShip() && (shippingVoucherCode == null || shippingVoucherCode.isEmpty())) {
+                                shippingVoucherCode = clean;
+                            } else if (!v.isFreeShip() && (foodVoucherCode == null || foodVoucherCode.isEmpty())) {
+                                foodVoucherCode = clean;
+                            }
+                        }
+                    }
+                }
 
                 // Sticky Form Validation
                 String validationError = null;
@@ -251,14 +290,16 @@ public class CartController extends HttpServlet {
 
                 if (validationError != null) {
                     req.setAttribute("checkoutError", validationError);
-                    // Giữ lại dữ liệu vừa nhập (Sticky Form)
                     req.setAttribute("stickyReceiverName", receiverName);
                     req.setAttribute("stickyReceiverPhone", receiverPhone);
                     req.setAttribute("stickyReceiverAddress", receiverAddress);
                     req.setAttribute("stickyReceiverNote", receiverNote);
                     req.setAttribute("stickyPaymentMethod", paymentMethod);
                     req.setAttribute("stickyVoucherCode", voucherCode);
-                    req.setAttribute("availableVouchers", voucherService.getAllVouchers());
+                    req.setAttribute("stickyShippingVoucherCode", shippingVoucherCode);
+                    req.setAttribute("stickyFoodVoucherCode", foodVoucherCode);
+                    req.setAttribute("userVouchers", userVoucherDAO.getUserVouchers(userId));
+                    req.setAttribute("availableVouchers", userVoucherDAO.getUserVouchers(userId));
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
                     return;
                 }
@@ -294,21 +335,19 @@ public class CartController extends HttpServlet {
                 double distanceKm = com.ute.fooddelivery.utils.GeoLocationUtils.calculateRouteDistance(restLat, restLng, custCoords[0], custCoords[1]);
                 double shippingFee = com.ute.fooddelivery.utils.GeoLocationUtils.calculateShippingFee(distanceKm);
 
-                // Thẩm định và tính toán giảm giá Voucher độc lập trên máy chủ (Bảo mật tuyệt đối)
+                // Thẩm định áp dụng tối đa 2 mã (1 freeship + 1 food discount) độc lập trên máy chủ
+                VoucherService.DualValidationResult dualResult = voucherService.validateTwoVouchers(
+                        shippingVoucherCode, foodVoucherCode, subtotalBill, shippingFee, restaurantId, userId
+                );
+
                 double discountAmount = 0.0;
                 String appliedVoucherCode = null;
-                if (voucherCode != null && !voucherCode.trim().isEmpty()) {
-                    com.ute.fooddelivery.service.VoucherService.ValidationResult vResult = 
-                        voucherService.validateAndCalculate(voucherCode.trim(), subtotalBill, shippingFee);
-                    if (vResult.isValid()) {
-                        discountAmount = vResult.getDiscountAmount();
-                        appliedVoucherCode = (vResult.getVoucher() != null) ? vResult.getVoucher().getCode() : voucherCode.trim().toUpperCase();
-                    }
+                if (dualResult.isValid()) {
+                    discountAmount = dualResult.getTotalDiscount();
+                    appliedVoucherCode = dualResult.getCombinedCode();
                 }
 
                 double totalBill = Math.max(0, subtotalBill + shippingFee - discountAmount);
-
-                Integer userId = currentUser.getId();
 
                 Order order = new Order();
                 order.setUserId(userId);
@@ -325,6 +364,22 @@ public class CartController extends HttpServlet {
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
+                    // Trừ số lượng mã tương ứng trong Kho Voucher của người dùng
+                    List<String> codesToDeduct = new ArrayList<>();
+                    if (dualResult.getFreeshipVoucher() != null) {
+                        codesToDeduct.add(dualResult.getFreeshipVoucher().getCode());
+                    }
+                    if (dualResult.getFoodVoucher() != null) {
+                        codesToDeduct.add(dualResult.getFoodVoucher().getCode());
+                    }
+                    if (!codesToDeduct.isEmpty()) {
+                        try {
+                            userVoucherDAO.useVouchers(userId, codesToDeduct);
+                        } catch (Exception e) {
+                            System.err.println("Lỗi khi trừ số lượng voucher trong kho: " + e.getMessage());
+                        }
+                    }
+
                     // Tự động gửi thông báo tức thì đến Chủ quán ăn (Merchant)
                     try {
                         Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
@@ -346,6 +401,8 @@ public class CartController extends HttpServlet {
                     req.setAttribute("successSubtotal", subtotalBill);
                     req.setAttribute("successShippingFee", shippingFee);
                     req.setAttribute("successDiscountAmount", discountAmount);
+                    req.setAttribute("successShippingDiscount", dualResult.getShippingDiscount());
+                    req.setAttribute("successFoodDiscount", dualResult.getFoodDiscount());
                     req.setAttribute("successVoucherCode", appliedVoucherCode);
                     req.setAttribute("successTotalAmount", totalBill);
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
