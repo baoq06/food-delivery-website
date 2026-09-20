@@ -31,6 +31,7 @@ public class CartController extends HttpServlet {
     private final OrderDAO orderDAO = new OrderDAO();
     private final NotificationService notificationService = new NotificationService();
     private final DriverDAO driverDAO = new DriverDAO();
+    private final com.ute.fooddelivery.service.VoucherService voucherService = new com.ute.fooddelivery.service.VoucherService();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
 
@@ -86,6 +87,7 @@ public class CartController extends HttpServlet {
             }
         }
         req.setAttribute("cartRestaurantId", restaurantId);
+        req.setAttribute("availableVouchers", voucherService.getAllVouchers());
 
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
@@ -235,6 +237,7 @@ public class CartController extends HttpServlet {
                 String receiverAddress = req.getParameter("receiverAddress");
                 String receiverNote = req.getParameter("receiverNote");
                 String paymentMethod = req.getParameter("paymentMethod");
+                String voucherCode = req.getParameter("voucherCode");
 
                 // Sticky Form Validation
                 String validationError = null;
@@ -254,6 +257,8 @@ public class CartController extends HttpServlet {
                     req.setAttribute("stickyReceiverAddress", receiverAddress);
                     req.setAttribute("stickyReceiverNote", receiverNote);
                     req.setAttribute("stickyPaymentMethod", paymentMethod);
+                    req.setAttribute("stickyVoucherCode", voucherCode);
+                    req.setAttribute("availableVouchers", voucherService.getAllVouchers());
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
                     return;
                 }
@@ -288,7 +293,20 @@ public class CartController extends HttpServlet {
                 double[] custCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(receiverAddress);
                 double distanceKm = com.ute.fooddelivery.utils.GeoLocationUtils.calculateRouteDistance(restLat, restLng, custCoords[0], custCoords[1]);
                 double shippingFee = com.ute.fooddelivery.utils.GeoLocationUtils.calculateShippingFee(distanceKm);
-                double totalBill = subtotalBill + shippingFee;
+
+                // Thẩm định và tính toán giảm giá Voucher độc lập trên máy chủ (Bảo mật tuyệt đối)
+                double discountAmount = 0.0;
+                String appliedVoucherCode = null;
+                if (voucherCode != null && !voucherCode.trim().isEmpty()) {
+                    com.ute.fooddelivery.service.VoucherService.ValidationResult vResult = 
+                        voucherService.validateAndCalculate(voucherCode.trim(), subtotalBill, shippingFee);
+                    if (vResult.isValid()) {
+                        discountAmount = vResult.getDiscountAmount();
+                        appliedVoucherCode = (vResult.getVoucher() != null) ? vResult.getVoucher().getCode() : voucherCode.trim().toUpperCase();
+                    }
+                }
+
+                double totalBill = Math.max(0, subtotalBill + shippingFee - discountAmount);
 
                 Integer userId = currentUser.getId();
 
@@ -300,6 +318,8 @@ public class CartController extends HttpServlet {
                 order.setNote(receiverNote != null ? receiverNote.trim() : "");
                 order.setShippingFee(shippingFee);
                 order.setDistanceKm(distanceKm);
+                order.setDiscountAmount(discountAmount);
+                order.setVoucherCode(appliedVoucherCode);
                 order.setTotalAmount(totalBill);
                 order.setPaymentMethod(paymentMethod != null ? paymentMethod : "COD");
 
@@ -323,6 +343,11 @@ public class CartController extends HttpServlet {
                     session.removeAttribute("cart");
                     req.setAttribute("placedOrderId", "#DH-" + orderId);
                     req.setAttribute("orderSuccess", true);
+                    req.setAttribute("successSubtotal", subtotalBill);
+                    req.setAttribute("successShippingFee", shippingFee);
+                    req.setAttribute("successDiscountAmount", discountAmount);
+                    req.setAttribute("successVoucherCode", appliedVoucherCode);
+                    req.setAttribute("successTotalAmount", totalBill);
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
                     return;
                 }

@@ -68,6 +68,12 @@ public class Order implements Serializable {
     @Column(name = "distance_km")
     private double distanceKm = 2.0;
 
+    @Column(name = "discount_amount")
+    private double discountAmount = 0.0;
+
+    @Column(name = "voucher_code")
+    private String voucherCode;
+
     @Column(name = "shipper_accepted")
     private boolean shipperAccepted;
 
@@ -348,6 +354,22 @@ public class Order implements Serializable {
 
     public void setDistanceKm(double distanceKm) {
         this.distanceKm = distanceKm;
+    }
+
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getVoucherCode() {
+        return voucherCode;
+    }
+
+    public void setVoucherCode(String voucherCode) {
+        this.voucherCode = voucherCode;
     }
 
     /**

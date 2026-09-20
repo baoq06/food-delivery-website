@@ -126,9 +126,14 @@
                                             <div class="mo-amount-val">
                                                 <fmt:formatNumber value="${order.totalAmount}" type="number" /> đ
                                             </div>
+                                            <c:if test="${order.discountAmount > 0 or not empty order.voucherCode}">
+                                                <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600; margin: 2px 0;">
+                                                    <i class="fa-solid fa-tag"></i> Voucher: -<fmt:formatNumber value="${order.discountAmount}" type="number"/> đ
+                                                </div>
+                                            </c:if>
                                             <div>
-                                                <span class="mo-pay-badge ${order.paymentMethod eq 'CASH' ? 'badge-cod' : 'badge-vietqr'}">
-                                                    <i class="fa-solid ${order.paymentMethod eq 'CASH' ? 'fa-money-bill-1' : 'fa-qrcode'}"></i>
+                                                <span class="mo-pay-badge ${order.paymentMethod eq 'CASH' or order.paymentMethod eq 'COD' ? 'badge-cod' : 'badge-vietqr'}">
+                                                    <i class="fa-solid ${order.paymentMethod eq 'CASH' or order.paymentMethod eq 'COD' ? 'fa-money-bill-1' : 'fa-qrcode'}"></i>
                                                     ${order.paymentMethod}
                                                 </span>
                                             </div>

@@ -127,6 +127,8 @@ CREATE TABLE `orders` (
     `total_amount` DOUBLE NOT NULL DEFAULT 0,
     `shipping_fee` DOUBLE NOT NULL DEFAULT 15000,
     `distance_km` DOUBLE NOT NULL DEFAULT 2.0,
+    `discount_amount` DOUBLE NOT NULL DEFAULT 0,
+    `voucher_code` VARCHAR(50) DEFAULT NULL,
     `payment_method` VARCHAR(20) DEFAULT 'COD', -- 'COD', 'QR', 'CARD'
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,

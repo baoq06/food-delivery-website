@@ -16,15 +16,55 @@ import java.util.List;
 import java.util.Map;
 
 public class OrderDAO {
+    private static volatile boolean discountColumnsChecked = false;
+
+    public static void ensureOrderDiscountColumns() {
+        if (discountColumnsChecked) return;
+        synchronized (OrderDAO.class) {
+            if (discountColumnsChecked) return;
+            try (Connection conn = DBContext.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                if (conn != null) {
+                    java.sql.DatabaseMetaData meta = conn.getMetaData();
+                    boolean hasDiscount = false;
+                    boolean hasVoucher = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "orders", "discount_amount")) {
+                        if (rs.next()) hasDiscount = true;
+                    }
+                    try (ResultSet rs = meta.getColumns(null, null, "orders", "voucher_code")) {
+                        if (rs.next()) hasVoucher = true;
+                    }
+
+                    if (!hasDiscount) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE orders ADD COLUMN discount_amount DOUBLE NOT NULL DEFAULT 0 AFTER distance_km");
+                            System.out.println(">> Đã thêm cột discount_amount vào bảng orders");
+                        } catch (SQLException ignore) {}
+                    }
+                    if (!hasVoucher) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE orders ADD COLUMN voucher_code VARCHAR(50) DEFAULT NULL AFTER discount_amount");
+                            System.out.println(">> Đã thêm cột voucher_code vào bảng orders");
+                        } catch (SQLException ignore) {}
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Lưu ý khi kiểm tra cột discount trong bảng orders: " + e.getMessage());
+            }
+            discountColumnsChecked = true;
+        }
+    }
 
     public OrderDAO() {
+        ensureOrderDiscountColumns();
         syncCompletedOrders();
     }
 
     public int createOrder(Order order, List<OrderItem> items) {
+        ensureOrderDiscountColumns();
         String insertOrderSql = 
-            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0)";
+            "INSERT INTO orders (user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, payment_method, status, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed, discount_amount, voucher_code) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, 0, 0, ?, ?)";
         String insertItemSql = 
             "INSERT INTO order_items (order_id, food_id, quantity, unit_price, subtotal) " +
             "VALUES (?, ?, ?, ?, ?)";
@@ -52,6 +92,8 @@ public class OrderDAO {
                 psOrder.setDouble(8, order.getDistanceKm() > 0 ? order.getDistanceKm() : 2.0);
                 psOrder.setString(9, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
                 psOrder.setString(10, "PENDING");
+                psOrder.setDouble(11, order.getDiscountAmount());
+                psOrder.setString(12, order.getVoucherCode());
 
                 int affected = psOrder.executeUpdate();
                 if (affected > 0) {
@@ -105,7 +147,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "                o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
             "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
             "                d.name AS driver_name, d.phone AS driver_phone " +
@@ -148,6 +190,10 @@ public class OrderDAO {
                                 rs.getBoolean("shipper_delivered"),
                                 rs.getBoolean("merchant_completed")
                             );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
 
@@ -227,7 +273,7 @@ public class OrderDAO {
 
 
     public Order getOrderById(int orderId) {
-        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
+        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, total_amount, shipping_fee, distance_km, discount_amount, voucher_code, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -254,6 +300,8 @@ public class OrderDAO {
                             );
                             try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
                             try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                             try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             return order;
                         }
@@ -655,7 +703,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT DISTINCT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "                o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "                o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "                o.customer_confirmed, o.merchant_confirmed, " +
             "                o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
             "                d.name AS driver_name, d.phone AS driver_phone " +
@@ -710,6 +758,10 @@ public class OrderDAO {
                                 rs.getBoolean("shipper_delivered"),
                                 rs.getBoolean("merchant_completed")
                             );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
                             order.setItems(getOrderItemsByOrderIdAndRestaurant(order.getId(), restaurantId));
@@ -813,7 +865,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         String sql = 
             "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-            "       o.total_amount, o.shipping_fee, o.distance_km, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "       d.name AS driver_name, d.phone AS driver_phone, " +
             "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
@@ -849,6 +901,8 @@ public class OrderDAO {
                             );
                             try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
                             try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                             try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
@@ -1436,7 +1490,7 @@ public class OrderDAO {
     public List<Order> getRecentOrdersForAdmin(int limit) {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
-                     "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+                     "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
                      "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
                      "       d.name AS driver_name, " +
                      "       (SELECT GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') " +
@@ -1468,6 +1522,10 @@ public class OrderDAO {
                         rs.getBoolean("shipper_delivered"),
                         rs.getBoolean("merchant_completed")
                     );
+                    try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                    try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                    try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                    try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                     order.setDriverName(rs.getString("driver_name"));
                     order.setFoodSummary(rs.getString("food_summary"));
                     double fVal = rs.getDouble("food_value");

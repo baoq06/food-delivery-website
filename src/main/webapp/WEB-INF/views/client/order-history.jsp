@@ -73,7 +73,13 @@
                         <div class="col-md-6">
                             <p><strong><i class="fa-solid fa-location-dot text-danger"></i> Giao đến:</strong> ${order.address}</p>
                             <p><strong><i class="fa-solid fa-route text-primary"></i> Cự ly &amp; Phí giao:</strong> ${order.distanceKm != null ? order.distanceKm : 2.0} km (Cước ship: <fmt:formatNumber value="${order.shippingFee != null ? order.shippingFee : 15000}" pattern="#,###"/> đ)</p>
-                            <p><strong><i class="fa-solid fa-money-bill-wave text-success"></i> Phương thức thanh toán:</strong> COD</p>
+                            <p><strong><i class="fa-solid fa-money-bill-wave text-success"></i> Phương thức thanh toán:</strong> ${not empty order.paymentMethod ? order.paymentMethod : 'COD'}</p>
+                            <c:if test="${order.discountAmount > 0 or not empty order.voucherCode}">
+                                <p class="text-success" style="margin-bottom: 6px;">
+                                    <strong><i class="fa-solid fa-tag"></i> Giảm giá voucher <c:if test="${not empty order.voucherCode}">(${order.voucherCode})</c:if>:</strong> 
+                                    -<fmt:formatNumber value="${order.discountAmount}" pattern="#,###"/> đ
+                                </p>
+                            </c:if>
                             <h5 class="mt-3">Tổng cộng: <strong class="text-danger"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/> đ</strong></h5>
                         </div>
                         
