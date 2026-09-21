@@ -666,4 +666,692 @@ public class OrderDAO {
         }
         return kpis;
     }
+<<<<<<< Updated upstream
+=======
+
+    // =========================================================================
+    // QUẢN LÝ ĐƠN HÀNG DÀNH CHO KHÁCH HÀNG (CUSTOMER)
+    // =========================================================================
+
+    public List<Order> getOrdersByUserId(int userId) {
+        List<Order> list = new ArrayList<>();
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+            "WHERE o.user_id = ? " +
+            "ORDER BY o.created_at DESC";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                review.setFoodRating((Integer) rs.getObject("food_rating"));
+                                review.setFoodComment(rs.getString("food_comment"));
+                                review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                                review.setDriverComment(rs.getString("driver_comment"));
+                                order.setReview(review);
+                            }
+
+                            // Lấy danh sách tất cả các món trong đơn hàng này
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            list.add(order);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách đơn của khách hàng: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public List<OrderItem> getOrderItemsByOrderId(int orderId) {
+        List<OrderItem> items = new ArrayList<>();
+        String sql = 
+            "SELECT oi.order_item_id, oi.order_id, oi.food_id, oi.quantity, oi.unit_price, oi.subtotal, " +
+            "       f.name AS food_name, f.image_url AS food_image " +
+            "FROM order_items oi " +
+            "JOIN foods f ON oi.food_id = f.food_id " +
+            "WHERE oi.order_id = ? " +
+            "ORDER BY oi.order_item_id ASC";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            OrderItem item = new OrderItem(
+                                rs.getInt("order_item_id"),
+                                rs.getInt("order_id"),
+                                rs.getInt("food_id"),
+                                rs.getInt("quantity"),
+                                rs.getDouble("unit_price"),
+                                rs.getDouble("subtotal")
+                            );
+                            item.setFoodName(rs.getString("food_name"));
+                            item.setFoodImage(rs.getString("food_image"));
+                            items.add(item);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy chi tiết các món của đơn hàng: " + e.getMessage());
+        }
+        return items;
+    }
+
+    public Order getCustomerOrderForReview(int orderId, int userId) {
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.address AS restaurant_address, " +
+            "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url, r.created_at AS review_created_at " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi2.order_id, f2.restaurant_id, r2.name, r2.image_url, r2.address " +
+            "    FROM order_items oi2 " +
+            "    JOIN foods f2 ON oi2.food_id = f2.food_id " +
+            "    JOIN restaurants r2 ON f2.restaurant_id = r2.restaurant_id " +
+            "    WHERE oi2.order_id = ? LIMIT 1 " +
+            ") rest ON o.order_id = rest.order_id " +
+            "WHERE o.order_id = ? AND o.user_id = ?";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+                            order.setRestaurantId((Integer) rs.getObject("restaurant_id"));
+                            order.setRestaurantName(rs.getString("restaurant_name"));
+                            order.setRestaurantImage(rs.getString("restaurant_image"));
+                            order.setRestaurantAddress(rs.getString("restaurant_address"));
+
+                            int reviewId = rs.getInt("review_id");
+                            if (!rs.wasNull()) {
+                                com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
+                                review.setReviewId(reviewId);
+                                review.setOrderId(order.getId());
+                                review.setRating(rs.getInt("rating"));
+                                review.setComment(rs.getString("comment"));
+                                review.setFoodRating((Integer) rs.getObject("food_rating"));
+                                review.setFoodComment(rs.getString("food_comment"));
+                                review.setDriverRating((Integer) rs.getObject("driver_rating"));
+                                review.setDriverComment(rs.getString("driver_comment"));
+                                try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
+                                review.setCreatedAt(rs.getTimestamp("review_created_at"));
+                                order.setReview(review);
+                            }
+
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            return order;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thông tin đơn hàng đánh giá: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean cancelOrderByCustomer(int orderId, int userId) {
+        String sql = "UPDATE orders SET status = 'CANCELLED' WHERE order_id = ? AND user_id = ? AND status IN ('PENDING', 'CONFIRMED')";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, userId);
+                    int updated = ps.executeUpdate();
+                    if (updated > 0) {
+                        // Giải phóng tài xế nếu có
+                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
+                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                            psDriver.setInt(1, orderId);
+                            psDriver.executeUpdate();
+                        } catch (Exception ignored) {}
+                    }
+                    return updated > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi khách hàng hủy đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean assignDriver(int orderId, int driverId) {
+        // Quán chỉ được gán cho 1 shipper tối đa 3 đơn khi shipper đó chưa nhận đơn nào
+        if (countPendingAssignedOrders(driverId) >= 3) {
+            System.err.println("Không thể gán đơn #" + orderId + " cho shipper #" + driverId + ": Shipper đã đạt tối đa 3 đơn chờ nhận!");
+            return false;
+        }
+        String sql = "UPDATE orders SET driver_id = ?, shipper_accepted = 0 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gán shipper cho đơn #" + orderId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperAcceptOrder(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_accepted = 1, status = CASE WHEN status = 'PENDING' THEN 'CONFIRMED' ELSE status END WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, driverId);
+                    int updated = ps.executeUpdate();
+                    if (updated > 0) {
+                        // Đổi trạng thái tài xế sang BUSY
+                        String sqlBusy = "UPDATE drivers SET status = 'BUSY' WHERE driver_id = ?";
+                        try (PreparedStatement psBusy = conn.prepareStatement(sqlBusy)) {
+                            psBusy.setInt(1, driverId);
+                            psBusy.executeUpdate();
+                        } catch (Exception ignored) {}
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper chấp nhận đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperDeclineOrder(int orderId, int driverId) {
+        String sql = "UPDATE orders SET driver_id = NULL, shipper_accepted = 0 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper từ chối đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private static boolean syncedOrdersOnStartup = false;
+
+    public static synchronized void syncCompletedOrders() {
+        if (syncedOrdersOnStartup) return;
+        syncedOrdersOnStartup = true;
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return;
+            try (Statement stmt = conn.createStatement()) {
+                // Tự động kiểm tra và thêm các cột mới nếu CSDL chưa có (Migration an toàn)
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN shipping_fee DOUBLE NOT NULL DEFAULT 15000"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN distance_km DOUBLE NOT NULL DEFAULT 2.0"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE orders ADD COLUMN shipper_picked_up TINYINT(1) DEFAULT 0"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_latitude DOUBLE DEFAULT 10.8510"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_longitude DOUBLE DEFAULT 106.7725"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN current_address VARCHAR(255) DEFAULT '1 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh'"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE drivers ADD COLUMN last_location_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN latitude DOUBLE DEFAULT 10.8505"); } catch (Exception ignored) {}
+                try { stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN longitude DOUBLE DEFAULT 106.7719"); } catch (Exception ignored) {}
+
+                // Quy tắc mới: Chỉ cần shipper_delivered = 1 là đơn đủ điều kiện hoàn tất
+                String sql = "UPDATE orders SET status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1 " +
+                             "WHERE shipper_delivered = 1 AND status != 'CANCELLED' AND (status != 'DELIVERED' OR merchant_completed = 0)";
+                int count = stmt.executeUpdate(sql);
+                if (count > 0) {
+                    System.out.println(">> [OrderDAO] Đã tự động đồng bộ " + count + " đơn shipper đã giao sang trạng thái DELIVERED.");
+                    stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id IN " +
+                                       "(SELECT DISTINCT driver_id FROM orders WHERE shipper_delivered = 1 AND status = 'DELIVERED' AND driver_id IS NOT NULL AND driver_id > 0)");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi syncCompletedOrders: " + e.getMessage());
+        }
+    }
+
+    /**
+     * BƯỚC MỚI: Shipper xác nhận đã lấy món ăn từ quán
+     */
+    public boolean shipperConfirmPickedUp(int orderId) {
+        String sql = "UPDATE orders SET shipper_picked_up = 1, status = 'SHIPPING' WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã lấy món: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * BƯỚC MỚI: Shipper xác nhận đã lấy món ăn từ quán (kèm xác thực driverId)
+     */
+    public boolean shipperConfirmPickedUp(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_picked_up = 1, status = 'SHIPPING' WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã lấy món: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperConfirmDelivered(int orderId) {
+        String sql = "UPDATE orders SET shipper_delivered = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean shipperConfirmDelivered(int orderId, int driverId) {
+        String sql = "UPDATE orders SET shipper_delivered = 1 WHERE order_id = ? AND driver_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, driverId);
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi shipper xác nhận đã giao: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean confirmCustomerOrder(int orderId) {
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean confirmCustomerOrder(int orderId, int userId) {
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            ps.setInt(2, userId);
+            boolean updated = ps.executeUpdate() > 0;
+            if (updated) {
+                checkAndAutoCompleteOrder(orderId);
+            }
+            return updated;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi khách hàng xác nhận đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean confirmMerchantOrder(int orderId) {
+        return checkAndAutoCompleteOrder(orderId);
+    }
+
+    /**
+     * Tự động hoàn tất đơn hàng:
+     * Quy tắc thực tế: CHỈ CẦN SHIPPER BÁO ĐÃ GIAO (shipper_delivered == true) là đơn hoàn tất ngay lập tức!
+     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1.
+     * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
+     * - Khách hàng vẫn có thể bấm "Đã nhận món" sau đó mà không làm nghẽn tiến trình.
+     */
+    public boolean checkAndAutoCompleteOrder(int orderId) {
+        String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                boolean shipDelivered = false;
+                int driverId = 0;
+                String currentStatus = null;
+
+                try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+                    psCheck.setInt(1, orderId);
+                    try (ResultSet rs = psCheck.executeQuery()) {
+                        if (rs.next()) {
+                            shipDelivered = rs.getBoolean("shipper_delivered");
+                            driverId = rs.getInt("driver_id");
+                            currentStatus = rs.getString("status");
+                        }
+                    }
+                }
+
+                if ("CANCELLED".equalsIgnoreCase(currentStatus)) {
+                    return false;
+                }
+
+                // Khi Shipper đã xác nhận giao -> Hoàn tất đơn tự động ngay lập tức
+                if (shipDelivered) {
+                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+                    try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+                        psUpdate.setInt(1, orderId);
+                        int updated = psUpdate.executeUpdate();
+                        if (updated > 0 || "DELIVERED".equalsIgnoreCase(currentStatus)) {
+                            // Giải phóng shipper về AVAILABLE nếu không còn đơn SHIPPING nào khác
+                            if (driverId > 0) {
+                                boolean hasOtherShipping = false;
+                                String sqlCheckOther = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND status = 'SHIPPING' AND order_id != ?";
+                                try (PreparedStatement psOther = conn.prepareStatement(sqlCheckOther)) {
+                                    psOther.setInt(1, driverId);
+                                    psOther.setInt(2, orderId);
+                                    try (ResultSet rsOther = psOther.executeQuery()) {
+                                        if (rsOther.next() && rsOther.getInt(1) > 0) {
+                                            hasOtherShipping = true;
+                                        }
+                                    }
+                                } catch (Exception ignored) {}
+                                if (!hasOtherShipping) {
+                                    String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
+                                    try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
+                                        psDriver.setInt(1, driverId);
+                                        psDriver.executeUpdate();
+                                    } catch (Exception ignored) {}
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tự động hoàn tất đơn #" + orderId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Dành cho chủ quán nếu muốn bấm hoàn tất đơn (hoặc xử lý ngoại lệ):
+     */
+    public boolean merchantCompleteOrder(int orderId) {
+        String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
+            psUpdate.setInt(1, orderId);
+            int updated = psUpdate.executeUpdate();
+            if (updated > 0) {
+                Order o = getOrderById(orderId);
+                if (o != null && o.getDriverId() != null && o.getDriverId() > 0) {
+                    try (PreparedStatement psDriver = conn.prepareStatement("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?")) {
+                        psDriver.setInt(1, o.getDriverId());
+                        psDriver.executeUpdate();
+                    } catch (Exception ignored) {}
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi chủ quán hoàn tất đơn: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public Integer getMerchantUserIdByOrderId(int orderId) {
+        String sql = "SELECT DISTINCT r.user_id " +
+                     "FROM order_items oi " +
+                     "JOIN foods f ON oi.food_id = f.food_id " +
+                     "JOIN restaurants r ON f.restaurant_id = r.restaurant_id " +
+                     "WHERE oi.order_id = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getMerchantUserIdByOrderId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Integer getCustomerUserIdByOrderId(int orderId) {
+        String sql = "SELECT user_id FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getCustomerUserIdByOrderId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public Integer getDriverUserIdByOrderId(int orderId) {
+        String sql = "SELECT d.user_id FROM orders o JOIN drivers d ON o.driver_id = d.driver_id WHERE o.order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int uid = rs.getInt("user_id");
+                    return rs.wasNull() ? null : uid;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getDriverUserIdByOrderId: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Doanh thu của Admin: Mỗi đơn hàng hoàn tất (DELIVERED) của bất kỳ nhà hàng nào,
+     * Admin được hưởng 10% giá trị của đơn đó (tổng giá trị món ăn, không tính phí ship).
+     */
+    public double getAdminCommissionRevenue() {
+        String sql = "SELECT COALESCE(SUM(oi.subtotal), 0) * 0.10 " +
+                     "FROM order_items oi " +
+                     "JOIN orders o ON oi.order_id = o.order_id " +
+                     "WHERE o.status = 'DELIVERED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính doanh thu hoa hồng admin 10%: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public double getTotalDeliveredFoodValue() {
+        String sql = "SELECT COALESCE(SUM(oi.subtotal), 0) " +
+                     "FROM order_items oi " +
+                     "JOIN orders o ON oi.order_id = o.order_id " +
+                     "WHERE o.status = 'DELIVERED'";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tính tổng giá trị món giao: " + e.getMessage());
+        }
+        return 0.0;
+    }
+
+    public double getTotalDeliveredRevenue() {
+        return getAdminCommissionRevenue();
+    }
+
+    public Map<String, Integer> getOrderStatusCounts() {
+        Map<String, Integer> map = new HashMap<>();
+        map.put("TOTAL", 0);
+        map.put("PENDING", 0);
+        map.put("CONFIRMED", 0);
+        map.put("SHIPPING", 0);
+        map.put("DELIVERED", 0);
+        map.put("CANCELLED", 0);
+        String sql = "SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            int total = 0;
+            while (rs.next()) {
+                String st = rs.getString("status");
+                int count = rs.getInt("cnt");
+                if (st != null) {
+                    map.put(st.toUpperCase(), count);
+                }
+                total += count;
+            }
+            map.put("TOTAL", total);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi đếm trạng thái đơn cho admin: " + e.getMessage());
+        }
+        return map;
+    }
+
+    public List<Order> getRecentOrdersForAdmin(int limit) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+                     "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
+                     "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_delivered, o.merchant_completed, " +
+                     "       d.name AS driver_name, " +
+                     "       (SELECT GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') " +
+                     "        FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id) AS food_summary, " +
+                     "       COALESCE((SELECT SUM(oi2.subtotal) FROM order_items oi2 WHERE oi2.order_id = o.order_id), 0) AS food_value, " +
+                     "       (SELECT r.name FROM order_items oi3 JOIN foods f ON oi3.food_id = f.food_id JOIN restaurants r ON f.restaurant_id = r.restaurant_id WHERE oi3.order_id = o.order_id LIMIT 1) AS restaurant_name " +
+                     "FROM orders o " +
+                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+                     "ORDER BY o.created_at DESC LIMIT ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order(
+                        rs.getInt("order_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("customer_name"),
+                        rs.getString("phone"),
+                        rs.getString("address"),
+                        rs.getString("note"),
+                        rs.getDouble("total_amount"),
+                        rs.getString("payment_method"),
+                        rs.getString("status"),
+                        rs.getInt("driver_id"),
+                        rs.getTimestamp("created_at"),
+                        rs.getBoolean("customer_confirmed"),
+                        rs.getBoolean("merchant_confirmed"),
+                        rs.getBoolean("shipper_accepted"),
+                        rs.getBoolean("shipper_delivered"),
+                        rs.getBoolean("merchant_completed")
+                    );
+                    try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                    try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                    try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                    try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
+                    order.setDriverName(rs.getString("driver_name"));
+                    try { order.setRestaurantName(rs.getString("restaurant_name")); } catch (Exception ignored) {}
+                    order.setFoodSummary(rs.getString("food_summary"));
+                    double fVal = rs.getDouble("food_value");
+                    order.setFoodValue(fVal);
+                    order.setAdminCommission(Math.round(fVal * 0.10 * 10.0) / 10.0);
+                    list.add(order);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách đơn cho admin: " + e.getMessage());
+        }
+        return list;
+    }
+>>>>>>> Stashed changes
 }
