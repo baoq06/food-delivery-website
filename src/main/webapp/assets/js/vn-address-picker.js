@@ -488,7 +488,7 @@
                             <i class="fa-solid fa-map-location-dot vn-picker-icon"></i>
                             <span>Khu vực hành chính Việt Nam</span>
                         </div>
-                        <button type="button" class="vn-toggle-manual-btn" id="${this.idPrefix}_toggleManual" title="Chuyển đổi chế độ nhập">
+                        <button type="button" class="vn-toggle-manual-btn" id="${this.idPrefix}_toggleManual" title="Chuyển đổi chế độ nhập" style="display: none !important;">
                             <i class="fa-solid fa-pen-to-square"></i>
                             <span id="${this.idPrefix}_toggleText">Nhập tự do</span>
                         </button>

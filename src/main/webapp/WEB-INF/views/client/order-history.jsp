@@ -69,6 +69,70 @@
                         </c:choose>
                     </div>
                     
+                    <!-- NEW: Delivery History Timeline -->
+                    <div class="order-timeline-container" style="padding: 30px 20px 20px; margin-bottom: 25px; background: #fafafa; border-radius: 8px;">
+                        <h6 style="margin-bottom: 20px; font-weight: 600; color: #444;"><i class="fa-solid fa-route text-primary text-opacity-75"></i> Lịch sử và tiến độ đơn hàng</h6>
+                        <div class="timeline" style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; max-width: 100%;">
+                            <!-- Timeline Background Line -->
+                            <div style="position: absolute; top: 18px; left: 12.5%; right: 12.5%; height: 4px; background: #e0e0e0; z-index: 1; border-radius: 2px;"></div>
+                            
+                            <!-- Dynamically set progress line based on status -->
+                            <c:set var="progressWidth" value="0%" />
+                            <c:if test="${order.status eq 'CONFIRMED'}"><c:set var="progressWidth" value="33.3%" /></c:if>
+                            <c:if test="${order.status eq 'SHIPPING'}"><c:set var="progressWidth" value="66.6%" /></c:if>
+                            <c:if test="${order.status eq 'DELIVERED'}"><c:set var="progressWidth" value="100%" /></c:if>
+                            
+                            <!-- Cancelled overrides -->
+                            <c:if test="${order.status eq 'CANCELLED'}">
+                                <div style="position: absolute; top: 18px; left: 12.5%; right: 12.5%; height: 4px; background: #ffcdd2; z-index: 2; border-radius: 2px;"></div>
+                            </c:if>
+                            <c:if test="${order.status ne 'CANCELLED'}">
+                                <div style="position: absolute; top: 18px; left: 12.5%; width: ${progressWidth}; height: 4px; background: #4caf50; z-index: 2; border-radius: 2px; transition: width 0.5s ease-in-out;"></div>
+                            </c:if>
+
+                            <!-- STEP 1: Pending -->
+                            <div class="timeline-step text-center" style="z-index: 3; position: relative; width: 25%;">
+                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${order.status eq 'CANCELLED' ? '#ef5350' : '#4caf50'}; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid #fafafa;">
+                                    <i class="fa-solid fa-receipt"></i>
+                                </div>
+                                <span style="font-size: 0.85em; font-weight: 600; color: #333; display: block;">Đã đặt đơn</span>
+                                <small class="text-muted" style="font-size: 0.75em;"><fmt:formatDate value="${order.createdAt}" pattern="HH:mm" /></small>
+                            </div>
+
+                            <!-- STEP 2: Confirmed -->
+                            <c:set var="step2Active" value="${order.status eq 'CONFIRMED' or order.status eq 'SHIPPING' or order.status eq 'DELIVERED'}" />
+                            <div class="timeline-step text-center" style="z-index: 3; position: relative; width: 25%;">
+                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${step2Active ? '#4caf50' : '#e0e0e0'}; color: ${step2Active ? 'white' : '#9e9e9e'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid #fafafa;">
+                                    <i class="fa-solid fa-fire-burner"></i>
+                                </div>
+                                <span style="font-size: 0.85em; font-weight: 600; color: ${step2Active ? '#333' : '#9e9e9e'}; display: block;">Đã xác nhận & Chế biến</span>
+                            </div>
+
+                            <!-- STEP 3: Shipping -->
+                            <c:set var="step3Active" value="${order.status eq 'SHIPPING' or order.status eq 'DELIVERED'}" />
+                            <div class="timeline-step text-center" style="z-index: 3; position: relative; width: 25%;">
+                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${step3Active ? '#4caf50' : '#e0e0e0'}; color: ${step3Active ? 'white' : '#9e9e9e'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid #fafafa;">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
+                                <span style="font-size: 0.85em; font-weight: 600; color: ${step3Active ? '#333' : '#9e9e9e'}; display: block;">Đang giao hàng</span>
+                            </div>
+
+                            <!-- STEP 4: Delivered -->
+                            <c:set var="step4Active" value="${order.status eq 'DELIVERED'}" />
+                            <div class="timeline-step text-center" style="z-index: 3; position: relative; width: 25%;">
+                                <div class="step-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${step4Active ? '#4caf50' : '#e0e0e0'}; color: ${step4Active ? 'white' : '#9e9e9e'}; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 4px solid #fafafa;">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <span style="font-size: 0.85em; font-weight: 600; color: ${step4Active ? '#333' : '#9e9e9e'}; display: block;">Hoàn thành</span>
+                            </div>
+                        </div>
+                        <c:if test="${order.status eq 'CANCELLED'}">
+                            <div class="text-center mt-3 text-danger" style="font-weight: 600; background: #ffebee; padding: 8px; border-radius: 4px;">
+                                <i class="fa-solid fa-circle-exclamation"></i> Đơn hàng này đã bị hủy.
+                            </div>
+                        </c:if>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong><i class="fa-solid fa-location-dot text-danger"></i> Giao đến:</strong> ${order.address}</p>

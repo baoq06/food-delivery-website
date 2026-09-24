@@ -20,10 +20,13 @@ public class AdminDashboardController extends HttpServlet {
     private final CategoryService categoryService = new CategoryService();
     private final OrderDAO orderDAO = new OrderDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
+    private final com.ute.fooddelivery.dao.RestaurantDAO restaurantDAO = new com.ute.fooddelivery.dao.RestaurantDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
+
         String action = req.getParameter("action");
         if ("approve".equals(action)) {
             String orderIdParam = req.getParameter("orderId");
@@ -64,7 +67,8 @@ public class AdminDashboardController extends HttpServlet {
         req.setAttribute("categoryCount", categoryCount);
         req.setAttribute("userStats", userStats);
         req.setAttribute("recentOrders", recentOrders);
-
+        req.setAttribute("allDrivers", driverDAO.getAllDrivers());
+        req.setAttribute("allRestaurants", restaurantDAO.getAllRestaurants());
         req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);
     }
 

@@ -1495,7 +1495,8 @@ public class OrderDAO {
                      "       d.name AS driver_name, " +
                      "       (SELECT GROUP_CONCAT(CONCAT(f.name, ' (x', oi.quantity, ')') SEPARATOR ', ') " +
                      "        FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id) AS food_summary, " +
-                     "       COALESCE((SELECT SUM(oi2.subtotal) FROM order_items oi2 WHERE oi2.order_id = o.order_id), 0) AS food_value " +
+                     "       COALESCE((SELECT SUM(oi2.subtotal) FROM order_items oi2 WHERE oi2.order_id = o.order_id), 0) AS food_value, " +
+                     "       (SELECT r.name FROM order_items oi3 JOIN foods f ON oi3.food_id = f.food_id JOIN restaurants r ON f.restaurant_id = r.restaurant_id WHERE oi3.order_id = o.order_id LIMIT 1) AS restaurant_name " +
                      "FROM orders o " +
                      "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
                      "ORDER BY o.created_at DESC LIMIT ?";
@@ -1527,6 +1528,7 @@ public class OrderDAO {
                     try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
                     try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                     order.setDriverName(rs.getString("driver_name"));
+                    try { order.setRestaurantName(rs.getString("restaurant_name")); } catch (Exception ignored) {}
                     order.setFoodSummary(rs.getString("food_summary"));
                     double fVal = rs.getDouble("food_value");
                     order.setFoodValue(fVal);
