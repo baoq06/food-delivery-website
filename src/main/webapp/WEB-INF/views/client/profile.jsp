@@ -319,6 +319,13 @@
                     </button>
                 </c:otherwise>
             </c:choose>
+            <c:if test="${not (user.seller or user.role eq 'SELLER') and not (user.isShipper() and sessionScope.shipperActive)}">
+                <button type="button" class="profile-tab-btn ${activeTab eq 'vouchers' ? 'active' : ''}" onclick="switchTab('vouchers')">
+                    <i class="fa-solid fa-ticket text-danger"></i>
+                    <span>Kho Voucher của tôi</span>
+                    <span class="tab-count-badge" style="background:#fee2e2; color:#dc2626;">Ưu đãi</span>
+                </button>
+            </c:if>
             <button type="button" class="profile-tab-btn ${activeTab eq 'security' ? 'active' : ''}" onclick="switchTab('security')">
                 <i class="fa-solid fa-shield-halved"></i>
                 <span>Đổi mật khẩu & Bảo mật</span>
@@ -835,6 +842,112 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 4: Kho Voucher của tôi -->
+    <div id="tab-vouchers" class="profile-tab-pane ${activeTab eq 'vouchers' ? 'active' : ''}">
+        <div class="profile-main-card">
+            <div class="profile-card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <h3 class="profile-card-title"><i class="fa-solid fa-ticket text-danger"></i> Kho Voucher Của Bạn</h3>
+                    <p class="profile-card-subtitle">Tập hợp các mã giảm giá món ăn và mã miễn phí vận chuyển độc quyền từ Utee</p>
+                </div>
+                <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-sm" style="border-radius: 50px; font-weight: 700; padding: 8px 18px;">
+                    <i class="fa-solid fa-utensils me-1"></i> Đặt món áp mã ngay
+                </a>
+            </div>
+
+            <!-- Voucher Cards Grid -->
+            <div class="profile-vouchers-container">
+                <!-- Voucher 1: UTEE30 -->
+                <div class="profile-voucher-card">
+                    <div class="pvc-top">
+                        <div class="pvc-icon"><i class="fa-solid fa-gift"></i></div>
+                        <div class="pvc-body">
+                            <div class="pvc-title">Giảm 30.000 đ Cho Đơn Đầu</div>
+                            <p class="pvc-desc">Áp dụng cho khách hàng mới hoặc đơn hàng từ 60.000 đ khi đặt bất kỳ món nào tại Utee.</p>
+                        </div>
+                    </div>
+                    <div class="pvc-bottom">
+                        <span class="pvc-code-badge">UTEE30</span>
+                        <div class="pvc-actions">
+                            <button type="button" class="btn-save-voucher" data-voucher-code="UTEE30" onclick="saveVoucherToWallet('UTEE30')">
+                                <i class="fa-regular fa-bookmark"></i> <span>Lưu mã</span>
+                            </button>
+                            <button type="button" class="btn-copy-voucher" data-code="UTEE30" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30!');">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher 2: UTEE20 -->
+                <div class="profile-voucher-card">
+                    <div class="pvc-top">
+                        <div class="pvc-icon"><i class="fa-solid fa-tag"></i></div>
+                        <div class="pvc-body">
+                            <div class="pvc-title">Giảm 20.000 đ Thực Đơn Tuyển Chọn</div>
+                            <p class="pvc-desc">Áp dụng cho tất cả món ăn trong danh mục Cơm, Phở, Trà sữa và Fastfood.</p>
+                        </div>
+                    </div>
+                    <div class="pvc-bottom">
+                        <span class="pvc-code-badge">UTEE20</span>
+                        <div class="pvc-actions">
+                            <button type="button" class="btn-save-voucher" data-voucher-code="UTEE20" onclick="saveVoucherToWallet('UTEE20')">
+                                <i class="fa-regular fa-bookmark"></i> <span>Lưu mã</span>
+                            </button>
+                            <button type="button" class="btn-copy-voucher" data-code="UTEE20" onclick="navigator.clipboard.writeText('UTEE20'); window.showToast('✨ Đã sao chép mã UTEE20!');">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher 3: FREESHIP -->
+                <div class="profile-voucher-card">
+                    <div class="pvc-top">
+                        <div class="pvc-icon freeship"><i class="fa-solid fa-truck-fast"></i></div>
+                        <div class="pvc-body">
+                            <div class="pvc-title">Miễn Phí Vận Chuyển 15.000 đ</div>
+                            <p class="pvc-desc">Hỗ trợ phí ship cho đơn từ 99.000 đ, tự động ghép tài xế giao siêu tốc 30 phút.</p>
+                        </div>
+                    </div>
+                    <div class="pvc-bottom">
+                        <span class="pvc-code-badge" style="color: #10ac84; background: #e6f9ed; border-color: #a3e9b9;">FREESHIP</span>
+                        <div class="pvc-actions">
+                            <button type="button" class="btn-save-voucher" data-voucher-code="FREESHIP" onclick="saveVoucherToWallet('FREESHIP')">
+                                <i class="fa-regular fa-bookmark"></i> <span>Lưu mã</span>
+                            </button>
+                            <button type="button" class="btn-copy-voucher" data-code="FREESHIP" onclick="navigator.clipboard.writeText('FREESHIP'); window.showToast('✨ Đã sao chép mã FREESHIP!');">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voucher 4: UTEE15 -->
+                <div class="profile-voucher-card">
+                    <div class="pvc-top">
+                        <div class="pvc-icon"><i class="fa-solid fa-fire"></i></div>
+                        <div class="pvc-body">
+                            <div class="pvc-title">Giảm 15.000 đ Tri Ân Khách Hàng</div>
+                            <p class="pvc-desc">Áp dụng cho mọi đơn đặt món có tổng giá trị từ 80.000 đ trở lên.</p>
+                        </div>
+                    </div>
+                    <div class="pvc-bottom">
+                        <span class="pvc-code-badge">UTEE15</span>
+                        <div class="pvc-actions">
+                            <button type="button" class="btn-save-voucher" data-voucher-code="UTEE15" onclick="saveVoucherToWallet('UTEE15')">
+                                <i class="fa-regular fa-bookmark"></i> <span>Lưu mã</span>
+                            </button>
+                            <button type="button" class="btn-copy-voucher" data-code="UTEE15" onclick="navigator.clipboard.writeText('UTEE15'); window.showToast('✨ Đã sao chép mã UTEE15!');">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

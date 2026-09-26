@@ -234,6 +234,57 @@ public class FoodDAO {
         return false;
     }
 
+    public List<Food> getFoodsByRestaurant(int restaurantId, int excludeFoodId, int limit) {
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.restaurant_id = ? " +
+                       (excludeFoodId > 0 ? "AND f.food_id != ? " : "") +
+                       "ORDER BY f.food_id ASC LIMIT ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, restaurantId);
+                    if (excludeFoodId > 0) {
+                        ps.setInt(2, excludeFoodId);
+                        ps.setInt(3, limit);
+                    } else {
+                        ps.setInt(2, limit);
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(mapResultSetToFood(rs));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy món theo quán: " + e.getMessage());
+        }
+        attachReviews(list, 3);
+        return list;
+    }
+
+    public List<Food> getPopularSideDishes(int limit) {
+        List<Food> list = new ArrayList<>();
+        // Tìm các món đồ uống, tráng miệng, món phụ (category_id = 3 hoặc 4 hoặc giá dưới 35k)
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND (f.category_id IN (3, 4) OR f.price <= 35000) ORDER BY f.price ASC LIMIT ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, limit);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(mapResultSetToFood(rs));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy món phụ/đồ uống: " + e.getMessage());
+        }
+        attachReviews(list, 2);
+        return list;
+    }
+
     public boolean updateFood(Food food) {
         String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ? " +
                        "WHERE food_id = ? AND restaurant_id = ?";

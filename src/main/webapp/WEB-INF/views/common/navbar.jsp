@@ -243,13 +243,89 @@
                                     Thực đơn
                                 </a>
                             </li>
-                            <li>
+                            <li class="nav-cart-item-dropdown">
                                 <a href="${pageContext.request.contextPath}/cart" class="cart-nav-link ${pageContext.request.servletPath eq '/cart' ? 'active' : ''}">
                                     <i class="fa-solid fa-bag-shopping"></i>
                                     <span>Giỏ hàng</span>
                                     <c:set var="cartCount" value="${sessionScope.cart != null ? sessionScope.cart.size() : 0}" />
                                     <span class="cart-badge">${cartCount}</span>
                                 </a>
+
+                                <!-- Mini Cart Hover Preview Dropdown -->
+                                <div class="cart-hover-dropdown">
+                                    <div class="cart-hover-header">
+                                        <span class="cart-hover-title">
+                                            <i class="fa-solid fa-bag-shopping text-primary"></i> Món ăn trong giỏ
+                                        </span>
+                                        <span class="cart-hover-count">(${cartCount} món)</span>
+                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.cart and sessionScope.cart.size() > 0}">
+                                            <c:set var="navCartTotal" value="0" />
+                                            <c:forEach items="${sessionScope.cart.values()}" var="item">
+                                                <c:set var="navCartTotal" value="${navCartTotal + item.totalPrice}" />
+                                            </c:forEach>
+                                            <c:set var="freeshipTarget" value="99000" />
+                                            <c:set var="freeshipDiff" value="${freeshipTarget - navCartTotal}" />
+                                            <c:set var="freeshipPercent" value="${(navCartTotal / freeshipTarget) * 100}" />
+                                            <c:if test="${freeshipPercent > 100}">
+                                                <c:set var="freeshipPercent" value="100" />
+                                            </c:if>
+
+                                            <!-- Smart Freeship Progress Bar -->
+                                            <div class="cart-hover-freeship-box ${freeshipDiff <= 0 ? 'achieved' : ''}">
+                                                <div class="freeship-header-row">
+                                                    <c:choose>
+                                                        <c:when test="${freeshipDiff <= 0}">
+                                                            <span class="freeship-text-achieved"><i class="fa-solid fa-circle-check text-success"></i> Bạn đã được <strong>FREESHIP 15.000 đ</strong>!</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="freeship-text-need">Mua thêm <strong>${String.format("%,.0f", freeshipDiff)} đ</strong> để được <strong>FREESHIP</strong></span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <i class="fa-solid fa-motorcycle freeship-bike-icon"></i>
+                                                </div>
+                                                <div class="freeship-progress-track">
+                                                    <div class="freeship-progress-bar" style="width: ${freeshipPercent}%;"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="cart-hover-list">
+                                                <c:forEach items="${sessionScope.cart.values()}" var="item">
+                                                    <a href="${pageContext.request.contextPath}/food-detail?id=${item.food.id}" class="cart-hover-item">
+                                                        <img src="${item.food.image}" alt="${item.food.name}" class="cart-hover-thumb" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'">
+                                                        <div class="cart-hover-info">
+                                                            <div class="cart-hover-name" title="${item.food.name}">${item.food.name}</div>
+                                                            <div class="cart-hover-meta">
+                                                                <span class="cart-hover-qty">x${item.quantity}</span>
+                                                                <span class="cart-hover-price">${String.format("%,.0f", item.totalPrice)} đ</span>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </c:forEach>
+                                            </div>
+                                            <div class="cart-hover-footer">
+                                                <div class="cart-hover-total-row">
+                                                    <span>Tổng thanh toán:</span>
+                                                    <strong class="cart-hover-total-val">${String.format("%,.0f", navCartTotal)} đ</strong>
+                                                </div>
+                                                <a href="${pageContext.request.contextPath}/cart" class="btn btn-primary btn-sm btn-cart-hover-cta">
+                                                    <span>Xem Giỏ Hàng &amp; Đặt Món</span>
+                                                    <i class="fa-solid fa-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="cart-hover-empty">
+                                                <div class="cart-hover-empty-icon"><i class="fa-solid fa-plate-wheat"></i></div>
+                                                <p>Chưa có món ăn nào trong giỏ hàng</p>
+                                                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-sm btn-cart-empty-go">
+                                                    Khám phá thực đơn ngay
+                                                </a>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </li>
                             <li>
                                 <a href="${pageContext.request.contextPath}/shipper/dashboard" class="${pageContext.request.servletPath eq '/shipper/dashboard' ? 'active' : ''}">
@@ -263,13 +339,89 @@
                                     Thực đơn
                                 </a>
                             </li>
-                            <li>
+                            <li class="nav-cart-item-dropdown">
                                 <a href="${pageContext.request.contextPath}/cart" class="cart-nav-link ${pageContext.request.servletPath eq '/cart' ? 'active' : ''}">
                                     <i class="fa-solid fa-bag-shopping"></i>
                                     <span>Giỏ hàng</span>
                                     <c:set var="cartCount" value="${sessionScope.cart != null ? sessionScope.cart.size() : 0}" />
                                     <span class="cart-badge">${cartCount}</span>
                                 </a>
+
+                                <!-- Mini Cart Hover Preview Dropdown -->
+                                <div class="cart-hover-dropdown">
+                                    <div class="cart-hover-header">
+                                        <span class="cart-hover-title">
+                                            <i class="fa-solid fa-bag-shopping text-primary"></i> Món ăn trong giỏ
+                                        </span>
+                                        <span class="cart-hover-count">(${cartCount} món)</span>
+                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.cart and sessionScope.cart.size() > 0}">
+                                            <c:set var="navCartTotal" value="0" />
+                                            <c:forEach items="${sessionScope.cart.values()}" var="item">
+                                                <c:set var="navCartTotal" value="${navCartTotal + item.totalPrice}" />
+                                            </c:forEach>
+                                            <c:set var="freeshipTarget" value="99000" />
+                                            <c:set var="freeshipDiff" value="${freeshipTarget - navCartTotal}" />
+                                            <c:set var="freeshipPercent" value="${(navCartTotal / freeshipTarget) * 100}" />
+                                            <c:if test="${freeshipPercent > 100}">
+                                                <c:set var="freeshipPercent" value="100" />
+                                            </c:if>
+
+                                            <!-- Smart Freeship Progress Bar -->
+                                            <div class="cart-hover-freeship-box ${freeshipDiff <= 0 ? 'achieved' : ''}">
+                                                <div class="freeship-header-row">
+                                                    <c:choose>
+                                                        <c:when test="${freeshipDiff <= 0}">
+                                                            <span class="freeship-text-achieved"><i class="fa-solid fa-circle-check text-success"></i> Bạn đã được <strong>FREESHIP 15.000 đ</strong>!</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="freeship-text-need">Mua thêm <strong>${String.format("%,.0f", freeshipDiff)} đ</strong> để được <strong>FREESHIP</strong></span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <i class="fa-solid fa-motorcycle freeship-bike-icon"></i>
+                                                </div>
+                                                <div class="freeship-progress-track">
+                                                    <div class="freeship-progress-bar" style="width: ${freeshipPercent}%;"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="cart-hover-list">
+                                                <c:forEach items="${sessionScope.cart.values()}" var="item">
+                                                    <a href="${pageContext.request.contextPath}/food-detail?id=${item.food.id}" class="cart-hover-item">
+                                                        <img src="${item.food.image}" alt="${item.food.name}" class="cart-hover-thumb" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100'">
+                                                        <div class="cart-hover-info">
+                                                            <div class="cart-hover-name" title="${item.food.name}">${item.food.name}</div>
+                                                            <div class="cart-hover-meta">
+                                                                <span class="cart-hover-qty">x${item.quantity}</span>
+                                                                <span class="cart-hover-price">${String.format("%,.0f", item.totalPrice)} đ</span>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </c:forEach>
+                                            </div>
+                                            <div class="cart-hover-footer">
+                                                <div class="cart-hover-total-row">
+                                                    <span>Tổng thanh toán:</span>
+                                                    <strong class="cart-hover-total-val">${String.format("%,.0f", navCartTotal)} đ</strong>
+                                                </div>
+                                                <a href="${pageContext.request.contextPath}/cart" class="btn btn-primary btn-sm btn-cart-hover-cta">
+                                                    <span>Xem Giỏ Hàng &amp; Đặt Món</span>
+                                                    <i class="fa-solid fa-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div class="cart-hover-empty">
+                                                <div class="cart-hover-empty-icon"><i class="fa-solid fa-plate-wheat"></i></div>
+                                                <p>Chưa có món ăn nào trong giỏ hàng</p>
+                                                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-sm btn-cart-empty-go">
+                                                    Khám phá thực đơn ngay
+                                                </a>
+                                            </div>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </li>
                         </c:otherwise>
                     </c:choose>
@@ -334,7 +486,7 @@
 
                                     <!-- Link tới Trang Thông Báo Chung -->
                                     <a href="${pageContext.request.contextPath}/notifications" class="${pageContext.request.servletPath eq '/notifications' ? 'active-link' : ''}">
-                                        <i class="fa-solid fa-bell text-warning"></i> Thông báo của tôi
+                                        <i class="fa-solid fa-bell text-warning"></i> Thông báo
                                         <span class="badge bg-danger ms-auto" id="dropdownNotifBadge" style="display:none; font-size: 0.7rem; border-radius: 50px;">0</span>
                                     </a>
 
@@ -342,16 +494,13 @@
                                         <i class="fa-solid fa-id-card text-primary"></i> Tài khoản của tôi
                                     </a>
 
-                                    <!-- Đơn hàng đã đặt & Giỏ hàng: ẨN hoàn toàn khi shipper đang BẬT nhận đơn; HIỆN khi shipper TẮT nhận đơn hoặc là khách thường -->
+                                    <!-- Đơn hàng đã đặt & Kho Voucher: ẨN hoàn toàn khi shipper đang BẬT nhận đơn; HIỆN khi shipper TẮT nhận đơn hoặc là khách thường -->
                                     <c:if test="${not isSeller and not isShipperActive}">
                                         <a href="${pageContext.request.contextPath}/profile?tab=orders" class="${pageContext.request.servletPath eq '/profile' and param.tab eq 'orders' ? 'active-link' : ''}">
                                             <i class="fa-solid fa-clock-rotate-left text-secondary"></i> Đơn hàng đã đặt
                                         </a>
-                                        <a href="${pageContext.request.contextPath}/client/orders">
-                                            <i class="fa-solid fa-receipt text-success"></i> Đánh giá đơn đã đặt
-                                        </a>
-                                        <a href="${pageContext.request.contextPath}/cart">
-                                            <i class="fa-solid fa-bag-shopping text-warning"></i> Giỏ hàng hiện tại
+                                        <a href="${pageContext.request.contextPath}/profile?tab=vouchers" class="${pageContext.request.servletPath eq '/profile' and param.tab eq 'vouchers' ? 'active-link' : ''}">
+                                            <i class="fa-solid fa-ticket text-danger"></i> Voucher của tôi
                                         </a>
                                     </c:if>
 

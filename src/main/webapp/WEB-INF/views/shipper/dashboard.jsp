@@ -437,7 +437,7 @@
                         <span class="shipper-nav-badge" style="background: #ecfdf5; color: #059669;">100đ</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/notifications" class="shipper-nav-item">
-                        <span><i class="fa-solid fa-bell me-2 text-warning" style="width: 22px;"></i> Thông báo của tôi</span>
+                        <span><i class="fa-solid fa-bell me-2 text-warning" style="width: 22px;"></i> Thông báo</span>
                         <span class="shipper-nav-badge" id="shipperNavNotifBadge" style="display:none; background: #fee2e2; color: #dc2626;">0</span>
                     </a>
                     <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=settings" class="shipper-nav-item ${activeTab eq 'settings' ? 'active' : ''}">

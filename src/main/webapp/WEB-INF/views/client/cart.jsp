@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
     <jsp:param name="title" value="Giỏ Hàng Của Bạn - Utee" />
 </jsp:include>
@@ -18,19 +19,51 @@
 <div class="container section">
     <c:choose>
         <c:when test="${not empty sessionScope.cart and sessionScope.cart.size() > 0}">
+            <c:set var="totalBill" value="0" />
+            <c:forEach items="${sessionScope.cart.values()}" var="item">
+                <c:set var="totalBill" value="${totalBill + item.totalPrice}" />
+            </c:forEach>
+            <c:set var="cartFreeshipGoal" value="99000" />
+            <c:set var="cartFreeshipRemaining" value="${cartFreeshipGoal - totalBill}" />
+            <c:set var="cartFreeshipPercent" value="${(totalBill / cartFreeshipGoal) * 100}" />
+            <c:if test="${cartFreeshipPercent > 100}">
+                <c:set var="cartFreeshipPercent" value="100" />
+            </c:if>
+
             <div class="checkout-grid">
                 <!-- Left: Cart Items List -->
                 <div class="checkout-left">
-                    <div class="checkout-box">
+                    <!-- Smart Freeship Progress Bar Banner -->
+                    <div class="cart-freeship-main-banner ${cartFreeshipRemaining <= 0 ? 'achieved' : ''}">
+                        <div class="cf-banner-icon">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                        <div class="cf-banner-body">
+                            <div class="cf-banner-title-row">
+                                <c:choose>
+                                    <c:when test="${cartFreeshipRemaining <= 0}">
+                                        <strong class="text-success"><i class="fa-solid fa-circle-check"></i> Chúc mừng! Đơn hàng đã đủ điều kiện FREESHIP 15.000 đ</strong>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span>Mua thêm <strong class="text-primary">${String.format("%,.0f", cartFreeshipRemaining)} đ</strong> để nhận <strong class="text-success">MIỄN PHÍ VẬN CHUYỂN 15.000 đ</strong> 🛵</span>
+                                    </c:otherwise>
+                                </c:choose>
+                                <span class="cf-percent-badge"><fmt:formatNumber value="${cartFreeshipPercent}" maxFractionDigits="0" />%</span>
+                            </div>
+                            <div class="cf-progress-track">
+                                <div class="cf-progress-fill" style="width: ${cartFreeshipPercent}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-box mt-3">
                         <div class="box-header">
                             <h3 class="box-title"><i class="fa-solid fa-bag-shopping text-primary"></i> Danh Sách Món Ăn (${sessionScope.cart.size()} món)</h3>
                             <a href="${pageContext.request.contextPath}/foods" class="continue-link"><i class="fa-solid fa-plus"></i> Thêm món khác</a>
                         </div>
 
                         <div class="cart-items-wrapper">
-                            <c:set var="totalBill" value="0" />
                             <c:forEach items="${sessionScope.cart.values()}" var="item">
-                                <c:set var="totalBill" value="${totalBill + item.totalPrice}" />
                                 <div class="cart-item-row">
                                     <img src="${item.food.image}" alt="${item.food.name}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&auto=format&fit=crop&q=60'">
                                     <div class="cart-item-info">
@@ -94,6 +127,41 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Upsell / Cross-sell: Món ăn kèm / Đồ uống gợi ý 1-Click -->
+                    <c:if test="${not empty popularSideDishes}">
+                        <div class="checkout-box mt-3 cart-upsell-box">
+                            <div class="cart-upsell-header">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-fire text-danger"></i>
+                                    <div>
+                                        <h4 class="cart-upsell-title">Món Ngon Gọi Kèm Siêu Tiết Kiệm</h4>
+                                        <p class="cart-upsell-subtitle">Thêm đồ uống &amp; món phụ thanh mát chỉ với 1 chạm</p>
+                                    </div>
+                                </div>
+                                <span class="badge bg-warning text-dark font-weight-bold" style="font-size: 0.75rem; border-radius: 20px;">Mua kèm giá sốc</span>
+                            </div>
+                            <div class="cart-upsell-grid">
+                                <c:forEach items="${popularSideDishes}" var="side">
+                                    <div class="cart-upsell-card">
+                                        <img src="${side.image}" alt="${side.name}" class="cart-upsell-img" onerror="this.src='https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=120'">
+                                        <div class="cart-upsell-info">
+                                            <div class="cart-upsell-name" title="${side.name}">${side.name}</div>
+                                            <div class="cart-upsell-price">${String.format("%,.0f", side.price)} đ</div>
+                                        </div>
+                                        <form action="${pageContext.request.contextPath}/cart" method="POST" class="ajax-cart-form upsell-add-form" data-food-id="${side.id}">
+                                            <input type="hidden" name="action" value="add">
+                                            <input type="hidden" name="foodId" value="${side.id}">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="btn-upsell-add" title="Thêm vào giỏ">
+                                                <i class="fa-solid fa-plus"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
                 </div>
 
                 <!-- Right: Delivery Info & Checkout Summary -->
@@ -144,6 +212,14 @@
                                 <label for="receiverNote">Ghi chú cho tài xế (nếu có)</label>
                                 <input type="text" id="receiverNote" name="receiverNote" class="form-control" placeholder="Giao trước 12h, gọi trước khi đến..."
                                        value="<c:out value='${stickyReceiverNote}' />">
+                                <!-- Quick Note Chips -->
+                                <div class="quick-note-chips-container mt-2">
+                                    <span class="quick-note-chip" onclick="toggleQuickNote(this, 'receiverNote', 'Gọi trước khi đến')">📞 Gọi trước khi đến</span>
+                                    <span class="quick-note-chip" onclick="toggleQuickNote(this, 'receiverNote', 'Giao tận cửa phòng')">🚪 Giao tận cửa</span>
+                                    <span class="quick-note-chip" onclick="toggleQuickNote(this, 'receiverNote', 'Treo ở cổng/bảo vệ')">🏠 Treo ở cổng</span>
+                                    <span class="quick-note-chip" onclick="toggleQuickNote(this, 'receiverNote', 'Không bấm chuông')">🔕 Không bấm chuông</span>
+                                    <span class="quick-note-chip" onclick="toggleQuickNote(this, 'receiverNote', 'Giao nóng hổi')">🔥 Giao nóng hổi</span>
+                                </div>
                             </div>
 
                             <!-- Payment Method -->
@@ -930,6 +1006,8 @@ document.addEventListener('DOMContentLoaded', function() {
             applyDualVouchers('', aVal);
         }
     } else {
+        // Tự động tìm và áp mã giảm giá tốt nhất cho khách hàng
+        checkAndAutoApplyBestVouchers();
         updateShopeeVoucherBar();
     }
 
@@ -938,6 +1016,46 @@ document.addEventListener('DOMContentLoaded', function() {
         window.updateVoucherSaveButtons();
     }
 });
+
+function toggleQuickNote(chipEl, targetInputId, noteText) {
+    const input = document.getElementById(targetInputId);
+    if (!input) return;
+    let currentVal = input.value.trim();
+    chipEl.classList.toggle('active');
+    const isActive = chipEl.classList.contains('active');
+    
+    if (isActive) {
+        if (currentVal.length > 0) {
+            input.value = currentVal + ', ' + noteText;
+        } else {
+            input.value = noteText;
+        }
+    } else {
+        let parts = currentVal.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== noteText; });
+        input.value = parts.join(', ');
+    }
+}
+
+function checkAndAutoApplyBestVouchers() {
+    let bestShip = '';
+    let bestFood = '';
+    if (baseTotal >= 99000) {
+        bestShip = 'FREESHIP';
+    }
+    if (baseTotal >= 60000) {
+        bestFood = 'UTEE30';
+    } else if (baseTotal >= 50000) {
+        bestFood = 'UTEE20';
+    } else if (baseTotal >= 30000) {
+        bestFood = 'UTEE15';
+    }
+    if (bestShip || bestFood) {
+        applyDualVouchers(bestShip, bestFood);
+        if (typeof window.showToast === 'function') {
+            window.showToast('✨ Hệ thống đã tự động chọn ưu đãi tốt nhất cho đơn hàng của bạn!');
+        }
+    }
+}
 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {

@@ -100,6 +100,14 @@ public class CartController extends HttpServlet {
             req.setAttribute("availableVouchers", voucherService.getAllVouchers());
         }
 
+        // Lấy danh sách món ăn kèm/đồ uống gợi ý trong giỏ hàng (Cross-sell)
+        try {
+            List<Food> popularSideDishes = foodService.getPopularSideDishes(4);
+            req.setAttribute("popularSideDishes", popularSideDishes != null ? popularSideDishes : new ArrayList<>());
+        } catch (Exception e) {
+            req.setAttribute("popularSideDishes", new ArrayList<>());
+        }
+
         req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
     }
 

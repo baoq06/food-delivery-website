@@ -158,6 +158,15 @@
                                 <div class="order-option-group">
                                     <label for="orderNote" class="option-label">Ghi chú cho nhà bếp (tùy chọn):</label>
                                     <input type="text" id="orderNote" name="note" placeholder="Ví dụ: Ít cay, không hành, để sốt riêng..." class="form-control note-input">
+                                    <!-- Quick Note Chips -->
+                                    <div class="quick-note-chips-container mt-2">
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Không hành')">🌿 Không hành</span>
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Ít cay')">🌶️ Ít cay</span>
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Nước dùng để riêng')">🥣 Để riêng nước</span>
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Nhiều sốt')">🥫 Nhiều sốt</span>
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Ít ngọt')">🍵 Ít ngọt</span>
+                                        <span class="quick-note-chip" onclick="toggleDetailNote(this, 'Giao nóng')">🔥 Giao nóng</span>
+                                    </div>
                                 </div>
 
                                 <!-- Action Buttons -->
@@ -183,6 +192,49 @@
                     </c:choose>
             </div> <!-- Closes detail-content -->
         </div> <!-- Closes detail-card-layout -->
+
+        <!-- Cross-sell & Upsell: Món Cùng Quán & Đồ Uống Mua Kèm -->
+        <c:if test="${not empty restaurantFoods or not empty popularSideDishes}">
+            <div class="detail-cross-sell-section mt-5">
+                <div class="cross-sell-header mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-danger" style="font-size: 1.4rem;"></i>
+                        <div>
+                            <h3 class="cross-sell-title mb-0">Món Ngon Cùng Quán &amp; Thường Gọi Kèm</h3>
+                            <p class="cross-sell-subtitle mb-0 text-muted">Kết hợp trọn vị bữa ăn &bull; Tiết kiệm phí ship khi đặt cùng quán</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="cross-sell-grid">
+                    <c:forEach items="${not empty restaurantFoods ? restaurantFoods : popularSideDishes}" var="crossFood">
+                        <div class="cross-sell-card">
+                            <a href="${pageContext.request.contextPath}/food-detail?id=${crossFood.id}" class="cross-sell-img-link">
+                                <img src="${crossFood.image}" alt="${crossFood.name}" class="cross-sell-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'">
+                            </a>
+                            <div class="cross-sell-body">
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${crossFood.id}" class="cross-sell-name" title="${crossFood.name}">
+                                    ${crossFood.name}
+                                </a>
+                                <div class="cross-sell-meta">
+                                    <span class="cross-sell-price">${String.format("%,.0f", crossFood.price)} đ</span>
+                                    <c:if test="${crossFood.rating > 0}">
+                                        <span class="cross-sell-rating"><i class="fa-solid fa-star text-warning"></i> ${crossFood.rating}</span>
+                                    </c:if>
+                                </div>
+                                <form action="${pageContext.request.contextPath}/cart" method="POST" class="ajax-cart-form mt-2" data-food-id="${crossFood.id}">
+                                    <input type="hidden" name="action" value="add">
+                                    <input type="hidden" name="foodId" value="${crossFood.id}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary btn-block btn-cross-add" title="Thêm món này vào giỏ">
+                                        <i class="fa-solid fa-plus me-1"></i> Gọi thêm
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </c:if>
 
         <!-- Full Customer Reviews & Comments Section for this Food -->
         <div class="section-food-reviews mt-5">
@@ -428,6 +480,25 @@
 
 <script>
 document.body.classList.add('page-food-detail');
+
+function toggleDetailNote(chipEl, noteText) {
+    const input = document.getElementById('orderNote');
+    if (!input) return;
+    let currentVal = input.value.trim();
+    chipEl.classList.toggle('active');
+    const isActive = chipEl.classList.contains('active');
+    
+    if (isActive) {
+        if (currentVal.length > 0) {
+            input.value = currentVal + ', ' + noteText;
+        } else {
+            input.value = noteText;
+        }
+    } else {
+        let parts = currentVal.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== noteText; });
+        input.value = parts.join(', ');
+    }
+}
 
 function increaseQty() {
     const input = document.getElementById('detailQty');

@@ -152,7 +152,7 @@
                                 <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
                             </c:otherwise>
                         </c:choose>
-                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card">
+                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card" data-cat-id="${cat.id}" data-cat-name="${cat.name}">
                             <div class="cat-img-box">
                                 <img src="${catImg}" alt="${cat.name}" class="cat-food-img" loading="lazy">
                                 <div class="cat-img-badge">
@@ -175,7 +175,7 @@
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
-                    <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card">
+                    <a href="${pageContext.request.contextPath}/foods?cat=1" class="cat-card" data-cat-id="1" data-cat-name="Cơm & Món Mặn">
                         <div class="cat-img-box">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" alt="Cơm & Món Mặn" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-bowl-rice"></i></div>
@@ -187,7 +187,7 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </a>
-                    <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-card">
+                    <a href="${pageContext.request.contextPath}/foods?cat=2" class="cat-card" data-cat-id="2" data-cat-name="Phở & Bún Mì">
                         <div class="cat-img-box">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" alt="Phở & Bún Mì" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-bowl-food"></i></div>
@@ -199,7 +199,7 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </a>
-                    <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-card">
+                    <a href="${pageContext.request.contextPath}/foods?cat=3" class="cat-card" data-cat-id="3" data-cat-name="Trà Sữa & Đồ Uống">
                         <div class="cat-img-box">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" alt="Trà Sữa & Đồ Uống" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-mug-hot"></i></div>
@@ -211,7 +211,7 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </a>
-                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card">
+                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Ăn Vặt">
                         <div class="cat-img-box">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Ăn Vặt" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-burger"></i></div>
@@ -284,10 +284,21 @@
             </a>
         </div>
 
+        <!-- Live Instant Filter Indicator Bar (Appears when user clicks a category) -->
+        <div id="home-filter-indicator" style="display: none; align-items: center; justify-content: space-between; background: #fff; border: 1.5px solid #fed7d7; border-radius: 12px; padding: 10px 18px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(240, 84, 84, 0.08);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-filter text-primary"></i>
+                <span style="font-size: 0.92rem; color: #334155;">Đang lọc theo danh mục: <strong id="home-filter-cat-name" style="color: var(--primary-color);">Cơm &amp; Món Mặn</strong> (<span id="home-filter-count">0</span> món)</span>
+            </div>
+            <button type="button" id="btn-reset-home-filter" class="btn btn-sm btn-outline-secondary" style="border-radius: 50px; font-size: 0.8rem; font-weight: 600; padding: 4px 12px;">
+                <i class="fa-solid fa-xmark me-1"></i> Bỏ lọc / Xem tất cả
+            </button>
+        </div>
+
         <!-- Food Grid -->
-        <div class="food-grid">
+        <div class="food-grid" id="home-food-grid">
             <c:forEach items="${tabFoods}" var="food">
-                <div class="food-card">
+                <div class="food-card" data-id="${food.id}" data-category="${food.categoryId}" data-name="${food.name}" data-price="${food.price}" data-rating="${food.rating}">
                     <div class="food-card-img-wrap">
                         <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Đặc sản'}" /></span>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
@@ -490,11 +501,11 @@
                         <i class="fa-solid fa-ticket"></i>
                         <span id="voucherHomeCode">UTEE30</span>
                     </div>
-                    <button type="button" class="btn-save-voucher" data-voucher-code="UTEE30" onclick="saveVoucherToWallet('UTEE30')">
-                        <i class="fa-solid fa-bookmark"></i> <span>Lưu Vào Kho</span>
+                    <button type="button" class="btn-save-voucher" data-voucher-code="UTEE30" onclick="saveVoucherToWallet('UTEE30')" title="Lưu vào Kho Voucher">
+                        <i class="fa-regular fa-bookmark"></i> <span>Lưu vào kho</span>
                     </button>
-                    <button type="button" class="btn-copy-voucher" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30! Dán vào giỏ hàng ngay.');">
-                        <i class="fa-regular fa-copy"></i> Sao Chép
+                    <button type="button" class="btn-copy-voucher" data-code="UTEE30" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30! Dán vào giỏ hàng ngay.');" title="Sao chép mã">
+                        <i class="fa-regular fa-copy"></i> <span>Sao Chép</span>
                     </button>
                 </div>
 

@@ -22,11 +22,11 @@ public class DBContext {
                 config.setUsername(resolveProperty(prop.getProperty("db.username")));
                 config.setPassword(resolveProperty(prop.getProperty("db.password")));
             } else {
-                // Fallback nếu không tìm thấy file cấu hình (dùng trên Cloud như Render hoặc Docker)
+                // Fallback nếu không tìm thấy file cấu hình
                 config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-                config.setJdbcUrl(System.getenv("DB_URL") != null ? System.getenv("DB_URL") : "jdbc:mysql://localhost:3306/food_delivery_db?useSSL=false");
-                config.setUsername(System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : "root");
-                config.setPassword(System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "");
+                config.setJdbcUrl(System.getenv("DB_URL") != null ? System.getenv("DB_URL") : "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC");
+                config.setUsername(System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : "4GZ4scbbci9yLyb.root");
+                config.setPassword(System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "ETp7DO4YQ1QUHbng");
             }
 
             // === Cấu hình Pool tối ưu cho Cloud Database ===

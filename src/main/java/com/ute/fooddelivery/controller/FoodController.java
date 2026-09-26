@@ -54,6 +54,14 @@ public class FoodController extends HttpServlet {
                             List<Food> recentFoods = foodService.getFoodsByIds(otherIds);
                             req.setAttribute("recentFoods", recentFoods);
                         }
+
+                        // Lấy các món ăn kèm / món cùng quán (Cross-sell & Upsell)
+                        if (food.getRestaurantId() > 0) {
+                            List<Food> restaurantFoods = foodService.getFoodsByRestaurant(food.getRestaurantId(), food.getId(), 4);
+                            req.setAttribute("restaurantFoods", restaurantFoods);
+                        }
+                        List<Food> popularSideDishes = foodService.getPopularSideDishes(4);
+                        req.setAttribute("popularSideDishes", popularSideDishes);
                     }
                 } catch (NumberFormatException e) {
                     System.err.println("ID món không hợp lệ: " + idParam);
