@@ -584,7 +584,7 @@ public class OrderDAO {
             "  AND YEAR(o.created_at) = ? " +
             "  AND MONTH(o.created_at) = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY DAY(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -628,7 +628,7 @@ public class OrderDAO {
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY MONTH(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -670,7 +670,7 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
             "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
             "GROUP BY YEAR(o.created_at) " +
             "ORDER BY period_key DESC";
 
@@ -712,7 +712,7 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
             "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 "
+            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 "
         );
 
         if ("DAY".equalsIgnoreCase(type) && month != null && day != null) {
