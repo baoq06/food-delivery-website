@@ -7,6 +7,9 @@
     <jsp:param name="title" value="Kênh Quán Ăn - Tổng Quan | Utee" />
 </jsp:include>
 
+<!-- Tự động làm mới trang mỗi 30 giây để Quán ăn cập nhật tiến độ tài xế/đơn hàng LIVE -->
+<meta http-equiv="refresh" content="30">
+
 <div class="admin-dashboard-container">
     <jsp:include page="/WEB-INF/views/merchant/common/navbar.jsp">
         <jsp:param name="activeTab" value="dashboard" />
@@ -64,15 +67,20 @@
         <div class="merchant-dashboard-grid">
             <!-- CỘT TRÁI: Bảng Đơn Hàng Gần Đây (Rút Gọn 5 Cột Thông Minh) -->
             <div class="admin-table-card">
-                <div class="admin-table-header">
+                <div class="admin-table-header" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
                     <div>
                         <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Hàng Gần Đây</h3>
                         <span class="table-card-sub">Tiến trình nhận đơn và điều phối shipper theo thời gian thực</span>
                     </div>
-                    <a href="${pageContext.request.contextPath}/merchant/orders" class="btn-merchant-quick">
-                        <span>Xem tất cả</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button onclick="window.location.reload();" class="btn btn-outline-primary btn-sm" style="border-radius: 50px; font-weight: 600; padding: 6px 14px;" title="Cập nhật nhanh dữ liệu mới nhất">
+                            <i class="fa-solid fa-rotate"></i> Làm mới
+                        </button>
+                        <a href="${pageContext.request.contextPath}/merchant/orders" class="btn-merchant-quick">
+                            <span>Xem tất cả</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
 
                 <div class="dashboard-table-responsive">

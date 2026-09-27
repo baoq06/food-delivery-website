@@ -116,15 +116,15 @@ public class ShipperDashboardController extends HttpServlet {
                     String cancelReason = req.getParameter("cancelReason");
                     if (cancelReason != null && !cancelReason.trim().isEmpty()) {
                         try (java.sql.Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
-                             java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET status = 'CANCELLED', note = CONCAT(IFNULL(note, ''), ' [Shipper hủy: ', ?, ']') WHERE order_id = ?")) {
+                             java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET driver_id = NULL, status = 'PENDING', shipper_accepted = 0, shipper_picked_up = 0, note = CONCAT(IFNULL(note, ''), ' [Shipper Trả Đơn: ', ?, ']') WHERE order_id = ?")) {
                             ps.setString(1, cancelReason.trim());
                             ps.setInt(2, orderId);
                             ps.executeUpdate();
                         } catch (Exception ex) {
-                            orderDAO.updateOrderStatus(orderId, "CANCELLED"); 
+                            orderDAO.shipperDeclineOrder(orderId, driver.getId());
                         }
                     } else {
-                        orderDAO.updateOrderStatus(orderId, "CANCELLED");
+                        orderDAO.shipperDeclineOrder(orderId, driver.getId());
                     }
                     List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
                     boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);

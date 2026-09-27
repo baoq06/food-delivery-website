@@ -626,6 +626,34 @@
 
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
+                    // PHỤC HỒI HIỂN THỊ VỊ TRÍ ẢO LƯU TRÊN TRÌNH DUYỆT TỪ CUỐC TRƯỚC
+                    const savedLat = localStorage.getItem('shipper_mock_lat');
+                    const savedLng = localStorage.getItem('shipper_mock_lng');
+                    const savedAddr = localStorage.getItem('shipper_mock_address');
+                    if (savedLat && savedLng && savedAddr) {
+                        try {
+                            const gpsC = document.getElementById('gpsCoordsText');
+                            const locD = document.getElementById('currentLocDisplay');
+                            if (gpsC && locD) {
+                                gpsC.innerText = parseFloat(savedLat).toFixed(6) + ', ' + parseFloat(savedLng).toFixed(6);
+                                locD.innerText = savedAddr;
+                            }
+                        } catch(e) {}
+                    }
+
+                    <c:if test="${not empty param.completedAddr}">
+                        // Nếu vừa giao xong (url có completedAddr), lập tức hiển thị vị trí mới này lên UI
+                        localStorage.setItem('shipper_mock_address', '${param.completedAddr}');
+                        const cLat = 10.8505 + (Math.random() - 0.5) * 0.005;
+                        const cLng = 106.7719 + (Math.random() - 0.5) * 0.005;
+                        localStorage.setItem('shipper_mock_lat', cLat);
+                        localStorage.setItem('shipper_mock_lng', cLng);
+                        
+                        document.getElementById('currentLocDisplay').innerText = '${param.completedAddr}';
+                        document.getElementById('gpsCoordsText').innerText = cLat.toFixed(6) + ', ' + cLng.toFixed(6);
+                        document.getElementById('gpsUpdatedTime').innerText = 'Vừa giao xong';
+                    </c:if>
+
                     function sendLocationUpdate(lat, lng, address) {
                         const formData = new URLSearchParams();
                         formData.append('lat', lat);
@@ -954,21 +982,21 @@
 
                                                         <!-- Button Báo Sự Cố / Hủy Cuốc (chỉ hiện khi chưa giao) -->
                                                         <c:if test="${not activeOrder.shipperDelivered}">
-                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; display: flex; align-items: center; gap: 8px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi hủy!'); return false; } return confirm('Bạn có chắc muốn báo hủy đơn #FZ-${activeOrder.id}? Việc này sẽ cập nhật trạng thái hủy và ghi chú trên hệ thống.');">
+                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi hủy!'); return false; } return confirm('Bạn có chắc muốn báo hủy đơn #FZ-${activeOrder.id}? Việc này sẽ cập nhật trạng thái hủy và ghi chú trên hệ thống.');">
                                                                 <input type="hidden" name="action" value="updateOrder">
                                                                 <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                 <input type="hidden" name="status" value="CANCELLED">
                                                                 
-                                                                <select name="cancelReason" class="form-select form-select-sm" style="border-radius: 50px; padding: 10px 16px; font-size: 0.85rem; max-width: 200px;">
-                                                                    <option value="">Lý do hủy...</option>
+                                                                <select name="cancelReason" class="form-select" style="flex: 1; border-radius: 50px; padding: 10px 16px; font-size: 0.9rem; min-width: 140px; border-color: #cbd5e1; background-color: #f8fafc;">
+                                                                    <option value="">-- Chọn lý do hủy cuốc --</option>
                                                                     <option value="Xe bị hỏng / Tai nạn">Xe bị hỏng / Tai nạn</option>
-                                                                    <option value="Không liên lạc được Khách">Không liên lạc được Khách</option>
+                                                                    <option value="Không liên lạc được Khách">Không gọi được Khách</option>
                                                                     <option value="Quán ăn đóng cửa / Không có món">Quán đóng cửa / Hết món</option>
-                                                                    <option value="Khách đổi địa chỉ sai">Khách đổi địa chỉ sai</option>
+                                                                    <option value="Khách đổi địa chỉ sai">Khách đổi địa chỉ</option>
                                                                     <option value="Lý do cá nhân khác">Lý do cá nhân khác</option>
                                                                 </select>
 
-                                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
+                                                                <button type="submit" class="btn btn-outline-danger flex-shrink-0" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; white-space: nowrap;">
                                                                     <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Hủy Cuốc
                                                                 </button>
                                                             </form>
