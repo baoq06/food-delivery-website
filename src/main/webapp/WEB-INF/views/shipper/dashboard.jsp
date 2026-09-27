@@ -547,7 +547,10 @@
                 </div>
 
                 <!-- Toggle Switch Action Button -->
-                <div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" onclick="window.location.reload();" class="btn btn-outline-secondary" style="border-radius: 50px; font-weight: 700; padding: 12px 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);" title="Làm mới dữ liệu trang">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
                     <c:choose>
                         <c:when test="${driver.status eq 'BUSY'}">
                             <button type="button" class="btn btn-secondary" disabled style="border-radius: 50px; font-weight: 700; padding: 12px 24px; cursor: not-allowed; opacity: 0.7;">
@@ -818,7 +821,7 @@
                                             <c:if test="${not empty pOrder.note}">
                                                 <div class="col-12">
                                                     <span class="text-muted small">Ghi chú của khách:</span>
-                                                    <div class="small text-muted italic bg-light p-2 rounded">${pOrder.note}</div>
+                                                    <div class="small text-muted italic bg-light p-2 rounded order-note-container">${pOrder.note}</div>
                                                 </div>
                                             </c:if>
                                         </div>
@@ -926,8 +929,8 @@
                                                         <i class="fa-solid fa-road me-2"></i> <strong>Cự ly ước tính:</strong> ${activeOrder.distanceKm != null ? activeOrder.distanceKm : 2.0} km
                                                     </div>
                                                     <c:if test="${not empty activeOrder.note}">
-                                                        <div style="font-size: 0.88rem; color: #64748b; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
-                                                            <i class="fa-solid fa-note-sticky text-warning me-1"></i> <strong>Ghi chú:</strong> ${activeOrder.note}
+                                                        <div class="order-note-container" style="font-size: 0.88rem; color: #64748b; background: #fff; padding: 8px 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+                                                            <i class="fa-solid fa-note-sticky text-warning me-1"></i> <strong>Ghi chú:</strong> <span>${activeOrder.note}</span>
                                                         </div>
                                                     </c:if>
                                                 </div>
@@ -1837,5 +1840,20 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Tách ghi chú "Shipper Trả Đơn" ra khỏi ghi chú khách hàng và format riêng biệt cho đẹp
+        document.querySelectorAll('.order-note-container').forEach(el => {
+            let html = el.innerHTML;
+            const regex = /\[Shipper Trả Đơn:\s*(.*?)\]/g;
+            if (regex.test(html)) {
+                // Thay thế chuỗi bằng badge đỏ
+                html = html.replace(regex, '<br><span class="badge bg-danger text-white mt-1" style="font-size: 0.8rem; border-radius: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Chú ý: Shipper trước báo hủy - $1</span>');
+                el.innerHTML = html;
+            }
+        });
+    });
+</script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
