@@ -36,8 +36,11 @@ public class ShipperDashboardController extends HttpServlet {
         if ("toggleStatus".equals(action)) {
             if (driver != null) {
                 if ("BUSY".equalsIgnoreCase(driver.getStatus())) {
-                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=busy_cannot_toggle");
-                    return;
+                    java.util.List<com.ute.fooddelivery.model.Order> checkActive = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+                    if (checkActive != null && !checkActive.isEmpty()) {
+                        resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=busy_cannot_toggle");
+                        return;
+                    }
                 }
                 String newStatus = "AVAILABLE".equalsIgnoreCase(driver.getStatus()) ? "OFFLINE" : "AVAILABLE";
                 driverDAO.updateStatusByUserId(user.getId(), newStatus);
@@ -101,9 +104,28 @@ public class ShipperDashboardController extends HttpServlet {
                             session.setAttribute("driverStatus", "BUSY");
                         }
                         notificationService.notifyOrderCompleted(customerUserId, user.getId(), merchantUserId, orderId);
+                        
+                        Order deliveredOrder = orderDAO.getOrderById(orderId);
+                        if (deliveredOrder != null && deliveredOrder.getAddress() != null) {
+                            String destAddress = java.net.URLEncoder.encode(deliveredOrder.getAddress(), "UTF-8");
+                            resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?completedAddr=" + destAddress);
+                            return;
+                        }
                     }
                 } else if ("CANCELLED".equalsIgnoreCase(status)) {
-                    orderDAO.updateOrderStatus(orderId, "CANCELLED");
+                    String cancelReason = req.getParameter("cancelReason");
+                    if (cancelReason != null && !cancelReason.trim().isEmpty()) {
+                        try (java.sql.Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
+                             java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET status = 'CANCELLED', note = CONCAT(IFNULL(note, ''), ' [Shipper hủy: ', ?, ']') WHERE order_id = ?")) {
+                            ps.setString(1, cancelReason.trim());
+                            ps.setInt(2, orderId);
+                            ps.executeUpdate();
+                        } catch (Exception ex) {
+                            orderDAO.updateOrderStatus(orderId, "CANCELLED"); 
+                        }
+                    } else {
+                        orderDAO.updateOrderStatus(orderId, "CANCELLED");
+                    }
                     List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
                     boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
                     if (!stillHasActive) {

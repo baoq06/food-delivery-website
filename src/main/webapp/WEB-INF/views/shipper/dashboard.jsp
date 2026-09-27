@@ -954,12 +954,22 @@
 
                                                         <!-- Button Báo Sự Cố / Hủy Cuốc (chỉ hiện khi chưa giao) -->
                                                         <c:if test="${not activeOrder.shipperDelivered}">
-                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;" onsubmit="return confirm('Bạn có chắc muốn báo hủy / không giao được đơn #FZ-${activeOrder.id}?');">
+                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; display: flex; align-items: center; gap: 8px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi hủy!'); return false; } return confirm('Bạn có chắc muốn báo hủy đơn #FZ-${activeOrder.id}? Việc này sẽ cập nhật trạng thái hủy và ghi chú trên hệ thống.');">
                                                                 <input type="hidden" name="action" value="updateOrder">
                                                                 <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                 <input type="hidden" name="status" value="CANCELLED">
-                                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 12px 18px;">
-                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Sự Cố
+                                                                
+                                                                <select name="cancelReason" class="form-select form-select-sm" style="border-radius: 50px; padding: 10px 16px; font-size: 0.85rem; max-width: 200px;">
+                                                                    <option value="">Lý do hủy...</option>
+                                                                    <option value="Xe bị hỏng / Tai nạn">Xe bị hỏng / Tai nạn</option>
+                                                                    <option value="Không liên lạc được Khách">Không liên lạc được Khách</option>
+                                                                    <option value="Quán ăn đóng cửa / Không có món">Quán đóng cửa / Hết món</option>
+                                                                    <option value="Khách đổi địa chỉ sai">Khách đổi địa chỉ sai</option>
+                                                                    <option value="Lý do cá nhân khác">Lý do cá nhân khác</option>
+                                                                </select>
+
+                                                                <button type="submit" class="btn btn-outline-danger" style="border-radius: 50px; font-weight: 600; padding: 10px 18px;">
+                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Hủy Cuốc
                                                                 </button>
                                                             </form>
                                                         </c:if>
@@ -1080,6 +1090,17 @@
 
                         <script>
                             document.addEventListener("DOMContentLoaded", function() {
+                                <c:if test="${not empty param.completedAddr}">
+                                    // Giao hàng xong, mô phỏng cập nhật vị trí hiện tại thành điểm đã giao
+                                    localStorage.setItem('shipper_mock_address', '${param.completedAddr}');
+                                    // Tạo tọa độ ngẫu nhiên chênh lệch siêu nhỏ từ HCMUTE làm gốc để giả định
+                                    let mockLat = 10.8505 + (Math.random() - 0.5) * 0.005;
+                                    let mockLng = 106.7719 + (Math.random() - 0.5) * 0.005;
+                                    localStorage.setItem('shipper_mock_lat', mockLat);
+                                    localStorage.setItem('shipper_mock_lng', mockLng);
+                                    alert('✅ Cuốc hoàn tất! Vị trí radar quét hiện tại đã được dời đến:\n${param.completedAddr}');
+                                </c:if>
+                                
                                 let isDisplayingOrder = false;
                                 setInterval(function() {
                                     if (isDisplayingOrder) return;
@@ -1107,6 +1128,29 @@
                                 }, 4000);
                             });
                         </script>
+                    </c:when>
+
+                    <c:when test="${driver.status eq 'BUSY'}">
+                        <!-- KHI BỊ KẸT Ở TRẠNG THÁI BUSY MÀ KHÔNG CÓ ĐƠN -->
+                        <div class="shipper-card" style="text-align: center; padding: 50px 24px; border: 2px dashed #f59e0b; background: #fffbeb;">
+                            <div style="width: 80px; height: 80px; border-radius: 50%; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 20px auto;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <h3 style="font-size: 1.4rem; font-weight: 800; color: #92400e; margin-bottom: 8px;">
+                                Lỗi Đồng Bộ: Trạng Thái Kẹt
+                            </h3>
+                            <p style="color: #b45309; max-width: 540px; margin: 0 auto 24px auto; font-size: 0.95rem; line-height: 1.6;">
+                                Hệ thống ghi nhận bạn đang giao hàng nhưng không tìm thấy dữ liệu đơn hàng nào. Hãy bấm nút dưới đây để hoàn thành ép buộc và mở lại quét đơn.
+                            </p>
+                            <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                    <input type="hidden" name="action" value="toggleStatus">
+                                    <button type="submit" class="btn btn-warning" style="border-radius: 50px; font-weight: 800; padding: 12px 28px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);">
+                                        <i class="fa-solid fa-screwdriver-wrench me-2"></i> Fix Lỗi & Hoàn Thành Ảo
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </c:when>
 
                     <c:otherwise>
