@@ -42,13 +42,13 @@ public class HomeController extends HttpServlet {
 
         if ("toprated".equalsIgnoreCase(tab)) {
             // Tab 'Đánh giá': Lấy các món ăn và quán ăn có rating cao nhất từ dữ liệu thật
-            tabFoods = foodService.getTopRatedFoods(8);
-            tabRestaurants = restaurantService.getTopRatedRestaurants(4);
+            tabFoods = foodService.getTopRatedFoods(12);
+            tabRestaurants = restaurantService.getTopRatedRestaurants(9);
         } else {
             // Tab 'Bán chạy' (mặc định): Lấy các món ăn và quán ăn bán chạy nhất từ dữ liệu thật
             tab = "bestseller";
-            tabFoods = foodService.getBestSellingFoods(8);
-            tabRestaurants = restaurantService.getBestSellingRestaurants(4);
+            tabFoods = foodService.getBestSellingFoods(12);
+            tabRestaurants = restaurantService.getBestSellingRestaurants(9);
         }
 
         req.setAttribute("activeTab", tab);
