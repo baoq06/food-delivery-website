@@ -779,16 +779,56 @@
                                 </div>
 
                                 <div class="auth-field-group">
-                                    <label class="auth-field-label">Logo / Ảnh quán ăn <span style="font-weight: normal; color: #94a3b8;">(Không bắt buộc)</span></label>
-                                    <div class="auth-avatar-dropzone" onclick="document.getElementById('restaurantLogoInput').click()">
-                                        <input type="file" id="restaurantLogoInput" name="restaurantLogo" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'sellerLogoPreview')">
-                                        <div class="auth-avatar-circle-preview" id="sellerLogoPreview" style="border-radius: 12px;">
-                                            <i class="fa-solid fa-store"></i>
+                                    <label class="auth-field-label">
+                                        <i class="fa-solid fa-user-tie text-primary me-1"></i>
+                                        Ảnh đại diện của chủ quán ăn <span style="font-weight: normal; color: #94a3b8;">(Dùng cho hồ sơ cá nhân)</span>
+                                    </label>
+                                    <div class="auth-avatar-dropzone" onclick="document.getElementById('ownerAvatarInput').click()">
+                                        <input type="file" id="ownerAvatarInput" name="ownerAvatar" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'ownerAvatarPreview')">
+                                        <div class="auth-avatar-circle-preview" id="ownerAvatarPreview">
+                                            <i class="fa-solid fa-camera"></i>
                                         </div>
                                         <div class="auth-avatar-info">
-                                            <strong>Tải ảnh / Logo quán ăn</strong>
-                                            <span>Giúp khách hàng dễ dàng nhận diện thương hiệu của bạn</span>
+                                            <strong>Tải ảnh chân dung / avatar chủ quán</strong>
+                                            <span>Lưu vào hệ thống, hiển thị trên thông tin cá nhân và tài khoản quản trị</span>
                                         </div>
+                                        <div class="auth-upload-btn-chip"><i class="fa-solid fa-arrow-up-from-bracket"></i> Chọn ảnh</div>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label class="auth-field-label">
+                                        <i class="fa-solid fa-store text-primary me-1"></i>
+                                        Logo quán ăn <span style="font-weight: normal; color: #94a3b8;">(Đại diện quán ở kênh quản lý món)</span>
+                                    </label>
+                                    <div class="auth-avatar-dropzone" onclick="document.getElementById('restaurantLogoInput').click()">
+                                        <input type="file" id="restaurantLogoInput" name="restaurantLogo" accept="image/*" style="display: none;" onchange="previewAvatar(this, 'sellerLogoPreview')">
+                                        <div class="auth-avatar-circle-preview" id="sellerLogoPreview" style="border-radius: 14px;">
+                                            <i class="fa-solid fa-utensils"></i>
+                                        </div>
+                                        <div class="auth-avatar-info">
+                                            <strong>Tải logo quán ăn</strong>
+                                            <span>Hiển thị làm ảnh đại diện thương hiệu quán ở kênh quản lý món ăn</span>
+                                        </div>
+                                        <div class="auth-upload-btn-chip"><i class="fa-solid fa-arrow-up-from-bracket"></i> Chọn logo</div>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field-group">
+                                    <label class="auth-field-label">
+                                        <i class="fa-solid fa-image text-primary me-1"></i>
+                                        Ảnh banner quán <span style="font-weight: normal; color: #94a3b8;">(Làm banner hiển thị ở mọi trang)</span>
+                                    </label>
+                                    <div class="auth-avatar-dropzone auth-banner-dropzone" onclick="document.getElementById('restaurantBannerInput').click()">
+                                        <input type="file" id="restaurantBannerInput" name="restaurantBanner" accept="image/*" style="display: none;" onchange="previewBanner(this, 'sellerBannerPreview')">
+                                        <div class="auth-banner-rect-preview" id="sellerBannerPreview">
+                                            <i class="fa-regular fa-image"></i>
+                                        </div>
+                                        <div class="auth-avatar-info">
+                                            <strong>Tải ảnh banner / bìa quán</strong>
+                                            <span>Làm banner chính của quán hiển thị ở trang chủ, chi tiết quán và đề xuất</span>
+                                        </div>
+                                        <div class="auth-upload-btn-chip"><i class="fa-solid fa-arrow-up-from-bracket"></i> Chọn banner</div>
                                     </div>
                                 </div>
                             </div>
@@ -1171,6 +1211,19 @@ function previewAvatar(input, previewContainerId) {
             const container = document.getElementById(previewContainerId);
             if (container) {
                 container.innerHTML = '<img src="' + e.target.result + '" alt="Avatar">';
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewBanner(input, previewContainerId) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const container = document.getElementById(previewContainerId);
+            if (container) {
+                container.innerHTML = '<img src="' + e.target.result + '" alt="Banner" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">';
             }
         };
         reader.readAsDataURL(input.files[0]);

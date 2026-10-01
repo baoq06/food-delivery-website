@@ -2,17 +2,76 @@ package com.ute.fooddelivery.dao;
 
 import com.ute.fooddelivery.model.Restaurant;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RestaurantDAO {
+    private static volatile boolean logoColumnChecked = false;
+    private static volatile boolean hasLogoColumn = false;
+
+    public static boolean checkHasLogoColumn() {
+        if (logoColumnChecked) return hasLogoColumn;
+        synchronized (RestaurantDAO.class) {
+            if (logoColumnChecked) return hasLogoColumn;
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn != null) {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    try (ResultSet rs = meta.getColumns(null, null, "restaurants", "logo_url")) {
+                        if (rs.next()) {
+                            hasLogoColumn = true;
+                        }
+                    }
+                    if (!hasLogoColumn) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN logo_url VARCHAR(500) DEFAULT NULL AFTER image_url");
+                            hasLogoColumn = true;
+                            System.out.println(">> Đã thêm cột logo_url vào bảng restaurants");
+                        } catch (Exception ignore) {}
+                    }
+                }
+            } catch (Exception ignored) {}
+            logoColumnChecked = true;
+            return hasLogoColumn;
+        }
+    }
+
+    private static String getBaseQuery() {
+        boolean withLogo = checkHasLogoColumn();
+        return "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, " +
+               (withLogo ? "r.logo_url, " : "r.image_url AS logo_url, ") +
+               "r.status, r.latitude, r.longitude, " +
+               "       COALESCE(sub_rev.avg_rating, 0.0) AS avg_rating, " +
+               "       COALESCE(sub_rev.review_count, 0) AS review_count, " +
+               "       COALESCE(sub_ord.total_orders, 0) AS total_orders " +
+               "FROM restaurants r " +
+               "LEFT JOIN (" +
+               "    SELECT COALESCE(rv.restaurant_id, f.restaurant_id) AS rest_id, " +
+               "           ROUND(AVG(COALESCE(rv.food_rating, rv.rating)), 1) AS avg_rating, " +
+               "           COUNT(DISTINCT rv.review_id) AS review_count " +
+               "    FROM order_reviews rv " +
+               "    LEFT JOIN order_items oi ON rv.order_id = oi.order_id " +
+               "    LEFT JOIN foods f ON oi.food_id = f.food_id " +
+               "    GROUP BY rest_id " +
+               ") sub_rev ON r.restaurant_id = sub_rev.rest_id " +
+               "LEFT JOIN (" +
+               "    SELECT f.restaurant_id AS rest_id, " +
+               "           COUNT(DISTINCT o.order_id) AS total_orders " +
+               "    FROM orders o " +
+               "    JOIN order_items oi ON o.order_id = oi.order_id " +
+               "    JOIN foods f ON oi.food_id = f.food_id " +
+               "    WHERE o.status IN ('DELIVERED', 'COMPLETED') " +
+               "    GROUP BY rest_id " +
+               ") sub_ord ON r.restaurant_id = sub_ord.rest_id ";
+    }
 
     public Restaurant getRestaurantByUserId(int userId) {
-        String query = BASE_QUERY + "WHERE r.user_id = ?";
+        String query = getBaseQuery() + "WHERE r.user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -48,33 +107,8 @@ public class RestaurantDAO {
         return defaultRest;
     }
 
-    private static final String BASE_QUERY = 
-        "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, r.status, r.latitude, r.longitude, " +
-        "       COALESCE(sub_rev.avg_rating, 0.0) AS avg_rating, " +
-        "       COALESCE(sub_rev.review_count, 0) AS review_count, " +
-        "       COALESCE(sub_ord.total_orders, 0) AS total_orders " +
-        "FROM restaurants r " +
-        "LEFT JOIN (" +
-        "    SELECT COALESCE(rv.restaurant_id, f.restaurant_id) AS rest_id, " +
-        "           ROUND(AVG(COALESCE(rv.food_rating, rv.rating)), 1) AS avg_rating, " +
-        "           COUNT(DISTINCT rv.review_id) AS review_count " +
-        "    FROM order_reviews rv " +
-        "    LEFT JOIN order_items oi ON rv.order_id = oi.order_id " +
-        "    LEFT JOIN foods f ON oi.food_id = f.food_id " +
-        "    GROUP BY rest_id " +
-        ") sub_rev ON r.restaurant_id = sub_rev.rest_id " +
-        "LEFT JOIN (" +
-        "    SELECT f.restaurant_id AS rest_id, " +
-        "           COUNT(DISTINCT o.order_id) AS total_orders " +
-        "    FROM orders o " +
-        "    JOIN order_items oi ON o.order_id = oi.order_id " +
-        "    JOIN foods f ON oi.food_id = f.food_id " +
-        "    WHERE o.status IN ('DELIVERED', 'COMPLETED') " +
-        "    GROUP BY rest_id " +
-        ") sub_ord ON r.restaurant_id = sub_ord.rest_id ";
-
     public Restaurant getRestaurantById(int id) {
-        String query = BASE_QUERY + "WHERE r.restaurant_id = ?";
+        String query = getBaseQuery() + "WHERE r.restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -108,7 +142,7 @@ public class RestaurantDAO {
 
     public List<Restaurant> getAllRestaurants() {
         List<Restaurant> list = new ArrayList<>();
-        String query = BASE_QUERY + "ORDER BY r.restaurant_id ASC";
+        String query = getBaseQuery() + "ORDER BY r.restaurant_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
@@ -132,7 +166,7 @@ public class RestaurantDAO {
      */
     public List<Restaurant> getTopRatedRestaurants(int limit) {
         List<Restaurant> list = new ArrayList<>();
-        String query = BASE_QUERY + "ORDER BY avg_rating DESC, review_count DESC, r.restaurant_id ASC LIMIT ?";
+        String query = getBaseQuery() + "WHERE r.status = 'OPEN' ORDER BY avg_rating DESC, review_count DESC, r.restaurant_id ASC LIMIT ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -158,7 +192,7 @@ public class RestaurantDAO {
      */
     public List<Restaurant> getBestSellingRestaurants(int limit) {
         List<Restaurant> list = new ArrayList<>();
-        String query = BASE_QUERY + "ORDER BY total_orders DESC, review_count DESC, avg_rating DESC, r.restaurant_id ASC LIMIT ?";
+        String query = getBaseQuery() + "WHERE r.status = 'OPEN' ORDER BY total_orders DESC, review_count DESC, avg_rating DESC, r.restaurant_id ASC LIMIT ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -213,10 +247,25 @@ public class RestaurantDAO {
     }
 
     public boolean updateRestaurant(Restaurant r) {
-        String query = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ? WHERE restaurant_id = ?";
+        boolean withLogo = checkHasLogoColumn();
+        String queryWithLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, logo_url = ?, status = ? WHERE restaurant_id = ?";
+        String queryWithoutLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ? WHERE restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
-                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                if (withLogo) {
+                    try (PreparedStatement ps = conn.prepareStatement(queryWithLogo)) {
+                        ps.setString(1, r.getName());
+                        ps.setString(2, r.getDescription());
+                        ps.setString(3, r.getPhone());
+                        ps.setString(4, r.getAddress());
+                        ps.setString(5, r.getImageUrl());
+                        ps.setString(6, r.getLogoUrl());
+                        ps.setString(7, r.getStatus());
+                        ps.setInt(8, r.getId());
+                        return ps.executeUpdate() > 0;
+                    } catch (SQLException ignore) {}
+                }
+                try (PreparedStatement ps = conn.prepareStatement(queryWithoutLogo)) {
                     ps.setString(1, r.getName());
                     ps.setString(2, r.getDescription());
                     ps.setString(3, r.getPhone());
@@ -269,6 +318,12 @@ public class RestaurantDAO {
             rs.getString("image_url"),
             rs.getString("status")
         );
+        try {
+            String logo = rs.getString("logo_url");
+            r.setLogoUrl(logo != null && !logo.trim().isEmpty() ? logo : r.getImageUrl());
+        } catch (Exception ignored) {
+            r.setLogoUrl(r.getImageUrl());
+        }
         try {
             r.setRating(rs.getDouble("avg_rating"));
             r.setReviewCount(rs.getInt("review_count"));

@@ -39,6 +39,9 @@ public class Restaurant implements Serializable {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "logo_url")
+    private String logoUrl;
+
     @Column(name = "status")
     private String status;
 
@@ -233,5 +236,30 @@ public class Restaurant implements Serializable {
 
     public void setLongitude(Double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getDisplayLogo() {
+        if (logoUrl != null && !logoUrl.trim().isEmpty()) {
+            return logoUrl.trim();
+        }
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            return imageUrl.trim();
+        }
+        return "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60";
+    }
+
+    public String getDisplayBanner() {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            return imageUrl.trim();
+        }
+        return "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80";
     }
 }

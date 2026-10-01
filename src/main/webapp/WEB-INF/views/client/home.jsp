@@ -388,7 +388,9 @@
                 <c:forEach items="${tabRestaurants}" var="rest">
                     <div class="restaurant-card">
                         <div class="restaurant-card-banner">
-                            <img src="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" 
+                            <c:set var="rawBanner" value="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" />
+                            <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
+                            <img src="${finalBannerUrl}" 
                                  alt="${rest.name}" class="restaurant-banner-img" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'">
                             <span class="restaurant-status-badge ${'OPEN'.equalsIgnoreCase(rest.status) ? 'status-open' : 'status-closed'}">
                                 <c:choose>

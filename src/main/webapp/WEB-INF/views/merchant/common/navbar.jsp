@@ -6,8 +6,20 @@
         <!-- Compact & Modern Merchant App Bar -->
         <div class="merchant-app-bar">
             <div class="merchant-store-profile">
-                <div class="merchant-store-avatar">
-                    <i class="fa-solid fa-store"></i>
+                <div class="merchant-store-avatar" title="${currentRestaurant.name}">
+                    <c:set var="mStoreLogo" value="${not empty currentRestaurant.logoUrl ? currentRestaurant.logoUrl : currentRestaurant.imageUrl}" />
+                    <c:choose>
+                        <c:when test="${not empty mStoreLogo}">
+                            <img src="${mStoreLogo.startsWith('http') || mStoreLogo.startsWith('/') ? (mStoreLogo.startsWith('/') ? pageContext.request.contextPath.concat(mStoreLogo) : mStoreLogo) : pageContext.request.contextPath.concat('/').concat(mStoreLogo)}" 
+                                 alt="${currentRestaurant.name}" 
+                                 class="merchant-store-avatar-img"
+                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+                            <i class="fa-solid fa-store" style="display: none;"></i>
+                        </c:when>
+                        <c:otherwise>
+                            <i class="fa-solid fa-store"></i>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
                 <div class="merchant-store-info">
                     <div class="merchant-store-meta-top">

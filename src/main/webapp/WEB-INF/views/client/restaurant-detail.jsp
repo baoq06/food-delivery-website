@@ -22,7 +22,9 @@
             <!-- Restaurant Profile Hero Card -->
             <div class="restaurant-hero-card">
                 <div class="restaurant-hero-cover-wrap">
-                    <img src="${not empty restaurant.imageUrl ? restaurant.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'}" 
+                    <c:set var="rawBanner" value="${not empty restaurant.imageUrl ? restaurant.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'}" />
+                    <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
+                    <img src="${finalBannerUrl}" 
                          alt="${restaurant.name}" class="restaurant-hero-cover" 
                          onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'">
                     <div class="restaurant-hero-overlay"></div>
@@ -39,6 +41,13 @@
                 </div>
 
                 <div class="restaurant-hero-info">
+                    <c:set var="rawLogo" value="${not empty restaurant.logoUrl ? restaurant.logoUrl : ''}" />
+                    <c:if test="${not empty rawLogo}">
+                        <c:set var="finalLogoUrl" value="${rawLogo.startsWith('http') || rawLogo.startsWith('/') ? (rawLogo.startsWith('/') ? pageContext.request.contextPath.concat(rawLogo) : rawLogo) : pageContext.request.contextPath.concat('/').concat(rawLogo)}" />
+                        <div class="restaurant-hero-logo-wrap" style="width: 76px; height: 76px; border-radius: 18px; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.18); margin-top: -46px; margin-bottom: 12px; background: #ffffff; position: relative; z-index: 5;">
+                            <img src="${finalLogoUrl}" alt="${restaurant.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none';" />
+                        </div>
+                    </c:if>
                     <div class="restaurant-info-main">
                         <div class="restaurant-badge-tag"><i class="fa-solid fa-store"></i> Quán Ăn Đối Tác Chính Thức</div>
                         <h1 class="restaurant-hero-title">${restaurant.name}</h1>

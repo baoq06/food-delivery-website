@@ -112,14 +112,32 @@
         <div class="profile-hero-main">
             <div class="profile-avatar-box">
                 <div class="profile-avatar-circle">
-                    <span class="avatar-initials">
-                        <c:choose>
-                            <c:when test="${not empty user.fullName}">
-                                ${user.fullName.substring(0, 1).toUpperCase()}
-                            </c:when>
-                            <c:otherwise>U</c:otherwise>
-                        </c:choose>
-                    </span>
+                    <c:choose>
+                        <c:when test="${not empty user.avatar}">
+                            <img src="${user.avatar.startsWith('http') || user.avatar.startsWith('/') ? (user.avatar.startsWith('/') ? pageContext.request.contextPath.concat(user.avatar) : user.avatar) : pageContext.request.contextPath.concat('/').concat(user.avatar)}" 
+                                 alt="${user.fullName}" 
+                                 class="profile-avatar-img"
+                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" />
+                            <span class="avatar-initials" style="display: none;">
+                                <c:choose>
+                                    <c:when test="${not empty user.fullName}">
+                                        ${user.fullName.substring(0, 1).toUpperCase()}
+                                    </c:when>
+                                    <c:otherwise>U</c:otherwise>
+                                </c:choose>
+                            </span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="avatar-initials">
+                                <c:choose>
+                                    <c:when test="${not empty user.fullName}">
+                                        ${user.fullName.substring(0, 1).toUpperCase()}
+                                    </c:when>
+                                    <c:otherwise>U</c:otherwise>
+                                </c:choose>
+                            </span>
+                        </c:otherwise>
+                    </c:choose>
                     <span class="avatar-status-dot" title="Tài khoản đang hoạt động"></span>
                 </div>
             </div>

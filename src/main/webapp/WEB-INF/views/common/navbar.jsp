@@ -439,7 +439,18 @@
 
                             <div class="user-menu">
                                 <div class="user-avatar-pill">
-                                    <i class="fa-solid fa-circle-user"></i>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                            <img src="${sessionScope.currentUser.avatar.startsWith('http') || sessionScope.currentUser.avatar.startsWith('/') ? (sessionScope.currentUser.avatar.startsWith('/') ? pageContext.request.contextPath.concat(sessionScope.currentUser.avatar) : sessionScope.currentUser.avatar) : pageContext.request.contextPath.concat('/').concat(sessionScope.currentUser.avatar)}" 
+                                                 alt="${sessionScope.currentUser.fullName}" 
+                                                 style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" 
+                                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                                            <i class="fa-solid fa-circle-user" style="display: none;"></i>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-solid fa-circle-user"></i>
+                                        </c:otherwise>
+                                    </c:choose>
                                     <span>${sessionScope.currentUser.fullName}</span>
                                     <i class="fa-solid fa-chevron-down user-caret"></i>
                                 </div>
@@ -598,7 +609,18 @@
                 <c:when test="${not empty sessionScope.currentUser}">
                     <div class="mobile-user-card">
                         <div class="mobile-user-avatar">
-                            <i class="fa-solid fa-circle-user"></i>
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                    <img src="${sessionScope.currentUser.avatar.startsWith('http') || sessionScope.currentUser.avatar.startsWith('/') ? (sessionScope.currentUser.avatar.startsWith('/') ? pageContext.request.contextPath.concat(sessionScope.currentUser.avatar) : sessionScope.currentUser.avatar) : pageContext.request.contextPath.concat('/').concat(sessionScope.currentUser.avatar)}" 
+                                         alt="${sessionScope.currentUser.fullName}" 
+                                         style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" 
+                                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                                    <i class="fa-solid fa-circle-user" style="display: none;"></i>
+                                </c:when>
+                                <c:otherwise>
+                                    <i class="fa-solid fa-circle-user"></i>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="mobile-user-info">
                             <strong class="mobile-user-name">${sessionScope.currentUser.fullName}</strong>
