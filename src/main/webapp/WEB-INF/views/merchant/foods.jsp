@@ -143,8 +143,18 @@
                                         </td>
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2 align-items-center">
-                                                <button type="button" class="btn btn-outline-primary btn-sm" style="border-radius: 8px;"
-                                                        onclick="openEditFoodModal(${food.id}, '${food.name}', ${food.price}, ${food.categoryId}, '${food.imageUrl}', '${food.description}', ${food.available}, ${food.combo}, '${food.originalPrice != null ? food.originalPrice : ''}', '${food.comboItems}')"
+                                                <button type="button" class="btn btn-outline-primary btn-sm btn-edit-food" style="border-radius: 8px;"
+                                                        data-id="${food.id}"
+                                                        data-name="<c:out value='${food.name}' />"
+                                                        data-price="${food.price}"
+                                                        data-category-id="${food.categoryId}"
+                                                        data-image-url="<c:out value='${food.imageUrl}' />"
+                                                        data-description="<c:out value='${food.description}' />"
+                                                        data-available="${food.available}"
+                                                        data-combo="${food.combo}"
+                                                        data-original-price="${food.originalPrice != null ? food.originalPrice : ''}"
+                                                        data-combo-items="<c:out value='${food.comboItems}' />"
+                                                        onclick="handleEditFoodClick(this)"
                                                         title="Chỉnh sửa món">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
@@ -192,30 +202,31 @@
 </div>
 
 <!-- Modal Thêm / Chỉnh Sửa Món Ăn (Thiết Kế Mới Chuẩn UI/UX Pro Max) -->
-<div id="foodModal" class="merchant-food-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeFoodModal();">
-    <div class="merchant-food-modal-container">
-        <!-- Modal Header -->
-        <div class="merchant-food-modal-header">
-            <div class="mf-header-brand">
-                <div class="mf-header-icon" id="modalHeaderIcon">
-                    <i class="fa-solid fa-bowl-food"></i>
-                </div>
-                <div>
-                    <h3 class="mf-header-title" id="modalTitle">Đăng Món Ăn Mới</h3>
-                    <p class="mf-header-subtitle" id="modalSubtitle">Thêm món ngon vào thực đơn quán để khách hàng bắt đầu đặt món ngay</p>
-                </div>
-            </div>
-            <button type="button" class="mf-close-btn" onclick="closeFoodModal()" title="Đóng cửa sổ (Esc)">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <!-- Form Đăng / Sửa Món -->
-        <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" enctype="multipart/form-data" id="foodForm" onsubmit="return handleFormSubmit();">
+<div id="foodModal" class="merchant-food-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeFoodModal();" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="merchant-food-modal-container" onclick="event.stopPropagation();">
+        <!-- Form Đăng / Sửa Món bao quát toàn bộ modal -->
+        <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" enctype="multipart/form-data" id="foodForm" class="merchant-food-modal-form" onsubmit="return handleFormSubmit();">
             <input type="hidden" name="action" id="formAction" value="add" />
             <input type="hidden" name="foodId" id="foodId" value="" />
 
-            <div class="merchant-food-modal-body">
+            <!-- Modal Header (Cố định ở trên cùng) -->
+            <div class="merchant-food-modal-header">
+                <div class="mf-header-brand">
+                    <div class="mf-header-icon" id="modalHeaderIcon">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <div>
+                        <h3 class="mf-header-title" id="modalTitle">Đăng Món Ăn Mới</h3>
+                        <p class="mf-header-subtitle" id="modalSubtitle">Thêm món ngon vào thực đơn quán để khách hàng bắt đầu đặt món ngay</p>
+                    </div>
+                </div>
+                <button type="button" class="mf-close-btn" onclick="closeFoodModal()" title="Đóng cửa sổ (Esc)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Cuộn mượt mà độc lập, không che khuất header/footer) -->
+            <div class="merchant-food-modal-body" id="foodModalBody">
                 <div class="mf-modal-grid">
                     <!-- CỘT TRÁI: THÔNG TIN CHI TIẾT MÓN ĂN -->
                     <div class="mf-grid-left">
@@ -442,16 +453,18 @@
                 </div>
             </div>
 
-            <!-- Modal Footer -->
+            <!-- Modal Footer (Cố định ở đáy, nút Lưu luôn nhìn thấy và dễ bấm) -->
             <div class="merchant-food-modal-footer">
                 <div class="mf-footer-hint">
                     <i class="fa-solid fa-shield-halved text-success"></i>
-                    <span>Món ăn sau khi lưu sẽ đồng bộ ngay lập tức trên hệ thống Utee</span>
+                    <span>Thay đổi món ăn sẽ đồng bộ ngay lập tức trên hệ thống Utee</span>
                 </div>
                 <div class="mf-footer-actions">
-                    <button type="button" class="mf-btn-cancel" onclick="closeFoodModal()">Hủy bỏ</button>
+                    <button type="button" class="mf-btn-cancel" onclick="closeFoodModal()">
+                        <i class="fa-solid fa-xmark me-1"></i> Hủy bỏ
+                    </button>
                     <button type="submit" class="mf-btn-submit" id="btnSubmitForm">
-                        <i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>
+                        <i class="fa-solid fa-floppy-disk me-1"></i> <span>Lưu Thay Đổi</span>
                     </button>
                 </div>
             </div>
@@ -465,6 +478,20 @@
     function toggleComboFields(checked) {
         const group = document.getElementById('comboDetailsGroup');
         if (group) group.style.display = checked ? 'block' : 'none';
+    }
+
+    function handleEditFoodClick(btn) {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const price = btn.getAttribute('data-price');
+        const categoryId = btn.getAttribute('data-category-id');
+        const imageUrl = btn.getAttribute('data-image-url');
+        const desc = btn.getAttribute('data-description');
+        const isAvailable = btn.getAttribute('data-available');
+        const isCombo = btn.getAttribute('data-combo');
+        const origPrice = btn.getAttribute('data-original-price');
+        const comboItems = btn.getAttribute('data-combo-items');
+        openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems);
     }
 
     function openAddFoodModal() {
@@ -507,10 +534,13 @@
         }
 
         switchImageTab('upload');
-        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-plus me-1"></i> <span>Đăng Món Mới</span>';
         
         const modal = document.getElementById('foodModal');
         modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const body = document.getElementById('foodModalBody');
+        if (body) body.scrollTop = 0;
         setTimeout(() => modal.classList.add('active'), 10);
         document.getElementById('foodName').focus();
     }
@@ -558,10 +588,13 @@
             document.getElementById('liveCardCategory').innerText = opt.text;
         }
 
-        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-check"></i> <span>Cập Nhật Món</span>';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span>Lưu Thay Đổi</span>';
         
         const modal = document.getElementById('foodModal');
         modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const body = document.getElementById('foodModalBody');
+        if (body) body.scrollTop = 0;
         setTimeout(() => modal.classList.add('active'), 10);
         document.getElementById('foodName').focus();
     }
@@ -570,6 +603,7 @@
         const modal = document.getElementById('foodModal');
         modal.classList.remove('active');
         modal.style.display = 'none';
+        document.body.style.overflow = '';
     }
 
     // Input Handlers
@@ -762,12 +796,25 @@
         return true;
     }
 
-    // Keyboard Shortcuts (Esc to close)
+    // Keyboard Shortcuts (Esc to close, Ctrl+S to save)
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('foodModal');
             if (modal && modal.style.display !== 'none') {
                 closeFoodModal();
+            }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            const modal = document.getElementById('foodModal');
+            if (modal && modal.style.display !== 'none') {
+                e.preventDefault();
+                const form = document.getElementById('foodForm');
+                if (form) {
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.submit();
+                    }
+                }
             }
         }
     });
