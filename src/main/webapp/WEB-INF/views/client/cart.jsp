@@ -67,7 +67,19 @@
                                 <div class="cart-item-row">
                                     <img src="${item.food.image}" alt="${item.food.name}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&auto=format&fit=crop&q=60'">
                                     <div class="cart-item-info">
-                                        <h4 class="cart-item-name">${item.food.name}</h4>
+                                        <h4 class="cart-item-name">
+                                            <c:if test="${item.food.combo}">
+                                                <span class="combo-saving-badge" style="vertical-align: middle; margin-right: 5px; font-size: 0.72rem; padding: 2px 7px;">
+                                                    <i class="fa-solid fa-fire text-danger"></i> Set Tiết Kiệm
+                                                </span>
+                                            </c:if>
+                                            ${item.food.name}
+                                        </h4>
+                                        <c:if test="${item.food.combo and not empty item.food.comboItems}">
+                                            <div style="font-size: 0.76rem; color: #ea580c; margin: 2px 0 4px 0;">
+                                                <i class="fa-solid fa-layer-group me-1"></i> ${item.food.comboItems}
+                                            </div>
+                                        </c:if>
                                         <div class="cart-item-unit-price">${String.format("%,.0f", item.food.price)} đ / phần</div>
                                     </div>
                                     

@@ -58,4 +58,12 @@ public class FoodService {
     public List<Food> getPopularSideDishes(int limit) {
         return foodDAO.getPopularSideDishes(limit);
     }
+
+    public List<Food> getCombosByRestaurant(int restaurantId) {
+        return foodDAO.getCombosByRestaurantId(restaurantId);
+    }
+
+    public List<Food> getAllCombos() {
+        return foodDAO.getAllCombos();
+    }
 }
