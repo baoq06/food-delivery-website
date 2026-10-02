@@ -93,7 +93,48 @@ public class Notification implements Serializable {
         this.orderId = orderId;
     }
 
+    /**
+     * Tự động xóa emoji và ký hiệu biểu tượng đứng ở đầu chuỗi
+     */
+    public static String stripLeadingEmojis(String text) {
+        if (text == null || text.isEmpty()) return "";
+        int i = 0;
+        int len = text.length();
+        while (i < len) {
+            int codePoint = text.codePointAt(i);
+            if (Character.isLetterOrDigit(codePoint)) {
+                break;
+            }
+            int type = Character.getType(codePoint);
+            boolean isEmojiOrSymbol = (type == Character.OTHER_SYMBOL
+                || type == Character.SURROGATE
+                || type == Character.MODIFIER_SYMBOL
+                || type == Character.MATH_SYMBOL
+                || type == Character.CURRENCY_SYMBOL
+                || type == Character.SPACE_SEPARATOR
+                || Character.isWhitespace(codePoint)
+                || (codePoint >= 0x1F000 && codePoint <= 0x1FFFF)
+                || (codePoint >= 0x2600 && codePoint <= 0x27BF)
+                || (codePoint >= 0xFE00 && codePoint <= 0xFE0F));
+
+            if (isEmojiOrSymbol) {
+                i += Character.charCount(codePoint);
+            } else {
+                break;
+            }
+        }
+        return text.substring(i).trim();
+    }
+
     public String getTitle() {
+        return stripLeadingEmojis(title);
+    }
+
+    public String getCleanTitle() {
+        return stripLeadingEmojis(title);
+    }
+
+    public String getRawTitle() {
         return title;
     }
 

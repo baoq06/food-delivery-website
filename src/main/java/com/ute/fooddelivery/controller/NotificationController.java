@@ -13,7 +13,13 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "NotificationController", urlPatterns = {"/notifications", "/api/notifications/unread-count", "/api/notifications/mark-read"})
+@WebServlet(name = "NotificationController", urlPatterns = {
+    "/notifications",
+    "/api/notifications/unread-count",
+    "/api/notifications/mark-read",
+    "/api/notifications/recent",
+    "/api/notifications/mark-all-read"
+})
 public class NotificationController extends HttpServlet {
     private final NotificationDAO notificationDAO = new NotificationDAO();
 
@@ -33,6 +39,54 @@ public class NotificationController extends HttpServlet {
                 count = notificationDAO.getUnreadCount(currentUser.getId());
             }
             resp.getWriter().write("{\"unreadCount\":" + count + "}");
+            return;
+        }
+
+        // API Endpoint trả về danh sách tóm tắt vài thông báo mới nhất cho Popover
+        if ("/api/notifications/recent".equalsIgnoreCase(servletPath)) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            if (currentUser == null) {
+                resp.getWriter().write("{\"success\":false,\"unreadCount\":0,\"notifications\":[]}");
+                return;
+            }
+            int unreadCount = notificationDAO.getUnreadCount(currentUser.getId());
+            List<Notification> recent = notificationDAO.getRecentNotifications(currentUser.getId(), 5);
+
+            com.google.gson.JsonArray arr = new com.google.gson.JsonArray();
+            for (Notification n : recent) {
+                com.google.gson.JsonObject obj = new com.google.gson.JsonObject();
+                obj.addProperty("id", n.getId());
+                obj.addProperty("title", n.getTitle());
+                obj.addProperty("message", n.getMessage());
+                obj.addProperty("type", n.getType());
+                obj.addProperty("link", n.getLink() != null ? n.getLink() : "");
+                obj.addProperty("read", n.isRead());
+                obj.addProperty("timeAgo", n.getTimeAgo());
+                obj.addProperty("iconClass", n.getIconClass());
+                arr.add(obj);
+            }
+
+            com.google.gson.JsonObject result = new com.google.gson.JsonObject();
+            result.addProperty("success", true);
+            result.addProperty("unreadCount", unreadCount);
+            result.add("notifications", arr);
+
+            resp.getWriter().write(result.toString());
+            return;
+        }
+
+        // API Endpoint đánh dấu tất cả đã đọc qua AJAX
+        if ("/api/notifications/mark-all-read".equalsIgnoreCase(servletPath)) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            if (currentUser == null) {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                resp.getWriter().write("{\"success\":false,\"message\":\"Chưa đăng nhập\"}");
+                return;
+            }
+            notificationDAO.markAllAsRead(currentUser.getId());
+            resp.getWriter().write("{\"success\":true,\"unreadCount\":0}");
             return;
         }
 

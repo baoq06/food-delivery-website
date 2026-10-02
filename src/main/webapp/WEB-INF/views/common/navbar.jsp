@@ -53,7 +53,14 @@
     .topbar-toggle-shipper-btn.offline .shipper-pulse-dot {
         background: #94a3b8;
     }
-    /* Notification Bell UI/UX Pro Max */
+    /* Notification Bell UI/UX Pro Max & Popover Preview */
+    .nav-notif-dropdown-wrapper {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 6px;
+        padding: 4px 0;
+    }
     .nav-notif-btn {
         position: relative;
         display: inline-flex;
@@ -68,7 +75,6 @@
         font-size: 1.1rem;
         text-decoration: none;
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        margin-right: 6px;
     }
     .nav-notif-btn:hover {
         background: #fff5f5;
@@ -103,6 +109,216 @@
         10%, 30% { transform: rotate(-12deg) scale(1.08); }
         20%, 40% { transform: rotate(12deg) scale(1.08); }
         50% { transform: rotate(0); }
+    }
+
+    /* Notification Popover Dropdown */
+    .nav-notif-popover {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: -8px;
+        width: 360px;
+        max-width: calc(100vw - 24px);
+        background: #ffffff;
+        border: 1px solid #fee2e2;
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(240, 84, 84, 0.06);
+        z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(8px) scale(0.98);
+        transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                    visibility 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+    }
+    /* Invisible Hover Bridge: Phủ kín khoảng cách giữa nút chuông và menu chống mất hover */
+    .nav-notif-popover::before {
+        content: '';
+        position: absolute;
+        top: -18px;
+        left: -12px;
+        right: -12px;
+        height: 22px;
+        background: transparent;
+    }
+    .nav-notif-dropdown-wrapper:hover .nav-notif-popover,
+    .nav-notif-dropdown-wrapper.is-open .nav-notif-popover {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+    }
+    .nav-notif-popover-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 16px;
+        background: #fffafa;
+        border-bottom: 1px solid #f1f5f9;
+        border-radius: 18px 18px 0 0;
+    }
+    .notif-popover-title {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .notif-popover-badge {
+        font-size: 0.72rem;
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 2px 8px;
+        border-radius: 50px;
+        font-weight: 700;
+    }
+    .btn-popover-mark-all {
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 3px 9px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s ease;
+    }
+    .btn-popover-mark-all:hover {
+        background: #e6f9ed;
+        color: #10ac84;
+        border-color: #a3e9b9;
+    }
+    .nav-notif-popover-body {
+        max-height: 330px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+    .nav-notif-popover-body::-webkit-scrollbar {
+        width: 4px;
+    }
+    .nav-notif-popover-body::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    .popover-notif-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #f8fafc;
+        text-decoration: none;
+        color: inherit;
+        transition: background 0.18s ease;
+        cursor: pointer;
+        position: relative;
+    }
+    .popover-notif-item:last-child {
+        border-bottom: none;
+    }
+    .popover-notif-item:hover {
+        background: #fff5f5;
+    }
+    .popover-notif-item.unread {
+        background: #fffafa;
+        border-left: 3px solid #f05454;
+    }
+    .popover-item-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .popover-notif-item.unread .popover-item-icon {
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(240, 84, 84, 0.12);
+    }
+    .popover-item-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .popover-item-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2px;
+        line-height: 1.35;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+    }
+    .popover-item-desc {
+        font-size: 0.78rem;
+        color: #64748b;
+        line-height: 1.4;
+        margin: 0 0 4px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .popover-item-time {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .popover-unread-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #f05454;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .notif-popover-loading,
+    .notif-popover-empty {
+        padding: 30px 16px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .notif-popover-empty i {
+        font-size: 2.2rem;
+        color: #cbd5e1;
+    }
+    .nav-notif-popover-footer {
+        padding: 10px 16px;
+        text-align: center;
+        background: #f8fafc;
+        border-top: 1px solid #f1f5f9;
+    }
+    .btn-popover-view-all {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #f05454;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: gap 0.2s ease, color 0.2s ease;
+    }
+    .btn-popover-view-all:hover {
+        color: #de3b3b;
+        gap: 9px;
     }
 </style>
 
@@ -431,11 +647,41 @@
                 <div class="nav-actions">
                     <c:choose>
                         <c:when test="${not empty sessionScope.currentUser}">
-                            <!-- Chuông thông báo Realtime cho cả 3 vai trò -->
-                            <a href="${pageContext.request.contextPath}/notifications" class="nav-notif-btn" id="navNotifBtn" title="Xem thông báo của bạn">
-                                <i class="fa-solid fa-bell"></i>
-                                <span class="nav-notif-badge" id="navNotifBadge" style="display: none;">0</span>
-                            </a>
+                            <!-- Chuông thông báo Realtime & Popover List Preview -->
+                            <div class="nav-notif-dropdown-wrapper" id="navNotifDropdownWrapper">
+                                <a href="${pageContext.request.contextPath}/notifications" class="nav-notif-btn" id="navNotifBtn" title="Xem thông báo của bạn" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa-solid fa-bell"></i>
+                                    <span class="nav-notif-badge" id="navNotifBadge" style="display: none;">0</span>
+                                </a>
+
+                                <!-- Notification Popover Preview -->
+                                <div class="nav-notif-popover" id="navNotifPopover">
+                                    <div class="nav-notif-popover-header">
+                                        <div class="notif-popover-title">
+                                            <i class="fa-solid fa-bell text-primary"></i>
+                                            <span>Thông báo</span>
+                                            <span class="notif-popover-badge" id="popoverUnreadBadge" style="display: none;">0</span>
+                                        </div>
+                                        <button type="button" class="btn-popover-mark-all" id="btnPopoverMarkAll" onclick="markAllNavNotifsRead(event)">
+                                            <i class="fa-solid fa-check-double text-success"></i> Đã đọc tất cả
+                                        </button>
+                                    </div>
+
+                                    <div class="nav-notif-popover-body" id="navNotifList">
+                                        <div class="notif-popover-loading">
+                                            <i class="fa-solid fa-circle-notch fa-spin text-primary"></i>
+                                            <span>Đang tải thông báo...</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="nav-notif-popover-footer">
+                                        <a href="${pageContext.request.contextPath}/notifications" class="btn-popover-view-all">
+                                            <span>Xem tất cả thông báo</span>
+                                            <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div class="user-menu">
                                 <div class="user-avatar-pill">
@@ -521,46 +767,212 @@
                                     </c:if>
 
                                     <div class="dropdown-divider"></div>
+                                    
+                                    <!-- Chế độ giao diện Sáng / Tối / Tự động -->
+                                    <div class="user-dropdown-theme-section">
+                                        <div class="dropdown-theme-header">
+                                            <span class="dropdown-theme-label"><i class="fa-solid fa-circle-half-stroke text-primary"></i> Chế độ giao diện</span>
+                                            <span class="dropdown-theme-hint" id="dropdownThemeHint">Tự động</span>
+                                        </div>
+                                        <div class="dropdown-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
+                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')" title="Giao diện Sáng">
+                                                <i class="fa-solid fa-sun text-warning"></i>
+                                                <span>Sáng</span>
+                                            </button>
+                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')" title="Giao diện Tối">
+                                                <i class="fa-solid fa-moon text-primary"></i>
+                                                <span>Tối</span>
+                                            </button>
+                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')" title="Theo giao diện thiết bị">
+                                                <i class="fa-solid fa-desktop text-info"></i>
+                                                <span>Tự động</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="dropdown-divider"></div>
                                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
                                 </div>
                             </div>
 
                             <script>
-                                document.addEventListener("DOMContentLoaded", function() {
-                                    function updateUnreadNotifBadge() {
-                                        fetch('${pageContext.request.contextPath}/api/notifications/unread-count')
-                                            .then(function(res) { return res.json(); })
-                                            .then(function(data) {
-                                                var count = data.unreadCount || 0;
-                                                var badge = document.getElementById('navNotifBadge');
-                                                var dropBadge = document.getElementById('dropdownNotifBadge');
-                                                if (badge) {
-                                                    if (count > 0) {
-                                                        badge.innerText = count > 99 ? '99+' : count;
-                                                        badge.style.display = 'flex';
-                                                        badge.classList.add('has-unread');
-                                                    } else {
-                                                        badge.style.display = 'none';
-                                                        badge.classList.remove('has-unread');
-                                                    }
-                                                }
-                                                if (dropBadge) {
-                                                    if (count > 0) {
-                                                        dropBadge.innerText = count;
-                                                        dropBadge.style.display = 'inline-block';
-                                                    } else {
-                                                        dropBadge.style.display = 'none';
-                                                    }
-                                                }
-                                            })
-                                            .catch(function(err) {});
+                                var navNotifCache = null;
+                                var lastNavNotifFetch = 0;
+                                var isFetchingNavNotif = false;
+
+                                function updateUnreadNotifBadge() {
+                                    fetch('${pageContext.request.contextPath}/api/notifications/unread-count')
+                                        .then(function(res) { return res.json(); })
+                                        .then(function(data) {
+                                            syncNotifBadges(data.unreadCount || 0);
+                                        })
+                                        .catch(function(err) {});
+                                }
+
+                                function syncNotifBadges(count) {
+                                    var badge = document.getElementById('navNotifBadge');
+                                    var dropBadge = document.getElementById('dropdownNotifBadge');
+                                    var popBadge = document.getElementById('popoverUnreadBadge');
+                                    if (badge) {
+                                        if (count > 0) {
+                                            badge.innerText = count > 99 ? '99+' : count;
+                                            badge.style.display = 'flex';
+                                            badge.classList.add('has-unread');
+                                        } else {
+                                            badge.style.display = 'none';
+                                            badge.classList.remove('has-unread');
+                                        }
                                     }
+                                    if (dropBadge) {
+                                        if (count > 0) {
+                                            dropBadge.innerText = count;
+                                            dropBadge.style.display = 'inline-block';
+                                        } else {
+                                            dropBadge.style.display = 'none';
+                                        }
+                                    }
+                                    if (popBadge) {
+                                        if (count > 0) {
+                                            popBadge.innerText = count + ' mới';
+                                            popBadge.style.display = 'inline-block';
+                                        } else {
+                                            popBadge.style.display = 'none';
+                                        }
+                                    }
+                                }
+
+                                function loadRecentNavNotifications(force) {
+                                    var now = Date.now();
+                                    if (!force && navNotifCache && (now - lastNavNotifFetch < 12000)) {
+                                        renderNavNotifications(navNotifCache);
+                                        return;
+                                    }
+                                    if (isFetchingNavNotif) return;
+                                    isFetchingNavNotif = true;
+
+                                    fetch('${pageContext.request.contextPath}/api/notifications/recent')
+                                        .then(function(res) { return res.json(); })
+                                        .then(function(data) {
+                                            isFetchingNavNotif = false;
+                                            if (data.success) {
+                                                navNotifCache = data;
+                                                lastNavNotifFetch = Date.now();
+                                                renderNavNotifications(data);
+                                                syncNotifBadges(data.unreadCount || 0);
+                                            }
+                                        })
+                                        .catch(function(err) {
+                                            isFetchingNavNotif = false;
+                                            var listEl = document.getElementById('navNotifList');
+                                            if (listEl) {
+                                                listEl.innerHTML = '<div class="notif-popover-empty"><i class="fa-regular fa-bell-slash"></i><span>Không thể tải thông báo</span></div>';
+                                            }
+                                        });
+                                }
+
+                                function escapeNotifHtml(str) {
+                                    if (!str) return '';
+                                    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                                }
+
+                                function renderNavNotifications(data) {
+                                    var listEl = document.getElementById('navNotifList');
+                                    if (!listEl) return;
+                                    var notifs = data.notifications || [];
+                                    if (notifs.length === 0) {
+                                        listEl.innerHTML = '<div class="notif-popover-empty"><i class="fa-regular fa-bell-slash"></i><span>Bạn không có thông báo nào</span></div>';
+                                        return;
+                                    }
+
+                                    var html = '';
+                                    notifs.forEach(function(n) {
+                                        var unreadCls = n.read ? '' : 'unread';
+                                        var rawLink = n.link || '';
+                                        var linkUrl = '';
+                                        if (rawLink) {
+                                            linkUrl = rawLink.startsWith('/') ? ('${pageContext.request.contextPath}' + rawLink) : ('${pageContext.request.contextPath}/' + rawLink);
+                                        } else {
+                                            linkUrl = '${pageContext.request.contextPath}/notifications';
+                                        }
+
+                                        html += '<div class="popover-notif-item ' + unreadCls + '" onclick="handleNavNotifItemClick(' + n.id + ', \'' + escapeNotifHtml(linkUrl) + '\', ' + n.read + ', event)">';
+                                        html += '  <div class="popover-item-icon"><i class="' + escapeNotifHtml(n.iconClass) + '"></i></div>';
+                                        html += '  <div class="popover-item-content">';
+                                        html += '    <div class="popover-item-title">';
+                                        html += '      <span>' + escapeNotifHtml(n.title) + '</span>';
+                                        if (!n.read) {
+                                            html += '      <span class="popover-unread-dot" title="Chưa đọc"></span>';
+                                        }
+                                        html += '    </div>';
+                                        html += '    <p class="popover-item-desc">' + escapeNotifHtml(n.message) + '</p>';
+                                        html += '    <span class="popover-item-time"><i class="fa-regular fa-clock"></i> ' + escapeNotifHtml(n.timeAgo) + '</span>';
+                                        html += '  </div>';
+                                        html += '</div>';
+                                    });
+
+                                    listEl.innerHTML = html;
+                                }
+
+                                function handleNavNotifItemClick(id, linkUrl, isRead, event) {
+                                    if (event) event.preventDefault();
+                                    if (!isRead && id) {
+                                        fetch('${pageContext.request.contextPath}/api/notifications/mark-read?id=' + id)
+                                            .catch(function(err){});
+                                    }
+                                    window.location.href = linkUrl;
+                                }
+
+                                function markAllNavNotifsRead(event) {
+                                    if (event) event.stopPropagation();
+                                    fetch('${pageContext.request.contextPath}/api/notifications/mark-all-read')
+                                        .then(function(res) { return res.json(); })
+                                        .then(function(data) {
+                                            if (data.success) {
+                                                if (navNotifCache && navNotifCache.notifications) {
+                                                    navNotifCache.notifications.forEach(function(n) { n.read = true; });
+                                                    navNotifCache.unreadCount = 0;
+                                                    renderNavNotifications(navNotifCache);
+                                                }
+                                                syncNotifBadges(0);
+                                            }
+                                        })
+                                        .catch(function(err) {});
+                                }
+
+                                document.addEventListener("DOMContentLoaded", function() {
                                     updateUnreadNotifBadge();
-                                    setInterval(updateUnreadNotifBadge, 5000);
+                                    setInterval(updateUnreadNotifBadge, 8000);
+
+                                    var wrapper = document.getElementById('navNotifDropdownWrapper');
+                                    var notifCloseTimeout = null;
+
+                                    if (wrapper) {
+                                        wrapper.addEventListener('mouseenter', function() {
+                                            if (notifCloseTimeout) {
+                                                clearTimeout(notifCloseTimeout);
+                                                notifCloseTimeout = null;
+                                            }
+                                            wrapper.classList.add('is-open');
+                                            loadRecentNavNotifications(false);
+                                        });
+
+                                        wrapper.addEventListener('mouseleave', function() {
+                                            if (notifCloseTimeout) {
+                                                clearTimeout(notifCloseTimeout);
+                                            }
+                                            notifCloseTimeout = setTimeout(function() {
+                                                wrapper.classList.remove('is-open');
+                                            }, 280);
+                                        });
+                                    }
                                 });
                             </script>
                         </c:when>
                         <c:otherwise>
+                            <button type="button" class="btn-guest-theme-toggle" onclick="setAppTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" title="Đổi giao diện Sáng / Tối" aria-label="Đổi giao diện">
+                                <i class="fa-solid fa-moon guest-icon-moon"></i>
+                                <i class="fa-solid fa-sun guest-icon-sun"></i>
+                            </button>
                             <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>
                             <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-primary btn-sm btn-nav-auth">Đăng ký</a>
                         </c:otherwise>
@@ -698,6 +1110,25 @@
                     </ul>
                 </div>
             </c:if>
+
+            <!-- Giao diện hiển thị trên Mobile Drawer -->
+            <div class="mobile-drawer-nav-group">
+                <div class="drawer-group-title">Giao Diện Ứng Dụng</div>
+                <div class="mobile-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
+                    <button type="button" class="mobile-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')">
+                        <i class="fa-solid fa-sun text-warning"></i>
+                        <span>Sáng</span>
+                    </button>
+                    <button type="button" class="mobile-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')">
+                        <i class="fa-solid fa-moon text-primary"></i>
+                        <span>Tối</span>
+                    </button>
+                    <button type="button" class="mobile-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')">
+                        <i class="fa-solid fa-desktop text-info"></i>
+                        <span>Tự động</span>
+                    </button>
+                </div>
+            </div>
 
             <div class="mobile-drawer-footer">
                 <div class="drawer-hotline">
