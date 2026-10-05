@@ -5,338 +5,91 @@
     <jsp:param name="title" value="${activeTab eq 'history' ? 'Lịch Sử Giao Hàng - Đối Tác Tài Xế' : (activeTab eq 'income' ? 'Thu Nhập Tài Xế - Utee Express' : (activeTab eq 'violations' ? 'Điểm Vi Phạm & Tác Phong - Utee Express' : (activeTab eq 'settings' ? 'Cài Đặt Tài Xế - Utee Express' : (activeTab eq 'help' ? 'Trung Tâm Trợ Giúp Tài Xế - Utee Express' : 'Bảng Điều Khiển Tài Xế - Utee Express'))))}" />
 </jsp:include>
 
-<!-- Page Banner -->
-<div class="page-banner" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; padding: 36px 0; margin-bottom: 30px;">
-    <div class="container page-banner-inner" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-            <div class="breadcrumb" style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: #94a3b8; margin-bottom: 8px;">
-                <a href="${pageContext.request.contextPath}/home" style="color: #cbd5e1; text-decoration: none;"><i class="fa-solid fa-house"></i> Trang chủ</a>
-                <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
-                <a href="${pageContext.request.contextPath}/shipper/dashboard" style="color: #cbd5e1; text-decoration: none;">Kênh tài xế</a>
-                <i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i>
-                <span style="color: #f05454; font-weight: 600;">
-                    <c:choose>
-                        <c:when test="${activeTab eq 'history'}">Lịch sử chuyến giao</c:when>
-                        <c:when test="${activeTab eq 'income'}">Thu nhập tài xế</c:when>
-                        <c:when test="${activeTab eq 'violations'}">Điểm vi phạm</c:when>
-                        <c:when test="${activeTab eq 'settings'}">Cài đặt</c:when>
-                        <c:when test="${activeTab eq 'help'}">Trung tâm trợ giúp</c:when>
-                        <c:otherwise>Bảng điều khiển &amp; Nhận đơn</c:otherwise>
-                    </c:choose>
-                </span>
-            </div>
-            <h1 class="page-title" style="margin: 0; font-size: 1.85rem; font-weight: 800; color: #fff; letter-spacing: -0.5px;">
-                <i class="fa-solid 
-                    <c:choose>
-                        <c:when test="${activeTab eq 'history'}">fa-clock-rotate-left</c:when>
-                        <c:when test="${activeTab eq 'income'}">fa-wallet</c:when>
-                        <c:when test="${activeTab eq 'violations'}">fa-triangle-exclamation</c:when>
-                        <c:when test="${activeTab eq 'settings'}">fa-gear</c:when>
-                        <c:when test="${activeTab eq 'help'}">fa-circle-question</c:when>
-                        <c:otherwise>fa-motorcycle</c:otherwise>
-                    </c:choose>" style="color: #f05454; margin-right: 10px;"></i>
-                <c:choose>
-                    <c:when test="${activeTab eq 'history'}">Lịch Sử Chuyến Xe Giao Hàng</c:when>
-                    <c:when test="${activeTab eq 'income'}">Ví Thu Nhập &amp; Thù Lao Giao Hàng</c:when>
-                    <c:when test="${activeTab eq 'violations'}">Điểm Vi Phạm &amp; Hạnh Kiểm Tác Phong</c:when>
-                    <c:when test="${activeTab eq 'settings'}">Cài Đặt Ứng Dụng &amp; Hồ Sơ Tài Xế</c:when>
-                    <c:when test="${activeTab eq 'help'}">Trung Tâm Trợ Giúp &amp; Hỗ Trợ Đối Tác</c:when>
-                    <c:otherwise>Trung Tâm Điều Phối &amp; Nhận Đơn</c:otherwise>
-                </c:choose>
-            </h1>
-        </div>
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="padding: 8px 16px; border-radius: 50px; font-size: 0.88rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;
-                <c:choose>
-                    <c:when test="${driver.status eq 'AVAILABLE'}">background: #dcfce7; color: #15803d;</c:when>
-                    <c:when test="${driver.status eq 'BUSY'}">background: #fef3c7; color: #b45309;</c:when>
-                    <c:otherwise>background: #f1f5f9; color: #64748b;</c:otherwise>
-                </c:choose>">
-                <span style="width: 10px; height: 10px; border-radius: 50%;
-                    <c:choose>
-                        <c:when test="${driver.status eq 'AVAILABLE'}">background: #22c55e; box-shadow: 0 0 8px #22c55e;</c:when>
-                        <c:when test="${driver.status eq 'BUSY'}">background: #f59e0b; box-shadow: 0 0 8px #f59e0b;</c:when>
-                        <c:otherwise>background: #94a3b8;</c:otherwise>
-                    </c:choose>"></span>
-                <c:choose>
-                    <c:when test="${driver.status eq 'AVAILABLE'}">ĐANG TRỰC TUYẾN (BẬT)</c:when>
-                    <c:when test="${driver.status eq 'BUSY'}">ĐANG GIAO ĐƠN</c:when>
-                    <c:otherwise>NGOẠI TUYẾN (TẮT)</c:otherwise>
-                </c:choose>
-            </span>
-        </div>
-    </div>
-</div>
 
 <style>
-    /* Shipper Dashboard Modern Styles */
-    .shipper-layout { display: flex; gap: 28px; flex-wrap: wrap; margin-bottom: 60px; }
-    .shipper-sidebar { flex: 0 0 310px; }
-    .shipper-content { flex: 1; min-width: 0; }
+    /* Utee Express - Mobile-first UI */
+    body { background-color: #f3f4f6; padding-bottom: 80px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    
+    /* Layout */
+    .shipper-layout { display: flex; flex-direction: column-reverse; gap: 16px; margin-top: 16px; margin-bottom: 20px; }
+    .shipper-sidebar { flex: 1 1 100%; display: flex; flex-direction: column; gap: 16px; }
+    .shipper-content { flex: 1 1 100%; min-width: 0; }
 
-    .shipper-card {
-        background: #ffffff;
-        border-radius: 16px;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        margin-bottom: 24px;
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
+    /* Cards */
+    .shipper-card { background: #ffffff; border-radius: 16px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); margin-bottom: 16px; border: 1px solid #f1f5f9 !important; overflow: hidden; }
 
-    /* Driver Profile Card */
-    .driver-hero-box {
-        padding: 24px;
-        background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
-        border-bottom: 1px solid #fee2e2;
-        text-align: center;
-    }
-    .driver-avatar-circle {
-        width: 76px;
-        height: 76px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #f05454 0%, #ff7676 100%);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: 800;
-        margin: 0 auto 12px auto;
-        box-shadow: 0 6px 16px rgba(240, 84, 84, 0.25);
-        border: 3px solid #fff;
-    }
-    .driver-name { font-size: 1.2rem; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
-    .driver-meta { font-size: 0.88rem; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    /* Profile Box */
+    .driver-hero-box { padding: 16px; background: #fff; display: flex; align-items: center; gap: 16px; text-align: left; border-radius: 16px; }
+    .driver-avatar-circle { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f05454 0%, #ff7676 100%); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; flex-shrink: 0; }
+    .driver-name { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 0 0 2px 0; }
+    .driver-meta { font-size: 0.85rem; color: #64748b; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 
-    /* Navigation List */
-    .shipper-nav { display: flex; flex-direction: column; padding: 12px; }
-    .shipper-nav-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 13px 18px;
-        border-radius: 12px;
-        color: #475569;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        margin-bottom: 5px;
-    }
-    .shipper-nav-item:hover {
-        background: #f8fafc;
-        color: #f05454;
-        transform: translateX(4px);
-    }
-    .shipper-nav-item.active {
-        background: #fff5f5;
-        color: #f05454;
-        border-left: 4px solid #f05454;
-        font-weight: 700;
-    }
-    .shipper-nav-badge {
-        padding: 3px 10px;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        background: #fee2e2;
-        color: #dc2626;
-        font-weight: 700;
-    }
+    /* Bottom Navigation Bar */
+    .shipper-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; display: flex; flex-direction: row; justify-content: space-around; padding: 10px 4px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); box-shadow: 0 -4px 20px rgba(0,0,0,0.08); z-index: 1000; border-top: 1px solid #e2e8f0; }
+    .shipper-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 6px; color: #64748b; text-decoration: none; flex: 1; position: relative; transition: color 0.2s; }
+    .shipper-nav-item span:first-child { display: flex; flex-direction: column; align-items: center; font-size: 0.72rem; font-weight: 700; gap: 6px; }
+    .shipper-nav-item span:first-child i { font-size: 1.4rem; color: inherit; }
+    .shipper-nav-item:hover, .shipper-nav-item.active { background: transparent; color: #f05454; }
+    .shipper-nav-badge { position: absolute; top: 0px; right: 20%; padding: 2px 6px; border-radius: 50px; font-size: 0.65rem; background: #ef4444; color: #fff; font-weight: 800; border: 2px solid #fff; }
 
-    /* Wallet Stats Box */
-    .wallet-stat-card {
-        padding: 20px;
-        border-top: 1px solid #f1f5f9;
-        background: #fafbfc;
-    }
-    .wallet-title {
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #64748b;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .wallet-stat-item {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 14px 16px;
-        margin-bottom: 10px;
-    }
-    .wallet-stat-val { font-size: 1.35rem; font-weight: 800; line-height: 1.2; margin-bottom: 2px; }
-    .wallet-stat-sub { font-size: 0.82rem; color: #64748b; margin: 0; }
+    /* Mode Banner */
+    .mode-toggle-banner { padding: 20px; border-radius: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); }
+    .mode-toggle-banner.available { background: #dcfce7; border: 1px solid #bbf7d0; }
+    .mode-toggle-banner.busy { background: #fef3c7; border: 1px solid #fde68a; }
+    .mode-toggle-banner.offline { background: #f1f5f9; border: 1px solid #e2e8f0; }
 
-    /* Driver Status Switcher Hero Box */
-    .mode-toggle-banner {
-        padding: 24px;
-        border-radius: 16px;
-        margin-bottom: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 20px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.03);
-    }
-    .mode-toggle-banner.available {
-        background: linear-gradient(135deg, #f0fdf4 0%, #e6f9ed 100%);
-        border: 1px solid #bbf7d0;
-    }
-    .mode-toggle-banner.busy {
-        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-        border: 1px solid #fde68a;
-    }
-    .mode-toggle-banner.offline {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border: 1px solid #e2e8f0;
-    }
+    /* Order Popups */
+    .new-order-popup { background: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); margin-bottom: 20px; border: 2px solid #f59e0b; }
 
-    /* Radar Scanning Component */
-    .radar-box {
-        padding: 48px 24px;
-        text-align: center;
-        background: linear-gradient(135deg, #f0fdf9 0%, #e6f9f4 100%);
-        border: 2px dashed #99f6e4;
-        border-radius: 16px;
-        position: relative;
-        overflow: hidden;
-    }
-    .radar-pulse-center {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #10ac84 0%, #2ed573 100%);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        margin: 0 auto 20px auto;
-        box-shadow: 0 0 0 0 rgba(16, 172, 132, 0.4);
-        animation: radarWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    @keyframes radarWave {
-        0% { box-shadow: 0 0 0 0 rgba(16, 172, 132, 0.6); }
-        70% { box-shadow: 0 0 0 35px rgba(16, 172, 132, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 172, 132, 0); }
-    }
-
-    /* Dispatch New Order Modal / Alert Card */
-    .new-order-popup {
-        background: #ffffff;
-        border: 2px solid #f59e0b;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
-        animation: popupShake 1.2s infinite alternate;
-        margin-bottom: 24px;
-    }
-    @keyframes popupShake {
-        0% { transform: scale(1); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.15); }
-        100% { transform: scale(1.015); box-shadow: 0 12px 30px rgba(245, 158, 11, 0.3); }
-    }
-
-    /* Trip History Card */
-    .trip-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 22px;
-        margin-bottom: 20px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-    }
-    .trip-card:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-        transform: translateY(-2px);
-    }
-    .trip-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 14px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
+    /* Wallet Stats */
+    .wallet-stat-card { padding: 16px; background: #fff; }
+    .wallet-stat-item { border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; margin-bottom: 12px; background: #f8fafc; }
+    .wallet-stat-val { font-size: 1.35rem; font-weight: 800; color: #1e293b; }
+    .wallet-title { display: none; }
+    
+    /* Trip Card */
+    .trip-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+    .trip-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #cbd5e1; padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
     .trip-id { font-size: 1.1rem; font-weight: 800; color: #1e293b; }
-    .trip-time { font-size: 0.85rem; color: #64748b; margin-left: 8px; }
-    .trip-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-    .trip-field { font-size: 0.92rem; color: #334155; margin-bottom: 8px; }
-    .trip-field strong { color: #0f172a; }
-    .trip-review-box {
-        background: #f8fafc;
-        border-radius: 12px;
-        padding: 14px 18px;
-        margin-top: 14px;
-        border-left: 4px solid #f59e0b;
-    }
-    .star-rating-display { color: #f59e0b; font-size: 1rem; margin-right: 6px; }
-
+    .trip-grid { display: flex; flex-direction: column; gap: 8px; }
+    .trip-field { font-size: 0.95rem; color: #334155; }
+    
     /* Filter Pills */
-    .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-    .filter-pill-btn {
-        padding: 8px 18px;
-        border-radius: 50px;
-        font-size: 0.88rem;
-        font-weight: 600;
-        text-decoration: none;
-        border: 1px solid #e2e8f0;
-        background: #fff;
-        color: #475569;
-        transition: all 0.2s ease;
-    }
-    .filter-pill-btn:hover { background: #f8fafc; color: #f05454; }
-    .filter-pill-btn.active {
-        background: #f05454;
-        color: #fff;
-        border-color: #f05454;
-        box-shadow: 0 4px 12px rgba(240, 84, 84, 0.25);
-    }
+    .filter-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .filter-pill-btn { padding: 8px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: 1px solid #cbd5e1; background: #fff; color: #475569; white-space: nowrap; }
+    .filter-pill-btn.active { background: #f05454; color: #fff; border-color: #f05454; }
 
-    /* Common Card Headers & Utilities */
-    .sec-card-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #f1f5f9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
+    .sec-card-header { padding: 18px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .sec-card-title { font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0; }
     .sec-card-body { padding: 24px; }
+    .income-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .income-stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; }
     
-    /* Stat Grid */
-    .income-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 24px; }
-    .income-stat-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 20px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* Cancel Order form layout fix for mobile */
+    form[action*="updateOrder"] select { height: 44px; }
+    form[action*="updateOrder"] button { height: 44px; display: flex; align-items: center; justify-content: center; }
+
+    /* Radar Box */
+    .radar-box { padding: 40px 20px; text-align: center; }
+    .radar-pulse-center { width: 70px; height: 70px; border-radius: 50%; background: #10ac84; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 20px auto; animation: radarWave 2s infinite cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes radarWave { 0% { box-shadow: 0 0 0 0 rgba(16, 172, 132, 0.4); } 70% { box-shadow: 0 0 0 35px rgba(16, 172, 132, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 172, 132, 0); } }
+
+    @media (min-width: 900px) {
+        body { padding-bottom: 20px; }
+        .shipper-layout { flex-direction: row; margin-top: 30px; }
+        .shipper-sidebar { flex: 0 0 310px; }
+        .shipper-content { flex: 1 }
+        .shipper-nav { position: static; flex-direction: column; box-shadow: none; padding: 12px; border: none; }
+        .shipper-nav-item { flex-direction: row; justify-content: space-between; padding: 12px 18px; border-radius: 12px; border: 1px solid transparent; }
+        .shipper-nav-item span:first-child { flex-direction: row; font-size: 1rem; }
+        .shipper-nav-item:hover { background: #f8fafc; }
+        .shipper-nav-item.active { background: #fff5f5; border-left: 4px solid #f05454; }
+        .shipper-nav-badge { position: static; font-size: 0.8rem; padding: 3px 10px; border: none; }
+        .driver-hero-box { flex-direction: column; text-align: center; border-radius: 0; border-bottom: 1px solid #e2e8f0; }
+        .driver-avatar-circle { width: 76px; height: 76px; }
     }
-    .income-stat-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.04);
-    }
-    
-    /* Form controls in settings */
-    .form-switch-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 0;
-        border-bottom: 1px solid #f1f5f9;
-    }
-    .form-switch-row:last-child { border-bottom: none; }
 </style>
+
 
 <div class="container">
     <!-- User Notice Banners -->
@@ -1264,7 +1017,95 @@
                             </div>
                         </div>
 
-                        <!-- Bank & Payout info card -->
+                        
+                        <!-- DOANH THU & BIỂU ĐỒ TĂNG TRƯỞNG -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+                                <div>
+                                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 6px 0;">Tổng Quan Thu Nhập Tháng Này</h4>
+                                    <div style="font-size: 0.9rem; color: #64748b;">So sánh doanh thu thực nhận với tháng trước</div>
+                                </div>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 10px 16px; text-align: center;">
+                                        <div style="font-size: 0.8rem; font-weight: 700; color: #059669; margin-bottom: 2px;">TỔNG THÁNG NÀY</div>
+                                        <div style="font-size: 1.35rem; font-weight: 800; color: #059669;">5,250,000 đ</div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: center; background: #10ac84; color: #fff; border-radius: 50px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(16, 172, 132, 0.4);">
+                                        <i class="fa-solid fa-arrow-trend-up me-2"></i> Tăng 12%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ChartJS Canvas -->
+                            <div style="position: relative; height: 260px; width: 100%;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Load Chart.js for the revenue chart -->
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const ctx = document.getElementById('revenueChart');
+                                if (ctx) {
+                                    new Chart(ctx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4 (Hiện tại)'],
+                                            datasets: [{
+                                                label: 'Doanh thu (VNĐ)',
+                                                data: [1200000, 1450000, 1100000, 1500000],
+                                                borderColor: '#3b82f6',
+                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                borderWidth: 3,
+                                                fill: true,
+                                                tension: 0.4,
+                                                pointBackgroundColor: '#fff',
+                                                pointBorderColor: '#3b82f6',
+                                                pointBorderWidth: 2,
+                                                pointRadius: 5,
+                                                pointHoverRadius: 7
+                                            }]
+                                        },
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: { display: false },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            let label = context.dataset.label || '';
+                                                            if (label) { label += ': '; }
+                                                            if (context.parsed.y !== null) {
+                                                                label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' đ';
+                                                            }
+                                                            return label;
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true,
+                                                    grid: { color: '#f1f5f9', drawBorder: false },
+                                                    ticks: {
+                                                        callback: function(value) { return (value / 1000) + 'k'; },
+                                                        color: '#94a3b8', font: { size: 11, weight: '600' }
+                                                    }
+                                                },
+                                                x: {
+                                                    grid: { display: false, drawBorder: false },
+                                                    ticks: { color: '#64748b', font: { size: 12, weight: 'bold' } }
+                                                }
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        </script>
+
+<!-- Bank & Payout info card -->
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                             <div style="display: flex; align-items: center; gap: 14px;">
                                 <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
@@ -1706,7 +1547,160 @@
                         </div>
 
                         <!-- Group 2: Vehicle Profile -->
-                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin: 28px 0 16px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                        
+                        <!-- MAP NAVIGATION SETTINGS -->
+                        <!-- BEAUTIFUL PREMIUM SETTINGS UI -->
+                        <style>
+                            .setting-group { background: #ffffff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 4px 16px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+                            .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px dashed #f1f5f9; gap: 16px; }
+                            .setting-row:last-child { border-bottom: none; }
+                            
+                            .setting-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; flex-shrink: 0; }
+                            
+                            .setting-content { flex: 1; display: flex; flex-direction: column; }
+                            .setting-title { font-size: 1.05rem; font-weight: 800; color: #1e293b; margin-bottom: 4px; letter-spacing: -0.2px; }
+                            .setting-desc { font-size: 0.85rem; color: #64748b; line-height: 1.4; }
+                            
+                            .setting-action select { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 50px; padding: 8px 14px 8px 16px; font-weight: 700; color: #334155; cursor: pointer; outline: none; }
+                            .setting-action select:focus { outline: 2px solid #3b82f6; }
+                            
+                            /* Custom premium switch */
+                            .setting-action .form-check-input { width: 44px; height: 24px; cursor: pointer; background-color: #cbd5e1; border: none; box-shadow: none !important; }
+                            .setting-action .form-check-input:checked { background-color: #10ac84; }
+                        </style>
+
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 32px 0 16px 0;">
+                            Bản Đồ & Điều Hướng
+                        </h4>
+                        
+                        <div class="setting-group">
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Ứng dụng dẫn đường</div>
+                                    <div class="setting-desc">Ứng dụng mặc định khi bấm "Chỉ đường"</div>
+                                </div>
+                                <div class="setting-action">
+                                    <select>
+                                        <option value="gmaps" selected>Google Maps</option>
+                                        <option value="amaps">Apple Maps</option>
+                                        <option value="inapp">Bản đồ Utee</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+                                    <i class="fa-solid fa-diamond-turn-right"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Tự động chuyển ứng dụng</div>
+                                    <div class="setting-desc">Mở ngay bản đồ sau khi báo lấy món xong</div>
+                                </div>
+                                <div class="setting-action">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" checked>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OPERATION OPTIONS -->
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 32px 0 16px 0;">
+                            Vận Hành & An Toàn
+                        </h4>
+
+                        <div class="setting-group">
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #10ac84 0%, #059669 100%); box-shadow: 0 4px 12px rgba(16, 172, 132, 0.3);">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Giao ghép đơn (Batching)</div>
+                                    <div class="setting-desc">Tự động ghép các đơn cùng lộ trình</div>
+                                </div>
+                                <div class="setting-action">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch" checked>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Giới hạn giữ đơn</div>
+                                    <div class="setting-desc">Tránh đầy sức chứa túi giữ nhiệt đồ ăn</div>
+                                </div>
+                                <div class="setting-action">
+                                    <select>
+                                        <option value="2">Tối đa 2</option>
+                                        <option value="3" selected>Tối đa 3</option>
+                                        <option value="no">Không giới hạn</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+                                <div style="display: flex; gap: 16px; align-items: center;">
+                                    <div class="setting-icon" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3);">
+                                        <i class="fa-solid fa-truck-medical"></i>
+                                    </div>
+                                    <div class="setting-content">
+                                        <div class="setting-title" style="color: #e11d48;">SĐT Người Thân (SOS)</div>
+                                        <div class="setting-desc">Hệ thống sẽ gọi SĐT này trong trường hợp bạn nhấn nút khẩn cấp.</div>
+                                    </div>
+                                </div>
+                                <div class="input-group" style="margin-top: 8px;">
+                                    <span class="input-group-text bg-light border-end-0 text-muted fw-bold" style="border-radius: 12px 0 0 12px;">+84</span>
+                                    <input type="text" class="form-control border-start-0 py-2" value="988777666" style="border-radius: 0 12px 12px 0; font-weight: 800; color: #1e293b; background: #fff; box-shadow: none;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DISPLAY SETTINGS -->
+                        <h4 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 32px 0 16px 0;">
+                            Cá Nhân Hóa Trải Nghiệm
+                        </h4>
+
+                        <div class="setting-group" style="margin-bottom: 40px;">
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);">
+                                    <i class="fa-solid fa-moon"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Giao diện Tối (Night Mode)</div>
+                                    <div class="setting-desc">Bảo vệ mắt và tiết kiệm pin khi chạy xe ban đêm</div>
+                                </div>
+                                <div class="setting-action">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-row">
+                                <div class="setting-icon" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                </div>
+                                <div class="setting-content">
+                                    <div class="setting-title">Chế độ cỡ chữ lớn</div>
+                                    <div class="setting-desc">Phóng to thông tin tránh nhìn nhầm</div>
+                                </div>
+                                <div class="setting-action">
+                                    <div class="form-check form-switch mb-0">
+                                        <input class="form-check-input" type="checkbox" role="switch">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <h4 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin: 30px 0 16px 0; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
                             <i class="fa-solid fa-motorcycle text-primary me-2"></i> Thông Tin Phương Tiện &amp; Giấy Tờ Đăng Ký
                         </h4>
 

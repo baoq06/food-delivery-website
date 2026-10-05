@@ -1,0 +1,794 @@
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Utee - Đặt món ngon giao tận nơi trong 30 phút</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/food-delivery-website/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="/food-delivery-website/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="shortcut icon" type="image/png" href="/food-delivery-website/assets/images/logo/logo-favicon.png?v=3">
+    <link rel="apple-touch-icon" href="/food-delivery-website/assets/images/logo/logo-favicon.png?v=3">
+    <!-- Google Fonts: Be Vietnam Pro (Font chuẩn 100% tiếng Việt từ font-weight 300 đến 900, không bị lỗi dấu hay nhảy font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Main CSS with Cache Busting -->
+    <link rel="stylesheet" href="/food-delivery-website/assets/css/style.css?v=1790817306098">
+    <!-- Vietnam Address Picker CSS -->
+    <link rel="stylesheet" href="/food-delivery-website/assets/css/vn-address-picker.css?v=1790817306098">
+</head>
+<body>
+
+
+
+
+
+
+
+
+<style>
+    /* Shipper Topbar Quick Toggle */
+    .topbar-toggle-shipper-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    .topbar-toggle-shipper-btn.online {
+        background: #e6f9ed;
+        color: #10ac84;
+        border-color: #a3e9b9;
+    }
+    .topbar-toggle-shipper-btn.online:hover {
+        background: #d1f4dc;
+        transform: translateY(-1px);
+    }
+    .topbar-toggle-shipper-btn.offline {
+        background: #f1f5f9;
+        color: #64748b;
+        border-color: #cbd5e1;
+    }
+    .topbar-toggle-shipper-btn.offline:hover {
+        background: #e2e8f0;
+        color: #334155;
+        transform: translateY(-1px);
+    }
+    .shipper-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .topbar-toggle-shipper-btn.online .shipper-pulse-dot {
+        background: #10ac84;
+        box-shadow: 0 0 0 0 rgba(16, 172, 132, 0.7);
+        animation: pulseGreen 1.8s infinite;
+    }
+    .topbar-toggle-shipper-btn.offline .shipper-pulse-dot {
+        background: #94a3b8;
+    }
+    /* Notification Bell UI/UX Pro Max */
+    .nav-notif-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-size: 1.1rem;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-right: 6px;
+    }
+    .nav-notif-btn:hover {
+        background: #fff5f5;
+        border-color: #fca5a5;
+        color: #f05454;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(240, 84, 84, 0.2);
+    }
+    .nav-notif-badge {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        background: #f05454;
+        color: #ffffff;
+        font-size: 0.68rem;
+        font-weight: 800;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #ffffff;
+        box-shadow: 0 2px 6px rgba(240, 84, 84, 0.4);
+    }
+    .nav-notif-badge.has-unread {
+        animation: bellShake 2.8s infinite;
+    }
+    @keyframes bellShake {
+        0%, 100% { transform: rotate(0); }
+        10%, 30% { transform: rotate(-12deg) scale(1.08); }
+        20%, 40% { transform: rotate(12deg) scale(1.08); }
+        50% { transform: rotate(0); }
+    }
+</style>
+
+
+    <!-- Top Info Bar -->
+    <div class="topbar">
+        <div class="topbar-container">
+            <div class="topbar-left">
+                
+                    
+                    
+                    
+                        <span><i class="fa-solid fa-bolt text-primary"></i> <strong>Hotline:</strong> 1900 6868 | <strong>Giao siêu tốc:</strong> 07:00 - 23:00</span>
+                    
+                
+            </div>
+            <div class="topbar-right">
+                
+                    
+                    
+                    
+                        <span><i class="fa-solid fa-ticket text-primary"></i> Mã <strong>UTEE15</strong> giảm 15k cho đơn từ 99k</span>
+                    
+                
+            </div>
+        </div>
+    </div>
+
+
+<!-- Main Navigation -->
+<nav class="navbar ">
+    <div class="nav-container ">
+        <!-- Logo -->
+        <a href="/food-delivery-website/home" class="brand-logo" title="Utee - Đặt món ngon giao tận nơi">
+            <img src="/food-delivery-website/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="brand-logo-img">
+            
+                
+                
+                
+            
+        </a>
+
+        
+            <a href="/food-delivery-website/foods" class="nav-mobile-location-pill" title="Địa điểm giao hàng">
+                <i class="fa-solid fa-location-dot"></i>
+                <span>TP. Thủ Đức</span>
+            </a>
+        
+
+        
+            
+            
+                <!-- Search Bar (Ẩn với merchant và shipper đang BẬT nhận đơn) -->
+                
+                    <div class="nav-search">
+                        <form action="/food-delivery-website/foods" method="GET" class="search-form">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" name="search" placeholder="Tìm quán ăn, món ăn &amp; đồ uống" class="search-input" value="">
+                            <button type="submit" class="search-btn">Tìm</button>
+                        </form>
+                    </div>
+                
+
+                <!-- Navigation Links -->
+                <ul class="nav-links">
+                    <li>
+                        <a href="/food-delivery-website/home" class="">
+                            Trang chủ
+                        </a>
+                    </li>
+                    
+                        
+                        
+                        
+                        
+                            <li>
+                                <a href="/food-delivery-website/foods" class="">
+                                    Thực đơn
+                                </a>
+                            </li>
+                            <li class="nav-cart-item-dropdown">
+                                <a href="/food-delivery-website/cart" class="cart-nav-link ">
+                                    <i class="fa-solid fa-bag-shopping"></i>
+                                    <span>Giỏ hàng</span>
+                                    
+                                    <span class="cart-badge">0</span>
+                                </a>
+
+                                <!-- Mini Cart Hover Preview Dropdown -->
+                                <div class="cart-hover-dropdown">
+                                    <div class="cart-hover-header">
+                                        <span class="cart-hover-title">
+                                            <i class="fa-solid fa-bag-shopping text-primary"></i> Món ăn trong giỏ
+                                        </span>
+                                        <span class="cart-hover-count">(0 món)</span>
+                                    </div>
+                                    
+                                        
+                                        
+                                            <div class="cart-hover-empty">
+                                                <div class="cart-hover-empty-icon"><i class="fa-solid fa-plate-wheat"></i></div>
+                                                <p>Chưa có món ăn nào trong giỏ hàng</p>
+                                                <a href="/food-delivery-website/foods" class="btn btn-outline btn-sm btn-cart-empty-go">
+                                                    Khám phá thực đơn ngay
+                                                </a>
+                                            </div>
+                                        
+                                    
+                                </div>
+                            </li>
+                        
+                    
+                </ul>
+
+                <!-- User Actions -->
+                <div class="nav-actions">
+                    
+                        
+                        
+                            <a href="/food-delivery-website/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>
+                            <a href="/food-delivery-website/auth?action=login#register" class="btn btn-primary btn-sm btn-nav-auth">Đăng ký</a>
+                        
+                    
+                </div>
+
+                <!-- Hamburger Button for Mobile -->
+                <button type="button" class="btn-hamburger" id="mobileMenuToggle" aria-label="Mở menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            
+        
+    </div>
+</nav>
+
+
+    <!-- Mobile Drawer Backdrop -->
+    <div class="mobile-drawer-backdrop" id="mobileDrawerBackdrop"></div>
+
+    <!-- Mobile Drawer Menu -->
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-header">
+            <a href="/food-delivery-website/home" class="mobile-drawer-brand">
+                <img src="/food-delivery-website/assets/images/logo/logo-dark-transparent.png" alt="Utee" class="mobile-drawer-logo">
+            </a>
+            <button type="button" class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Đóng menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            
+                
+                
+                    <div class="mobile-auth-box">
+                        <p>Đăng nhập để nhận ưu đãi đến 50K!</p>
+                        <div class="mobile-auth-btns">
+                            <a href="/food-delivery-website/auth?action=login" class="btn btn-primary btn-sm w-100">Đăng nhập</a>
+                            <a href="/food-delivery-website/auth?action=login#register" class="btn btn-outline btn-sm w-100">Đăng ký</a>
+                        </div>
+                    </div>
+                
+            
+
+            <!-- Mobile Quick Search Form -->
+            <form action="/food-delivery-website/foods" method="GET" class="mobile-drawer-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="search" placeholder="Tìm món ăn, trà sữa, pizza..." value="">
+                <button type="submit">Tìm</button>
+            </form>
+
+            <div class="mobile-drawer-nav-group">
+                <div class="drawer-group-title">Khám Phá</div>
+                <ul class="mobile-drawer-links">
+                    <li>
+                        <a href="/food-delivery-website/home" class="">
+                            <i class="fa-solid fa-house text-primary"></i> Trang chủ
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/food-delivery-website/foods" class="">
+                            <i class="fa-solid fa-utensils text-success"></i> Thực đơn đa dạng
+                        </a>
+                    </li>
+                    
+                        <li>
+                            <a href="/food-delivery-website/cart" class="">
+                                <i class="fa-solid fa-bag-shopping text-warning"></i> Giỏ hàng của bạn
+                                <span class="drawer-badge">0</span>
+                            </a>
+                        </li>
+                    
+                    <li>
+                        <a href="/food-delivery-website/notifications" class="">
+                            <i class="fa-solid fa-bell text-warning"></i> Thông báo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            
+
+            <div class="mobile-drawer-footer">
+                <div class="drawer-hotline">
+                    <i class="fa-solid fa-headset text-primary"></i>
+                    <span>Tổng đài CSKH: <strong>1900 6868</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Fixed Bottom) -->
+    <nav class="mobile-bottom-nav">
+        <a href="/food-delivery-website/home" class="bottom-nav-item ">
+            <i class="fa-solid fa-house"></i>
+            <span>Trang chủ</span>
+        </a>
+        <a href="/food-delivery-website/foods" class="bottom-nav-item ">
+            <i class="fa-solid fa-utensils"></i>
+            <span>Thực đơn</span>
+        </a>
+        
+            
+            
+            
+                <a href="/food-delivery-website/cart" class="bottom-nav-item ">
+                    <div class="bottom-nav-icon-wrap">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        
+                        <span class="bottom-cart-badge d-none" id="bottomCartBadge">0</span>
+                    </div>
+                    <span>Giỏ hàng</span>
+                </a>
+            
+        
+        
+            
+            
+                <a href="/food-delivery-website/auth?action=login" class="bottom-nav-item ">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>Đăng nhập</span>
+                </a>
+            
+        
+    </nav>
+
+
+<main class="main-content">
+
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-ambient-glow"></div>
+    <div class="container hero-wrapper">
+        <div class="hero-text">
+            <div class="hero-badge-wrap">
+                <span class="hero-badge"><i class="fa-solid fa-fire-flame-curved"></i> Siêu Ứng Dụng Đặt Món • Giao Siêu Tốc 30 Phút</span>
+            </div>
+            <h1 class="hero-title">
+                Thèm Món Ngon Gì, <br>
+                <span class="hero-title-nowrap"><span class="hero-gradient-text">Utee</span> Giao Nóng Tận Cửa!</span>
+            </h1>
+            <p class="hero-subtitle">
+                Thưởng thức hàng trăm món ăn nóng hổi, chuẩn vị từ các nhà hàng uy tín hàng đầu. Giao siêu tốc 20-30 phút, bảo đảm chất lượng với ngập tràn ưu đãi mỗi ngày.
+            </p>
+
+            <!-- Search box in hero -->
+            <form action="/food-delivery-website/foods" method="GET" class="hero-search-box">
+                <div class="search-loc-pill">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>TP. Thủ Đức</span>
+                </div>
+                <div class="search-divider"></div>
+                <input type="text" name="search" placeholder="Bạn muốn ăn món gì hôm nay?" class="hero-search-input">
+                <button type="submit" class="btn btn-primary btn-hero">
+                    <span>Tìm Món</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Quick Suggestion Tags -->
+            <div class="hero-quick-tags">
+                <span class="quick-label"><i class="fa-solid fa-fire text-primary"></i> Đang hot:</span>
+                <a href="/food-delivery-website/foods?search=cơm" class="quick-chip">Cơm sườn</a>
+                <a href="/food-delivery-website/foods?search=phở" class="quick-chip">Phở bò</a>
+                <a href="/food-delivery-website/foods?search=trà+sữa" class="quick-chip">Trà sữa</a>
+                <a href="/food-delivery-website/foods?search=burger" class="quick-chip">Burger giòn</a>
+                <a href="/food-delivery-website/foods?search=pizza" class="quick-chip">Pizza</a>
+            </div>
+
+            <!-- Key Features Pills -->
+            <div class="hero-stats">
+                <div class="stat-pill">
+                    <div class="stat-icon-circle">
+                        <i class="fa-solid fa-bolt text-primary"></i>
+                    </div>
+                    <div>
+                        <strong>Giao 20-30 phút</strong>
+                        <span>Món luôn nóng hổi</span>
+                    </div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-icon-circle">
+                        <i class="fa-solid fa-truck-fast text-primary"></i>
+                    </div>
+                    <div>
+                        <strong>Freeship từ 99k</strong>
+                        <span>Mã giảm mỗi ngày</span>
+                    </div>
+                </div>
+                <div class="stat-pill">
+                    <div class="stat-icon-circle">
+                        <i class="fa-solid fa-shield-halved text-primary"></i>
+                    </div>
+                    <div>
+                        <strong>An toàn 100%</strong>
+                        <span>Chuẩn vệ sinh ATTP</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-image-wrap">
+            <div class="hero-circle-bg"></div>
+            <div class="hero-img-container">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80" alt="Món ngon Utee" class="hero-main-img">
+            </div>
+            
+            <!-- Floating Driver Tracker Card -->
+            <div class="floating-badge badge-tracker">
+                <div class="pulsing-radar">
+                    <span class="radar-dot"></span>
+                </div>
+                <div class="tracker-info">
+                    <strong>Tài xế đang giao...</strong>
+                    <span>Dự kiến: 18 phút • Nóng hổi</span>
+                </div>
+                <div class="tracker-icon">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+            </div>
+
+            <!-- Floating Review Card -->
+            <div class="floating-badge badge-review">
+                <div class="star-rating">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <strong>4.9/5 Đánh giá</strong>
+                <span>từ 25.000+ thực khách</span>
+            </div>
+
+            <!-- Floating Promo Card -->
+            <div class="floating-badge badge-promo">
+                <div class="promo-icon"><i class="fa-solid fa-ticket"></i></div>
+                <div>
+                    <strong>Giảm 30K Đơn Đầu</strong>
+                    <span>Nhập mã: <strong>UTEE30</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Category Selection -->
+<section class="section category-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="sub-heading">Khám Phá Hương Vị</span>
+            <h2 class="section-title">Danh Mục Món Ăn Nổi Bật</h2>
+            <p class="section-desc">Lựa chọn các hương vị hấp dẫn phù hợp với sở thích của bạn</p>
+        </div>
+
+        <div class="category-grid">
+            
+                
+                
+                    <a href="/food-delivery-website/foods?cat=1" class="cat-card" data-cat-id="1" data-cat-name="Cơm & Món Mặn">
+                        <div class="cat-img-box">
+                            <img src="/food-delivery-website/assets/images/categories/cat_rice.jpg" alt="Cơm & Món Mặn" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-bowl-rice"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Cơm & Món Mặn</h3>
+                        <p class="cat-card-desc">Món Việt chuẩn vị</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    <a href="/food-delivery-website/foods?cat=2" class="cat-card" data-cat-id="2" data-cat-name="Phở & Bún Mì">
+                        <div class="cat-img-box">
+                            <img src="/food-delivery-website/assets/images/categories/cat_noodle.jpg" alt="Phở & Bún Mì" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-bowl-food"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Phở & Bún Mì</h3>
+                        <p class="cat-card-desc">Hương vị truyền thống</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    <a href="/food-delivery-website/foods?cat=3" class="cat-card" data-cat-id="3" data-cat-name="Trà Sữa & Đồ Uống">
+                        <div class="cat-img-box">
+                            <img src="/food-delivery-website/assets/images/categories/cat_drink.jpg" alt="Trà Sữa & Đồ Uống" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-mug-hot"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Trà Sữa & Đồ Uống</h3>
+                        <p class="cat-card-desc">Tươi mát sảng khoái</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </a>
+                    <a href="/food-delivery-website/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Ăn Vặt">
+                        <div class="cat-img-box">
+                            <img src="/food-delivery-website/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Ăn Vặt" class="cat-food-img" loading="lazy">
+                            <div class="cat-img-badge"><i class="fa-solid fa-burger"></i></div>
+                        </div>
+                        <h3 class="cat-card-title">Fastfood & Ăn Vặt</h3>
+                        <p class="cat-card-desc">Giòn ngon hấp dẫn</p>
+                        <div class="cat-card-action">
+                            <span>Khám phá</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </a>
+                
+            
+        </div>
+    </div>
+</section>
+
+<!-- Featured & Recommended Foods Section (3 Tabs) -->
+<section class="section bg-light-soft" id="recommend-section">
+    <div class="container">
+        <div class="section-header-flex align-items-center">
+            <div>
+                <span class="sub-heading"><i class="fa-solid fa-fire text-danger"></i> Thực Đơn Đề Xuất</span>
+                <h2 class="section-title">
+                    
+                        
+                        
+                        Món Ăn Bán Chạy Nhất
+                    
+                </h2>
+                <p class="section-desc mb-0">
+                    
+                        
+                        
+                        Khám phá các món ăn có lượt đặt nhiều nhất, nóng hổi giao tận nơi trong 30 phút
+                    
+                </p>
+            </div>
+            <a href="/food-delivery-website/foods" class="btn btn-outline">Xem tất cả thực đơn <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+
+        <!-- 3 Sub-Tabs UI/UX Pro Max -->
+        <div class="recommend-tabs-wrap">
+            <a href="/food-delivery-website/home?tab=nearby#recommend-section" 
+               class="recommend-tab-pill " 
+               title="Món ăn &amp; Quán ăn gần vị trí của bạn">
+                <i class="fa-solid fa-location-crosshairs"></i>
+                <span>Gần tôi</span>
+                <span class="tab-badge-pill">Định vị</span>
+            </a>
+
+            <a href="/food-delivery-website/home?tab=bestseller#recommend-section" 
+               class="recommend-tab-pill active" 
+               title="Món ăn bán chạy nhất theo đơn hàng thực tế">
+                <i class="fa-solid fa-fire-flame-curved"></i>
+                <span>Bán chạy</span>
+                
+                    <span class="tab-indicator-dot"></span>
+                
+            </a>
+
+            <a href="/food-delivery-website/home?tab=toprated#recommend-section" 
+               class="recommend-tab-pill " 
+               title="Món ăn được đánh giá cao nhất từ khách hàng">
+                <i class="fa-solid fa-star"></i>
+                <span>Đánh giá cao</span>
+                
+            </a>
+        </div>
+
+        <!-- Live Instant Filter Indicator Bar (Appears when user clicks a category) -->
+        <div id="home-filter-indicator" style="display: none; align-items: center; justify-content: space-between; background: #fff; border: 1.5px solid #fed7d7; border-radius: 12px; padding: 10px 18px; margin-bottom: 20px; box-shadow: 0 4px 14px rgba(240, 84, 84, 0.08);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-filter text-primary"></i>
+                <span style="font-size: 0.92rem; color: #334155;">Đang lọc theo danh mục: <strong id="home-filter-cat-name" style="color: var(--primary-color);">Cơm &amp; Món Mặn</strong> (<span id="home-filter-count">0</span> món)</span>
+            </div>
+            <button type="button" id="btn-reset-home-filter" class="btn btn-sm btn-outline-secondary" style="border-radius: 50px; font-size: 0.8rem; font-weight: 600; padding: 4px 12px;">
+                <i class="fa-solid fa-xmark me-1"></i> Bỏ lọc / Xem tất cả
+            </button>
+        </div>
+
+        <!-- Food Grid -->
+        <div class="food-grid" id="home-food-grid">
+            
+        </div>
+    </div>
+</section>
+
+<!-- Distinct Section: Featured Restaurants / Stores -->
+
+
+<!-- Recently Viewed Section -->
+
+
+<!-- Promotional Banner -->
+<section class="section">
+    <div class="container">
+        <div class="promo-banner">
+            <div class="promo-content">
+                <span class="promo-pill"><i class="fa-solid fa-gift"></i> ƯU ĐÃI ĐỘC QUYỀN UTEE</span>
+                <h2>Giảm Ngay 30.000đ Khi Đặt Món Tại Utee</h2>
+                <p>Thỏa sức đặt món ngon Á - Âu nóng hổi mỗi ngày. Lưu mã voucher độc quyền vào Kho Mã hoặc sao chép để được giảm ngay 30K!</p>
+                
+                <div class="voucher-copy-card">
+                    <div class="voucher-code-tag">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span id="voucherHomeCode">UTEE30</span>
+                    </div>
+                    <button type="button" class="btn-save-voucher" data-voucher-code="UTEE30" onclick="saveVoucherToWallet('UTEE30')" title="Lưu vào Kho Voucher">
+                        <i class="fa-regular fa-bookmark"></i> <span>Lưu vào kho</span>
+                    </button>
+                    <button type="button" class="btn-copy-voucher" data-code="UTEE30" onclick="navigator.clipboard.writeText('UTEE30'); window.showToast('✨ Đã sao chép mã UTEE30! Dán vào giỏ hàng ngay.');" title="Sao chép mã">
+                        <i class="fa-regular fa-copy"></i> <span>Sao Chép</span>
+                    </button>
+                </div>
+
+                <div class="promo-action mt-3">
+                    <a href="/food-delivery-website/foods" class="btn btn-primary btn-lg">Khám Phá Món Ngon Ngay <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="promo-graphic">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&auto=format&fit=crop&q=80" alt="Ưu đãi pizza Utee" class="promo-img">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="section bg-light-soft">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="sub-heading">Cam Kết Chất Lượng</span>
+            <h2 class="section-title">Tại Sao Nên Chọn Utee?</h2>
+            <p class="section-desc">Chúng tôi nỗ lực mỗi ngày để đem đến trải nghiệm ẩm thực trọn vẹn nhất</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
+                <h3>Giao Hàng Siêu Tốc 30 Phút</h3>
+                <p>Đội ngũ tài xế đông đảo cam kết giao món trong thời gian ngắn nhất, giữ trọn độ nóng sốt và hương vị.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3>Nhà Hàng Tuyển Chọn</h3>
+                <p>Liên kết các quán ăn, nhà hàng uy tín hàng đầu, đảm bảo chuẩn an toàn thực phẩm và thực đơn phong phú chất lượng.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-shield-heart"></i>
+                </div>
+                <h3>100% Thực Phẩm Sạch</h3>
+                <p>Nguyên liệu tươi mới mỗi ngày, bảo đảm an toàn vệ sinh thực phẩm theo quy chuẩn y tế nghiêm ngặt.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <h3>Hỗ Trợ Tận Tâm 24/7</h3>
+                <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng lắng nghe, giải quyết khiếu nại hoặc đổi món tức thì.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+</main>
+<footer class="footer">
+    <div class="footer-top">
+        <div class="container footer-grid">
+            <!-- Col 1: About -->
+            <div class="footer-col">
+                <a href="/food-delivery-website/home" class="footer-brand-logo" title="Utee">
+                    <img src="/food-delivery-website/assets/images/logo/logo-light-transparent.png" alt="Utee" class="footer-logo-img">
+                </a>
+                <p class="footer-desc">
+                    Utee - Nền tảng đặt món ăn trực tuyến siêu tốc, tiện lợi với hàng ngàn món ăn nóng hổi từ các nhà hàng uy tín hàng đầu.
+                </p>
+                <div class="footer-socials">
+                    <a href="#" class="social-btn"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#" class="social-btn"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+
+            <!-- Col 2: Quick Links -->
+            <div class="footer-col">
+                <h4 class="footer-title">Khám Phá</h4>
+                <ul class="footer-links">
+                    <li><a href="/food-delivery-website/home"><i class="fa-solid fa-angle-right"></i> Trang chủ</a></li>
+                    <li><a href="/food-delivery-website/foods"><i class="fa-solid fa-angle-right"></i> Thực đơn đa dạng</a></li>
+                    <li><a href="/food-delivery-website/cart"><i class="fa-solid fa-angle-right"></i> Giỏ hàng của bạn</a></li>
+                    <li><a href="/food-delivery-website/foods?cat=1"><i class="fa-solid fa-angle-right"></i> Thức ăn nhanh</a></li>
+                    <li><a href="/food-delivery-website/foods?cat=3"><i class="fa-solid fa-angle-right"></i> Đồ uống & Trà sữa</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 3: Policy & Support -->
+            <div class="footer-col">
+                <h4 class="footer-title">Chính Sách & Hỗ Trợ</h4>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Chính sách giao hàng 30 phút</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết món ăn nóng hổi</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Quy định thanh toán & hoàn tiền</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại Utee</a></li>
+                </ul>
+            </div>
+
+            <!-- Col 4: Contact -->
+            <div class="footer-col">
+                <h4 class="footer-title">Liên Hệ Với Utee</h4>
+                <ul class="footer-contact">
+                    <li><i class="fa-solid fa-location-dot"></i> <span>Số 01 Võ Văn Ngân, TP. Thủ Đức, TP. Hồ Chí Minh</span></li>
+                    <li><i class="fa-solid fa-phone"></i> <span>Hotline: <strong>1900 6868</strong> (24/7)</span></li>
+                    <li><i class="fa-solid fa-envelope"></i> <span>hotro@utee.vn</span></li>
+                    <li><i class="fa-solid fa-clock"></i> <span>Mở cửa: 07:00 - 23:00 tất cả các ngày</span></li>
+                </ul>
+                <div class="payment-methods">
+                    <span class="pay-badge"><i class="fa-brands fa-cc-visa"></i> Visa</span>
+                    <span class="pay-badge"><i class="fa-brands fa-cc-mastercard"></i> Master</span>
+                    <span class="pay-badge"><i class="fa-solid fa-money-bill-wave"></i> Tiền mặt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div class="container footer-bottom-content">
+            <p>&copy; 2026 Utee - Nền tảng đặt đồ ăn trực tuyến chuẩn vị hàng đầu.</p>
+            <p class="footer-tagline">Giao nhanh 30 phút • Món ngon nóng hổi • Đảm bảo vệ sinh an toàn</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/food-delivery-website/assets/js/main.js?v=1790817306108"></script>
+</body>
+</html>
+
