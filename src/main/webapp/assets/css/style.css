@@ -11221,6 +11221,12 @@ select.form-control,
     font-size: 0.8rem;
 }
 
+.border-top-dashed {
+    border-top: 1.5px dashed rgba(203, 213, 225, 0.85);
+    margin-top: 55px;
+    padding-top: 42px;
+}
+
 /* ==========================================================================
    UI/UX PRO MAX: FULL CUSTOMER REVIEWS & COMMENTS SECTION
    ========================================================================== */
