@@ -136,44 +136,51 @@
             <c:choose>
                 <c:when test="${not empty categories}">
                     <c:forEach items="${categories}" var="cat">
-                        <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
-                        <c:choose>
-                            <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" />
-                            </c:when>
-                            <c:otherwise>
-                                <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
-                            </c:otherwise>
-                        </c:choose>
-                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card" data-cat-id="${cat.id}" data-cat-name="${cat.name}">
-                            <div class="cat-img-box">
-                                <img src="${catImg}" alt="${cat.name}" class="cat-food-img" loading="lazy">
-                                <div class="cat-img-badge">
-                                    <c:choose>
-                                        <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
-                                        <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
-                                        <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
-                                        <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
-                                        <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
-                                    </c:choose>
+                        <c:if test="${not cat.name.toLowerCase().contains('combo') and cat.id ne 60002}">
+                            <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                            <c:set var="catDisplayName" value="${cat.name}" />
+                            <c:choose>
+                                <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                                    <c:set var="catDisplayName" value="Cơm & Món Mặn" />
+                                </c:when>
+                                <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" />
+                                    <c:set var="catDisplayName" value="Phở & Bún Mì" />
+                                </c:when>
+                                <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" />
+                                    <c:set var="catDisplayName" value="Trà Sữa & Đồ Uống" />
+                                </c:when>
+                                <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" />
+                                    <c:set var="catDisplayName" value="Fastfood & Đồ Ăn Vặt" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
+                                </c:otherwise>
+                            </c:choose>
+                            <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card" data-cat-id="${cat.id}" data-cat-name="${catDisplayName}">
+                                <div class="cat-img-box">
+                                    <img src="${catImg}" alt="${catDisplayName}" class="cat-food-img" loading="lazy">
+                                    <div class="cat-img-badge">
+                                        <c:choose>
+                                            <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}"><i class="fa-solid fa-bowl-rice"></i></c:when>
+                                            <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}"><i class="fa-solid fa-bowl-food"></i></c:when>
+                                            <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}"><i class="fa-solid fa-mug-hot"></i></c:when>
+                                            <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}"><i class="fa-solid fa-burger"></i></c:when>
+                                            <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
+                                        </c:choose>
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 class="cat-card-title">${cat.name}</h3>
-                            <p class="cat-card-desc">${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</p>
-                            <div class="cat-card-action">
-                                <span>Khám phá</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </div>
-                        </a>
+                                <h3 class="cat-card-title">${catDisplayName}</h3>
+                                <p class="cat-card-desc">${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</p>
+                                <div class="cat-card-action">
+                                    <span>Khám phá</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </c:if>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
@@ -213,12 +220,12 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </a>
-                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Ăn Vặt">
+                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Đồ Ăn Vặt">
                         <div class="cat-img-box">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Ăn Vặt" class="cat-food-img" loading="lazy">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Đồ Ăn Vặt" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-burger"></i></div>
                         </div>
-                        <h3 class="cat-card-title">Fastfood & Ăn Vặt</h3>
+                        <h3 class="cat-card-title">Fastfood & Đồ Ăn Vặt</h3>
                         <p class="cat-card-desc">Giòn ngon hấp dẫn</p>
                         <div class="cat-card-action">
                             <span>Khám phá</span>
