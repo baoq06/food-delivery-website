@@ -27,8 +27,19 @@ public class RestaurantController extends HttpServlet {
                 Restaurant restaurant = restaurantService.getRestaurantById(id);
                 if (restaurant != null) {
                     List<Food> foods = foodDAO.getFoodsByRestaurantId(id);
+                    List<Food> comboFoods = new java.util.ArrayList<>();
+                    List<Food> regularFoods = new java.util.ArrayList<>();
+                    for (Food f : foods) {
+                        if (f.isCombo()) {
+                            comboFoods.add(f);
+                        } else {
+                            regularFoods.add(f);
+                        }
+                    }
                     req.setAttribute("restaurant", restaurant);
                     req.setAttribute("foods", foods);
+                    req.setAttribute("comboFoods", comboFoods);
+                    req.setAttribute("regularFoods", regularFoods);
 
                     // Tặng mã giảm giá riêng của quán ăn khi khách hàng lần đầu (hoặc sau 7 ngày) ghé thăm
                     jakarta.servlet.http.HttpSession session = req.getSession(false);

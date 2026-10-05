@@ -7178,7 +7178,8 @@ a,
     align-items: center;
     justify-content: center;
     z-index: 99999;
-    padding: 20px;
+    padding: 16px;
+    overflow-y: auto;
     animation: mfFadeIn 0.22s ease-out;
 }
 
@@ -7190,19 +7191,33 @@ a,
 .merchant-food-modal-container {
     background: #ffffff;
     width: 100%;
-    max-width: 960px;
-    border-radius: 24px;
-    box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(226, 232, 240, 0.85);
+    max-width: 980px;
+    height: 88vh;
+    max-height: 88vh;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(226, 232, 240, 0.85);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: 92vh;
+    margin: auto;
+    position: relative;
     animation: modalSpring 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Header */
+.merchant-food-modal-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* Header (Fixed at top) */
 .merchant-food-modal-header {
-    padding: 20px 28px;
+    padding: 16px 26px;
     background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
     border-bottom: 1px solid #fed7aa;
     display: flex;
@@ -7210,6 +7225,7 @@ a,
     justify-content: space-between;
     position: relative;
     flex-shrink: 0;
+    z-index: 10;
 }
 
 .merchant-food-modal-header::before {
@@ -7285,11 +7301,31 @@ a,
     transform: rotate(90deg) scale(1.05);
 }
 
-/* Modal Body Layout */
+/* Modal Body Layout (Independent smooth scrolling) */
 .merchant-food-modal-body {
-    padding: 26px 28px;
+    padding: 24px 28px;
     overflow-y: auto;
-    flex: 1;
+    overflow-x: hidden;
+    flex: 1 1 auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.merchant-food-modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+.merchant-food-modal-body::-webkit-scrollbar-track {
+    background: #f8fafc;
+    border-radius: 8px;
+}
+.merchant-food-modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+    border: 2px solid #f8fafc;
+}
+.merchant-food-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .mf-modal-grid {
@@ -7787,15 +7823,17 @@ a,
     box-shadow: 0 3px 8px rgba(234, 88, 12, 0.3);
 }
 
-/* Modal Footer */
+/* Modal Footer (Cố định dưới đáy modal với độ tương phản cao, nút Lưu luôn nổi bật) */
 .merchant-food-modal-footer {
-    padding: 16px 28px;
-    border-top: 1px solid #f1f5f9;
-    background: #fafbfc;
+    padding: 14px 28px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
+    z-index: 10;
     flex-wrap: wrap;
     gap: 12px;
 }
@@ -7820,10 +7858,13 @@ a,
     font-size: 0.9rem;
     font-weight: 700;
     color: #475569;
-    background: #ffffff;
+    background: #f8fafc;
     border: 1.5px solid #cbd5e1;
     border-radius: 12px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     transition: all 0.2s;
 }
 
@@ -7834,8 +7875,8 @@ a,
 }
 
 .mf-btn-submit {
-    padding: 10px 26px;
-    font-size: 0.92rem;
+    padding: 11px 28px;
+    font-size: 0.94rem;
     font-weight: 800;
     color: #ffffff;
     background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
@@ -7851,12 +7892,36 @@ a,
 
 .mf-btn-submit:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+    box-shadow: 0 6px 20px rgba(234, 88, 12, 0.45);
     background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
 }
 
 .mf-btn-submit:active {
     transform: translateY(0);
+}
+
+@media (max-width: 860px) {
+    .merchant-food-modal-container {
+        height: 95vh;
+        max-height: 95vh;
+        border-radius: 16px;
+    }
+    .merchant-food-modal-header {
+        padding: 12px 18px;
+    }
+    .merchant-food-modal-body {
+        padding: 16px 18px;
+    }
+    .merchant-food-modal-footer {
+        padding: 12px 18px;
+    }
+    .mf-footer-hint {
+        display: none;
+    }
+    .mf-footer-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }
 
 .row-fields {
@@ -15166,6 +15231,292 @@ select.form-control,
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
+
+/* ==========================================================================
+   8. COMBO & SET TIẾT KIỆM - UI/UX PRO MAX STYLES
+   ========================================================================== */
+
+/* Restaurant Menu Tab Navigation */
+.restaurant-menu-tabs-wrap {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.restaurant-menu-tabs-wrap::-webkit-scrollbar {
+    display: none;
+}
+
+.menu-tabs-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 6px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.rest-menu-tab-btn {
+    border: none;
+    background: transparent;
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+}
+
+.rest-menu-tab-btn:hover {
+    color: #0f172a;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.rest-menu-tab-btn.active {
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.rest-menu-tab-btn.tab-btn-combo {
+    position: relative;
+}
+
+.rest-menu-tab-btn.tab-btn-combo.active {
+    color: #ea580c;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+.tab-badge-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.rest-menu-tab-btn.active .tab-badge-count {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.badge-combo-count {
+    background: #ffedd5;
+    color: #ea580c;
+}
+
+.rest-menu-tab-btn.tab-btn-combo.active .badge-combo-count {
+    background: #ea580c;
+    color: #ffffff;
+}
+
+/* Combo Food Card Enhancements */
+.food-card.is-combo-card {
+    border: 1.5px solid #fed7aa;
+    background: linear-gradient(180deg, #fffbf5 0%, #ffffff 120px);
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.food-card.is-combo-card:hover {
+    border-color: #f97316;
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(249, 115, 22, 0.15);
+}
+
+.combo-badge-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+    text-transform: uppercase;
+}
+
+.combo-badge-tag i {
+    animation: fireFlicker 1.4s infinite alternate;
+}
+
+@keyframes fireFlicker {
+    0% { transform: scale(0.95); opacity: 0.85; }
+    100% { transform: scale(1.15); opacity: 1; }
+}
+
+/* Combo Items Breakdown in Cards */
+.combo-items-box {
+    margin: 8px 0 12px 0;
+    padding: 8px 10px;
+    background: #fff7ed;
+    border: 1px dashed #fdba74;
+    border-radius: 10px;
+}
+
+.combo-items-box-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #c2410c;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.combo-items-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.combo-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    padding: 2px 7px;
+    border-radius: 6px;
+    line-height: 1.3;
+}
+
+.combo-chip i {
+    font-size: 0.68rem;
+    color: #10b981;
+}
+
+/* Combo Pricing */
+.combo-price-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.combo-savings-strip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.combo-price-original {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    text-decoration: line-through;
+    font-weight: 600;
+}
+
+.combo-saving-badge {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.combo-price-final {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #ea580c;
+}
+
+.btn-add-combo {
+    background: linear-gradient(135deg, #ea580c 0%, #f97316 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3) !important;
+}
+
+.btn-add-combo:hover {
+    background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4) !important;
+}
+
+/* Combo Detail Box in food-detail.jsp */
+.combo-detail-package {
+    background: #fffbf5;
+    border: 1.5px solid #fed7aa;
+    border-radius: 16px;
+    padding: 18px;
+    margin: 16px 0;
+}
+
+.combo-detail-package-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #fdba74;
+}
+
+.combo-detail-title {
+    font-size: 0.96rem;
+    font-weight: 800;
+    color: #9a3412;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.combo-detail-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.combo-detail-item-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #fed7aa;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: #1e293b;
+}
+
+.combo-detail-item-card i {
+    color: #f97316;
+    font-size: 0.95rem;
+}
+
 
 
 

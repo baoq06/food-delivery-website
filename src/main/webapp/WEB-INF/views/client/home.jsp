@@ -37,11 +37,13 @@
             <!-- Quick Suggestion Tags -->
             <div class="hero-quick-tags">
                 <span class="quick-label"><i class="fa-solid fa-fire text-primary"></i> Đang hot:</span>
+                <a href="${pageContext.request.contextPath}/foods?cat=combo" class="quick-chip" style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; font-weight: 700;">
+                    <i class="fa-solid fa-fire text-danger"></i> Combo Tiết Kiệm
+                </a>
                 <a href="${pageContext.request.contextPath}/foods?search=cơm" class="quick-chip">Cơm sườn</a>
                 <a href="${pageContext.request.contextPath}/foods?search=phở" class="quick-chip">Phở bò</a>
                 <a href="${pageContext.request.contextPath}/foods?search=trà+sữa" class="quick-chip">Trà sữa</a>
-                <a href="${pageContext.request.contextPath}/foods?search=burger" class="quick-chip">Burger giòn</a>
-                <a href="${pageContext.request.contextPath}/foods?search=pizza" class="quick-chip">Pizza</a>
+                <a href="${pageContext.request.contextPath}/foods?search=combo" class="quick-chip">Set ăn trưa</a>
             </div>
 
             <!-- Key Features Pills -->

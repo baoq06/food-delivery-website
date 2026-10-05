@@ -98,15 +98,52 @@
                     </c:if>
 
                     <div class="detail-price-box">
-                        <span class="detail-currency">${String.format("%,.0f", food.price)}</span>
-                        <span class="currency-symbol">VNĐ</span>
+                        <c:choose>
+                            <c:when test="${food.combo and not empty food.originalPrice and food.originalPrice > food.price}">
+                                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px;">
+                                    <span style="font-size: 1.15rem; color: #94a3b8; text-decoration: line-through; font-weight: 600;">
+                                        ${String.format("%,.0f", food.originalPrice)} VNĐ
+                                    </span>
+                                    <span class="combo-saving-badge" style="font-size: 0.82rem; padding: 3px 8px;">
+                                        Tiết kiệm ${String.format("%,.0f", food.savingsAmount)} đ (-${food.savingsPercent}%)
+                                    </span>
+                                </div>
+                                <span class="detail-currency" style="color: #ea580c;">${String.format("%,.0f", food.price)}</span>
+                                <span class="currency-symbol" style="color: #ea580c;">VNĐ</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="detail-currency">${String.format("%,.0f", food.price)}</span>
+                                <span class="currency-symbol">VNĐ</span>
+                            </c:otherwise>
+                        </c:choose>
                         <span class="tax-included">(Đã bao gồm VAT)</span>
                     </div>
+
+                    <c:if test="${food.combo and not empty food.comboItemList}">
+                        <div class="combo-detail-package">
+                            <div class="combo-detail-package-header">
+                                <h4 class="combo-detail-title">
+                                    <i class="fa-solid fa-fire text-danger"></i> Các Món Có Trong Set Tiết Kiệm Này
+                                </h4>
+                                <span class="badge-saving-tag" style="background:#ffedd5;color:#ea580c;border:1px solid #fed7aa;font-weight:700;font-size:0.75rem;padding:2px 8px;border-radius:6px;">
+                                    ${food.comboItemList.size()} món thành phần
+                                </span>
+                            </div>
+                            <div class="combo-detail-items-grid">
+                                <c:forEach items="${food.comboItemList}" var="itemPart">
+                                    <div class="combo-detail-item-card">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                        <span>${itemPart}</span>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
 
                     <div class="detail-divider"></div>
 
                     <div class="detail-description-box">
-                        <h4>Mô tả hương vị:</h4>
+                        <h4>Mô tả chi tiết:</h4>
                         <p class="detail-desc-text">${food.description}</p>
                     </div>
 

@@ -3,18 +3,81 @@ package com.ute.fooddelivery.dao;
 import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Review;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class FoodDAO {
 
+    private static volatile boolean comboSupportChecked = false;
+
+    public static void ensureComboSupport() {
+        if (comboSupportChecked) return;
+        synchronized (FoodDAO.class) {
+            if (comboSupportChecked) return;
+            try (Connection conn = DBContext.getConnection();
+                 Statement stmt = conn.createStatement()) {
+                if (conn != null) {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    // 1. Kiểm tra cột is_combo
+                    boolean hasCombo = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "foods", "is_combo")) {
+                        if (rs.next()) hasCombo = true;
+                    }
+                    if (!hasCombo) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE foods ADD COLUMN is_combo TINYINT(1) DEFAULT 0");
+                        } catch (SQLException ignore) {}
+                    }
+
+                    // 2. Kiểm tra cột original_price
+                    boolean hasOrig = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "foods", "original_price")) {
+                        if (rs.next()) hasOrig = true;
+                    }
+                    if (!hasOrig) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE foods ADD COLUMN original_price DOUBLE NULL DEFAULT NULL");
+                        } catch (SQLException ignore) {}
+                    }
+
+                    // 3. Kiểm tra cột combo_items
+                    boolean hasItems = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "foods", "combo_items")) {
+                        if (rs.next()) hasItems = true;
+                    }
+                    if (!hasItems) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE foods ADD COLUMN combo_items TEXT NULL DEFAULT NULL");
+                        } catch (SQLException ignore) {}
+                    }
+
+                    // 4. Đảm bảo danh mục Combo & Set Tiết Kiệm tồn tại
+                    try (ResultSet rs = stmt.executeQuery("SELECT category_id FROM categories WHERE name LIKE '%Combo%' LIMIT 1")) {
+                        if (!rs.next()) {
+                            stmt.executeUpdate("INSERT INTO categories (name, image_icon, description) VALUES " +
+                                "('Combo & Set Tiết Kiệm', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80', 'Các set ăn và combo tiết kiệm giá tốt nhất')");
+                        }
+                    } catch (Exception ignore) {}
+                }
+            } catch (Exception e) {
+                System.err.println("Lưu ý khi kiểm tra hỗ trợ combo: " + e.getMessage());
+            }
+            comboSupportChecked = true;
+        }
+    }
+
     private static final String BASE_QUERY = 
         "SELECT f.food_id, f.name, f.description, f.price, f.image_url, f.is_available, " +
         "       f.category_id, c.name AS category_name, " +
         "       f.restaurant_id, r.name AS restaurant_name, " +
+        "       COALESCE(f.is_combo, 0) AS is_combo, " +
+        "       f.original_price, f.combo_items, " +
         "       COALESCE(sub.avg_rating, 0.0) AS avg_rating, " +
         "       COALESCE(sub.review_count, 0) AS review_count " +
         "FROM foods f " +
@@ -53,6 +116,7 @@ public class FoodDAO {
     }
 
     public List<Food> getAllFoods() {
+        ensureComboSupport();
         List<Food> list = new ArrayList<>();
         String query = BASE_QUERY + "WHERE f.is_available = 1 ORDER BY f.food_id ASC";
         try (Connection conn = DBContext.getConnection()) {
@@ -72,6 +136,7 @@ public class FoodDAO {
     }
 
     public List<Food> getFoodsByCategory(int categoryId) {
+        ensureComboSupport();
         List<Food> list = new ArrayList<>();
         String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.category_id = ? ORDER BY f.food_id ASC";
         try (Connection conn = DBContext.getConnection()) {
@@ -191,6 +256,7 @@ public class FoodDAO {
     }
 
     public List<Food> getFoodsByRestaurantId(int restaurantId) {
+        ensureComboSupport();
         List<Food> list = new ArrayList<>();
         String query = BASE_QUERY + "WHERE f.restaurant_id = ? ORDER BY f.food_id DESC";
         try (Connection conn = DBContext.getConnection()) {
@@ -212,8 +278,9 @@ public class FoodDAO {
     }
 
     public boolean insertFood(Food food) {
-        String query = "INSERT INTO foods (name, description, price, image_url, category_id, restaurant_id, is_available) " +
-                       "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        ensureComboSupport();
+        String query = "INSERT INTO foods (name, description, price, image_url, category_id, restaurant_id, is_available, is_combo, original_price, combo_items) " +
+                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -225,6 +292,13 @@ public class FoodDAO {
                     ps.setInt(5, food.getCategoryId());
                     ps.setInt(6, food.getRestaurantId());
                     ps.setInt(7, food.isAvailable() ? 1 : 0);
+                    ps.setInt(8, food.isCombo() ? 1 : 0);
+                    if (food.getOriginalPrice() != null) {
+                        ps.setDouble(9, food.getOriginalPrice());
+                    } else {
+                        ps.setNull(9, java.sql.Types.DOUBLE);
+                    }
+                    ps.setString(10, food.getComboItems());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -286,7 +360,8 @@ public class FoodDAO {
     }
 
     public boolean updateFood(Food food) {
-        String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ? " +
+        ensureComboSupport();
+        String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ?, is_combo = ?, original_price = ?, combo_items = ? " +
                        "WHERE food_id = ? AND restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -297,8 +372,15 @@ public class FoodDAO {
                     ps.setString(4, food.getImageUrl());
                     ps.setInt(5, food.getCategoryId());
                     ps.setInt(6, food.isAvailable() ? 1 : 0);
-                    ps.setInt(7, food.getId());
-                    ps.setInt(8, food.getRestaurantId());
+                    ps.setInt(7, food.isCombo() ? 1 : 0);
+                    if (food.getOriginalPrice() != null) {
+                        ps.setDouble(8, food.getOriginalPrice());
+                    } else {
+                        ps.setNull(8, java.sql.Types.DOUBLE);
+                    }
+                    ps.setString(9, food.getComboItems());
+                    ps.setInt(10, food.getId());
+                    ps.setInt(11, food.getRestaurantId());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -342,6 +424,42 @@ public class FoodDAO {
         return false;
     }
 
+    public List<Food> getCombosByRestaurantId(int restaurantId) {
+        ensureComboSupport();
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.restaurant_id = ? AND f.is_combo = 1 ORDER BY f.food_id DESC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, restaurantId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToFood(rs));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy combo theo quán: " + e.getMessage());
+        }
+        attachReviews(list, 2);
+        return list;
+    }
+
+    public List<Food> getAllCombos() {
+        ensureComboSupport();
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.is_combo = 1 ORDER BY f.restaurant_id, f.food_id DESC";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapResultSetToFood(rs));
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy tất cả combos: " + e.getMessage());
+        }
+        attachReviews(list, 2);
+        return list;
+    }
+
     private Food mapResultSetToFood(ResultSet rs) throws Exception {
         Food food = new Food(
             rs.getInt("food_id"),
@@ -359,6 +477,16 @@ public class FoodDAO {
             food.setRating(rs.getDouble("avg_rating"));
             food.setReviewCount(rs.getInt("review_count"));
         } catch (Exception ignored) {}
+
+        try {
+            food.setCombo(rs.getInt("is_combo") == 1);
+            double orig = rs.getDouble("original_price");
+            if (!rs.wasNull()) {
+                food.setOriginalPrice(orig);
+            }
+            food.setComboItems(rs.getString("combo_items"));
+        } catch (Exception ignored) {}
+
         return food;
     }
 }

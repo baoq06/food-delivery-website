@@ -268,13 +268,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Khởi tạo trạng thái từ URL parameters nếu có
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has("cat")) {
-            const catParam = urlParams.get("cat");
-            const targetBtn = Array.from(catButtons).find(b => b.dataset.catId === catParam);
+        const initialCat = urlParams.get("cat") || (urlParams.get("tab") === "combo" ? "combo" : null);
+        if (initialCat) {
+            const targetBtn = Array.from(catButtons).find(b => b.dataset.catId === initialCat);
             if (targetBtn) {
                 catButtons.forEach(b => b.classList.remove("active"));
                 targetBtn.classList.add("active");
-                currentCat = catParam;
+                currentCat = initialCat;
             }
         }
         if (urlParams.has("search")) {
@@ -293,9 +293,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cardRest = card.dataset.restaurant || "";
                 const cardCat = card.dataset.category || "";
                 const cardPrice = parseFloat(card.dataset.price) || 0;
+                const cardIsCombo = card.dataset.isCombo === "1";
 
-                // 1. Kiểm tra danh mục
-                const matchCat = (currentCat === "all" || cardCat === currentCat);
+                // 1. Kiểm tra danh mục & Combo
+                let matchCat = false;
+                if (currentCat === "all") {
+                    matchCat = true;
+                } else if (currentCat === "combo") {
+                    matchCat = cardIsCombo;
+                } else {
+                    matchCat = (cardCat === currentCat);
+                }
 
                 // 2. Kiểm tra khoảng giá
                 let matchPrice = true;

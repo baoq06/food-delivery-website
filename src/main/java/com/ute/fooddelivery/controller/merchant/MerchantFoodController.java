@@ -60,6 +60,16 @@ public class MerchantFoodController extends HttpServlet {
             } catch (Exception ignored) {}
         }
 
+        // Lọc theo loại món (Tất cả / Combo / Món đơn)
+        String typeParam = req.getParameter("type");
+        if ("combo".equalsIgnoreCase(typeParam)) {
+            foods = foods.stream().filter(Food::isCombo).collect(Collectors.toList());
+            req.setAttribute("selectedType", "combo");
+        } else if ("regular".equalsIgnoreCase(typeParam)) {
+            foods = foods.stream().filter(f -> !f.isCombo()).collect(Collectors.toList());
+            req.setAttribute("selectedType", "regular");
+        }
+
         List<Category> categories = categoryService.getAllCategories();
         req.setAttribute("foods", foods);
         req.setAttribute("categories", categories);
@@ -101,6 +111,10 @@ public class MerchantFoodController extends HttpServlet {
                 String description = req.getParameter("description");
                 String imageUrl = req.getParameter("imageUrl");
                 boolean isAvailable = req.getParameter("isAvailable") != null;
+                boolean isCombo = req.getParameter("isCombo") != null || "1".equals(req.getParameter("isCombo")) || "true".equalsIgnoreCase(req.getParameter("isCombo"));
+                String origPriceStr = req.getParameter("originalPrice");
+                Double originalPrice = (origPriceStr != null && !origPriceStr.trim().isEmpty()) ? Double.parseDouble(origPriceStr.trim()) : null;
+                String comboItems = req.getParameter("comboItems");
 
                 if (uploadedImageUrl != null) {
                     imageUrl = uploadedImageUrl;
@@ -126,10 +140,13 @@ public class MerchantFoodController extends HttpServlet {
                         restaurant.getName(),
                         isAvailable
                     );
+                    newFood.setCombo(isCombo);
+                    newFood.setOriginalPrice(originalPrice);
+                    newFood.setComboItems(comboItems != null ? comboItems.trim() : null);
 
                     boolean success = merchantService.addFood(newFood);
                     if (success) {
-                        req.getSession().setAttribute("flashMessage", "Đã đăng món ăn '" + name.trim() + "' thành công!");
+                        req.getSession().setAttribute("flashMessage", "Đã đăng " + (isCombo ? "Combo / Set tiết kiệm '" : "món ăn '") + name.trim() + "' thành công!");
                     } else {
                         req.getSession().setAttribute("flashError", "Không thể thêm món ăn, vui lòng thử lại!");
                     }
@@ -142,6 +159,10 @@ public class MerchantFoodController extends HttpServlet {
                 String description = req.getParameter("description");
                 String imageUrl = req.getParameter("imageUrl");
                 boolean isAvailable = req.getParameter("isAvailable") != null;
+                boolean isCombo = req.getParameter("isCombo") != null || "1".equals(req.getParameter("isCombo")) || "true".equalsIgnoreCase(req.getParameter("isCombo"));
+                String origPriceStr = req.getParameter("originalPrice");
+                Double originalPrice = (origPriceStr != null && !origPriceStr.trim().isEmpty()) ? Double.parseDouble(origPriceStr.trim()) : null;
+                String comboItems = req.getParameter("comboItems");
 
                 if (uploadedImageUrl != null) {
                     imageUrl = uploadedImageUrl;
@@ -159,10 +180,13 @@ public class MerchantFoodController extends HttpServlet {
                     restaurant.getName(),
                     isAvailable
                 );
+                food.setCombo(isCombo);
+                food.setOriginalPrice(originalPrice);
+                food.setComboItems(comboItems != null ? comboItems.trim() : null);
 
                 boolean success = merchantService.updateFood(food);
                 if (success) {
-                    req.getSession().setAttribute("flashMessage", "Đã cập nhật món '" + name.trim() + "' thành công!");
+                    req.getSession().setAttribute("flashMessage", "Đã cập nhật " + (isCombo ? "Combo '" : "món '") + name.trim() + "' thành công!");
                 } else {
                     req.getSession().setAttribute("flashError", "Cập nhật thất bại, vui lòng thử lại!");
                 }
