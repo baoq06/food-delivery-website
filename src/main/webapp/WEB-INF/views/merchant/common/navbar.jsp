@@ -89,12 +89,13 @@
                 <c:when test="${reqUri.endsWith('/merchant/dashboard') or reqUri.contains('/dashboard.jsp')}"><c:set var="curActive" value="dashboard" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/orders') or reqUri.contains('/orders.jsp')}"><c:set var="curActive" value="orders" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/foods') or reqUri.contains('/foods.jsp')}"><c:set var="curActive" value="foods" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/chat') or reqUri.contains('/chat.jsp')}"><c:set var="curActive" value="chat" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/revenue') or reqUri.contains('/revenue.jsp')}"><c:set var="curActive" value="revenue" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/profile') or reqUri.contains('/profile.jsp')}"><c:set var="curActive" value="profile" /></c:when>
             </c:choose>
         </c:if>
 
-        <!-- Modern Floating Navigation Tabs Bar (5 Balanced Tabs) -->
+        <!-- Modern Floating Navigation Tabs Bar (6 Balanced Tabs) -->
         <div class="merchant-tabs-bar">
             <a href="${pageContext.request.contextPath}/merchant/dashboard" class="merchant-tab-btn ${curActive eq 'dashboard' ? 'active' : ''}">
                 <i class="fa-solid fa-chart-pie"></i>
@@ -107,6 +108,11 @@
             <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-tab-btn ${curActive eq 'foods' ? 'active' : ''}">
                 <i class="fa-solid fa-bowl-food"></i>
                 <span>Thực đơn món</span>
+            </a>
+            <a href="${pageContext.request.contextPath}/merchant/chat" class="merchant-tab-btn ${curActive eq 'chat' ? 'active' : ''}">
+                <i class="fa-solid fa-comments"></i>
+                <span>Tin nhắn</span>
+                <span id="merchantNavChatBadge" class="badge bg-danger rounded-pill ms-1" style="display:none; font-size: 0.72rem; padding: 2px 6px;"></span>
             </a>
             <a href="${pageContext.request.contextPath}/merchant/revenue" class="merchant-tab-btn ${curActive eq 'revenue' ? 'active' : ''}">
                 <i class="fa-solid fa-chart-line"></i>

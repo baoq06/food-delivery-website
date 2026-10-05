@@ -69,6 +69,8 @@
     </div>
 </footer>
 
+<jsp:include page="/WEB-INF/views/common/chat-widget.jsp" />
+
 <script src="${pageContext.request.contextPath}/assets/js/main.js?v=<%= System.currentTimeMillis() %>"></script>
 </body>
 </html>
