@@ -122,19 +122,20 @@
     }
     .notif-card {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 16px;
         background: #ffffff;
         border-radius: 16px;
-        padding: 18px 22px;
+        padding: 16px 20px;
         border: 1px solid #f1f5f9;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
+        cursor: pointer;
     }
     .notif-card:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        border-color: #fca5a5;
+        box-shadow: 0 8px 24px rgba(240, 84, 84, 0.09);
         transform: translateY(-2px);
     }
     .notif-card.unread {
@@ -142,14 +143,18 @@
         border-color: #fee2e2;
         border-left: 5px solid #f05454;
     }
+    .notif-card.unread:hover {
+        background: #fff5f5;
+        border-color: #f87171;
+    }
     .notif-icon-circle {
-        width: 48px;
-        height: 48px;
+        width: 46px;
+        height: 46px;
         border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         flex-shrink: 0;
         background: #f8fafc;
         border: 1px solid #f1f5f9;
@@ -170,10 +175,11 @@
         margin-bottom: 4px;
     }
     .notif-title {
-        font-size: 1rem;
+        font-size: 0.98rem;
         font-weight: 800;
         color: #1e293b;
         margin: 0;
+        line-height: 1.35;
     }
     .notif-time {
         font-size: 0.8rem;
@@ -185,52 +191,42 @@
         gap: 4px;
     }
     .notif-message {
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         color: #475569;
         line-height: 1.5;
-        margin: 0 0 10px 0;
+        margin: 0;
     }
-    .notif-footer-actions {
+    .notif-card-actions {
         display: flex;
         align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
+        justify-content: center;
+        margin-left: 8px;
+        flex-shrink: 0;
     }
-    .btn-notif-view {
+    .btn-notif-delete-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 14px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        background: #f05454;
-        color: #ffffff;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .btn-notif-view:hover {
-        background: #d93838;
-        color: #ffffff;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 10px rgba(240, 84, 84, 0.3);
-    }
-    .btn-notif-sub {
-        font-size: 0.8rem;
-        color: #64748b;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        text-decoration: none;
-    }
-    .btn-notif-sub:hover {
-        color: #f05454;
+        justify-content: center;
         background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #94a3b8;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+    }
+    .btn-notif-delete-circle:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #ef4444;
+        transform: scale(1.08);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    .btn-notif-delete-circle:active {
+        transform: scale(0.95);
     }
     .unread-indicator-dot {
         width: 8px;
@@ -323,7 +319,25 @@
         <c:when test="${not empty notifications}">
             <div class="notif-list">
                 <c:forEach var="n" items="${notifications}">
-                    <div class="notif-card ${n.read ? 'read' : 'unread'}">
+                    <c:set var="targetLink" value="" />
+                    <c:if test="${not empty n.link}">
+                        <c:choose>
+                            <c:when test="${n.link.startsWith('/')}">
+                                <c:set var="targetLink" value="${pageContext.request.contextPath}${n.link}" />
+                            </c:when>
+                            <c:otherwise>
+                                <c:set var="targetLink" value="${pageContext.request.contextPath}/${n.link}" />
+                            </c:otherwise>
+                        </c:choose>
+                    </c:if>
+                    <div class="notif-card ${n.read ? 'read' : 'unread'}"
+                         data-id="${n.id}"
+                         data-link="${targetLink}"
+                         data-read="${n.read}"
+                         onclick="handleNotifCardClick(this)"
+                         role="button"
+                         tabindex="0"
+                         title="Nhấn để xem chi tiết">
                         <!-- Icon Circle -->
                         <div class="notif-icon-circle">
                             <i class="${n.iconClass}"></i>
@@ -344,31 +358,17 @@
                             </div>
 
                             <p class="notif-message">${n.message}</p>
+                        </div>
 
-                            <div class="notif-footer-actions">
-                                <c:choose>
-                                    <c:when test="${not empty n.link}">
-                                        <a href="${pageContext.request.contextPath}/notifications?action=readAndRedirect&id=${n.id}&redirect=${n.link}" class="btn-notif-view" title="Xem chi tiết và tự động tính là đã đọc">
-                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem chi tiết
-                                        </a>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <c:if test="${not n.read}">
-                                            <button type="button" class="btn-notif-view" onclick="markReadAndAcknowledge(${n.id}, this)" title="Xem chi tiết và tự động tính là đã đọc">
-                                                <i class="fa-solid fa-eye"></i> Xem chi tiết
-                                            </button>
-                                        </c:if>
-                                    </c:otherwise>
-                                </c:choose>
-
-                                <form action="${pageContext.request.contextPath}/notifications" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?');">
-                                    <input type="hidden" name="action" value="delete" />
-                                    <input type="hidden" name="id" value="${n.id}" />
-                                    <button type="submit" class="btn-notif-sub text-danger" title="Xóa thông báo">
-                                        <i class="fa-regular fa-trash-can"></i> Xóa
-                                    </button>
-                                </form>
-                            </div>
+                        <!-- Delete Button (Circular Icon) on the right -->
+                        <div class="notif-card-actions">
+                            <form action="${pageContext.request.contextPath}/notifications" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc muốn xóa thông báo này?');" onclick="event.stopPropagation();">
+                                <input type="hidden" name="action" value="delete" />
+                                <input type="hidden" name="id" value="${n.id}" />
+                                <button type="submit" class="btn-notif-delete-circle" title="Xóa thông báo" onclick="event.stopPropagation();">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </c:forEach>
@@ -396,39 +396,46 @@
 </div>
 
 <script>
-function markReadAndAcknowledge(notifId, btn) {
-    fetch('${pageContext.request.contextPath}/api/notifications/mark-read?id=' + notifId)
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            if (data.success) {
-                var card = btn.closest('.notif-card');
-                if (card) {
-                    card.classList.remove('unread');
-                    card.classList.add('read');
-                    var dot = card.querySelector('.unread-indicator-dot');
-                    if (dot) dot.remove();
-                }
-                btn.remove();
-                // Cập nhật counter thông báo ở thanh menu
-                var badge = document.getElementById('navNotifBadge');
-                var dropBadge = document.getElementById('dropdownNotifBadge');
-                var count = data.unreadCount || 0;
-                [badge, dropBadge].forEach(function(el) {
-                    if (el) {
-                        if (count > 0) {
-                            el.innerText = count > 99 ? '99+' : count;
-                            el.style.display = 'flex';
-                        } else {
-                            el.style.display = 'none';
-                            el.classList.remove('has-unread');
+function handleNotifCardClick(cardEl) {
+    var notifId = cardEl.getAttribute('data-id');
+    var linkUrl = cardEl.getAttribute('data-link');
+    var isRead = cardEl.getAttribute('data-read') === 'true';
+
+    if (!isRead && notifId) {
+        // Gửi request mark-read trong background
+        fetch('${pageContext.request.contextPath}/api/notifications/mark-read?id=' + notifId)
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var count = data.unreadCount || 0;
+                    var badge = document.getElementById('navNotifBadge');
+                    var dropBadge = document.getElementById('dropdownNotifBadge');
+                    var popBadge = document.getElementById('popoverUnreadBadge');
+                    [badge, dropBadge, popBadge].forEach(function(el) {
+                        if (el) {
+                            if (count > 0) {
+                                el.innerText = count > 99 ? '99+' : count;
+                                el.style.display = 'inline-flex';
+                            } else {
+                                el.style.display = 'none';
+                                el.classList.remove('has-unread');
+                            }
                         }
-                    }
-                });
-            }
-        })
-        .catch(function(err) {
-            console.error('Lỗi đánh dấu đã đọc:', err);
-        });
+                    });
+                }
+            })
+            .catch(function(err) {});
+    }
+
+    if (linkUrl && linkUrl.trim() !== '') {
+        window.location.href = linkUrl;
+    } else {
+        cardEl.classList.remove('unread');
+        cardEl.classList.add('read');
+        cardEl.setAttribute('data-read', 'true');
+        var dot = cardEl.querySelector('.unread-indicator-dot');
+        if (dot) dot.remove();
+    }
 }
 </script>
 

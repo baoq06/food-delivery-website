@@ -19,7 +19,7 @@ public class NotificationService {
         Notification notif = new Notification(
             merchantUserId,
             orderId,
-            "🛎️ Có đơn hàng mới #DH-" + orderId,
+            "Có đơn hàng mới #DH-" + orderId,
             "Khách hàng " + customerName + " vừa đặt đơn trị giá " + formatMoney(amount) + ". Vui lòng chọn tài xế shipper khả dụng để giao đơn!",
             "ORDER_NEW",
             "/merchant/orders?status=PENDING"
@@ -32,7 +32,7 @@ public class NotificationService {
         Notification notif = new Notification(
             shipperUserId,
             orderId,
-            "🏍️ Bạn có cuốc xe mới #DH-" + orderId + "!",
+            "Bạn có cuốc xe mới #DH-" + orderId + "!",
             "Quán ăn vừa gán đơn hàng trị giá " + formatMoney(amount) + " đến '" + address + "' cho bạn. Hãy bấm nhận cuốc xe ngay!",
             "ORDER_ASSIGNED",
             "/shipper/dashboard"
@@ -45,7 +45,7 @@ public class NotificationService {
             Notification notifMerchant = new Notification(
                 merchantUserId,
                 orderId,
-                "✅ Tài xế đã nhận đơn #DH-" + orderId,
+                "Tài xế đã nhận đơn #DH-" + orderId,
                 "Tài xế " + driverName + " (" + driverPhone + ") đã đồng ý giao đơn này. Bạn có thể bắt đầu chế biến món ăn!",
                 "SHIPPER_ACCEPTED",
                 "/merchant/orders"
@@ -57,7 +57,7 @@ public class NotificationService {
             Notification notifCustomer = new Notification(
                 customerUserId,
                 orderId,
-                "🏍️ Tài xế đã nhận đơn #DH-" + orderId,
+                "Tài xế đã nhận đơn #DH-" + orderId,
                 "Tài xế " + driverName + " (" + driverPhone + ") sẽ giao đơn hàng của bạn. Quán đang chuẩn bị món ăn!",
                 "SHIPPER_ACCEPTED",
                 "/profile?tab=orders"
@@ -71,7 +71,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 merchantUserId,
                 orderId,
-                "⚠️ Tài xế đã từ chối nhận đơn #DH-" + orderId,
+                "Tài xế đã từ chối nhận đơn #DH-" + orderId,
                 "Tài xế " + driverName + " đã từ chối nhận cuốc xe này. Vui lòng gán tài xế khác cho đơn hàng!",
                 "ORDER_CANCELLED",
                 "/merchant/orders?status=PENDING"
@@ -85,7 +85,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 customerUserId,
                 orderId,
-                "🍳 Quán đang chế biến & giao đơn #DH-" + orderId,
+                "Quán đang chế biến & giao đơn #DH-" + orderId,
                 "Món ăn của bạn đang được quán chuẩn bị và giao cho tài xế vận chuyển đến bạn!",
                 "ORDER_SHIPPING",
                 "/profile?tab=orders"
@@ -97,7 +97,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 shipperUserId,
                 orderId,
-                "📦 Đơn #DH-" + orderId + " đang được quán chế biến",
+                "Đơn #DH-" + orderId + " đang được quán chế biến",
                 "Quán ăn đã bắt đầu nấu và bàn giao món ăn. Bạn hãy sẵn sàng di chuyển giao hàng nhé!",
                 "ORDER_SHIPPING",
                 "/shipper/dashboard"
@@ -111,7 +111,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 customerUserId,
                 orderId,
-                "📦 Tài xế báo đã giao đơn #DH-" + orderId,
+                "Tài xế báo đã giao đơn #DH-" + orderId,
                 "Tài xế " + driverName + " báo đã giao hàng đến bạn. Vui lòng kiểm tra và bấm 'Đã nhận được hàng'!",
                 "SHIPPER_DELIVERED",
                 "/profile?tab=orders"
@@ -123,7 +123,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 merchantUserId,
                 orderId,
-                "📍 Tài xế đã giao xong đơn #DH-" + orderId,
+                "Tài xế đã giao xong đơn #DH-" + orderId,
                 "Tài xế " + driverName + " đã hoàn tất chặng giao hàng đến khách.",
                 "SHIPPER_DELIVERED",
                 "/merchant/orders"
@@ -137,7 +137,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 shipperUserId,
                 orderId,
-                "🌟 Khách hàng đã nhận đơn #DH-" + orderId,
+                "Khách hàng đã nhận đơn #DH-" + orderId,
                 "Khách hàng " + customerName + " đã bấm xác nhận đã nhận được món ăn an toàn!",
                 "CUSTOMER_CONFIRMED",
                 "/shipper/dashboard"
@@ -149,7 +149,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 merchantUserId,
                 orderId,
-                "🌟 Khách hàng đã nhận đơn #DH-" + orderId,
+                "Khách hàng đã nhận đơn #DH-" + orderId,
                 "Khách hàng " + customerName + " đã xác nhận đã nhận được món ăn.",
                 "CUSTOMER_CONFIRMED",
                 "/merchant/orders"
@@ -167,7 +167,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 customerUserId,
                 orderId,
-                "🎉 Đơn hàng #DH-" + orderId + " đã hoàn tất!",
+                "Đơn hàng #DH-" + orderId + " đã hoàn tất!",
                 "Cả bạn và tài xế đã xác nhận đơn hàng thành công! Hãy để lại đánh giá để quán phục vụ tốt hơn nhé.",
                 "ORDER_COMPLETED",
                 "/profile?tab=orders"
@@ -179,7 +179,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 shipperUserId,
                 orderId,
-                "💰 Chuyến xe #DH-" + orderId + " đã hoàn tất thành công!",
+                "Chuyến xe #DH-" + orderId + " đã hoàn tất thành công!",
                 "Khách hàng đã nhận món và chuyến xe hoàn tất. Bạn đã có thể sẵn sàng nhận chuyến mới!",
                 "ORDER_COMPLETED",
                 "/shipper/dashboard?tab=history"
@@ -191,7 +191,7 @@ public class NotificationService {
             Notification notif = new Notification(
                 merchantUserId,
                 orderId,
-                "🎉 Đơn hàng #DH-" + orderId + " đã hoàn tất!",
+                "Đơn hàng #DH-" + orderId + " đã hoàn tất!",
                 "Shipper và Khách hàng đã cùng xác nhận giao nhận thành công. Đơn hàng đã được tự động hoàn tất và ghi nhận doanh thu.",
                 "ORDER_COMPLETED",
                 "/merchant/orders"
@@ -203,13 +203,13 @@ public class NotificationService {
     public void notifyOrderCancelled(Integer customerUserId, Integer shipperUserId, Integer merchantUserId, int orderId, String reason) {
         String msg = "Đơn hàng #DH-" + orderId + " đã bị hủy. Lý do: " + (reason != null ? reason : "Không xác định");
         if (customerUserId != null && customerUserId > 0) {
-            notificationDAO.createNotification(new Notification(customerUserId, orderId, "❌ Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/profile?tab=orders"));
+            notificationDAO.createNotification(new Notification(customerUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/profile?tab=orders"));
         }
         if (shipperUserId != null && shipperUserId > 0) {
-            notificationDAO.createNotification(new Notification(shipperUserId, orderId, "❌ Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/shipper/dashboard"));
+            notificationDAO.createNotification(new Notification(shipperUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/shipper/dashboard"));
         }
         if (merchantUserId != null && merchantUserId > 0) {
-            notificationDAO.createNotification(new Notification(merchantUserId, orderId, "❌ Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/merchant/orders"));
+            notificationDAO.createNotification(new Notification(merchantUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/merchant/orders"));
         }
     }
 }

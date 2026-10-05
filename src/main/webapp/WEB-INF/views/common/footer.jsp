@@ -35,11 +35,11 @@
             <div class="footer-col">
                 <h4 class="footer-title">Chính Sách & Hỗ Trợ</h4>
                 <ul class="footer-links">
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Chính sách giao hàng 30 phút</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Cam kết món ăn nóng hổi</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Quy định thanh toán & hoàn tiền</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
-                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại Utee</a></li>
+                    <li><a href="${pageContext.request.contextPath}/policy?tab=delivery"><i class="fa-solid fa-angle-right"></i> Chính sách giao hàng 30 phút</a></li>
+                    <li><a href="${pageContext.request.contextPath}/policy?tab=food-quality"><i class="fa-solid fa-angle-right"></i> Cam kết món ăn nóng hổi</a></li>
+                    <li><a href="${pageContext.request.contextPath}/policy?tab=payment-refund"><i class="fa-solid fa-angle-right"></i> Quy định thanh toán & hoàn tiền</a></li>
+                    <li><a href="${pageContext.request.contextPath}/policy?tab=privacy"><i class="fa-solid fa-angle-right"></i> Bảo mật thông tin khách hàng</a></li>
+                    <li><a href="${pageContext.request.contextPath}/policy?tab=guide"><i class="fa-solid fa-angle-right"></i> Hướng dẫn đặt món tại Utee</a></li>
                 </ul>
             </div>
 

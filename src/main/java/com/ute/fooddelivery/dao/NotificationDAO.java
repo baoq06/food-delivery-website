@@ -81,6 +81,36 @@ public class NotificationDAO {
         return list;
     }
 
+    public List<Notification> getRecentNotifications(int userId, int limit) {
+        List<Notification> list = new ArrayList<>();
+        String sql = "SELECT notification_id, user_id, order_id, title, message, type, link, is_read, created_at " +
+                     "FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, limit > 0 ? limit : 5);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Notification n = new Notification(
+                        rs.getInt("notification_id"),
+                        rs.getInt("user_id"),
+                        (Integer) rs.getObject("order_id"),
+                        rs.getString("title"),
+                        rs.getString("message"),
+                        rs.getString("type"),
+                        rs.getString("link"),
+                        rs.getBoolean("is_read"),
+                        rs.getTimestamp("created_at")
+                    );
+                    list.add(n);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy recent notifications: " + e.getMessage());
+        }
+        return list;
+    }
+
     public int getUnreadCount(int userId) {
         String sql = "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0";
         try (Connection conn = DBContext.getConnection();
