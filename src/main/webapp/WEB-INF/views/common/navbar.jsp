@@ -777,29 +777,6 @@
                                         <a href="${pageContext.request.contextPath}/merchant/profile"><i class="fa-solid fa-gear"></i> Cài đặt quán ăn</a>
                                     </c:if>
 
-                                    <div class="dropdown-divider"></div>
-                                    
-                                    <!-- Chế độ giao diện Sáng / Tối / Tự động -->
-                                    <div class="user-dropdown-theme-section">
-                                        <div class="dropdown-theme-header">
-                                            <span class="dropdown-theme-label"><i class="fa-solid fa-circle-half-stroke text-primary"></i> Chế độ giao diện</span>
-                                            <span class="dropdown-theme-hint" id="dropdownThemeHint">Tự động</span>
-                                        </div>
-                                        <div class="dropdown-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')" title="Giao diện Sáng">
-                                                <i class="fa-solid fa-sun text-warning"></i>
-                                                <span>Sáng</span>
-                                            </button>
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')" title="Giao diện Tối">
-                                                <i class="fa-solid fa-moon text-primary"></i>
-                                                <span>Tối</span>
-                                            </button>
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')" title="Theo giao diện thiết bị">
-                                                <i class="fa-solid fa-desktop text-info"></i>
-                                                <span>Tự động</span>
-                                            </button>
-                                        </div>
-                                    </div>
 
                                     <div class="dropdown-divider"></div>
                                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
@@ -980,10 +957,6 @@
                             </script>
                         </c:when>
                         <c:otherwise>
-                            <button type="button" class="btn-guest-theme-toggle" onclick="setAppTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" title="Đổi giao diện Sáng / Tối" aria-label="Đổi giao diện">
-                                <i class="fa-solid fa-moon guest-icon-moon"></i>
-                                <i class="fa-solid fa-sun guest-icon-sun"></i>
-                            </button>
                             <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>
                             <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-primary btn-sm btn-nav-auth">Đăng ký</a>
                         </c:otherwise>
@@ -1132,25 +1105,6 @@
                     </ul>
                 </div>
             </c:if>
-
-            <!-- Giao diện hiển thị trên Mobile Drawer -->
-            <div class="mobile-drawer-nav-group">
-                <div class="drawer-group-title">Giao Diện Ứng Dụng</div>
-                <div class="mobile-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')">
-                        <i class="fa-solid fa-sun text-warning"></i>
-                        <span>Sáng</span>
-                    </button>
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')">
-                        <i class="fa-solid fa-moon text-primary"></i>
-                        <span>Tối</span>
-                    </button>
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')">
-                        <i class="fa-solid fa-desktop text-info"></i>
-                        <span>Tự động</span>
-                    </button>
-                </div>
-            </div>
 
             <div class="mobile-drawer-footer">
                 <div class="drawer-hotline">

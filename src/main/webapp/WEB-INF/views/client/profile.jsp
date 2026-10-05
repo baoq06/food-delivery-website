@@ -394,25 +394,6 @@
                     </div>
                 </div>
 
-                <!-- Profile Sidebar Theme Quick Switch -->
-                <div class="profile-sidebar-theme-box">
-                    <div class="sidebar-theme-header">
-                        <span><i class="fa-solid fa-circle-half-stroke text-primary"></i> Chế độ giao diện</span>
-                        <span class="sidebar-theme-current" id="profileSidebarThemeText">Tự động</span>
-                    </div>
-                    <div class="sidebar-theme-btns" role="radiogroup" aria-label="Đổi nhanh giao diện">
-                        <button type="button" class="sidebar-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')" title="Giao diện Sáng">
-                            <i class="fa-solid fa-sun text-warning"></i> Sáng
-                        </button>
-                        <button type="button" class="sidebar-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')" title="Giao diện Tối">
-                            <i class="fa-solid fa-moon text-primary"></i> Tối
-                        </button>
-                        <button type="button" class="sidebar-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')" title="Theo thiết bị">
-                            <i class="fa-solid fa-desktop text-info"></i> Auto
-                        </button>
-                    </div>
-                </div>
-
                 <c:if test="${user.seller or user.role eq 'SELLER'}">
                     <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border-color);">
                         <a href="${pageContext.request.contextPath}/merchant/dashboard" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 12px; font-weight: 700; padding: 11px;">
@@ -496,91 +477,6 @@
                     </form>
                 </div>
 
-                <!-- Khối Cài Đặt Giao Diện Hiển Thị (Light / Dark / Auto) -->
-                <div class="profile-main-card profile-theme-section-card">
-                    <div class="profile-card-header">
-                        <div class="profile-card-title-wrap">
-                            <h3 class="profile-card-title"><i class="fa-solid fa-palette text-primary"></i> Giao diện hiển thị</h3>
-                            <span class="profile-theme-badge-current">Đang áp dụng: <strong id="profileCurrentThemeLabel">Tự động (Theo máy)</strong></span>
-                        </div>
-                        <p class="profile-card-subtitle">Tùy chỉnh chế độ sáng, tối hoặc tự động đồng bộ theo hệ thống thiết bị của bạn</p>
-                    </div>
-
-                    <div class="profile-theme-cards-grid">
-                        <!-- Option 1: Sáng -->
-                        <div class="profile-theme-card-option" data-theme-value="light" onclick="setAppTheme('light')">
-                            <div class="theme-card-preview theme-preview-light">
-                                <div class="preview-mock-header">
-                                    <span class="mock-dot red"></span>
-                                    <span class="mock-dot yellow"></span>
-                                    <span class="mock-dot green"></span>
-                                    <span class="mock-bar"></span>
-                                </div>
-                                <div class="preview-mock-body">
-                                    <div class="mock-card-item"></div>
-                                    <div class="mock-card-item small"></div>
-                                </div>
-                            </div>
-                            <div class="theme-card-content">
-                                <div class="theme-card-title-row">
-                                    <span class="theme-card-title"><i class="fa-solid fa-sun text-warning"></i> Giao diện Sáng</span>
-                                    <div class="theme-check-circle"><i class="fa-solid fa-check"></i></div>
-                                </div>
-                                <p class="theme-card-desc">Tone màu sáng ấm tinh tươm, độ tương phản cao, dễ nhìn rõ ràng vào ban ngày.</p>
-                            </div>
-                        </div>
-
-                        <!-- Option 2: Tối -->
-                        <div class="profile-theme-card-option" data-theme-value="dark" onclick="setAppTheme('dark')">
-                            <div class="theme-card-preview theme-preview-dark">
-                                <div class="preview-mock-header">
-                                    <span class="mock-dot red"></span>
-                                    <span class="mock-dot yellow"></span>
-                                    <span class="mock-dot green"></span>
-                                    <span class="mock-bar"></span>
-                                </div>
-                                <div class="preview-mock-body">
-                                    <div class="mock-card-item"></div>
-                                    <div class="mock-card-item small"></div>
-                                </div>
-                            </div>
-                            <div class="theme-card-content">
-                                <div class="theme-card-title-row">
-                                    <span class="theme-card-title"><i class="fa-solid fa-moon text-primary"></i> Giao diện Tối</span>
-                                    <div class="theme-check-circle"><i class="fa-solid fa-check"></i></div>
-                                </div>
-                                <p class="theme-card-desc">Nền tối êm dịu, bảo vệ mắt khi lướt món ăn ban đêm và tiết kiệm pin thiết bị.</p>
-                            </div>
-                        </div>
-
-                        <!-- Option 3: Hệ thống (Tự động) -->
-                        <div class="profile-theme-card-option" data-theme-value="system" onclick="setAppTheme('system')">
-                            <div class="theme-card-preview theme-preview-system">
-                                <div class="preview-mock-header">
-                                    <span class="mock-dot red"></span>
-                                    <span class="mock-dot yellow"></span>
-                                    <span class="mock-dot green"></span>
-                                    <span class="mock-bar"></span>
-                                </div>
-                                <div class="preview-mock-body split">
-                                    <div class="mock-half light">
-                                        <div class="mock-card-item"></div>
-                                    </div>
-                                    <div class="mock-half dark">
-                                        <div class="mock-card-item"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="theme-card-content">
-                                <div class="theme-card-title-row">
-                                    <span class="theme-card-title"><i class="fa-solid fa-desktop text-info"></i> Theo hệ thống (Auto)</span>
-                                    <div class="theme-check-circle"><i class="fa-solid fa-check"></i></div>
-                                </div>
-                                <p class="theme-card-desc">Tự động chuyển sáng hoặc tối đồng bộ theo cài đặt hệ điều hành của bạn.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1181,31 +1077,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     checkProfileChanges();
 
-    // Đồng bộ nhãn giao diện hiển thị trong trang hồ sơ
-    function updateProfileThemeLabels() {
-        var pref = (typeof getAppThemePreference === 'function') ? getAppThemePreference() : (localStorage.getItem('app-theme') || 'system');
-        var labelEl = document.getElementById('profileCurrentThemeLabel');
-        var sideEl = document.getElementById('profileSidebarThemeText');
-        var map = {
-            'light': 'Giao diện Sáng',
-            'dark': 'Giao diện Tối',
-            'system': 'Tự động (Theo máy)'
-        };
-        var shortMap = {
-            'light': 'Sáng',
-            'dark': 'Tối',
-            'system': 'Tự động'
-        };
-        if (labelEl) labelEl.textContent = map[pref] || 'Tự động (Theo máy)';
-        if (sideEl) sideEl.textContent = shortMap[pref] || 'Tự động';
-    }
-    updateProfileThemeLabels();
-    window.addEventListener('storage', updateProfileThemeLabels);
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('[data-theme-choice], [data-theme-value]')) {
-            setTimeout(updateProfileThemeLabels, 30);
-        }
-    });
 
     // Khởi tạo VNAddressPicker cho hồ sơ khách hàng
     if (document.getElementById('customerVNAddressPicker') && typeof VNAddressPicker !== 'undefined') {

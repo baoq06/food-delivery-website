@@ -471,48 +471,7 @@
         }
     }
 
-    /* Dark Mode Support */
-    [data-theme="dark"] .policy-sidebar,
-    [data-theme="dark"] .policy-content-card,
-    [data-theme="dark"] .policy-faq-item {
-        background: #1e293b !important;
-        border-color: #334155 !important;
-        color: #f1f5f9 !important;
-    }
-    [data-theme="dark"] .policy-title,
-    [data-theme="dark"] .policy-section-title,
-    [data-theme="dark"] .policy-support-title,
-    [data-theme="dark"] .policy-faq-question,
-    [data-theme="dark"] .policy-step-title,
-    [data-theme="dark"] .policy-table th {
-        color: #f8fafc !important;
-    }
-    [data-theme="dark"] .policy-paragraph,
-    [data-theme="dark"] .policy-faq-answer,
-    [data-theme="dark"] .policy-support-text,
-    [data-theme="dark"] .policy-step-desc,
-    [data-theme="dark"] .policy-table td,
-    [data-theme="dark"] .policy-callout p {
-        color: #cbd5e1 !important;
-    }
-    [data-theme="dark"] .policy-nav-item {
-        color: #94a3b8;
-    }
-    [data-theme="dark"] .policy-nav-item:hover {
-        background: #243248;
-        color: #ff8a8a;
-    }
-    [data-theme="dark"] .policy-nav-item.active {
-        background: #f05454;
-        color: #ffffff;
-    }
-    [data-theme="dark"] .policy-support-box,
-    [data-theme="dark"] .policy-callout,
-    [data-theme="dark"] .policy-step-card,
-    [data-theme="dark"] .policy-table th {
-        background: #0f172a !important;
-        border-color: #334155 !important;
-    }
+
 </style>
 
 <!-- Hero Banner -->

@@ -11,17 +11,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
     <link rel="shortcut icon" type="image/png" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/logo/logo-favicon.png?v=3">
-    <!-- Instant Theme Loader (FOUC Prevention) -->
-    <script>
-        (function() {
-            try {
-                var pref = localStorage.getItem('app-theme') || 'system';
-                var isDark = pref === 'dark' || (pref === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-                document.documentElement.setAttribute('data-theme-preference', pref);
-            } catch (e) {}
-        })();
-    </script>
     <!-- Google Fonts: Be Vietnam Pro (Font chuẩn 100% tiếng Việt từ font-weight 300 đến 900, không bị lỗi dấu hay nhảy font) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
