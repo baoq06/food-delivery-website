@@ -307,7 +307,7 @@
         <!-- Food Grid -->
         <div class="food-grid" id="home-food-grid">
             <c:forEach items="${tabFoods}" var="food">
-                <div class="food-card" data-id="${food.id}" data-category="${food.categoryId}" data-name="${food.name}" data-price="${food.price}" data-rating="${food.rating}">
+                <div class="food-card" data-id="${food.id}" data-category="${food.categoryId}" data-name="${food.name}" data-price="${food.price}" data-rating="${food.rating}" onclick="if (!event.target.closest('.btn-add-cart, .add-cart-form, .food-distance-link, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${food.id}'; }">
                     <div class="food-card-img-wrap">
                         <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Đặc sản'}" /></span>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
@@ -395,7 +395,7 @@
 
             <div class="restaurant-grid mt-4">
                 <c:forEach items="${tabRestaurants}" var="rest">
-                    <div class="restaurant-card">
+                    <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" class="restaurant-card" title="Xem quán ${rest.name}">
                         <div class="restaurant-card-banner">
                             <c:set var="rawBanner" value="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" />
                             <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
@@ -423,25 +423,16 @@
                                 </span>
                             </div>
 
-                            <h3 class="restaurant-card-name">
-                                <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}">${rest.name}</a>
-                            </h3>
+                            <h3 class="restaurant-card-name">${rest.name}</h3>
 
                             <div class="restaurant-card-address">
                                 <i class="fa-solid fa-location-dot text-danger"></i>
                                 <span>${rest.address}</span>
                             </div>
 
-                            <p class="restaurant-card-desc">${rest.description}</p>
-
-                            <div class="restaurant-card-action mt-3">
-                                <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" class="btn btn-primary w-100">
-                                    <span>Xem Quán &amp; Thực Đơn</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                            </div>
+                            <p class="restaurant-card-desc mb-0">${rest.description}</p>
                         </div>
-                    </div>
+                    </a>
                 </c:forEach>
             </div>
         </div>
@@ -461,7 +452,7 @@
 
             <div class="food-grid">
                 <c:forEach items="${recentFoods}" var="rFood">
-                    <div class="food-card">
+                    <div class="food-card" onclick="if (!event.target.closest('.btn, a, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${rFood.id}'; }">
                         <div class="food-card-img-wrap">
                             <span class="food-tag">${not empty rFood.categoryName ? rFood.categoryName : 'Vừa xem'}</span>
                             <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}">

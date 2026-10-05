@@ -51,48 +51,61 @@
                 </c:if>
 
                 <div class="restaurant-hero-info">
-                    <c:set var="rawLogo" value="${not empty restaurant.logoUrl ? restaurant.logoUrl : ''}" />
-                    <c:if test="${not empty rawLogo}">
-                        <c:set var="finalLogoUrl" value="${rawLogo.startsWith('http') || rawLogo.startsWith('/') ? (rawLogo.startsWith('/') ? pageContext.request.contextPath.concat(rawLogo) : rawLogo) : pageContext.request.contextPath.concat('/').concat(rawLogo)}" />
-                        <div class="restaurant-hero-logo-wrap" style="width: 76px; height: 76px; border-radius: 18px; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.18); margin-top: -46px; margin-bottom: 12px; background: #ffffff; position: relative; z-index: 5;">
-                            <img src="${finalLogoUrl}" alt="${restaurant.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none';" />
-                        </div>
-                    </c:if>
                     <div class="restaurant-info-main">
-                        <div class="restaurant-badge-tag"><i class="fa-solid fa-store"></i> Quán Ăn Đối Tác Chính Thức</div>
-                        <h1 class="restaurant-hero-title">${restaurant.name}</h1>
+                        <div class="restaurant-hero-brand-header">
+                            <c:set var="rawLogo" value="${not empty restaurant.logoUrl ? restaurant.logoUrl : ''}" />
+                            <c:if test="${not empty rawLogo}">
+                                <c:set var="finalLogoUrl" value="${rawLogo.startsWith('http') || rawLogo.startsWith('/') ? (rawLogo.startsWith('/') ? pageContext.request.contextPath.concat(rawLogo) : rawLogo) : pageContext.request.contextPath.concat('/').concat(rawLogo)}" />
+                                <div class="restaurant-hero-logo-wrap">
+                                    <img src="${finalLogoUrl}" alt="${restaurant.name}" class="restaurant-hero-logo-img" onerror="this.parentElement.style.display='none';" />
+                                </div>
+                            </c:if>
+                            <div class="restaurant-hero-title-box">
+                                <div class="restaurant-badge-tag"><i class="fa-solid fa-circle-check"></i> Quán Ăn Đối Tác Chính Thức</div>
+                                <h1 class="restaurant-hero-title">${restaurant.name}</h1>
+                            </div>
+                        </div>
+
                         <p class="restaurant-hero-desc">${restaurant.description}</p>
                         
                         <div class="restaurant-meta-list">
                             <div class="meta-item">
-                                <i class="fa-solid fa-location-dot text-danger"></i>
+                                <div class="meta-icon-circle text-danger"><i class="fa-solid fa-location-dot"></i></div>
                                 <span><strong>Địa chỉ:</strong> ${restaurant.address}</span>
                             </div>
                             <div class="meta-item">
-                                <i class="fa-solid fa-phone text-primary"></i>
-                                <span><strong>Hotline:</strong> ${not empty restaurant.phone ? restaurant.phone : '1900 6868'}</span>
+                                <div class="meta-icon-circle text-primary"><i class="fa-solid fa-phone"></i></div>
+                                <span><strong>Hotline:</strong> <a href="tel:${restaurant.phone}" style="color: inherit; text-decoration: none; font-weight: 600;">${not empty restaurant.phone ? restaurant.phone : '1900 6868'}</a></span>
                             </div>
                             <div class="meta-item">
-                                <i class="fa-solid fa-clock text-warning"></i>
+                                <div class="meta-icon-circle text-warning"><i class="fa-solid fa-clock"></i></div>
                                 <span><strong>Giờ mở cửa:</strong> ${not empty restaurant.openTime ? restaurant.openTime : '07:00'} - ${not empty restaurant.closeTime ? restaurant.closeTime : '22:00'}</span>
                             </div>
                         </div>
 
-                        <!-- Chat CTA Button -->
-                        <div class="restaurant-chat-action mt-3">
-                            <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold" 
-                                    style="box-shadow: 0 4px 12px rgba(240,84,84,0.15);"
+                        <!-- Chat & Share Action Buttons -->
+                        <div class="restaurant-hero-actions mt-4">
+                            <button type="button" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill font-weight-bold btn-chat-rest" 
                                     data-restaurant-id="${restaurant.id}"
                                     data-restaurant-name="<c:out value='${restaurant.name}' escapeXml='true'/>"
                                     onclick="openChatWithRestaurant(this.dataset.restaurantId, this.dataset.restaurantName)">
                                 <i class="fa-solid fa-comments"></i>
                                 <span>Nhắn tin với quán</span>
                             </button>
+                            <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold" 
+                                    onclick="navigator.clipboard.writeText(window.location.href); alert('Đã sao chép liên kết quán ăn!');"
+                                    title="Chia sẻ quán">
+                                <i class="fa-solid fa-share-nodes"></i>
+                                <span>Chia sẻ</span>
+                            </button>
                         </div>
                     </div>
 
                     <!-- Overall Rating Box (Dựa trên dữ liệu thật) -->
                     <div class="restaurant-rating-summary-box">
+                        <div class="summary-score-header">
+                            <span class="score-badge-label"><i class="fa-solid fa-medal text-warning"></i> Điểm Chất Lượng</span>
+                        </div>
                         <div class="summary-score-wrap">
                             <div class="summary-score-num">${restaurant.rating > 0 ? restaurant.rating : '5.0'}</div>
                             <div class="summary-stars">
@@ -107,10 +120,10 @@
                             <div class="summary-count-text">
                                 <c:choose>
                                     <c:when test="${restaurant.reviewCount > 0}">
-                                        <strong>${restaurant.reviewCount}</strong> đánh giá thực tế
+                                        Dựa trên <strong>${restaurant.reviewCount}</strong> đánh giá từ thực khách
                                     </c:when>
                                     <c:otherwise>
-                                        Chưa có đánh giá nào
+                                        Chưa có lượt đánh giá nào
                                     </c:otherwise>
                                 </c:choose>
                             </div>
@@ -215,7 +228,8 @@
                             <c:forEach items="${foods}" var="food">
                                 <div class="food-card ${food.combo ? 'is-combo-card' : ''}" 
                                      data-is-combo="${food.combo ? '1' : '0'}"
-                                     data-food-id="${food.id}">
+                                     data-food-id="${food.id}"
+                                     onclick="if (!event.target.closest('.btn-add-cart, .add-cart-form, .combo-chips, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${food.id}'; }">
                                     <div class="food-card-img-wrap">
                                         <c:choose>
                                             <c:when test="${food.combo}">
@@ -280,11 +294,11 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                             </div>
-                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form ajax-cart-form" data-food-id="${food.id}">
                                                 <input type="hidden" name="action" value="add">
                                                 <input type="hidden" name="foodId" value="${food.id}">
                                                 <input type="hidden" name="quantity" value="1">
-                                                <button type="submit" class="btn-add-cart ${food.combo ? 'btn-add-combo' : ''}" title="${food.combo ? 'Đặt Combo Tiết Kiệm' : 'Thêm vào giỏ hàng'}">
+                                                <button type="submit" class="btn-add-cart btn-ajax-add ${food.combo ? 'btn-add-combo' : ''}" title="${food.combo ? 'Đặt Combo Tiết Kiệm' : 'Thêm vào giỏ hàng'}">
                                                     <i class="fa-solid ${food.combo ? 'fa-fire' : 'fa-cart-plus'}"></i>
                                                     <span>${food.combo ? 'Đặt Combo' : 'Đặt món'}</span>
                                                 </button>
