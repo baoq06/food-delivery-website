@@ -48,6 +48,11 @@ public class MerchantProfileController extends HttpServlet {
         String action = req.getParameter("action");
         try {
             if ("toggleStatus".equalsIgnoreCase(action)) {
+                if ("BANNED".equalsIgnoreCase(restaurant.getStatus())) {
+                    req.getSession().setAttribute("flashError", "Quán ăn của bạn đang bị Quản trị viên tạm khóa (cấm hoạt động). Không thể mở cửa nhận đơn!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/profile");
+                    return;
+                }
                 String newStatus = "OPEN".equalsIgnoreCase(restaurant.getStatus()) ? "CLOSED" : "OPEN";
                 merchantService.updateRestaurantStatus(restaurant.getId(), newStatus);
                 restaurant.setStatus(newStatus);

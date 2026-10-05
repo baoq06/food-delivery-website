@@ -161,6 +161,111 @@ public class RestaurantDAO {
         return list;
     }
 
+    public List<Restaurant> searchRestaurants(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllRestaurants();
+        }
+        List<Restaurant> list = new ArrayList<>();
+        String query = getBaseQuery() + 
+                       "WHERE LOWER(r.name) LIKE ? OR r.phone LIKE ? OR LOWER(r.address) LIKE ? " +
+                       "ORDER BY r.restaurant_id ASC";
+        String pattern = "%" + keyword.trim().toLowerCase() + "%";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, pattern);
+                    ps.setString(2, pattern);
+                    ps.setString(3, pattern);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        ReviewDAO reviewDAO = new ReviewDAO();
+                        while (rs.next()) {
+                            Restaurant r = mapResultSetToRestaurant(rs);
+                            r.setReviews(reviewDAO.getReviewsByRestaurantId(r.getId(), 3));
+                            list.add(r);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm kiếm quán ăn: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public Restaurant getRestaurantByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return null;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String query = getBaseQuery() + 
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(r.phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR r.phone = ? " +
+                       "LIMIT 1";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return mapResultSetToRestaurant(rs);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm quán ăn qua SĐT: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean banRestaurantByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+        String query = "UPDATE restaurants SET status = 'BANNED' " +
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR phone = ? " +
+                       "OR user_id IN (SELECT user_id FROM users WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? OR phone = ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    ps.setString(3, formatted);
+                    ps.setString(4, phone.trim());
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cấm quán ăn qua SĐT: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean unbanRestaurantByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+        String query = "UPDATE restaurants SET status = 'OPEN' " +
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR phone = ? " +
+                       "OR user_id IN (SELECT user_id FROM users WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? OR phone = ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    ps.setString(3, formatted);
+                    ps.setString(4, phone.trim());
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gỡ cấm quán ăn qua SĐT: " + e.getMessage());
+        }
+        return false;
+    }
+
     /**
      * Lấy các quán ăn được đánh giá cao nhất (Tab Đánh giá)
      */

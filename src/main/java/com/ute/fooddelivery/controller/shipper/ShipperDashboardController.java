@@ -35,6 +35,10 @@ public class ShipperDashboardController extends HttpServlet {
         String action = req.getParameter("action");
         if ("toggleStatus".equals(action)) {
             if (driver != null) {
+                if ("BANNED".equalsIgnoreCase(driver.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=banned");
+                    return;
+                }
                 if ("BUSY".equalsIgnoreCase(driver.getStatus())) {
                     java.util.List<com.ute.fooddelivery.model.Order> checkActive = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
                     if (checkActive != null && !checkActive.isEmpty()) {
@@ -194,7 +198,7 @@ public class ShipperDashboardController extends HttpServlet {
         }
 
         // Đồng bộ trạng thái hiện tại vào session
-        boolean isCurrentActive = driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus());
+        boolean isCurrentActive = driver != null && !"OFFLINE".equalsIgnoreCase(driver.getStatus()) && !"BANNED".equalsIgnoreCase(driver.getStatus());
         session.setAttribute("shipperActive", isCurrentActive);
         session.setAttribute("driverStatus", driver != null ? driver.getStatus() : "OFFLINE");
         if (isCurrentActive) {
