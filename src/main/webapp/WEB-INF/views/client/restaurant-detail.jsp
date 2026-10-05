@@ -77,6 +77,18 @@
                                 <span><strong>Giờ mở cửa:</strong> ${not empty restaurant.openTime ? restaurant.openTime : '07:00'} - ${not empty restaurant.closeTime ? restaurant.closeTime : '22:00'}</span>
                             </div>
                         </div>
+
+                        <!-- Chat CTA Button -->
+                        <div class="restaurant-chat-action mt-3">
+                            <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold" 
+                                    style="box-shadow: 0 4px 12px rgba(240,84,84,0.15);"
+                                    data-restaurant-id="${restaurant.id}"
+                                    data-restaurant-name="<c:out value='${restaurant.name}' escapeXml='true'/>"
+                                    onclick="openChatWithRestaurant(this.dataset.restaurantId, this.dataset.restaurantName)">
+                                <i class="fa-solid fa-comments"></i>
+                                <span>Nhắn tin với quán</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Overall Rating Box (Dựa trên dữ liệu thật) -->

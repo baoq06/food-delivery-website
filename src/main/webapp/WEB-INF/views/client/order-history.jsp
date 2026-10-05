@@ -160,10 +160,19 @@
                     
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
                             <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 600;">
                                 <i class="fa-solid fa-cart-plus me-1"></i> Đặt lại món
                             </a>
+                            <c:if test="${not empty order.restaurantId}">
+                                <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; font-weight: 600;"
+                                        data-restaurant-id="${order.restaurantId}"
+                                        data-restaurant-name="<c:out value='${order.restaurantName}' escapeXml='true'/>"
+                                        data-order-id="${order.id}"
+                                        onclick="openChatWithRestaurant(this.dataset.restaurantId, this.dataset.restaurantName, this.dataset.orderId)">
+                                    <i class="fa-solid fa-comments me-1"></i> Nhắn tin cho quán
+                                </button>
+                            </c:if>
                         </div>
                         <c:if test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
                             <c:choose>
