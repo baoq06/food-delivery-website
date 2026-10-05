@@ -26,10 +26,26 @@
                         <span class="merchant-badge-partner">
                             <i class="fa-solid fa-certificate"></i> Đối Tác Quán Utee
                         </span>
-                        <span class="merchant-status-badge ${currentRestaurant.status eq 'OPEN' ? 'status-open' : 'status-closed'}">
-                            <span class="dot-pulse" style="${currentRestaurant.status eq 'OPEN' ? '' : 'background: #dc2626; box-shadow: none;'}"></span>
-                            <span>${currentRestaurant.status eq 'OPEN' ? 'Đang Mở Cửa' : 'Tạm Đóng Cửa'}</span>
-                        </span>
+                        <c:choose>
+                            <c:when test="${currentRestaurant.status eq 'BANNED'}">
+                                <span class="merchant-status-badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 4px 12px; border-radius: 20px; font-weight: 700;">
+                                    <i class="fa-solid fa-ban"></i>
+                                    <span>ĐÃ BỊ CẤM HOẠT ĐỘNG</span>
+                                </span>
+                            </c:when>
+                            <c:when test="${currentRestaurant.status eq 'OPEN'}">
+                                <span class="merchant-status-badge status-open">
+                                    <span class="dot-pulse"></span>
+                                    <span>Đang Mở Cửa</span>
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="merchant-status-badge status-closed">
+                                    <span class="dot-pulse" style="background: #dc2626; box-shadow: none;"></span>
+                                    <span>Tạm Đóng Cửa</span>
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <h1 class="merchant-store-title">${currentRestaurant.name}</h1>
                     <div class="merchant-store-sub">
@@ -44,15 +60,24 @@
             </div>
 
             <div class="merchant-header-actions">
-                <!-- Nút bật tắt mở quán nhanh 1-click -->
-                <form action="${pageContext.request.contextPath}/merchant/profile" method="POST" style="display:inline; margin: 0;">
-                    <input type="hidden" name="action" value="toggleStatus" />
-                    <button type="submit" class="btn-merchant-status-toggle ${currentRestaurant.status eq 'OPEN' ? 'status-toggle-close' : 'status-toggle-open'}" 
-                            title="${currentRestaurant.status eq 'OPEN' ? 'Bấm để tạm đóng cửa quán' : 'Bấm để mở cửa nhận đơn'}">
-                        <i class="fa-solid ${currentRestaurant.status eq 'OPEN' ? 'fa-door-closed' : 'fa-door-open'}"></i>
-                        <span>${currentRestaurant.status eq 'OPEN' ? 'Tạm đóng cửa' : 'Mở cửa nhận đơn'}</span>
-                    </button>
-                </form>
+                <c:choose>
+                    <c:when test="${currentRestaurant.status eq 'BANNED'}">
+                        <div style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-lock"></i> Đã bị khóa bởi Admin
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- Nút bật tắt mở quán nhanh 1-click -->
+                        <form action="${pageContext.request.contextPath}/merchant/profile" method="POST" style="display:inline; margin: 0;">
+                            <input type="hidden" name="action" value="toggleStatus" />
+                            <button type="submit" class="btn-merchant-status-toggle ${currentRestaurant.status eq 'OPEN' ? 'status-toggle-close' : 'status-toggle-open'}" 
+                                    title="${currentRestaurant.status eq 'OPEN' ? 'Bấm để tạm đóng cửa quán' : 'Bấm để mở cửa nhận đơn'}">
+                                <i class="fa-solid ${currentRestaurant.status eq 'OPEN' ? 'fa-door-closed' : 'fa-door-open'}"></i>
+                                <span>${currentRestaurant.status eq 'OPEN' ? 'Tạm đóng cửa' : 'Mở cửa nhận đơn'}</span>
+                            </button>
+                        </form>
+                    </c:otherwise>
+                </c:choose>
             </div>
         </div>
 

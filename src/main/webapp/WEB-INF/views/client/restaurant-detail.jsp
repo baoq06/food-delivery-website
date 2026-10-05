@@ -28,8 +28,11 @@
                          alt="${restaurant.name}" class="restaurant-hero-cover" 
                          onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'">
                     <div class="restaurant-hero-overlay"></div>
-                    <span class="restaurant-hero-status ${'OPEN'.equalsIgnoreCase(restaurant.status) ? 'status-open' : 'status-closed'}">
+                    <span class="restaurant-hero-status ${'OPEN'.equalsIgnoreCase(restaurant.status) ? 'status-open' : 'status-closed'}" style="${'BANNED'.equalsIgnoreCase(restaurant.status) ? 'background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;' : ''}">
                         <c:choose>
+                            <c:when test="${'BANNED'.equalsIgnoreCase(restaurant.status)}">
+                                <i class="fa-solid fa-ban"></i> Quán đang bị tạm khóa
+                            </c:when>
                             <c:when test="${'OPEN'.equalsIgnoreCase(restaurant.status)}">
                                 <i class="fa-solid fa-circle-check"></i> Đang mở cửa đón khách
                             </c:when>
@@ -39,6 +42,13 @@
                         </c:choose>
                     </span>
                 </div>
+
+                <c:if test="${'BANNED'.equalsIgnoreCase(restaurant.status)}">
+                    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 14px 20px; border-radius: 12px; margin: 16px 24px 0 24px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem; color: #dc2626;"></i>
+                        <span>Quán ăn này hiện đang bị tạm khóa hoạt động bởi Quản trị viên Utee. Bạn không thể đặt món từ quán tại thời điểm này.</span>
+                    </div>
+                </c:if>
 
                 <div class="restaurant-hero-info">
                     <c:set var="rawLogo" value="${not empty restaurant.logoUrl ? restaurant.logoUrl : ''}" />

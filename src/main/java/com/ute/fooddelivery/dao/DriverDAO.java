@@ -12,9 +12,9 @@ public class DriverDAO {
 
     public List<Driver> getAllDrivers() {
         List<Driver> list = new ArrayList<>();
-        String query = "SELECT d.driver_id, d.user_id, d.name, d.phone, d.status, d.license_plate, d.vehicle_type, " +
+        String query = "SELECT d.*, " +
                        "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
-                       "FROM drivers d ORDER BY d.status ASC, d.driver_id ASC";
+                       "FROM drivers d ORDER BY d.driver_id ASC";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query);
@@ -30,6 +30,120 @@ public class DriverDAO {
             System.err.println("Lỗi khi lấy danh sách tài xế: " + e.getMessage());
         }
         return list;
+    }
+
+    public List<Driver> searchDrivers(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllDrivers();
+        }
+        List<Driver> list = new ArrayList<>();
+        String query = "SELECT d.*, " +
+                       "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
+                       "FROM drivers d " +
+                       "WHERE LOWER(d.name) LIKE ? OR d.phone LIKE ? OR d.license_plate LIKE ? " +
+                       "ORDER BY d.driver_id ASC";
+        String pattern = "%" + keyword.trim().toLowerCase() + "%";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, pattern);
+                    ps.setString(2, pattern);
+                    ps.setString(3, pattern);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Driver driver = mapResultSetToDriver(rs);
+                            try {
+                                driver.setPendingOrderCount(rs.getInt("pending_count"));
+                            } catch (Exception ignored) {}
+                            list.add(driver);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm kiếm tài xế: " + e.getMessage());
+        }
+        return list;
+    }
+
+    public Driver getDriverByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return null;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String query = "SELECT d.*, " +
+                       "(SELECT COUNT(*) FROM orders o WHERE o.driver_id = d.driver_id AND o.shipper_accepted = 0 AND o.status != 'CANCELLED') AS pending_count " +
+                       "FROM drivers d " +
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(d.phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR d.phone = ? " +
+                       "LIMIT 1";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            Driver driver = mapResultSetToDriver(rs);
+                            try {
+                                driver.setPendingOrderCount(rs.getInt("pending_count"));
+                            } catch (Exception ignored) {}
+                            return driver;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm tài xế qua SĐT: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean banDriverByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+        String query = "UPDATE drivers SET status = 'BANNED' " +
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR phone = ? " +
+                       "OR user_id IN (SELECT user_id FROM users WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? OR phone = ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    ps.setString(3, formatted);
+                    ps.setString(4, phone.trim());
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cấm tài xế qua SĐT: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean unbanDriverByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String cleanPhone = phone.trim().replaceAll("[\\s\\-\\.\\(\\)]", "");
+        String formatted = cleanPhone.startsWith("+84") ? ("0" + cleanPhone.substring(3)) : cleanPhone;
+        String query = "UPDATE drivers SET status = 'OFFLINE' " +
+                       "WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? " +
+                       "OR phone = ? " +
+                       "OR user_id IN (SELECT user_id FROM users WHERE REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '.', ''), '+84', '0') = ? OR phone = ?)";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, formatted);
+                    ps.setString(2, phone.trim());
+                    ps.setString(3, formatted);
+                    ps.setString(4, phone.trim());
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gỡ cấm tài xế qua SĐT: " + e.getMessage());
+        }
+        return false;
     }
 
     public List<Driver> getAvailableDrivers() {

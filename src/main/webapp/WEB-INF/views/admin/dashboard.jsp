@@ -7,11 +7,53 @@
 
 <div class="admin-dashboard-container">
     <div class="container section">
-        <!-- Success Alert if Action Performed -->
+        <!-- Feedback Alerts -->
         <c:if test="${param.msg eq 'approved'}">
             <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
                 <i class="fa-solid fa-circle-check text-success" style="font-size: 1.2rem;"></i>
                 <span>Đã duyệt đơn hàng thành công! Đơn đã được chuyển cho nhà bếp và tài xế.</span>
+            </div>
+        </c:if>
+        <c:if test="${param.msg eq 'banned_driver'}">
+            <div style="background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-ban text-danger" style="font-size: 1.2rem;"></i>
+                <span>Đã cấm tài xế có số điện thoại <strong><c:out value="${param.phone}" /></strong> hoạt động thành công!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.msg eq 'unbanned_driver'}">
+            <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-circle-check text-success" style="font-size: 1.2rem;"></i>
+                <span>Đã gỡ cấm (mở khóa) cho tài xế có số điện thoại <strong><c:out value="${param.phone}" /></strong> thành công!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.msg eq 'banned_restaurant'}">
+            <div style="background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-ban text-danger" style="font-size: 1.2rem;"></i>
+                <span>Đã cấm quán ăn có số điện thoại <strong><c:out value="${param.phone}" /></strong> hoạt động thành công!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.msg eq 'unbanned_restaurant'}">
+            <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-circle-check text-success" style="font-size: 1.2rem;"></i>
+                <span>Đã gỡ cấm (mở khóa) cho quán ăn có số điện thoại <strong><c:out value="${param.phone}" /></strong> thành công!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.error eq 'phone_not_found'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                <span>Không tìm thấy đối tác nào tương ứng với số điện thoại: <strong><c:out value="${param.phone}" /></strong>!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.error eq 'empty_phone'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                <span>Vui lòng nhập số điện thoại hợp lệ để thực hiện thao tác cấm/mở khóa!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.error eq 'ban_failed' or param.error eq 'unban_failed'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                <span>Không thể thực hiện thao tác. Vui lòng kiểm tra lại thông tin hoặc thử lại sau!</span>
             </div>
         </c:if>
 
@@ -36,38 +78,189 @@
 
         <c:choose>
             <c:when test="${param.tab eq 'shippers'}">
+                <!-- 1. Cấm / Gỡ Cấm Tài Xế Bằng Số Điện Thoại -->
+                <div class="admin-ban-control-card">
+                    <div class="admin-ban-control-header">
+                        <div class="admin-ban-title">
+                            <i class="fa-solid fa-shield-halved" style="color: #ef4444; font-size: 1.25rem;"></i>
+                            <span>Kiểm Soát &amp; Cấm Tài Xế Qua Số Điện Thoại</span>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #64748b;">
+                            <i class="fa-solid fa-circle-info"></i> Nhập số điện thoại tài xế để cấm hoặc mở khóa hoạt động tức thì
+                        </span>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="action" value="banByPhone" />
+                        <input type="hidden" name="targetType" value="SHIPPER" />
+                        <div class="admin-phone-input-wrap">
+                            <i class="fa-solid fa-phone"></i>
+                            <input type="text" name="phone" id="quickBanDriverPhone" class="admin-phone-input" placeholder="Nhập số điện thoại tài xế (ví dụ: 0901234567)..." required />
+                        </div>
+                        <select name="banAction" class="admin-select-action">
+                            <option value="BAN">🔴 Cấm hoạt động (Khóa tài khoản)</option>
+                            <option value="UNBAN">🟢 Mở khóa (Gỡ cấm)</option>
+                        </select>
+                        <button type="submit" class="btn btn-danger" style="padding: 10px 20px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;" onclick="return confirm('Bạn có chắc chắn muốn thực hiện thao tác cấm/mở khóa đối với số điện thoại này?');">
+                            <i class="fa-solid fa-gavel"></i> Thực thi
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Bảng Danh Sách Tài Xế & Thanh Tìm Kiếm -->
                 <div class="admin-table-card mt-2">
-                    <div class="admin-table-header">
-                        <div>
-                            <h3 class="table-card-title"><i class="fa-solid fa-motorcycle text-primary"></i> Danh Sách Tài Xế (Shippers)</h3>
-                            <span class="table-card-sub">Tổng số: ${allDrivers.size()} đối tác tài xế</span>
+                    <div class="admin-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 class="table-card-title"><i class="fa-solid fa-motorcycle text-primary"></i> Quản Lý Đối Tác Tài Xế (Shipper)</h3>
+                                <span class="table-card-sub">Giám sát, tìm kiếm và kiểm soát trạng thái hoạt động của đối tác giao vận</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="driverCountBadge" class="badge" style="background: #e0f2fe; color: #0284c7; font-size: 0.9rem; padding: 8px 16px; border-radius: 20px; font-weight: 700;">
+                                    <i class="fa-solid fa-motorcycle"></i> Hiển thị: <strong id="driverVisibleCount">${allDrivers.size()}</strong> tài xế
+                                </span>
+                                <c:if test="${not empty searchKeyword}">
+                                    <a href="${pageContext.request.contextPath}/admin/dashboard?tab=shippers" class="btn btn-outline btn-sm" style="border-radius: 20px;">
+                                        <i class="fa-solid fa-rotate-left"></i> Xem tất cả
+                                    </a>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <!-- Toolbar Search -->
+                        <div class="admin-toolbar-row" style="margin-bottom: 0;">
+                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 540px;" onsubmit="return true;">
+                                <input type="hidden" name="tab" value="shippers" />
+                                <div class="admin-search-wrapper">
+                                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                    <input type="text" name="search" id="driverSearchInput" class="admin-search-input" value="<c:out value='${searchKeyword}' />" placeholder="Tìm kiếm tên shipper, số điện thoại, biển số..." autocomplete="off" />
+                                    <button type="button" id="clearDriverSearch" class="admin-search-clear" title="Xóa tìm kiếm"><i class="fa-solid fa-circle-xmark"></i></button>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="padding: 0 20px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Tìm
+                                </button>
+                            </form>
+                            <span style="font-size: 0.85rem; color: #64748b;">
+                                <i class="fa-solid fa-bolt text-warning"></i> Hỗ trợ tìm kiếm nhanh theo tên hoặc số điện thoại theo thời gian thực
+                            </span>
                         </div>
                     </div>
+
                     <div class="table-responsive">
-                        <table class="admin-data-table">
+                        <table class="admin-data-table" id="driverTable">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Họ Tên</th>
+                                    <th>Tài Xế</th>
+                                    <th>Số Điện Thoại</th>
                                     <th>Khu Vực Giao Hàng</th>
+                                    <th>Phương Tiện &amp; Biển Số</th>
                                     <th>Trạng Thái</th>
-                                    <th>Bảng Số Xe</th>
+                                    <th>Hành Động</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <c:forEach items="${allDrivers}" var="drv">
-                                    <tr>
-                                        <td><strong>#${drv.id}</strong></td>
-                                        <td>${drv.name}</td>
-                                        <td>${drv.currentAddress != null ? drv.currentAddress : 'Chưa cập nhật'}</td>
-                                        <td>
-                                            <span class="badge ${drv.status eq 'AVAILABLE' ? 'bg-success' : (drv.status eq 'BUSY' ? 'bg-warning' : 'bg-secondary')}">
-                                                ${drv.status}
-                                            </span>
-                                        </td>
-                                        <td>${drv.licensePlate != null ? drv.licensePlate : 'N/A'}</td>
-                                    </tr>
-                                </c:forEach>
+                            <tbody id="driverTableBody">
+                                <c:choose>
+                                    <c:when test="${not empty allDrivers}">
+                                        <c:forEach items="${allDrivers}" var="drv">
+                                            <tr class="driver-row" data-name="${drv.name.toLowerCase()}" data-phone="${drv.phone}" data-plate="${drv.licensePlate != null ? drv.licensePlate.toLowerCase() : ''}" data-status="${drv.status}">
+                                                <td><strong>#${drv.id}</strong></td>
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                                        <c:choose>
+                                                            <c:when test="${not empty drv.avatar}">
+                                                                <img src="${drv.avatar.startsWith('http') ? drv.avatar : pageContext.request.contextPath.concat(drv.avatar)}" alt="${drv.name}" class="admin-avatar-circle" style="border-radius: 50%;" />
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <div class="admin-avatar-circle" style="background: linear-gradient(135deg, #10ac84 0%, #1dd1a1 100%); color: #fff;">
+                                                                    <i class="fa-solid fa-motorcycle"></i>
+                                                                </div>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <div>
+                                                            <div style="font-weight: 700; color: #1e293b;"><c:out value="${drv.name}" /></div>
+                                                            <div style="font-size: 0.8rem; color: #94a3b8;">User ID: #${drv.userId != null ? drv.userId : 'N/A'}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="admin-phone-pill copy-phone-btn" data-phone="${drv.phone}" title="Bấm để đưa SĐT vào ô cấm nhanh">
+                                                        <i class="fa-solid fa-phone text-primary" style="font-size: 0.78rem;"></i>
+                                                        <span><c:out value="${drv.phone}" /></span>
+                                                        <i class="fa-regular fa-copy" style="font-size: 0.75rem; color: #94a3b8;"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span title="${drv.currentAddress}" style="display: inline-block; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #475569;">
+                                                        <i class="fa-solid fa-location-dot text-danger" style="margin-right: 4px;"></i>
+                                                        <c:out value="${drv.currentAddress != null ? drv.currentAddress : 'Chưa cập nhật'}" />
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div>
+                                                        <span style="font-weight: 600; color: #334155;"><c:out value="${drv.licensePlate != null ? drv.licensePlate : 'N/A'}" /></span>
+                                                        <div style="font-size: 0.8rem; color: #94a3b8;"><c:out value="${drv.vehicleType != null ? drv.vehicleType : 'Xe máy'}" /></div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${drv.status eq 'BANNED'}">
+                                                            <span class="badge-status-banned">
+                                                                <i class="fa-solid fa-ban"></i> ĐÃ BỊ CẤM
+                                                            </span>
+                                                        </c:when>
+                                                        <c:when test="${drv.status eq 'AVAILABLE'}">
+                                                            <span class="badge-status-available">
+                                                                <i class="fa-solid fa-circle-check"></i> Sẵn sàng
+                                                            </span>
+                                                        </c:when>
+                                                        <c:when test="${drv.status eq 'BUSY'}">
+                                                            <span class="badge-status-busy">
+                                                                <i class="fa-solid fa-route"></i> Đang giao
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge-status-offline">
+                                                                <i class="fa-solid fa-moon"></i> Ngoại tuyến
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${drv.status eq 'BANNED'}">
+                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unbanDriver&phone=${drv.phone}&driverId=${drv.id}" 
+                                                               class="btn-action-unban"
+                                                               onclick="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho tài xế ${drv.name} (SĐT: ${drv.phone})?');">
+                                                                <i class="fa-solid fa-lock-open"></i> Gỡ cấm
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=banDriver&phone=${drv.phone}&driverId=${drv.id}" 
+                                                               class="btn-action-ban"
+                                                               onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM tài xế ${drv.name} (SĐT: ${drv.phone}) hoạt động?');">
+                                                                <i class="fa-solid fa-ban"></i> Cấm tài xế
+                                                            </a>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr id="emptyDriverRow">
+                                            <td colspan="7" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                                                <i class="fa-solid fa-motorcycle" style="font-size: 2.2rem; margin-bottom: 12px; display: block; color: #cbd5e1;"></i>
+                                                Không tìm thấy tài xế nào trong hệ thống${not empty searchKeyword ? ' với từ khóa: ' .concat(searchKeyword) : ''}.
+                                            </td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
+                                <tr id="noMatchDriverRow" style="display: none;">
+                                    <td colspan="7" style="text-align: center; padding: 36px 20px; color: #64748b;">
+                                        <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #cbd5e1;"></i>
+                                        Không tìm thấy tài xế nào khớp với từ khóa tìm kiếm.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -75,38 +268,182 @@
             </c:when>
 
             <c:when test="${param.tab eq 'restaurants'}">
+                <!-- 1. Cấm / Gỡ Cấm Quán Ăn Bằng Số Điện Thoại -->
+                <div class="admin-ban-control-card">
+                    <div class="admin-ban-control-header">
+                        <div class="admin-ban-title">
+                            <i class="fa-solid fa-store-slash" style="color: #ef4444; font-size: 1.25rem;"></i>
+                            <span>Kiểm Soát &amp; Cấm Quán Ăn Qua Số Điện Thoại</span>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #64748b;">
+                            <i class="fa-solid fa-circle-info"></i> Nhập số điện thoại quán ăn hoặc chủ quán để cấm hoặc mở khóa hoạt động tức thì
+                        </span>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="action" value="banByPhone" />
+                        <input type="hidden" name="targetType" value="RESTAURANT" />
+                        <div class="admin-phone-input-wrap">
+                            <i class="fa-solid fa-phone"></i>
+                            <input type="text" name="phone" id="quickBanRestPhone" class="admin-phone-input" placeholder="Nhập số điện thoại quán ăn (ví dụ: 0901234567)..." required />
+                        </div>
+                        <select name="banAction" class="admin-select-action">
+                            <option value="BAN">🔴 Cấm hoạt động (Đóng &amp; Khóa quán)</option>
+                            <option value="UNBAN">🟢 Mở khóa (Gỡ cấm)</option>
+                        </select>
+                        <button type="submit" class="btn btn-danger" style="padding: 10px 20px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;" onclick="return confirm('Bạn có chắc chắn muốn thực hiện thao tác cấm/mở khóa đối với số điện thoại này?');">
+                            <i class="fa-solid fa-gavel"></i> Thực thi
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Bảng Danh Sách Quán Ăn & Thanh Tìm Kiếm -->
                 <div class="admin-table-card mt-2">
-                    <div class="admin-table-header">
-                        <div>
-                            <h3 class="table-card-title"><i class="fa-solid fa-store text-warning"></i> Danh Sách Quán Ăn (Đối Tác)</h3>
-                            <span class="table-card-sub">Tổng số: ${allRestaurants.size()} quán ăn</span>
+                    <div class="admin-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 class="table-card-title"><i class="fa-solid fa-store text-warning"></i> Quản Lý Đối Tác Quán Ăn (Nhà Hàng)</h3>
+                                <span class="table-card-sub">Giám sát, tìm kiếm và kiểm soát trạng thái hoạt động của đối tác ẩm thực</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="restaurantCountBadge" class="badge" style="background: #fef3c7; color: #b45309; font-size: 0.9rem; padding: 8px 16px; border-radius: 20px; font-weight: 700;">
+                                    <i class="fa-solid fa-store"></i> Hiển thị: <strong id="restaurantVisibleCount">${allRestaurants.size()}</strong> quán ăn
+                                </span>
+                                <c:if test="${not empty searchKeyword}">
+                                    <a href="${pageContext.request.contextPath}/admin/dashboard?tab=restaurants" class="btn btn-outline btn-sm" style="border-radius: 20px;">
+                                        <i class="fa-solid fa-rotate-left"></i> Xem tất cả
+                                    </a>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <!-- Toolbar Search -->
+                        <div class="admin-toolbar-row" style="margin-bottom: 0;">
+                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 540px;" onsubmit="return true;">
+                                <input type="hidden" name="tab" value="restaurants" />
+                                <div class="admin-search-wrapper">
+                                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                    <input type="text" name="search" id="restaurantSearchInput" class="admin-search-input" value="<c:out value='${searchKeyword}' />" placeholder="Tìm kiếm tên quán ăn, số điện thoại, địa chỉ..." autocomplete="off" />
+                                    <button type="button" id="clearRestSearch" class="admin-search-clear" title="Xóa tìm kiếm"><i class="fa-solid fa-circle-xmark"></i></button>
+                                </div>
+                                <button type="submit" class="btn btn-warning text-white" style="padding: 0 20px; border-radius: 12px; font-weight: 700; background: #f59e0b; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Tìm
+                                </button>
+                            </form>
+                            <span style="font-size: 0.85rem; color: #64748b;">
+                                <i class="fa-solid fa-bolt text-warning"></i> Hỗ trợ tìm kiếm nhanh theo tên quán hoặc số điện thoại theo thời gian thực
+                            </span>
                         </div>
                     </div>
+
                     <div class="table-responsive">
-                        <table class="admin-data-table">
+                        <table class="admin-data-table" id="restaurantTable">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Tên Quán</th>
+                                    <th>Quán Ăn / Thương Hiệu</th>
                                     <th>SĐT Liên Hệ</th>
                                     <th>Đánh Giá</th>
                                     <th>Địa Chỉ</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Hành Động</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <c:forEach items="${allRestaurants}" var="rest">
-                                    <tr>
-                                        <td><strong>#${rest.id}</strong></td>
-                                        <td><div style="display: flex; align-items: center; gap: 8px;">
-                                                <img src="${rest.imageUrl}" alt="${rest.name}" style="width: 40px; height: 40px; border-radius: 6px; object-fit: cover;">
-                                                <span>${rest.name}</span>
-                                            </div>
-                                        </td>
-                                        <td>${rest.phone}</td>
-                                        <td><i class="fa-solid fa-star text-warning"></i> ${rest.rating} (${rest.reviewCount})</td>
-                                        <td><span title="${rest.address}" style="display: inline-block; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${rest.address}</span></td>
-                                    </tr>
-                                </c:forEach>
+                            <tbody id="restaurantTableBody">
+                                <c:choose>
+                                    <c:when test="${not empty allRestaurants}">
+                                        <c:forEach items="${allRestaurants}" var="rest">
+                                            <tr class="rest-row" data-name="${rest.name.toLowerCase()}" data-phone="${rest.phone}" data-address="${rest.address != null ? rest.address.toLowerCase() : ''}" data-status="${rest.status}">
+                                                <td><strong>#${rest.id}</strong></td>
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                                        <c:set var="logoSrc" value="${not empty rest.displayLogo ? rest.displayLogo : rest.imageUrl}" />
+                                                        <img src="${logoSrc.startsWith('http') ? logoSrc : pageContext.request.contextPath.concat(logoSrc)}" 
+                                                             alt="${rest.name}" 
+                                                             style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 1.5px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);"
+                                                             onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&auto=format&fit=crop&q=60';" />
+                                                        <div>
+                                                            <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" target="_blank" style="font-weight: 700; color: #1e293b; text-decoration: none;" title="Xem trang quán">
+                                                                <c:out value="${rest.name}" /> <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.72rem; color: #94a3b8;"></i>
+                                                            </a>
+                                                            <div style="font-size: 0.8rem; color: #94a3b8;">Chủ quán ID: #${rest.userId != null ? rest.userId : 'N/A'}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="admin-phone-pill copy-phone-btn" data-phone="${rest.phone}" title="Bấm để đưa SĐT vào ô cấm nhanh">
+                                                        <i class="fa-solid fa-phone text-warning" style="font-size: 0.78rem;"></i>
+                                                        <span><c:out value="${rest.phone}" /></span>
+                                                        <i class="fa-regular fa-copy" style="font-size: 0.75rem; color: #94a3b8;"></i>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                                        <i class="fa-solid fa-star text-warning"></i> 
+                                                        <strong style="color: #1e293b;">${rest.rating}</strong> 
+                                                        <span style="font-size: 0.82rem; color: #94a3b8;">(${rest.reviewCount})</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span title="${rest.address}" style="display: inline-block; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #475569;">
+                                                        <i class="fa-solid fa-location-dot text-danger" style="margin-right: 4px;"></i>
+                                                        <c:out value="${rest.address}" />
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${rest.status eq 'BANNED'}">
+                                                            <span class="badge-status-banned">
+                                                                <i class="fa-solid fa-ban"></i> ĐÃ BỊ CẤM
+                                                            </span>
+                                                        </c:when>
+                                                        <c:when test="${rest.status eq 'OPEN'}">
+                                                            <span class="badge-status-available">
+                                                                <i class="fa-solid fa-door-open"></i> Đang mở cửa
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge-status-offline">
+                                                                <i class="fa-solid fa-door-closed"></i> Tạm đóng
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${rest.status eq 'BANNED'}">
+                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unbanRestaurant&phone=${rest.phone}&restaurantId=${rest.id}" 
+                                                               class="btn-action-unban"
+                                                               onclick="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho quán ăn ${rest.name} (SĐT: ${rest.phone})?');">
+                                                                <i class="fa-solid fa-lock-open"></i> Gỡ cấm
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=banRestaurant&phone=${rest.phone}&restaurantId=${rest.id}" 
+                                                               class="btn-action-ban"
+                                                               onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM quán ăn ${rest.name} (SĐT: ${rest.phone}) hoạt động?');">
+                                                                <i class="fa-solid fa-ban"></i> Cấm quán
+                                                            </a>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr id="emptyRestRow">
+                                            <td colspan="7" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                                                <i class="fa-solid fa-store" style="font-size: 2.2rem; margin-bottom: 12px; display: block; color: #cbd5e1;"></i>
+                                                Không tìm thấy quán ăn nào trong hệ thống${not empty searchKeyword ? ' với từ khóa: ' .concat(searchKeyword) : ''}.
+                                            </td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
+                                <tr id="noMatchRestRow" style="display: none;">
+                                    <td colspan="7" style="text-align: center; padding: 36px 20px; color: #64748b;">
+                                        <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #cbd5e1;"></i>
+                                        Không tìm thấy quán ăn nào khớp với từ khóa tìm kiếm.
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -286,6 +623,121 @@
         </c:choose>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Click phone pill to auto-fill quick ban input
+    document.querySelectorAll('.copy-phone-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var phone = this.getAttribute('data-phone');
+            if (!phone) return;
+            
+            var driverPhoneInput = document.getElementById('quickBanDriverPhone');
+            var restPhoneInput = document.getElementById('quickBanRestPhone');
+            
+            if (driverPhoneInput) {
+                driverPhoneInput.value = phone.trim();
+                driverPhoneInput.focus();
+                driverPhoneInput.style.backgroundColor = '#fef2f2';
+                driverPhoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() { driverPhoneInput.style.backgroundColor = '#ffffff'; }, 800);
+            } else if (restPhoneInput) {
+                restPhoneInput.value = phone.trim();
+                restPhoneInput.focus();
+                restPhoneInput.style.backgroundColor = '#fef2f2';
+                restPhoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() { restPhoneInput.style.backgroundColor = '#ffffff'; }, 800);
+            }
+        });
+    });
+
+    // 2. Real-time Live Filter for Driver Table
+    var driverInput = document.getElementById('driverSearchInput');
+    var clearDriverBtn = document.getElementById('clearDriverSearch');
+    if (driverInput) {
+        function filterDrivers() {
+            var q = driverInput.value.trim().toLowerCase();
+            if (clearDriverBtn) {
+                clearDriverBtn.style.display = q.length > 0 ? 'block' : 'none';
+            }
+            var rows = document.querySelectorAll('#driverTableBody .driver-row');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var text = (row.getAttribute('data-name') || '') + ' ' + 
+                           (row.getAttribute('data-phone') || '') + ' ' + 
+                           (row.getAttribute('data-plate') || '') + ' ' +
+                           row.textContent.toLowerCase();
+                if (!q || text.indexOf(q) !== -1) {
+                    row.style.display = '';
+                    visible++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            var noMatch = document.getElementById('noMatchDriverRow');
+            if (noMatch) {
+                noMatch.style.display = (visible === 0 && rows.length > 0) ? '' : 'none';
+            }
+            var countEl = document.getElementById('driverVisibleCount');
+            if (countEl) countEl.textContent = visible;
+        }
+
+        driverInput.addEventListener('input', filterDrivers);
+        if (driverInput.value) filterDrivers();
+
+        if (clearDriverBtn) {
+            clearDriverBtn.addEventListener('click', function() {
+                driverInput.value = '';
+                filterDrivers();
+                driverInput.focus();
+            });
+        }
+    }
+
+    // 3. Real-time Live Filter for Restaurant Table
+    var restInput = document.getElementById('restaurantSearchInput');
+    var clearRestBtn = document.getElementById('clearRestSearch');
+    if (restInput) {
+        function filterRestaurants() {
+            var q = restInput.value.trim().toLowerCase();
+            if (clearRestBtn) {
+                clearRestBtn.style.display = q.length > 0 ? 'block' : 'none';
+            }
+            var rows = document.querySelectorAll('#restaurantTableBody .rest-row');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var text = (row.getAttribute('data-name') || '') + ' ' + 
+                           (row.getAttribute('data-phone') || '') + ' ' + 
+                           (row.getAttribute('data-address') || '') + ' ' +
+                           row.textContent.toLowerCase();
+                if (!q || text.indexOf(q) !== -1) {
+                    row.style.display = '';
+                    visible++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            var noMatch = document.getElementById('noMatchRestRow');
+            if (noMatch) {
+                noMatch.style.display = (visible === 0 && rows.length > 0) ? '' : 'none';
+            }
+            var countEl = document.getElementById('restaurantVisibleCount');
+            if (countEl) countEl.textContent = visible;
+        }
+
+        restInput.addEventListener('input', filterRestaurants);
+        if (restInput.value) filterRestaurants();
+
+        if (clearRestBtn) {
+            clearRestBtn.addEventListener('click', function() {
+                restInput.value = '';
+                filterRestaurants();
+                restInput.focus();
+            });
+        }
+    }
+});
+</script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />
 
