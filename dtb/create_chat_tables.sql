@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `chat_messages` (
     `message` TEXT NOT NULL,
     `order_id` INT DEFAULT NULL,
     `is_read` TINYINT(1) DEFAULT 0,
+    `is_recalled` TINYINT(1) DEFAULT 0,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `fk_chat_msg_conv` FOREIGN KEY (`conversation_id`) REFERENCES `chat_conversations` (`conversation_id`) ON DELETE CASCADE,
     CONSTRAINT `fk_chat_msg_sender` FOREIGN KEY (`sender_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,

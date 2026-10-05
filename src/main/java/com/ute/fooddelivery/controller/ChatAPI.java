@@ -26,7 +26,9 @@ import java.util.Map;
         "/api/chat/send",
         "/api/chat/mark-read",
         "/api/chat/unread-count",
-        "/api/chat/merchant/conversations"
+        "/api/chat/merchant/conversations",
+        "/api/chat/recall",
+        "/api/chat/delete-conversation"
 })
 public class ChatAPI extends HttpServlet {
     private final ChatDAO chatDAO = new ChatDAO();
@@ -223,7 +225,7 @@ public class ChatAPI extends HttpServlet {
             return;
         }
 
-        // Đánh dấu đã đọc
+        // Đánh dấu đã đọc (hỗ trợ cả nút "Đã đọc" bấm thủ công)
         if ("/api/chat/mark-read".equalsIgnoreCase(servletPath)) {
             String convIdStr = req.getParameter("conversationId");
             String readerRole = req.getParameter("readerRole");
@@ -235,6 +237,60 @@ public class ChatAPI extends HttpServlet {
             } else {
                 resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Thiếu conversationId")));
             }
+            return;
+        }
+
+        // Thu hồi (gỡ) tin nhắn
+        if ("/api/chat/recall".equalsIgnoreCase(servletPath)) {
+            String messageIdStr = req.getParameter("messageId");
+            if (messageIdStr == null || messageIdStr.isEmpty()) {
+                resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Thiếu messageId")));
+                return;
+            }
+            try {
+                int messageId = Integer.parseInt(messageIdStr);
+                boolean success = chatDAO.recallMessage(messageId, currentUser.getId());
+                if (success) {
+                    resp.getWriter().write(gson.toJson(Map.of("success", true, "message", "Đã thu hồi tin nhắn")));
+                } else {
+                    resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Không thể gỡ tin nhắn hoặc bạn không có quyền")));
+                }
+            } catch (Exception e) {
+                resp.getWriter().write(gson.toJson(Map.of("success", false, "error", e.getMessage())));
+            }
+            return;
+        }
+
+        // Xóa hoàn toàn cuộc trò chuyện (Dành cho Merchant)
+        if ("/api/chat/delete-conversation".equalsIgnoreCase(servletPath)) {
+            String convIdStr = req.getParameter("conversationId");
+            String restIdStr = req.getParameter("restaurantId");
+            if (convIdStr == null || restIdStr == null) {
+                resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Thiếu tham số conversationId hoặc restaurantId")));
+                return;
+            }
+            try {
+                int convId = Integer.parseInt(convIdStr);
+                int restId = Integer.parseInt(restIdStr);
+
+                // Kiểm tra quyền sở hữu quán ăn của merchant
+                Restaurant rest = restaurantDAO.getRestaurantById(restId);
+                if (rest == null || rest.getUserId() == null || rest.getUserId() != currentUser.getId()) {
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Bạn không có quyền quản lý quán ăn này")));
+                    return;
+                }
+
+                boolean success = chatDAO.deleteConversationForMerchant(convId, restId);
+                if (success) {
+                    resp.getWriter().write(gson.toJson(Map.of("success", true, "message", "Đã xóa hoàn toàn cuộc trò chuyện")));
+                } else {
+                    resp.getWriter().write(gson.toJson(Map.of("success", false, "message", "Không thể xóa cuộc trò chuyện")));
+                }
+            } catch (Exception e) {
+                resp.getWriter().write(gson.toJson(Map.of("success", false, "error", e.getMessage())));
+            }
+            return;
         }
     }
 }

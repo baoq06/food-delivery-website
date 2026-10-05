@@ -9,10 +9,39 @@ import java.util.List;
 
 public class ChatDAO {
 
+    private static volatile boolean columnChecked = false;
+
+    public static void ensureChatSchema() {
+        if (columnChecked) return;
+        synchronized (ChatDAO.class) {
+            if (columnChecked) return;
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn != null) {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    boolean existsRecalled = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "chat_messages", "is_recalled")) {
+                        if (rs.next()) {
+                            existsRecalled = true;
+                        }
+                    }
+                    if (!existsRecalled) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE chat_messages ADD COLUMN is_recalled TINYINT(1) DEFAULT 0 AFTER is_read");
+                        } catch (SQLException ignore) {}
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("ChatDAO schema check: " + e.getMessage());
+            }
+            columnChecked = true;
+        }
+    }
+
     /**
      * Lấy hoặc tạo mới cuộc hội thoại giữa User và Restaurant
      */
     public ChatConversation getOrCreateConversation(int userId, int restaurantId) {
+        ensureChatSchema();
         String selectSql = "SELECT c.*, u.name AS user_name, u.avatar AS user_avatar, u.phone AS user_phone, " +
                 "r.name AS rest_name, r.image_url AS rest_avatar, r.address AS rest_address, r.phone AS rest_phone " +
                 "FROM chat_conversations c " +
@@ -291,6 +320,85 @@ public class ChatDAO {
         return 0;
     }
 
+    /**
+     * Thu hồi (gỡ) tin nhắn
+     */
+    public boolean recallMessage(int messageId, int userId) {
+        String checkSql = "SELECT sender_id, conversation_id FROM chat_messages WHERE message_id = ?";
+        String updateSql = "UPDATE chat_messages SET is_recalled = 1 WHERE message_id = ? AND sender_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            int convId = 0;
+            try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
+                psCheck.setInt(1, messageId);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        int senderId = rs.getInt("sender_id");
+                        convId = rs.getInt("conversation_id");
+                        if (senderId != userId) {
+                            return false; // Chỉ người gửi mới được thu hồi tin nhắn
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                ps.setInt(1, messageId);
+                ps.setInt(2, userId);
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    // Cập nhật lại last_message của hội thoại nếu tin nhắn vừa gỡ là tin nhắn mới nhất
+                    updateConversationLastMessage(conn, convId);
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Xóa hoàn toàn cuộc trò chuyện cho Merchant
+     */
+    public boolean deleteConversationForMerchant(int conversationId, int restaurantId) {
+        String sql = "DELETE FROM chat_conversations WHERE conversation_id = ? AND restaurant_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, conversationId);
+            ps.setInt(2, restaurantId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void updateConversationLastMessage(Connection conn, int conversationId) {
+        String findLastMsgSql = "SELECT message, is_recalled, created_at FROM chat_messages WHERE conversation_id = ? ORDER BY created_at DESC LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(findLastMsgSql)) {
+            ps.setInt(1, conversationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    boolean recalled = rs.getBoolean("is_recalled");
+                    String text = recalled ? "Tin nhắn đã bị thu hồi" : rs.getString("message");
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+
+                    String updateConvSql = "UPDATE chat_conversations SET last_message = ?, last_message_at = ? WHERE conversation_id = ?";
+                    try (PreparedStatement psUp = conn.prepareStatement(updateConvSql)) {
+                        psUp.setString(1, text);
+                        psUp.setTimestamp(2, createdAt);
+                        psUp.setInt(3, conversationId);
+                        psUp.executeUpdate();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     private ChatConversation mapConversation(ResultSet rs) throws SQLException {
         ChatConversation c = new ChatConversation();
         c.setId(rs.getInt("conversation_id"));
@@ -321,6 +429,11 @@ public class ChatDAO {
         m.setMessage(rs.getString("message"));
         m.setOrderId((Integer) rs.getObject("order_id"));
         m.setRead(rs.getBoolean("is_read"));
+        try {
+            m.setRecalled(rs.getBoolean("is_recalled"));
+        } catch (SQLException e) {
+            m.setRecalled(false);
+        }
         m.setCreatedAt(rs.getTimestamp("created_at"));
         m.setSenderName(rs.getString("sender_name"));
         m.setSenderAvatar(rs.getString("sender_avatar"));

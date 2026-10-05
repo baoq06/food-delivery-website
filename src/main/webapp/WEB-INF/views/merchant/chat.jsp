@@ -282,6 +282,114 @@
         color: #94a3b8;
     }
 
+    /* Recalled message style */
+    .msg-bubble.recalled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        font-style: italic;
+        border: 1px dashed #cbd5e1 !important;
+        box-shadow: none !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Message wrapper & recall button */
+    .merchant-msg-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .message-row.sent .merchant-msg-wrapper {
+        flex-direction: row-reverse;
+    }
+
+    .merchant-msg-recall-btn {
+        opacity: 0;
+        visibility: hidden;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.75rem;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        transition: all 0.2s ease;
+    }
+
+    .merchant-msg-wrapper:hover .merchant-msg-recall-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .merchant-msg-recall-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        border-color: #fca5a5;
+    }
+
+    /* Seen indicator */
+    .merchant-seen-status {
+        font-size: 0.72rem;
+        color: #64748b;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-top: -6px;
+        margin-bottom: 6px;
+        padding-right: 42px;
+    }
+
+    /* Action buttons in header */
+    .btn-header-read {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-header-read:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .btn-header-delete {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-header-delete:hover {
+        background: #dc2626;
+        color: #ffffff;
+    }
+
     .order-badge-pill {
         display: inline-flex;
         align-items: center;
@@ -438,6 +546,12 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span id="activeUserPhone" class="text-muted small me-2"><i class="fa-solid fa-phone"></i> ---</span>
+                            <button type="button" class="btn-header-read" onclick="markMerchantChatAsRead()" title="Đánh dấu tất cả tin nhắn của khách là đã đọc">
+                                <i class="fa-solid fa-check-double"></i> Đã đọc
+                            </button>
+                            <button type="button" class="btn-header-delete" onclick="deleteCurrentConversation()" title="Xóa hoàn toàn cuộc trò chuyện này để giao diện gọn hơn">
+                                <i class="fa-solid fa-trash-can"></i> Xóa hội thoại
+                            </button>
                         </div>
                     </div>
 
@@ -552,6 +666,17 @@
                             </div>
                         `;
                     } else {
+                        // Tìm tin nhắn cuối cùng gửi bởi SELLER để hiển thị "Đã xem" (Seen) khi khách đã đọc
+                        let lastSentSellerMsgId = null;
+                        let lastSentSellerIsRead = false;
+                        for (let i = messages.length - 1; i >= 0; i--) {
+                            if (messages[i].senderRole === 'SELLER' && !messages[i].isRecalled) {
+                                lastSentSellerMsgId = messages[i].id;
+                                lastSentSellerIsRead = messages[i].isRead;
+                                break;
+                            }
+                        }
+
                         messages.forEach(msg => {
                             const isMe = (msg.senderRole === 'SELLER');
                             const row = document.createElement("div");
@@ -568,15 +693,48 @@
                                 orderBadgeHtml = `<div class="order-badge-pill"><i class="fa-solid fa-receipt"></i> Đơn hàng #FZ-\${msg.orderId}</div>`;
                             }
 
+                            let bubbleContent = '';
+                            if (msg.isRecalled) {
+                                bubbleContent = `
+                                    <div class="msg-bubble recalled">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <span>Tin nhắn đã bị thu hồi</span>
+                                    </div>
+                                `;
+                            } else {
+                                let recallBtn = '';
+                                if (isMe) {
+                                    recallBtn = `
+                                        <button type="button" class="merchant-msg-recall-btn" onclick="recallMerchantMessage(\${msg.id})" title="Gỡ tin nhắn">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    `;
+                                }
+                                bubbleContent = `
+                                    <div class="merchant-msg-wrapper">
+                                        \${recallBtn}
+                                        <div class="msg-bubble">
+                                            \${orderBadgeHtml}
+                                            <div class="msg-text">\${escapeHtml(msg.message)}</div>
+                                            <span class="msg-time">\${timeStr}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
                             row.innerHTML = `
                                 <img src="\${avatarSrc}" class="msg-avatar" alt="Avatar">
-                                <div class="msg-bubble">
-                                    \${orderBadgeHtml}
-                                    <div class="msg-text">\${escapeHtml(msg.message)}</div>
-                                    <span class="msg-time">\${timeStr}</span>
-                                </div>
+                                \${bubbleContent}
                             `;
                             stream.appendChild(row);
+
+                            // Hiển thị trạng thái "Đã xem" dưới tin nhắn mới nhất mà khách đã đọc
+                            if (isMe && msg.id === lastSentSellerMsgId && lastSentSellerIsRead) {
+                                const seenDiv = document.createElement("div");
+                                seenDiv.className = "merchant-seen-status";
+                                seenDiv.innerHTML = `<i class="fa-solid fa-circle-check text-primary"></i> Đã xem`;
+                                stream.appendChild(seenDiv);
+                            }
                         });
                     }
 
@@ -586,6 +744,76 @@
                 }
             })
             .catch(err => console.error("Error loading chat messages:", err));
+    }
+
+    /**
+     * Nút "Đã đọc" - Đánh dấu tất cả tin nhắn khách hàng gửi là đã đọc
+     */
+    function markMerchantChatAsRead() {
+        if (!currentConversationId) return;
+        fetch("${pageContext.request.contextPath}/api/chat/mark-read?conversationId=" + currentConversationId + "&readerRole=SELLER", {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const activeItem = document.querySelector(`.chat-conv-item[data-conv-id='\${currentConversationId}']`);
+                if (activeItem) {
+                    const badge = activeItem.querySelector(".chat-unread-badge");
+                    if (badge) badge.remove();
+                }
+                loadMessages(currentConversationId, false);
+            }
+        })
+        .catch(err => console.error("Error mark-read:", err));
+    }
+
+    /**
+     * Thu hồi / Gỡ tin nhắn phía Merchant
+     */
+    function recallMerchantMessage(messageId) {
+        if (!confirm("Bạn có chắc chắn muốn gỡ tin nhắn này đối với cả hai bên?")) return;
+        fetch("${pageContext.request.contextPath}/api/chat/recall?messageId=" + messageId, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadMessages(currentConversationId, false);
+            } else {
+                alert(data.message || "Không thể gỡ tin nhắn!");
+            }
+        })
+        .catch(err => console.error("Error recalling message:", err));
+    }
+
+    /**
+     * Xóa hoàn toàn cuộc trò chuyện (Dành cho Merchant làm gọn danh sách)
+     */
+    function deleteCurrentConversation() {
+        if (!currentConversationId) return;
+        const restId = "${currentRestaurant.id}";
+        if (!confirm("Bạn có chắc chắn muốn XÓA HOÀN TOÀN cuộc trò chuyện này? Lịch sử nhắn tin sẽ bị xóa vĩnh viễn.")) return;
+
+        fetch("${pageContext.request.contextPath}/api/chat/delete-conversation?conversationId=" + currentConversationId + "&restaurantId=" + restId, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Xóa item khỏi danh sách bên trái
+                const item = document.querySelector(`.chat-conv-item[data-conv-id='\${currentConversationId}']`);
+                if (item) item.remove();
+
+                // Đưa màn hình về trạng thái rỗng
+                currentConversationId = null;
+                document.getElementById("chatActiveContainer").style.display = "none";
+                document.getElementById("chatPlaceholder").style.display = "flex";
+            } else {
+                alert(data.message || "Không thể xóa cuộc trò chuyện!");
+            }
+        })
+        .catch(err => console.error("Error deleting conversation:", err));
     }
 
     function handleSendMessage(e) {

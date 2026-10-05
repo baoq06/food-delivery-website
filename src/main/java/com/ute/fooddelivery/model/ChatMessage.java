@@ -13,12 +13,13 @@ public class ChatMessage implements Serializable {
     private String message;
     private Integer orderId;
     private boolean isRead;
+    private boolean isRecalled; // Tin nhắn đã được người gửi thu hồi/gỡ
     private Timestamp createdAt;
 
     public ChatMessage() {
     }
 
-    public ChatMessage(int id, int conversationId, int senderId, String senderRole, String message, Integer orderId, boolean isRead, Timestamp createdAt) {
+    public ChatMessage(int id, int conversationId, int senderId, String senderRole, String message, Integer orderId, boolean isRead, boolean isRecalled, Timestamp createdAt) {
         this.id = id;
         this.conversationId = conversationId;
         this.senderId = senderId;
@@ -26,6 +27,7 @@ public class ChatMessage implements Serializable {
         this.message = message;
         this.orderId = orderId;
         this.isRead = isRead;
+        this.isRecalled = isRecalled;
         this.createdAt = createdAt;
     }
 
@@ -99,6 +101,14 @@ public class ChatMessage implements Serializable {
 
     public void setRead(boolean read) {
         isRead = read;
+    }
+
+    public boolean isRecalled() {
+        return isRecalled;
+    }
+
+    public void setRecalled(boolean recalled) {
+        isRecalled = recalled;
     }
 
     public Timestamp getCreatedAt() {

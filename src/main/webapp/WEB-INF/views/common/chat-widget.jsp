@@ -249,6 +249,93 @@
         display: inline-block;
     }
 
+    /* Recalled message styles */
+    .u-msg-bubble.recalled {
+        background: #f1f5f9 !important;
+        color: #94a3b8 !important;
+        font-style: italic;
+        border: 1px dashed #cbd5e1 !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Recall action trigger */
+    .u-msg-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .u-msg-row.sent .u-msg-wrapper {
+        flex-direction: row-reverse;
+    }
+
+    .u-msg-recall-btn {
+        opacity: 0;
+        visibility: hidden;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        font-size: 0.75rem;
+        border-radius: 50%;
+        width: 26px;
+        height: 26px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        transition: all 0.2s ease;
+    }
+
+    .u-msg-wrapper:hover .u-msg-recall-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .u-msg-recall-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        border-color: #fca5a5;
+    }
+
+    /* Seen indicator */
+    .u-seen-status {
+        font-size: 0.7rem;
+        color: #64748b;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        margin-top: -4px;
+        margin-bottom: 4px;
+        padding-right: 4px;
+    }
+
+    /* Header mark-read button */
+    .utee-btn-header-read {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: #ffffff;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+
+    .utee-btn-header-read:hover {
+        background: #ffffff;
+        color: #f05454;
+    }
+
     @media (max-width: 480px) {
         .utee-chat-popup {
             width: calc(100vw - 32px);
@@ -279,9 +366,14 @@
                     </span>
                 </div>
             </div>
-            <button class="utee-chat-header-close" onclick="toggleChatPopup()" title="Đóng">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="utee-btn-header-read" onclick="markClientChatAsRead()" title="Đánh dấu tất cả tin nhắn từ quán là đã đọc">
+                    <i class="fa-solid fa-check-double"></i> Đã đọc
+                </button>
+                <button class="utee-chat-header-close" onclick="toggleChatPopup()" title="Đóng">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
         </div>
 
         <!-- Khung xem toàn bộ lịch sử tin nhắn -->
@@ -397,6 +489,17 @@
                             </div>
                         `;
                     } else {
+                        // Tìm tin nhắn cuối cùng gửi bởi CUSTOMER để hiển thị "Đã xem" (Seen)
+                        let lastSentCustomerMsgId = null;
+                        let lastSentCustomerIsRead = false;
+                        for (let i = messages.length - 1; i >= 0; i--) {
+                            if (messages[i].senderRole === 'CUSTOMER' && !messages[i].isRecalled) {
+                                lastSentCustomerMsgId = messages[i].id;
+                                lastSentCustomerIsRead = messages[i].isRead;
+                                break;
+                            }
+                        }
+
                         messages.forEach(msg => {
                             const isMe = (msg.senderRole === 'CUSTOMER');
                             const row = document.createElement("div");
@@ -405,14 +508,45 @@
                             const timeStr = formatTimeShort(msg.createdAt);
                             let orderTag = msg.orderId ? `<div class="u-order-ref"><i class="fa-solid fa-receipt"></i> Đơn #FZ-\${msg.orderId}</div>` : '';
 
-                            row.innerHTML = `
-                                <div class="u-msg-bubble">
-                                    \${orderTag}
-                                    <div class="u-msg-text">\${escapeHtmlClient(msg.message)}</div>
-                                    <span class="u-msg-time">\${timeStr}</span>
-                                </div>
-                            `;
+                            let bubbleContent = '';
+                            if (msg.isRecalled) {
+                                bubbleContent = `
+                                    <div class="u-msg-bubble recalled">
+                                        <i class="fa-solid fa-ban"></i>
+                                        <span>Tin nhắn đã bị thu hồi</span>
+                                    </div>
+                                `;
+                            } else {
+                                let recallBtn = '';
+                                if (isMe) {
+                                    recallBtn = `
+                                        <button type="button" class="u-msg-recall-btn" onclick="recallClientMessage(\${msg.id})" title="Gỡ tin nhắn">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    `;
+                                }
+                                bubbleContent = `
+                                    <div class="u-msg-wrapper">
+                                        \${recallBtn}
+                                        <div class="u-msg-bubble">
+                                            \${orderTag}
+                                            <div class="u-msg-text">\${escapeHtmlClient(msg.message)}</div>
+                                            <span class="u-msg-time">\${timeStr}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+
+                            row.innerHTML = bubbleContent;
                             body.appendChild(row);
+
+                            // Hiển thị trạng thái "Đã xem" dưới tin nhắn mới nhất mà quán đã đọc
+                            if (isMe && msg.id === lastSentCustomerMsgId && lastSentCustomerIsRead) {
+                                const seenDiv = document.createElement("div");
+                                seenDiv.className = "u-seen-status";
+                                seenDiv.innerHTML = `<i class="fa-solid fa-circle-check text-primary"></i> Đã xem`;
+                                body.appendChild(seenDiv);
+                            }
                         });
                     }
 
@@ -420,6 +554,44 @@
                 }
             })
             .catch(err => console.error("Error loading client messages:", err));
+    }
+
+    /**
+     * Nút "Đã đọc" trên khung chat khách hàng
+     */
+    function markClientChatAsRead() {
+        if (!activeClientConvId) return;
+        fetch("${pageContext.request.contextPath}/api/chat/mark-read?conversationId=" + activeClientConvId + "&readerRole=CUSTOMER", {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const badge = document.getElementById("clientChatBadge");
+                if (badge) badge.style.display = "none";
+                loadClientMessages(false);
+            }
+        })
+        .catch(err => console.error("Error mark-read:", err));
+    }
+
+    /**
+     * Gỡ tin nhắn (Messenger style)
+     */
+    function recallClientMessage(messageId) {
+        if (!confirm("Bạn có chắc chắn muốn gỡ tin nhắn này đối với mọi người?")) return;
+        fetch("${pageContext.request.contextPath}/api/chat/recall?messageId=" + messageId, {
+            method: "POST"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadClientMessages(false);
+            } else {
+                alert(data.message || "Không thể gỡ tin nhắn!");
+            }
+        })
+        .catch(err => console.error("Error recalling message:", err));
     }
 
     function sendClientMessage(e) {
