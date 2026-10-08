@@ -60,6 +60,12 @@ public class FoodController extends HttpServlet {
                             List<Food> restaurantFoods = foodService.getFoodsByRestaurant(food.getRestaurantId(), food.getId(), 4);
                             req.setAttribute("restaurantFoods", restaurantFoods);
                         }
+
+                        // Lấy các món ăn đề xuất cùng loại / thể loại (Similar Category Foods)
+                        if (food.getCategoryId() > 0) {
+                            List<Food> similarFoods = foodService.getSimilarFoodsByCategory(food.getCategoryId(), food.getId(), 4);
+                            req.setAttribute("similarFoods", similarFoods);
+                        }
                     }
                 } catch (NumberFormatException e) {
                     System.err.println("ID món không hợp lệ: " + idParam);

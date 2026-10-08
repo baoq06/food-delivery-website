@@ -337,6 +337,35 @@ public class FoodDAO {
         return list;
     }
 
+    public List<Food> getSimilarFoodsByCategory(int categoryId, int excludeFoodId, int limit) {
+        List<Food> list = new ArrayList<>();
+        String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.category_id = ? " +
+                       (excludeFoodId > 0 ? "AND f.food_id != ? " : "") +
+                       "ORDER BY f.avg_rating DESC, f.review_count DESC, f.food_id ASC LIMIT ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setInt(1, categoryId);
+                    if (excludeFoodId > 0) {
+                        ps.setInt(2, excludeFoodId);
+                        ps.setInt(3, limit);
+                    } else {
+                        ps.setInt(2, limit);
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            list.add(mapResultSetToFood(rs));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy món tương tự theo danh mục: " + e.getMessage());
+        }
+        attachReviews(list, 3);
+        return list;
+    }
+
     public List<Food> getPopularSideDishes(int limit) {
         List<Food> list = new ArrayList<>();
         // Tìm các món đồ uống, tráng miệng, món phụ (category_id = 3 hoặc 4 hoặc giá dưới 35k)

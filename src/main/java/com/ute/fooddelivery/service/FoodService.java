@@ -55,6 +55,10 @@ public class FoodService {
         return foodDAO.getFoodsByRestaurant(restaurantId, excludeFoodId, limit);
     }
 
+    public List<Food> getSimilarFoodsByCategory(int categoryId, int excludeFoodId, int limit) {
+        return foodDAO.getSimilarFoodsByCategory(categoryId, excludeFoodId, limit);
+    }
+
     public List<Food> getPopularSideDishes(int limit) {
         return foodDAO.getPopularSideDishes(limit);
     }
