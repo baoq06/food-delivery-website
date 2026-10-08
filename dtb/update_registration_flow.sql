@@ -12,6 +12,7 @@ ALTER TABLE `drivers` ADD COLUMN `id_card_back` VARCHAR(500) DEFAULT NULL;
 ALTER TABLE `drivers` ADD COLUMN `vehicle_doc` VARCHAR(500) DEFAULT NULL;
 ALTER TABLE `drivers` ADD COLUMN `avatar` VARCHAR(500) DEFAULT NULL;
 
--- 3. Bổ sung giờ mở cửa, đóng cửa cho bảng restaurants
+-- 3. Bổ sung giờ mở cửa, đóng cửa và logo cho bảng restaurants
 ALTER TABLE `restaurants` ADD COLUMN `open_time` VARCHAR(10) DEFAULT '07:00';
 ALTER TABLE `restaurants` ADD COLUMN `close_time` VARCHAR(10) DEFAULT '22:00';
+ALTER TABLE `restaurants` ADD COLUMN `logo_url` VARCHAR(500) DEFAULT NULL AFTER `image_url`;

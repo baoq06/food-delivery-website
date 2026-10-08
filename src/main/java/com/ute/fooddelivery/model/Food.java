@@ -46,6 +46,15 @@ public class Food implements Serializable {
     @Column(name = "is_available")
     private boolean available;
 
+    @Column(name = "is_combo")
+    private boolean isCombo;
+
+    @Column(name = "original_price")
+    private Double originalPrice;
+
+    @Column(name = "combo_items")
+    private String comboItems;
+
     @Transient
     private double rating;
 
@@ -192,5 +201,56 @@ public class Food implements Serializable {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews != null ? reviews : new ArrayList<>();
+    }
+
+    public boolean isCombo() {
+        return isCombo;
+    }
+
+    public void setCombo(boolean combo) {
+        isCombo = combo;
+    }
+
+    public Double getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(Double originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public String getComboItems() {
+        return comboItems;
+    }
+
+    public void setComboItems(String comboItems) {
+        this.comboItems = comboItems;
+    }
+
+    public double getSavingsAmount() {
+        if (originalPrice != null && originalPrice > price) {
+            return originalPrice - price;
+        }
+        return 0.0;
+    }
+
+    public int getSavingsPercent() {
+        if (originalPrice != null && originalPrice > price && originalPrice > 0) {
+            return (int) Math.round(((originalPrice - price) / originalPrice) * 100);
+        }
+        return 0;
+    }
+
+    public List<String> getComboItemList() {
+        List<String> items = new ArrayList<>();
+        if (comboItems != null && !comboItems.trim().isEmpty()) {
+            String[] parts = comboItems.split("[,;+]");
+            for (String p : parts) {
+                if (!p.trim().isEmpty()) {
+                    items.add(p.trim());
+                }
+            }
+        }
+        return items;
     }
 }

@@ -28,7 +28,7 @@
                     </form>
                 </div>
 
-                <form action="${pageContext.request.contextPath}/merchant/profile" method="POST" class="p-3">
+                <form action="${pageContext.request.contextPath}/merchant/profile" method="POST" enctype="multipart/form-data" class="p-3">
                     <input type="hidden" name="action" value="updateProfile" />
 
                     <div class="form-group mb-3">
@@ -60,9 +60,89 @@
                         <input type="hidden" id="merchantAddress" name="address" value="<c:out value='${currentRestaurant.address}' />" required />
                     </div>
 
+                    <!-- 1. Ảnh đại diện chủ quán -->
                     <div class="form-group mb-3">
-                        <label class="form-label fw-bold mb-1">Link ảnh đại diện / Bìa quán (URL)</label>
-                        <input type="url" name="imageUrl" id="profileImageUrl" value="${currentRestaurant.imageUrl}" class="form-control" oninput="previewProfileImage(this.value)" style="border-radius: 10px;" />
+                        <label class="form-label fw-bold mb-1">
+                            <i class="fa-solid fa-user-tie text-primary me-1"></i> Ảnh đại diện của chủ quán
+                        </label>
+                        <div class="merchant-upload-card" onclick="document.getElementById('ownerAvatarFileInput').click()">
+                            <input type="file" id="ownerAvatarFileInput" name="ownerAvatarFile" accept="image/*" style="display: none;" onchange="previewUploadImage(this, 'ownerAvatarPrevImg')">
+                            <div class="merchant-upload-circle-preview" id="ownerAvatarPrev">
+                                <c:choose>
+                                    <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                        <img id="ownerAvatarPrevImg" src="${sessionScope.currentUser.avatar.startsWith('http') || sessionScope.currentUser.avatar.startsWith('/') ? (sessionScope.currentUser.avatar.startsWith('/') ? pageContext.request.contextPath.concat(sessionScope.currentUser.avatar) : sessionScope.currentUser.avatar) : pageContext.request.contextPath.concat('/').concat(sessionScope.currentUser.avatar)}" alt="Avatar chủ quán" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img id="ownerAvatarPrevImg" src="" style="display: none;" />
+                                        <i class="fa-solid fa-camera"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="merchant-upload-info">
+                                <strong>Chọn ảnh đại diện chủ quán</strong>
+                                <span>Ảnh được lưu trong hệ thống, hiển thị trên hồ sơ cá nhân và trang quản trị</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius: 50px; pointer-events: none;">
+                                <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Tải ảnh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Logo thương hiệu quán ăn -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold mb-1">
+                            <i class="fa-solid fa-store text-primary me-1"></i> Logo quán ăn (Hiển thị ở kênh quản lý món)
+                        </label>
+                        <div class="merchant-upload-card" onclick="document.getElementById('logoFileInput').click()">
+                            <input type="file" id="logoFileInput" name="logoFile" accept="image/*" style="display: none;" onchange="previewUploadImage(this, 'logoPrevImg')">
+                            <c:set var="curLogo" value="${not empty currentRestaurant.logoUrl ? currentRestaurant.logoUrl : currentRestaurant.imageUrl}" />
+                            <div class="merchant-upload-square-preview" id="logoPrev">
+                                <c:choose>
+                                    <c:when test="${not empty curLogo}">
+                                        <img id="logoPrevImg" src="${curLogo.startsWith('http') || curLogo.startsWith('/') ? (curLogo.startsWith('/') ? pageContext.request.contextPath.concat(curLogo) : curLogo) : pageContext.request.contextPath.concat('/').concat(curLogo)}" alt="Logo quán" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img id="logoPrevImg" src="" style="display: none;" />
+                                        <i class="fa-solid fa-store"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="merchant-upload-info">
+                                <strong>Chọn logo quán ăn</strong>
+                                <span>Làm đại diện thương hiệu hiển thị trên thanh công cụ và kênh quản lý thực đơn</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius: 50px; pointer-events: none;">
+                                <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Tải logo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Banner / Bìa quán ăn -->
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-bold mb-1">
+                            <i class="fa-solid fa-image text-primary me-1"></i> Ảnh banner / bìa quán (Hiển thị ở mọi trang)
+                        </label>
+                        <div class="merchant-upload-card" onclick="document.getElementById('bannerFileInput').click()">
+                            <input type="file" id="bannerFileInput" name="bannerFile" accept="image/*" style="display: none;" onchange="previewUploadImage(this, 'bannerPrevImg', 'storeBannerImg')">
+                            <div class="merchant-upload-rect-preview" id="bannerPrev">
+                                <c:choose>
+                                    <c:when test="${not empty currentRestaurant.imageUrl}">
+                                        <img id="bannerPrevImg" src="${currentRestaurant.imageUrl.startsWith('http') || currentRestaurant.imageUrl.startsWith('/') ? (currentRestaurant.imageUrl.startsWith('/') ? pageContext.request.contextPath.concat(currentRestaurant.imageUrl) : currentRestaurant.imageUrl) : pageContext.request.contextPath.concat('/').concat(currentRestaurant.imageUrl)}" alt="Banner quán" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <img id="bannerPrevImg" src="" style="display: none;" />
+                                        <i class="fa-regular fa-image"></i>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
+                            <div class="merchant-upload-info">
+                                <strong>Chọn ảnh banner quán ăn</strong>
+                                <span>Banner xuất hiện trên trang chủ, chi tiết quán và đề xuất khách hàng</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" style="border-radius: 50px; pointer-events: none;">
+                                <i class="fa-solid fa-arrow-up-from-bracket me-1"></i> Tải banner
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group mb-4">
@@ -120,10 +200,24 @@
 
 <script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
 <script>
-    function previewProfileImage(url) {
-        const img = document.getElementById('storeBannerImg');
-        if (url && url.trim().length > 5) {
-            img.src = url.trim();
+    function previewUploadImage(input, previewImgId, secondaryImgId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(previewImgId);
+                if (img) {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    // Hide any sibling icon
+                    const icon = img.parentElement ? img.parentElement.querySelector('i') : null;
+                    if (icon) icon.style.display = 'none';
+                }
+                if (secondaryImgId) {
+                    const sec = document.getElementById(secondaryImgId);
+                    if (sec) sec.src = e.target.result;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
         }
     }
 

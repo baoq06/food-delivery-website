@@ -27,7 +27,15 @@ public class UserService {
     }
 
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl) {
-        return userDAO.registerSeller(user, restaurantName, restaurantAddress, description, openTime, closeTime, logoUrl);
+        return userDAO.registerSeller(user, restaurantName, restaurantAddress, description, openTime, closeTime, logoUrl, null);
+    }
+
+    public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl, String bannerUrl) {
+        return userDAO.registerSeller(user, restaurantName, restaurantAddress, description, openTime, closeTime, logoUrl, bannerUrl);
+    }
+
+    public boolean updateAvatar(int userId, String avatarUrl) {
+        return userDAO.updateAvatar(userId, avatarUrl);
     }
 
     public User getUserById(int id) {

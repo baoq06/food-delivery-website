@@ -49,10 +49,21 @@
 
         <!-- Bảng Món Ăn (admin-table-card) -->
         <div class="admin-table-card">
-            <div class="admin-table-header">
+            <div class="admin-table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
                     <h3 class="table-card-title"><i class="fa-solid fa-bowl-food text-primary"></i> Danh Sách Món Ăn Của Quán</h3>
-                    <span class="table-card-sub">Tổng cộng có <strong>${empty foods ? 0 : foods.size()}</strong> món ăn trong thực đơn của quán</span>
+                    <span class="table-card-sub">Tổng cộng có <strong>${empty foods ? 0 : foods.size()}</strong> món trong danh sách</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="${pageContext.request.contextPath}/merchant/foods" class="btn btn-sm ${empty selectedType ? 'btn-primary' : 'btn-outline'}" style="border-radius: 8px; font-weight: 700; text-decoration: none;">
+                        Tất cả
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/foods?type=combo" class="btn btn-sm ${selectedType eq 'combo' ? 'btn-primary' : 'btn-outline'}" style="border-radius: 8px; font-weight: 700; color: ${selectedType eq 'combo' ? '#fff' : '#ea580c'}; border-color: #ea580c; text-decoration: none;">
+                        <i class="fa-solid fa-fire text-danger"></i> Combo Tiết Kiệm
+                    </a>
+                    <a href="${pageContext.request.contextPath}/merchant/foods?type=regular" class="btn btn-sm ${selectedType eq 'regular' ? 'btn-primary' : 'btn-outline'}" style="border-radius: 8px; font-weight: 700; text-decoration: none;">
+                        Món đơn
+                    </a>
                 </div>
             </div>
 
@@ -77,7 +88,19 @@
                                             <img src="${food.imageUrl}" alt="${food.name}" style="width: 56px; height: 56px; object-fit: cover; border-radius: 12px; border: 1px solid #f1f5f9; box-shadow: 0 2px 6px rgba(0,0,0,0.06);" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&fit=crop'" />
                                         </td>
                                         <td>
-                                            <div class="fw-bold text-dark" style="font-size: 0.98rem;">${food.name}</div>
+                                            <div class="fw-bold text-dark" style="font-size: 0.98rem; display: flex; align-items: center; gap: 6px;">
+                                                <c:if test="${food.combo}">
+                                                    <span class="badge" style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; font-weight: 800; font-size: 0.72rem; padding: 2px 7px;">
+                                                        <i class="fa-solid fa-fire"></i> Combo
+                                                    </span>
+                                                </c:if>
+                                                <span>${food.name}</span>
+                                            </div>
+                                            <c:if test="${food.combo and not empty food.comboItems}">
+                                                <div style="font-size: 0.76rem; color: #ea580c; margin-top: 3px;">
+                                                    <i class="fa-solid fa-layer-group me-1"></i> ${food.comboItems}
+                                                </div>
+                                            </c:if>
                                             <small class="text-muted mt-1" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 360px; line-height: 1.35;">
                                                 ${empty food.description ? 'Chưa có mô tả chi tiết' : food.description}
                                             </small>
@@ -88,9 +111,24 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span class="fw-bold text-primary" style="font-size: 1.05rem;">
-                                                <fmt:formatNumber value="${food.price}" type="number" /> đ
-                                            </span>
+                                            <c:choose>
+                                                <c:when test="${food.combo and not empty food.originalPrice and food.originalPrice > food.price}">
+                                                    <div style="font-size: 0.78rem; text-decoration: line-through; color: #94a3b8;">
+                                                        <fmt:formatNumber value="${food.originalPrice}" type="number" /> đ
+                                                    </div>
+                                                    <span class="fw-bold text-danger" style="font-size: 1.05rem;">
+                                                        <fmt:formatNumber value="${food.price}" type="number" /> đ
+                                                    </span>
+                                                    <span class="badge bg-danger text-white" style="font-size: 0.65rem; padding: 1px 4px;">
+                                                        -${food.savingsPercent}%
+                                                    </span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="fw-bold text-primary" style="font-size: 1.05rem;">
+                                                        <fmt:formatNumber value="${food.price}" type="number" /> đ
+                                                    </span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </td>
                                         <td>
                                             <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" style="display:inline;">
@@ -105,8 +143,18 @@
                                         </td>
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2 align-items-center">
-                                                <button type="button" class="btn btn-outline-primary btn-sm" style="border-radius: 8px;"
-                                                        onclick="openEditFoodModal(${food.id}, '${food.name}', ${food.price}, ${food.categoryId}, '${food.imageUrl}', '${food.description}', ${food.available})"
+                                                <button type="button" class="btn btn-outline-primary btn-sm btn-edit-food" style="border-radius: 8px;"
+                                                        data-id="${food.id}"
+                                                        data-name="<c:out value='${food.name}' />"
+                                                        data-price="${food.price}"
+                                                        data-category-id="${food.categoryId}"
+                                                        data-image-url="<c:out value='${food.imageUrl}' />"
+                                                        data-description="<c:out value='${food.description}' />"
+                                                        data-available="${food.available}"
+                                                        data-combo="${food.combo}"
+                                                        data-original-price="${food.originalPrice != null ? food.originalPrice : ''}"
+                                                        data-combo-items="<c:out value='${food.comboItems}' />"
+                                                        onclick="handleEditFoodClick(this)"
                                                         title="Chỉnh sửa món">
                                                     <i class="fa-solid fa-pen-to-square"></i>
                                                 </button>
@@ -154,30 +202,31 @@
 </div>
 
 <!-- Modal Thêm / Chỉnh Sửa Món Ăn (Thiết Kế Mới Chuẩn UI/UX Pro Max) -->
-<div id="foodModal" class="merchant-food-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeFoodModal();">
-    <div class="merchant-food-modal-container">
-        <!-- Modal Header -->
-        <div class="merchant-food-modal-header">
-            <div class="mf-header-brand">
-                <div class="mf-header-icon" id="modalHeaderIcon">
-                    <i class="fa-solid fa-bowl-food"></i>
-                </div>
-                <div>
-                    <h3 class="mf-header-title" id="modalTitle">Đăng Món Ăn Mới</h3>
-                    <p class="mf-header-subtitle" id="modalSubtitle">Thêm món ngon vào thực đơn quán để khách hàng bắt đầu đặt món ngay</p>
-                </div>
-            </div>
-            <button type="button" class="mf-close-btn" onclick="closeFoodModal()" title="Đóng cửa sổ (Esc)">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        <!-- Form Đăng / Sửa Món -->
-        <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" enctype="multipart/form-data" id="foodForm" onsubmit="return handleFormSubmit();">
+<div id="foodModal" class="merchant-food-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeFoodModal();" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="merchant-food-modal-container" onclick="event.stopPropagation();">
+        <!-- Form Đăng / Sửa Món bao quát toàn bộ modal -->
+        <form action="${pageContext.request.contextPath}/merchant/foods" method="POST" enctype="multipart/form-data" id="foodForm" class="merchant-food-modal-form" onsubmit="return handleFormSubmit();">
             <input type="hidden" name="action" id="formAction" value="add" />
             <input type="hidden" name="foodId" id="foodId" value="" />
 
-            <div class="merchant-food-modal-body">
+            <!-- Modal Header (Cố định ở trên cùng) -->
+            <div class="merchant-food-modal-header">
+                <div class="mf-header-brand">
+                    <div class="mf-header-icon" id="modalHeaderIcon">
+                        <i class="fa-solid fa-bowl-food"></i>
+                    </div>
+                    <div>
+                        <h3 class="mf-header-title" id="modalTitle">Đăng Món Ăn Mới</h3>
+                        <p class="mf-header-subtitle" id="modalSubtitle">Thêm món ngon vào thực đơn quán để khách hàng bắt đầu đặt món ngay</p>
+                    </div>
+                </div>
+                <button type="button" class="mf-close-btn" onclick="closeFoodModal()" title="Đóng cửa sổ (Esc)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Cuộn mượt mà độc lập, không che khuất header/footer) -->
+            <div class="merchant-food-modal-body" id="foodModalBody">
                 <div class="mf-modal-grid">
                     <!-- CỘT TRÁI: THÔNG TIN CHI TIẾT MÓN ĂN -->
                     <div class="mf-grid-left">
@@ -250,6 +299,41 @@
                                 <textarea name="description" id="foodDescription" rows="3" maxlength="200"
                                           placeholder="Hương vị đặc trưng, nguyên liệu tươi ngon, khẩu phần hoặc hướng dẫn dùng kèm..." 
                                           class="mf-control mf-textarea" oninput="handleDescInput(this.value)"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Tùy chọn Combo / Set Tiết Kiệm -->
+                        <div class="mf-field-group">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="isCombo" id="foodIsCombo" value="true" onchange="toggleComboFields(this.checked)" style="width: 2.5em; height: 1.25em; cursor: pointer;">
+                                <label class="form-check-label fw-bold text-dark ms-2" for="foodIsCombo" style="cursor: pointer;">
+                                    🔥 Đây là Combo / Set ăn tiết kiệm
+                                </label>
+                            </div>
+                            <div id="comboDetailsGroup" style="display: none; background: #fff7ed; border: 1.5px dashed #fed7aa; border-radius: 12px; padding: 14px; margin-top: 8px;">
+                                <div class="mb-3">
+                                    <label class="mf-field-label" for="foodOriginalPrice">
+                                        <span>Giá gốc chưa giảm (VNĐ)</span>
+                                    </label>
+                                    <div class="mf-input-wrapper">
+                                        <i class="fa-solid fa-tags mf-input-icon"></i>
+                                        <input type="number" name="originalPrice" id="foodOriginalPrice" min="1000" step="1000"
+                                               placeholder="Ví dụ: 100000 (để hiển thị gạch ngang và tính số tiền tiết kiệm)" class="mf-control" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="mf-field-label" for="foodComboItems">
+                                        <span>Các món thành phần trong Set</span>
+                                    </label>
+                                    <div class="mf-input-wrapper">
+                                        <i class="fa-solid fa-layer-group mf-input-icon"></i>
+                                        <input type="text" name="comboItems" id="foodComboItems"
+                                               placeholder="Ví dụ: Cơm sườn bì chả, Canh rong biển, Trà tắc xí muội..." class="mf-control" />
+                                    </div>
+                                    <small class="text-muted" style="font-size: 0.78rem; display: block; margin-top: 4px;">
+                                        💡 Phân tách các món bởi dấu phẩy để hệ thống tự tạo thẻ thành phần cho khách xem
+                                    </small>
+                                </div>
                             </div>
                         </div>
 
@@ -369,16 +453,18 @@
                 </div>
             </div>
 
-            <!-- Modal Footer -->
+            <!-- Modal Footer (Cố định ở đáy, nút Lưu luôn nhìn thấy và dễ bấm) -->
             <div class="merchant-food-modal-footer">
                 <div class="mf-footer-hint">
                     <i class="fa-solid fa-shield-halved text-success"></i>
-                    <span>Món ăn sau khi lưu sẽ đồng bộ ngay lập tức trên hệ thống Utee</span>
+                    <span>Thay đổi món ăn sẽ đồng bộ ngay lập tức trên hệ thống Utee</span>
                 </div>
                 <div class="mf-footer-actions">
-                    <button type="button" class="mf-btn-cancel" onclick="closeFoodModal()">Hủy bỏ</button>
+                    <button type="button" class="mf-btn-cancel" onclick="closeFoodModal()">
+                        <i class="fa-solid fa-xmark me-1"></i> Hủy bỏ
+                    </button>
                     <button type="submit" class="mf-btn-submit" id="btnSubmitForm">
-                        <i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>
+                        <i class="fa-solid fa-floppy-disk me-1"></i> <span>Lưu Thay Đổi</span>
                     </button>
                 </div>
             </div>
@@ -388,6 +474,25 @@
 
 <script>
     const DEFAULT_FOOD_IMG = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=700&auto=format&fit=crop&q=80";
+
+    function toggleComboFields(checked) {
+        const group = document.getElementById('comboDetailsGroup');
+        if (group) group.style.display = checked ? 'block' : 'none';
+    }
+
+    function handleEditFoodClick(btn) {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const price = btn.getAttribute('data-price');
+        const categoryId = btn.getAttribute('data-category-id');
+        const imageUrl = btn.getAttribute('data-image-url');
+        const desc = btn.getAttribute('data-description');
+        const isAvailable = btn.getAttribute('data-available');
+        const isCombo = btn.getAttribute('data-combo');
+        const origPrice = btn.getAttribute('data-original-price');
+        const comboItems = btn.getAttribute('data-combo-items');
+        openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems);
+    }
 
     function openAddFoodModal() {
         document.getElementById('modalTitle').innerHTML = 'Đăng Món Ăn Mới';
@@ -401,6 +506,12 @@
         document.getElementById('foodDescription').value = '';
         document.getElementById('foodImageFile').value = '';
         
+        // Combo reset
+        document.getElementById('foodIsCombo').checked = false;
+        toggleComboFields(false);
+        document.getElementById('foodOriginalPrice').value = '';
+        document.getElementById('foodComboItems').value = '';
+
         // Availability reset
         setAvailability(true);
 
@@ -423,15 +534,18 @@
         }
 
         switchImageTab('upload');
-        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-plus"></i> <span>Đăng Món Mới</span>';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-plus me-1"></i> <span>Đăng Món Mới</span>';
         
         const modal = document.getElementById('foodModal');
         modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const body = document.getElementById('foodModalBody');
+        if (body) body.scrollTop = 0;
         setTimeout(() => modal.classList.add('active'), 10);
         document.getElementById('foodName').focus();
     }
 
-    function openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable) {
+    function openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems) {
         document.getElementById('modalTitle').innerHTML = 'Chỉnh Sửa Món Ăn';
         document.getElementById('modalSubtitle').innerText = 'Cập nhật thông tin, giá bán và hình ảnh cho món #' + id;
         document.getElementById('modalHeaderIcon').innerHTML = '<i class="fa-solid fa-pen-to-square text-primary"></i>';
@@ -444,6 +558,13 @@
         document.getElementById('foodDescription').value = desc || '';
         document.getElementById('foodImageFile').value = '';
         
+        // Combo fields
+        const isComboBool = (isCombo === true || isCombo === 'true' || isCombo === 1 || isCombo === '1');
+        document.getElementById('foodIsCombo').checked = isComboBool;
+        toggleComboFields(isComboBool);
+        document.getElementById('foodOriginalPrice').value = origPrice || '';
+        document.getElementById('foodComboItems').value = comboItems || '';
+
         // Availability
         setAvailability(isAvailable !== false && isAvailable !== 'false');
 
@@ -467,10 +588,13 @@
             document.getElementById('liveCardCategory').innerText = opt.text;
         }
 
-        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-check"></i> <span>Cập Nhật Món</span>';
+        document.getElementById('btnSubmitForm').innerHTML = '<i class="fa-solid fa-floppy-disk me-1"></i> <span>Lưu Thay Đổi</span>';
         
         const modal = document.getElementById('foodModal');
         modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        const body = document.getElementById('foodModalBody');
+        if (body) body.scrollTop = 0;
         setTimeout(() => modal.classList.add('active'), 10);
         document.getElementById('foodName').focus();
     }
@@ -479,6 +603,7 @@
         const modal = document.getElementById('foodModal');
         modal.classList.remove('active');
         modal.style.display = 'none';
+        document.body.style.overflow = '';
     }
 
     // Input Handlers
@@ -671,12 +796,25 @@
         return true;
     }
 
-    // Keyboard Shortcuts (Esc to close)
+    // Keyboard Shortcuts (Esc to close, Ctrl+S to save)
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('foodModal');
             if (modal && modal.style.display !== 'none') {
                 closeFoodModal();
+            }
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            const modal = document.getElementById('foodModal');
+            if (modal && modal.style.display !== 'none') {
+                e.preventDefault();
+                const form = document.getElementById('foodForm');
+                if (form) {
+                    if (typeof form.requestSubmit === 'function') {
+                        form.requestSubmit();
+                    } else {
+                        form.submit();
+                    }
+                }
             }
         }
     });

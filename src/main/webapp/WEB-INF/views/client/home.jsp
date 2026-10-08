@@ -37,11 +37,13 @@
             <!-- Quick Suggestion Tags -->
             <div class="hero-quick-tags">
                 <span class="quick-label"><i class="fa-solid fa-fire text-primary"></i> Đang hot:</span>
+                <a href="${pageContext.request.contextPath}/foods?cat=combo" class="quick-chip" style="background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; font-weight: 700;">
+                    <i class="fa-solid fa-fire text-danger"></i> Combo Tiết Kiệm
+                </a>
                 <a href="${pageContext.request.contextPath}/foods?search=cơm" class="quick-chip">Cơm sườn</a>
                 <a href="${pageContext.request.contextPath}/foods?search=phở" class="quick-chip">Phở bò</a>
                 <a href="${pageContext.request.contextPath}/foods?search=trà+sữa" class="quick-chip">Trà sữa</a>
-                <a href="${pageContext.request.contextPath}/foods?search=burger" class="quick-chip">Burger giòn</a>
-                <a href="${pageContext.request.contextPath}/foods?search=pizza" class="quick-chip">Pizza</a>
+                <a href="${pageContext.request.contextPath}/foods?search=combo" class="quick-chip">Set ăn trưa</a>
             </div>
 
             <!-- Key Features Pills -->
@@ -388,7 +390,9 @@
                 <c:forEach items="${tabRestaurants}" var="rest">
                     <div class="restaurant-card">
                         <div class="restaurant-card-banner">
-                            <img src="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" 
+                            <c:set var="rawBanner" value="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" />
+                            <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
+                            <img src="${finalBannerUrl}" 
                                  alt="${rest.name}" class="restaurant-banner-img" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'">
                             <span class="restaurant-status-badge ${'OPEN'.equalsIgnoreCase(rest.status) ? 'status-open' : 'status-closed'}">
                                 <c:choose>

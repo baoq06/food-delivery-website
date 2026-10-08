@@ -50,19 +50,25 @@
                 <i class="fa-solid fa-utensils"></i>
                 <span>Tất Cả Món</span>
             </button>
+            <button type="button" class="cat-pill-btn tab-btn-combo ${param.cat eq 'combo' or param.tab eq 'combo' ? 'active' : ''}" data-cat-id="combo">
+                <i class="fa-solid fa-fire-flame-curved" style="color: #ea580c;"></i>
+                <span>🔥 Combo &amp; Set Tiết Kiệm</span>
+            </button>
             <c:choose>
                 <c:when test="${not empty categories}">
                     <c:forEach items="${categories}" var="cat">
-                        <button type="button" class="cat-pill-btn ${param.cat eq cat.id ? 'active' : ''}" data-cat-id="${cat.id}">
-                            <c:choose>
-                                <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
-                                <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
-                                <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
-                                <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
-                                <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
-                            </c:choose>
-                            <span>${cat.name}</span>
-                        </button>
+                        <c:if test="${not cat.name.toLowerCase().contains('combo')}">
+                            <button type="button" class="cat-pill-btn ${param.cat eq cat.id ? 'active' : ''}" data-cat-id="${cat.id}">
+                                <c:choose>
+                                    <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
+                                    <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
+                                    <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
+                                    <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
+                                    <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
+                                </c:choose>
+                                <span>${cat.name}</span>
+                            </button>
+                        </c:if>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
@@ -140,10 +146,11 @@
         <c:choose>
             <c:when test="${not empty displayFoods}">
                 <c:forEach items="${displayFoods}" var="food" varStatus="status">
-                    <div class="food-card"
+                    <div class="food-card ${food.combo ? 'is-combo-card' : ''}"
                          data-id="${food.id}"
                          data-name="${food.name}"
                          data-category="${food.categoryId}"
+                         data-is-combo="${food.combo ? '1' : '0'}"
                          data-price="${food.price}"
                          data-restaurant="${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác Utee'}"
                          data-image="${food.image}"
@@ -153,7 +160,16 @@
                          data-index="${status.index}">
 
                         <div class="food-card-img-wrap">
-                            <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Món ngon'}" /></span>
+                            <c:choose>
+                                <c:when test="${food.combo}">
+                                    <span class="combo-badge-tag">
+                                        <i class="fa-solid fa-fire"></i> Set Tiết Kiệm
+                                    </span>
+                                </c:when>
+                                <c:otherwise>
+                                    <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Món ngon'}" /></span>
+                                </c:otherwise>
+                            </c:choose>
                             
                             <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-img-link" title="Xem chi tiết ${food.name}">
                                 <img src="${food.image}" alt="${food.name}" class="food-image" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
@@ -184,12 +200,35 @@
                                 <h3 class="food-title">${food.name}</h3>
                             </a>
 
+                            <!-- Combo items list chips in menu.jsp -->
+                            <c:if test="${food.combo and not empty food.comboItemList}">
+                                <div class="combo-items-box">
+                                    <div class="combo-items-box-label"><i class="fa-solid fa-layer-group"></i> Món trong set:</div>
+                                    <div class="combo-items-list">
+                                        <c:forEach items="${food.comboItemList}" var="itemPart">
+                                            <span class="combo-chip"><i class="fa-solid fa-circle-check"></i> ${itemPart}</span>
+                                        </c:forEach>
+                                    </div>
+                                </div>
+                            </c:if>
+
                             <p class="food-desc">${food.description}</p>
 
-                            <div class="food-footer">
+                            <div class="food-footer ${food.combo ? 'combo-footer' : ''}">
                                 <div class="price-box">
-                                    <span class="price-label">Giá bán</span>
-                                    <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
+                                    <c:choose>
+                                        <c:when test="${food.combo and not empty food.originalPrice and food.originalPrice > food.price}">
+                                            <div class="combo-savings-strip">
+                                                <span class="combo-price-original">${String.format("%,.0f", food.originalPrice)} đ</span>
+                                                <span class="combo-saving-badge">-${food.savingsPercent}%</span>
+                                            </div>
+                                            <span class="combo-price-final">${String.format("%,.0f", food.price)} đ</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="price-label">Giá bán</span>
+                                            <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <div class="food-actions-wrap">
                                     <c:choose>
@@ -210,9 +249,9 @@
                                                 <input type="hidden" name="action" value="add">
                                                 <input type="hidden" name="foodId" value="${food.id}">
                                                 <input type="hidden" name="quantity" value="1">
-                                                <button type="submit" class="btn-add-cart btn-ajax-add" title="Thêm món này vào giỏ hàng">
-                                                    <i class="fa-solid fa-cart-plus"></i>
-                                                    <span>Đặt món</span>
+                                                <button type="submit" class="btn-add-cart btn-ajax-add ${food.combo ? 'btn-add-combo' : ''}" title="${food.combo ? 'Đặt Combo Tiết Kiệm' : 'Thêm món này vào giỏ hàng'}">
+                                                    <i class="fa-solid ${food.combo ? 'fa-fire' : 'fa-cart-plus'}"></i>
+                                                    <span>${food.combo ? 'Đặt Combo' : 'Đặt món'}</span>
                                                 </button>
                                             </form>
                                         </c:otherwise>

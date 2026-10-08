@@ -159,6 +159,7 @@ public class AuthController extends HttpServlet {
             String idCardBack = null;
             String vehicleDoc = null;
             String restaurantLogo = null;
+            String restaurantBanner = null;
 
             try {
                 Part avatarPart = req.getPart("avatarFile");
@@ -189,10 +190,17 @@ public class AuthController extends HttpServlet {
                 } catch (Exception ignored) {}
             } else if (isSellerReg) {
                 try {
+                    Part ownerPart = req.getPart("ownerAvatar");
+                    if (ownerPart != null && ownerPart.getSize() > 0) {
+                        avatarUrl = UploadUtils.saveUploadedFile(ownerPart, "avatars", req);
+                    }
                     Part logoPart = req.getPart("restaurantLogo");
                     if (logoPart != null && logoPart.getSize() > 0) {
                         restaurantLogo = UploadUtils.saveUploadedFile(logoPart, "restaurants", req);
-                        if (avatarUrl == null) avatarUrl = restaurantLogo;
+                    }
+                    Part bannerPart = req.getPart("restaurantBanner");
+                    if (bannerPart != null && bannerPart.getSize() > 0) {
+                        restaurantBanner = UploadUtils.saveUploadedFile(bannerPart, "restaurants", req);
                     }
                 } catch (Exception ignored) {}
             }
@@ -257,7 +265,7 @@ public class AuthController extends HttpServlet {
             User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), role, avatarUrl);
             boolean created;
             if (isSellerReg) {
-                created = userService.registerSeller(newUser, restaurantName.trim(), address.trim(), restaurantDesc, openTime, closeTime, restaurantLogo);
+                created = userService.registerSeller(newUser, restaurantName.trim(), address.trim(), restaurantDesc, openTime, closeTime, restaurantLogo, restaurantBanner);
             } else if (isShipperReg) {
                 created = userService.registerShipper(newUser, licensePlate, vehicleType, idCardFront, idCardBack, vehicleDoc, avatarUrl);
             } else {

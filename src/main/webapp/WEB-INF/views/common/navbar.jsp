@@ -685,7 +685,18 @@
 
                             <div class="user-menu">
                                 <div class="user-avatar-pill">
-                                    <i class="fa-solid fa-circle-user"></i>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                            <img src="${sessionScope.currentUser.avatar.startsWith('http') || sessionScope.currentUser.avatar.startsWith('/') ? (sessionScope.currentUser.avatar.startsWith('/') ? pageContext.request.contextPath.concat(sessionScope.currentUser.avatar) : sessionScope.currentUser.avatar) : pageContext.request.contextPath.concat('/').concat(sessionScope.currentUser.avatar)}" 
+                                                 alt="${sessionScope.currentUser.fullName}" 
+                                                 style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" 
+                                                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                                            <i class="fa-solid fa-circle-user" style="display: none;"></i>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-solid fa-circle-user"></i>
+                                        </c:otherwise>
+                                    </c:choose>
                                     <span>${sessionScope.currentUser.fullName}</span>
                                     <i class="fa-solid fa-chevron-down user-caret"></i>
                                 </div>
@@ -766,29 +777,6 @@
                                         <a href="${pageContext.request.contextPath}/merchant/profile"><i class="fa-solid fa-gear"></i> Cài đặt quán ăn</a>
                                     </c:if>
 
-                                    <div class="dropdown-divider"></div>
-                                    
-                                    <!-- Chế độ giao diện Sáng / Tối / Tự động -->
-                                    <div class="user-dropdown-theme-section">
-                                        <div class="dropdown-theme-header">
-                                            <span class="dropdown-theme-label"><i class="fa-solid fa-circle-half-stroke text-primary"></i> Chế độ giao diện</span>
-                                            <span class="dropdown-theme-hint" id="dropdownThemeHint">Tự động</span>
-                                        </div>
-                                        <div class="dropdown-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')" title="Giao diện Sáng">
-                                                <i class="fa-solid fa-sun text-warning"></i>
-                                                <span>Sáng</span>
-                                            </button>
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')" title="Giao diện Tối">
-                                                <i class="fa-solid fa-moon text-primary"></i>
-                                                <span>Tối</span>
-                                            </button>
-                                            <button type="button" class="dropdown-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')" title="Theo giao diện thiết bị">
-                                                <i class="fa-solid fa-desktop text-info"></i>
-                                                <span>Tự động</span>
-                                            </button>
-                                        </div>
-                                    </div>
 
                                     <div class="dropdown-divider"></div>
                                     <a href="${pageContext.request.contextPath}/auth?action=logout" class="dropdown-logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng xuất</a>
@@ -969,10 +957,6 @@
                             </script>
                         </c:when>
                         <c:otherwise>
-                            <button type="button" class="btn-guest-theme-toggle" onclick="setAppTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')" title="Đổi giao diện Sáng / Tối" aria-label="Đổi giao diện">
-                                <i class="fa-solid fa-moon guest-icon-moon"></i>
-                                <i class="fa-solid fa-sun guest-icon-sun"></i>
-                            </button>
                             <a href="${pageContext.request.contextPath}/auth?action=login" class="btn btn-outline btn-sm btn-nav-auth">Đăng nhập</a>
                             <a href="${pageContext.request.contextPath}/auth?action=login#register" class="btn btn-primary btn-sm btn-nav-auth">Đăng ký</a>
                         </c:otherwise>
@@ -1010,7 +994,18 @@
                 <c:when test="${not empty sessionScope.currentUser}">
                     <div class="mobile-user-card">
                         <div class="mobile-user-avatar">
-                            <i class="fa-solid fa-circle-user"></i>
+                            <c:choose>
+                                <c:when test="${not empty sessionScope.currentUser.avatar}">
+                                    <img src="${sessionScope.currentUser.avatar.startsWith('http') || sessionScope.currentUser.avatar.startsWith('/') ? (sessionScope.currentUser.avatar.startsWith('/') ? pageContext.request.contextPath.concat(sessionScope.currentUser.avatar) : sessionScope.currentUser.avatar) : pageContext.request.contextPath.concat('/').concat(sessionScope.currentUser.avatar)}" 
+                                         alt="${sessionScope.currentUser.fullName}" 
+                                         style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" 
+                                         onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='inline-block';" />
+                                    <i class="fa-solid fa-circle-user" style="display: none;"></i>
+                                </c:when>
+                                <c:otherwise>
+                                    <i class="fa-solid fa-circle-user"></i>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                         <div class="mobile-user-info">
                             <strong class="mobile-user-name">${sessionScope.currentUser.fullName}</strong>
@@ -1110,25 +1105,6 @@
                     </ul>
                 </div>
             </c:if>
-
-            <!-- Giao diện hiển thị trên Mobile Drawer -->
-            <div class="mobile-drawer-nav-group">
-                <div class="drawer-group-title">Giao Diện Ứng Dụng</div>
-                <div class="mobile-theme-options" role="radiogroup" aria-label="Giao diện hiển thị">
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="light" onclick="setAppTheme('light')">
-                        <i class="fa-solid fa-sun text-warning"></i>
-                        <span>Sáng</span>
-                    </button>
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="dark" onclick="setAppTheme('dark')">
-                        <i class="fa-solid fa-moon text-primary"></i>
-                        <span>Tối</span>
-                    </button>
-                    <button type="button" class="mobile-theme-btn" data-theme-choice="system" onclick="setAppTheme('system')">
-                        <i class="fa-solid fa-desktop text-info"></i>
-                        <span>Tự động</span>
-                    </button>
-                </div>
-            </div>
 
             <div class="mobile-drawer-footer">
                 <div class="drawer-hotline">

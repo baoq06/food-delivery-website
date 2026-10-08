@@ -4,6 +4,7 @@ import com.ute.fooddelivery.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -143,17 +144,34 @@ public class UserDAO {
     }
 
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress) {
-        return registerSeller(user, restaurantName, restaurantAddress, null, "07:00", "22:00", null);
+        return registerSeller(user, restaurantName, restaurantAddress, null, "07:00", "22:00", null, null);
     }
 
     public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl) {
+        return registerSeller(user, restaurantName, restaurantAddress, description, openTime, closeTime, logoUrl, null);
+    }
+
+    public boolean registerSeller(User user, String restaurantName, String restaurantAddress, String description, String openTime, String closeTime, String logoUrl, String bannerUrl) {
         String insertUserSql = "INSERT INTO users (username, password, name, email, phone, address, role, avatar) VALUES (?, ?, ?, ?, ?, ?, 'SELLER', ?)";
-        String insertRestSql = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status, open_time, close_time) VALUES (?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)";
+        String insertRestWithLogo = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, logo_url, status, open_time, close_time) VALUES (?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)";
+        String insertRestWithoutLogo = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status, open_time, close_time) VALUES (?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)";
         Connection conn = null;
         try {
             conn = DBContext.getConnection();
             if (conn == null) return false;
             conn.setAutoCommit(false);
+
+            String effectiveBanner = (bannerUrl != null && !bannerUrl.trim().isEmpty())
+                    ? bannerUrl.trim()
+                    : ((logoUrl != null && !logoUrl.trim().isEmpty()) ? logoUrl.trim() : "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80");
+            String effectiveLogo = (logoUrl != null && !logoUrl.trim().isEmpty())
+                    ? logoUrl.trim()
+                    : effectiveBanner;
+
+            String ownerAvatar = user.getAvatar();
+            if (ownerAvatar == null || ownerAvatar.trim().isEmpty()) {
+                ownerAvatar = effectiveLogo;
+            }
 
             int userId = -1;
             try (PreparedStatement psUser = conn.prepareStatement(insertUserSql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
@@ -163,7 +181,7 @@ public class UserDAO {
                 psUser.setString(4, user.getEmail());
                 psUser.setString(5, user.getPhone());
                 psUser.setString(6, user.getAddress());
-                psUser.setString(7, logoUrl != null ? logoUrl : user.getAvatar());
+                psUser.setString(7, ownerAvatar);
 
                 int affected = psUser.executeUpdate();
                 if (affected > 0) {
@@ -176,16 +194,33 @@ public class UserDAO {
             }
 
             if (userId > 0) {
-                try (PreparedStatement psRest = conn.prepareStatement(insertRestSql)) {
+                boolean inserted = false;
+                try (PreparedStatement psRest = conn.prepareStatement(insertRestWithLogo)) {
                     psRest.setInt(1, userId);
                     psRest.setString(2, restaurantName != null && !restaurantName.trim().isEmpty() ? restaurantName.trim() : "Quán Ăn của " + user.getFullName());
-                    psRest.setString(3, description != null && !description.trim().isEmpty() ? description.trim() : "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc VinDelivery.");
+                    psRest.setString(3, description != null && !description.trim().isEmpty() ? description.trim() : "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc Utee.");
                     psRest.setString(4, user.getPhone());
                     psRest.setString(5, restaurantAddress != null && !restaurantAddress.trim().isEmpty() ? restaurantAddress.trim() : user.getAddress());
-                    psRest.setString(6, logoUrl != null && !logoUrl.trim().isEmpty() ? logoUrl.trim() : "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&auto=format&fit=crop&q=60");
-                    psRest.setString(7, openTime != null && !openTime.trim().isEmpty() ? openTime.trim() : "07:00");
-                    psRest.setString(8, closeTime != null && !closeTime.trim().isEmpty() ? closeTime.trim() : "22:00");
+                    psRest.setString(6, effectiveBanner);
+                    psRest.setString(7, effectiveLogo);
+                    psRest.setString(8, openTime != null && !openTime.trim().isEmpty() ? openTime.trim() : "07:00");
+                    psRest.setString(9, closeTime != null && !closeTime.trim().isEmpty() ? closeTime.trim() : "22:00");
                     psRest.executeUpdate();
+                    inserted = true;
+                } catch (SQLException exWithLogo) {
+                    // Fallback nếu database chưa có cột logo_url
+                    try (PreparedStatement psRest = conn.prepareStatement(insertRestWithoutLogo)) {
+                        psRest.setInt(1, userId);
+                        psRest.setString(2, restaurantName != null && !restaurantName.trim().isEmpty() ? restaurantName.trim() : "Quán Ăn của " + user.getFullName());
+                        psRest.setString(3, description != null && !description.trim().isEmpty() ? description.trim() : "Quán ăn hợp tác với nền tảng giao đồ ăn siêu tốc Utee.");
+                        psRest.setString(4, user.getPhone());
+                        psRest.setString(5, restaurantAddress != null && !restaurantAddress.trim().isEmpty() ? restaurantAddress.trim() : user.getAddress());
+                        psRest.setString(6, effectiveBanner);
+                        psRest.setString(7, openTime != null && !openTime.trim().isEmpty() ? openTime.trim() : "07:00");
+                        psRest.setString(8, closeTime != null && !closeTime.trim().isEmpty() ? closeTime.trim() : "22:00");
+                        psRest.executeUpdate();
+                        inserted = true;
+                    }
                 }
             }
 
@@ -205,6 +240,22 @@ public class UserDAO {
                 } catch (Exception ignored) {}
             }
         }
+    }
+
+    public boolean updateAvatar(int userId, String avatarUrl) {
+        String query = "UPDATE users SET avatar = ? WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, avatarUrl);
+                    ps.setInt(2, userId);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật avatar user: " + e.getMessage());
+        }
+        return false;
     }
 
     public User getUserById(int id) {

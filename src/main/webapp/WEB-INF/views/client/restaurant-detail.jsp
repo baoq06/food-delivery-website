@@ -22,12 +22,17 @@
             <!-- Restaurant Profile Hero Card -->
             <div class="restaurant-hero-card">
                 <div class="restaurant-hero-cover-wrap">
-                    <img src="${not empty restaurant.imageUrl ? restaurant.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'}" 
+                    <c:set var="rawBanner" value="${not empty restaurant.imageUrl ? restaurant.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'}" />
+                    <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
+                    <img src="${finalBannerUrl}" 
                          alt="${restaurant.name}" class="restaurant-hero-cover" 
                          onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80'">
                     <div class="restaurant-hero-overlay"></div>
-                    <span class="restaurant-hero-status ${'OPEN'.equalsIgnoreCase(restaurant.status) ? 'status-open' : 'status-closed'}">
+                    <span class="restaurant-hero-status ${'OPEN'.equalsIgnoreCase(restaurant.status) ? 'status-open' : 'status-closed'}" style="${'BANNED'.equalsIgnoreCase(restaurant.status) ? 'background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;' : ''}">
                         <c:choose>
+                            <c:when test="${'BANNED'.equalsIgnoreCase(restaurant.status)}">
+                                <i class="fa-solid fa-ban"></i> Quán đang bị tạm khóa
+                            </c:when>
                             <c:when test="${'OPEN'.equalsIgnoreCase(restaurant.status)}">
                                 <i class="fa-solid fa-circle-check"></i> Đang mở cửa đón khách
                             </c:when>
@@ -38,7 +43,21 @@
                     </span>
                 </div>
 
+                <c:if test="${'BANNED'.equalsIgnoreCase(restaurant.status)}">
+                    <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 14px 20px; border-radius: 12px; margin: 16px 24px 0 24px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem; color: #dc2626;"></i>
+                        <span>Quán ăn này hiện đang bị tạm khóa hoạt động bởi Quản trị viên Utee. Bạn không thể đặt món từ quán tại thời điểm này.</span>
+                    </div>
+                </c:if>
+
                 <div class="restaurant-hero-info">
+                    <c:set var="rawLogo" value="${not empty restaurant.logoUrl ? restaurant.logoUrl : ''}" />
+                    <c:if test="${not empty rawLogo}">
+                        <c:set var="finalLogoUrl" value="${rawLogo.startsWith('http') || rawLogo.startsWith('/') ? (rawLogo.startsWith('/') ? pageContext.request.contextPath.concat(rawLogo) : rawLogo) : pageContext.request.contextPath.concat('/').concat(rawLogo)}" />
+                        <div class="restaurant-hero-logo-wrap" style="width: 76px; height: 76px; border-radius: 18px; overflow: hidden; border: 3px solid #ffffff; box-shadow: 0 8px 24px rgba(0,0,0,0.18); margin-top: -46px; margin-bottom: 12px; background: #ffffff; position: relative; z-index: 5;">
+                            <img src="${finalLogoUrl}" alt="${restaurant.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none';" />
+                        </div>
+                    </c:if>
                     <div class="restaurant-info-main">
                         <div class="restaurant-badge-tag"><i class="fa-solid fa-store"></i> Quán Ăn Đối Tác Chính Thức</div>
                         <h1 class="restaurant-hero-title">${restaurant.name}</h1>
@@ -57,6 +76,18 @@
                                 <i class="fa-solid fa-clock text-warning"></i>
                                 <span><strong>Giờ mở cửa:</strong> ${not empty restaurant.openTime ? restaurant.openTime : '07:00'} - ${not empty restaurant.closeTime ? restaurant.closeTime : '22:00'}</span>
                             </div>
+                        </div>
+
+                        <!-- Chat CTA Button -->
+                        <div class="restaurant-chat-action mt-3">
+                            <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill font-weight-bold" 
+                                    style="box-shadow: 0 4px 12px rgba(240,84,84,0.15);"
+                                    data-restaurant-id="${restaurant.id}"
+                                    data-restaurant-name="<c:out value='${restaurant.name}' escapeXml='true'/>"
+                                    onclick="openChatWithRestaurant(this.dataset.restaurantId, this.dataset.restaurantName)">
+                                <i class="fa-solid fa-comments"></i>
+                                <span>Nhắn tin với quán</span>
+                            </button>
                         </div>
                     </div>
 
@@ -147,23 +178,56 @@
                 </c:when>
             </c:choose>
 
-            <!-- Restaurant Menu Items -->
+            <!-- Restaurant Menu Items with Tabs -->
             <div class="section-restaurant-menu mt-5">
                 <div class="section-header-flex align-items-center mb-3">
                     <div>
                         <span class="sub-heading"><i class="fa-solid fa-utensils"></i> Thực Đơn Phục Vụ</span>
                         <h2 class="section-title">Các Món Ăn Của ${restaurant.name}</h2>
                     </div>
-                    <span class="badge-count">${not empty foods ? foods.size() : 0} món</span>
+                    <span class="badge-count" id="rest-menu-counter">${not empty foods ? foods.size() : 0} món</span>
+                </div>
+
+                <!-- Modern Interactive Tabs (Tất cả / Combo Tiết Kiệm / Món Đơn) -->
+                <div class="restaurant-menu-tabs-wrap">
+                    <div class="menu-tabs-nav" role="tablist">
+                        <button type="button" class="rest-menu-tab-btn active" data-filter="all" id="tab-all-foods">
+                            <i class="fa-solid fa-utensils"></i>
+                            <span>Tất Cả Món</span>
+                            <span class="tab-badge-count">${not empty foods ? foods.size() : 0}</span>
+                        </button>
+                        <button type="button" class="rest-menu-tab-btn tab-btn-combo" data-filter="combo" id="tab-combo-foods">
+                            <i class="fa-solid fa-fire-flame-curved"></i>
+                            <span>🔥 Combo &amp; Set Tiết Kiệm</span>
+                            <span class="tab-badge-count badge-combo-count">${not empty comboFoods ? comboFoods.size() : 0}</span>
+                        </button>
+                        <button type="button" class="rest-menu-tab-btn" data-filter="regular" id="tab-regular-foods">
+                            <i class="fa-solid fa-bowl-food"></i>
+                            <span>Món Đơn Phục Vụ</span>
+                            <span class="tab-badge-count">${not empty regularFoods ? regularFoods.size() : 0}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <c:choose>
                     <c:when test="${not empty foods}">
-                        <div class="food-grid">
+                        <div class="food-grid" id="restaurant-food-grid">
                             <c:forEach items="${foods}" var="food">
-                                <div class="food-card">
+                                <div class="food-card ${food.combo ? 'is-combo-card' : ''}" 
+                                     data-is-combo="${food.combo ? '1' : '0'}"
+                                     data-food-id="${food.id}">
                                     <div class="food-card-img-wrap">
-                                        <span class="food-tag">${not empty food.categoryName ? food.categoryName : 'Món ngon'}</span>
+                                        <c:choose>
+                                            <c:when test="${food.combo}">
+                                                <span class="combo-badge-tag">
+                                                    <i class="fa-solid fa-fire"></i> Set Tiết Kiệm
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="food-tag">${not empty food.categoryName ? food.categoryName : 'Món ngon'}</span>
+                                            </c:otherwise>
+                                        </c:choose>
+
                                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
                                             <img src="${food.image}" alt="${food.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
                                         </a>
@@ -185,25 +249,57 @@
                                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-title-link">
                                             <h3 class="food-title">${food.name}</h3>
                                         </a>
+
+                                        <!-- Combo items chips list -->
+                                        <c:if test="${food.combo and not empty food.comboItemList}">
+                                            <div class="combo-items-box">
+                                                <div class="combo-items-box-label"><i class="fa-solid fa-layer-group"></i> Món trong set:</div>
+                                                <div class="combo-items-list">
+                                                    <c:forEach items="${food.comboItemList}" var="itemPart">
+                                                        <span class="combo-chip"><i class="fa-solid fa-circle-check"></i> ${itemPart}</span>
+                                                    </c:forEach>
+                                                </div>
+                                            </div>
+                                        </c:if>
+
                                         <p class="food-desc">${food.description}</p>
-                                        <div class="food-footer">
+
+                                        <div class="food-footer ${food.combo ? 'combo-footer' : ''}">
                                             <div class="price-box">
-                                                <span class="price-label">Giá chỉ</span>
-                                                <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
+                                                <c:choose>
+                                                    <c:when test="${food.combo and not empty food.originalPrice and food.originalPrice > food.price}">
+                                                        <div class="combo-savings-strip">
+                                                            <span class="combo-price-original">${String.format("%,.0f", food.originalPrice)} đ</span>
+                                                            <span class="combo-saving-badge">-${food.savingsPercent}%</span>
+                                                        </div>
+                                                        <span class="combo-price-final">${String.format("%,.0f", food.price)} đ</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="price-label">Giá chỉ</span>
+                                                        <span class="food-price">${String.format("%,.0f", food.price)} đ</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                             <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form">
                                                 <input type="hidden" name="action" value="add">
                                                 <input type="hidden" name="foodId" value="${food.id}">
                                                 <input type="hidden" name="quantity" value="1">
-                                                <button type="submit" class="btn-add-cart" title="Thêm vào giỏ hàng">
-                                                    <i class="fa-solid fa-cart-plus"></i>
-                                                    <span>Đặt món</span>
+                                                <button type="submit" class="btn-add-cart ${food.combo ? 'btn-add-combo' : ''}" title="${food.combo ? 'Đặt Combo Tiết Kiệm' : 'Thêm vào giỏ hàng'}">
+                                                    <i class="fa-solid ${food.combo ? 'fa-fire' : 'fa-cart-plus'}"></i>
+                                                    <span>${food.combo ? 'Đặt Combo' : 'Đặt món'}</span>
                                                 </button>
                                             </form>
                                         </div>
                                     </div>
                                 </div>
                             </c:forEach>
+                        </div>
+
+                        <!-- Empty state when filtered tab has no items -->
+                        <div id="rest-menu-no-items" class="empty-state-card mt-4" style="display: none;">
+                            <div class="empty-state-icon"><i class="fa-solid fa-box-open"></i></div>
+                            <h3>Quán hiện chưa có món thuộc danh mục này!</h3>
+                            <p>Hãy xem thêm các món ngon khác trong thực đơn của quán.</p>
                         </div>
                     </c:when>
                     <c:otherwise>
@@ -215,6 +311,80 @@
                     </c:otherwise>
                 </c:choose>
             </div>
+
+            <!-- JavaScript for Tab Switching in Restaurant Detail -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const tabButtons = document.querySelectorAll(".rest-menu-tab-btn");
+                    const foodGrid = document.getElementById("restaurant-food-grid");
+                    const noItemsEl = document.getElementById("rest-menu-no-items");
+                    const counterEl = document.getElementById("rest-menu-counter");
+                    if (!foodGrid || !tabButtons.length) return;
+
+                    const cards = Array.from(foodGrid.querySelectorAll(".food-card"));
+
+                    function filterMenu(filterType) {
+                        let visibleCount = 0;
+                        cards.forEach(function (card) {
+                            const isCombo = card.getAttribute("data-is-combo") === "1";
+                            let show = false;
+                            if (filterType === "all") {
+                                show = true;
+                            } else if (filterType === "combo") {
+                                show = isCombo;
+                            } else if (filterType === "regular") {
+                                show = !isCombo;
+                            }
+
+                            if (show) {
+                                card.style.display = "";
+                                card.classList.remove("card-fade-in");
+                                void card.offsetWidth;
+                                card.classList.add("card-fade-in");
+                                visibleCount++;
+                            } else {
+                                card.style.display = "none";
+                            }
+                        });
+
+                        if (counterEl) {
+                            counterEl.textContent = visibleCount + " món";
+                        }
+                        if (noItemsEl) {
+                            noItemsEl.style.display = visibleCount === 0 ? "block" : "none";
+                        }
+                    }
+
+                    tabButtons.forEach(function (btn) {
+                        btn.addEventListener("click", function () {
+                            tabButtons.forEach(function (b) { b.classList.remove("active"); });
+                            btn.classList.add("active");
+                            const filterType = btn.getAttribute("data-filter");
+                            filterMenu(filterType);
+
+                            // Update URL query string without reloading page
+                            const currentUrl = new URL(window.location.href);
+                            if (filterType === "all") {
+                                currentUrl.searchParams.delete("tab");
+                            } else {
+                                currentUrl.searchParams.set("tab", filterType);
+                            }
+                            window.history.replaceState({}, "", currentUrl.toString());
+                        });
+                    });
+
+                    // Check initial tab from URL params (e.g. ?tab=combo)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const initTab = urlParams.get("tab");
+                    if (initTab === "combo") {
+                        const comboBtn = document.getElementById("tab-combo-foods");
+                        if (comboBtn) comboBtn.click();
+                    } else if (initTab === "regular") {
+                        const regBtn = document.getElementById("tab-regular-foods");
+                        if (regBtn) regBtn.click();
+                    }
+                });
+            </script>
 
             <!-- Full Customer Reviews & Comments Section for the Store -->
             <div class="section-restaurant-reviews mt-5">
