@@ -230,42 +230,84 @@
             </div> <!-- Closes detail-content -->
         </div> <!-- Closes detail-card-layout -->
 
-        <!-- Cross-sell & Upsell: Món Cùng Quán & Đồ Uống Mua Kèm -->
-        <c:if test="${not empty restaurantFoods or not empty popularSideDishes}">
-            <div class="detail-cross-sell-section mt-5">
-                <div class="cross-sell-header mb-3">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-danger" style="font-size: 1.4rem;"></i>
-                        <div>
-                            <h3 class="cross-sell-title mb-0">Món Ngon Cùng Quán &amp; Thường Gọi Kèm</h3>
-                            <p class="cross-sell-subtitle mb-0 text-muted">Kết hợp trọn vị bữa ăn &bull; Tiết kiệm phí ship khi đặt cùng quán</p>
-                        </div>
+        <!-- Gợi ý các món ăn khác của đúng quán ăn đó -->
+        <c:if test="${not empty restaurantFoods}">
+            <div class="restaurant-other-foods-section" style="margin-top: 50px; padding-top: 35px; border-top: 1px solid rgba(226, 232, 240, 0.8);">
+                <div class="section-header-flex align-items-center mb-4">
+                    <div>
+                        <span class="sub-heading"><i class="fa-solid fa-shop text-primary"></i> Thực Đơn Cùng Quán</span>
+                        <h2 class="section-title mb-1" style="font-size: 1.6rem;">Món Ăn Khác Từ ${not empty food.restaurantName ? food.restaurantName : 'Quán Ăn'}</h2>
+                        <p class="section-desc mb-0 text-muted">
+                            Khám phá các món ngon đặc sắc khác từ quán, đặt chung đơn để tiết kiệm tối đa thời gian và phí ship
+                        </p>
                     </div>
+                    <c:if test="${food.restaurantId > 0}">
+                        <a href="${pageContext.request.contextPath}/restaurant-detail?id=${food.restaurantId}" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; white-space: nowrap;">
+                            <span>Xem toàn bộ quán</span>
+                            <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </c:if>
                 </div>
-                <div class="cross-sell-grid">
-                    <c:forEach items="${not empty restaurantFoods ? restaurantFoods : popularSideDishes}" var="crossFood">
-                        <div class="cross-sell-card">
-                            <a href="${pageContext.request.contextPath}/food-detail?id=${crossFood.id}" class="cross-sell-img-link">
-                                <img src="${crossFood.image}" alt="${crossFood.name}" class="cross-sell-img" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200'">
-                            </a>
-                            <div class="cross-sell-body">
-                                <a href="${pageContext.request.contextPath}/food-detail?id=${crossFood.id}" class="cross-sell-name" title="${crossFood.name}">
-                                    ${crossFood.name}
+
+                <div class="food-grid">
+                    <c:forEach items="${restaurantFoods}" var="rFood">
+                        <div class="food-card" data-id="${rFood.id}" data-category="${rFood.categoryId}" data-name="${rFood.name}" data-price="${rFood.price}" data-rating="${rFood.rating}"
+                             onclick="if (!event.target.closest('.btn-add-cart, .add-cart-form, .food-distance-link, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${rFood.id}'; }">
+                            <div class="food-card-img-wrap">
+                                <span class="food-tag"><c:out value="${not empty rFood.categoryName ? rFood.categoryName : 'Món ngon'}" /></span>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}">
+                                    <img src="${rFood.image}" alt="${rFood.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
                                 </a>
-                                <div class="cross-sell-meta">
-                                    <span class="cross-sell-price">${String.format("%,.0f", crossFood.price)} đ</span>
-                                    <c:if test="${crossFood.rating > 0}">
-                                        <span class="cross-sell-rating"><i class="fa-solid fa-star text-warning"></i> ${crossFood.rating}</span>
-                                    </c:if>
+                                <div class="food-time-badge">
+                                    <i class="fa-solid fa-clock"></i> 20-25 phút
                                 </div>
-                                <form action="${pageContext.request.contextPath}/cart" method="POST" class="ajax-cart-form mt-2" data-food-id="${crossFood.id}">
-                                    <input type="hidden" name="action" value="add">
-                                    <input type="hidden" name="foodId" value="${crossFood.id}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary btn-block btn-cross-add" title="Thêm món này vào giỏ">
-                                        <i class="fa-solid fa-plus me-1"></i> Gọi thêm
-                                    </button>
-                                </form>
+                            </div>
+                            <div class="food-body">
+                                <div class="food-meta">
+                                    <c:choose>
+                                        <c:when test="${rFood.reviewCount > 0}">
+                                            <span class="food-rating"><i class="fa-solid fa-star"></i> ${rFood.rating} (${rFood.reviewCount})</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="food-title-link">
+                                    <h3 class="food-title">${rFood.name}</h3>
+                                </a>
+                                <p class="food-desc">${rFood.description}</p>
+                                <div class="food-footer">
+                                    <div class="price-box">
+                                        <span class="price-label">Giá chỉ</span>
+                                        <span class="food-price">${String.format("%,.0f", rFood.price)} đ</span>
+                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                            <button type="button" class="btn-add-cart disabled" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở góc trên màn hình nếu muốn đặt món như khách hàng!');" style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;" title="Chế độ Shipper đang bật">
+                                                <i class="fa-solid fa-motorcycle"></i>
+                                                <span>Đang là Shipper</span>
+                                            </button>
+                                        </c:when>
+                                        <c:when test="${not empty sessionScope.currentUser and (sessionScope.currentUser.role eq 'SELLER' or sessionScope.currentUser.seller)}">
+                                            <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}" class="btn-add-cart btn-view-only" title="Xem chi tiết món này">
+                                                <i class="fa-solid fa-eye text-primary"></i>
+                                                <span>Xem món</span>
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form ajax-cart-form" data-food-id="${rFood.id}">
+                                                <input type="hidden" name="action" value="add">
+                                                <input type="hidden" name="foodId" value="${rFood.id}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit" class="btn-add-cart btn-ajax-add" title="Thêm vào giỏ hàng">
+                                                    <i class="fa-solid fa-cart-plus"></i>
+                                                    <span>Đặt món</span>
+                                                </button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
                         </div>
                     </c:forEach>

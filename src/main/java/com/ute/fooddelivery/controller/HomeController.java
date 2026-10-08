@@ -1,5 +1,6 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.model.Category;
 import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Restaurant;
 import com.ute.fooddelivery.service.CategoryService;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "HomeController", urlPatterns = {"", "/home", "/nearby"})
 public class HomeController extends HttpServlet {
@@ -54,8 +56,13 @@ public class HomeController extends HttpServlet {
         req.setAttribute("activeTab", tab);
         req.setAttribute("tabFoods", tabFoods);
         req.setAttribute("tabRestaurants", tabRestaurants);
-        req.setAttribute("featuredFoods", tabFoods);
-        req.setAttribute("categories", categoryService.getAllCategories());
+        List<Category> allCategories = categoryService.getAllCategories();
+        List<Category> mainCategories = (allCategories != null)
+                ? allCategories.stream()
+                    .filter(c -> c.getName() != null && !c.getName().toLowerCase().contains("combo") && c.getId() != 60002)
+                    .collect(Collectors.toList())
+                : java.util.Collections.emptyList();
+        req.setAttribute("categories", mainCategories);
 
         // Dọn dẹp cookie dùng chung cũ nếu còn sót
         CookieUtils.cleanLegacyRecentFoods(req, resp);
