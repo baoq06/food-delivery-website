@@ -105,6 +105,26 @@
                 </c:choose>
             </div>
         </div>
+    <!-- COD Locked Warning Banner for Customer -->
+    <c:if test="${user.isCodLocked()}">
+        <div class="alert alert-warning" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(245,158,11,0.08); border-left: 5px solid #f59e0b; background: #fffbeb;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706; font-size: 1.3rem;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h5 style="margin: 0; font-weight: 700; font-size: 1.05rem; color: #92400e;">
+                        Phương thức thanh toán Tiền mặt (COD) đang bị tạm khóa
+                    </h5>
+                    <p style="margin: 3px 0 0 0; font-size: 0.88rem; color: #b45309;">
+                        Tài khoản của bạn có ${user.boomCount > 0 ? user.boomCount : 1} đơn hàng bị ghi nhận không nhận hoặc hủy sau khi chế biến. Để đảm bảo quyền lợi cho quán và shipper, bạn vui lòng thanh toán trước qua VietQR.
+                    </p>
+                </div>
+            </div>
+            <span class="badge bg-warning text-dark px-3 py-2" style="border-radius: 20px; font-weight: 700; font-size: 0.82rem;">
+                <i class="fa-solid fa-lock me-1"></i> Bắt buộc thanh toán trước
+            </span>
+        </div>
     </c:if>
 
     <!-- Profile Hero Card -->

@@ -36,6 +36,7 @@ public class CartController extends HttpServlet {
     private final com.ute.fooddelivery.service.VoucherService voucherService = new com.ute.fooddelivery.service.VoucherService();
     private final com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
     private final com.ute.fooddelivery.dao.VoucherDAO voucherDAO = new com.ute.fooddelivery.dao.VoucherDAO();
+    private final com.ute.fooddelivery.dao.UserDAO userDAO = new com.ute.fooddelivery.dao.UserDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
 
@@ -94,6 +95,11 @@ public class CartController extends HttpServlet {
 
         int userId = currentUser != null ? currentUser.getId() : 0;
         if (userId > 0) {
+            boolean isCodLocked = userDAO.isCustomerCodLocked(userId);
+            int boomCount = userDAO.getCustomerBoomCount(userId);
+            req.setAttribute("isCodLocked", isCodLocked);
+            req.setAttribute("boomCount", boomCount);
+
             List<com.ute.fooddelivery.model.UserVoucher> uvList = userVoucherDAO.getUserVouchers(userId);
             req.setAttribute("userVouchers", uvList);
             req.setAttribute("availableVouchers", uvList);
@@ -289,21 +295,28 @@ public class CartController extends HttpServlet {
 
                 // Sticky Form Validation
                 String validationError = null;
+                boolean isCodLocked = userDAO.isCustomerCodLocked(userId);
+                int boomCount = userDAO.getCustomerBoomCount(userId);
+
                 if (receiverName == null || receiverName.trim().isEmpty() ||
                     receiverPhone == null || receiverPhone.trim().isEmpty() ||
                     receiverAddress == null || receiverAddress.trim().isEmpty()) {
                     validationError = "Vui lòng nhập đầy đủ: Họ tên, Số điện thoại và Địa chỉ giao hàng!";
                 } else if (!receiverPhone.trim().matches("^0[0-9]{9,10}$")) {
                     validationError = "Số điện thoại nhận hàng không hợp lệ! Vui lòng nhập số điện thoại Việt Nam (10-11 chữ số bắt đầu bằng số 0).";
+                } else if (isCodLocked && (paymentMethod == null || "COD".equalsIgnoreCase(paymentMethod.trim()))) {
+                    validationError = "Tài khoản của bạn đã bị khóa phương thức Tiền mặt (COD) do có lịch sử hủy đơn / bom hàng. Vui lòng chọn chuyển khoản VietQR để thanh toán trước!";
                 }
 
                 if (validationError != null) {
                     req.setAttribute("checkoutError", validationError);
+                    req.setAttribute("isCodLocked", isCodLocked);
+                    req.setAttribute("boomCount", boomCount);
                     req.setAttribute("stickyReceiverName", receiverName);
                     req.setAttribute("stickyReceiverPhone", receiverPhone);
                     req.setAttribute("stickyReceiverAddress", receiverAddress);
                     req.setAttribute("stickyReceiverNote", receiverNote);
-                    req.setAttribute("stickyPaymentMethod", paymentMethod);
+                    req.setAttribute("stickyPaymentMethod", isCodLocked ? "QR" : paymentMethod);
                     req.setAttribute("stickyVoucherCode", voucherCode);
                     req.setAttribute("stickyShippingVoucherCode", shippingVoucherCode);
                     req.setAttribute("stickyFoodVoucherCode", foodVoucherCode);

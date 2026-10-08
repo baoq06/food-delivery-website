@@ -12,8 +12,45 @@ import java.util.Map;
 
 public class UserDAO {
 
+    private static volatile boolean boomSupportChecked = false;
+
+    public static void ensureBoomSupport() {
+        if (boomSupportChecked) return;
+        synchronized (UserDAO.class) {
+            if (boomSupportChecked) return;
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn != null) {
+                    java.sql.DatabaseMetaData meta = conn.getMetaData();
+                    boolean hasCodLocked = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "users", "is_cod_locked")) {
+                        if (rs.next()) hasCodLocked = true;
+                    }
+                    if (!hasCodLocked) {
+                        try (java.sql.Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE users ADD COLUMN is_cod_locked TINYINT(1) DEFAULT 0");
+                        } catch (SQLException ignore) {}
+                    }
+
+                    boolean hasBoomCount = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "users", "boom_count")) {
+                        if (rs.next()) hasBoomCount = true;
+                    }
+                    if (!hasBoomCount) {
+                        try (java.sql.Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE users ADD COLUMN boom_count INT DEFAULT 0");
+                        } catch (SQLException ignore) {}
+                    }
+                    boomSupportChecked = true;
+                }
+            } catch (Exception e) {
+                System.err.println("Lỗi khi kiểm tra migration boom support: " + e.getMessage());
+            }
+        }
+    }
+
     public User login(String account, String password) {
-        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar " +
+        ensureBoomSupport();
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count " +
                        "FROM users WHERE (username = ? OR email = ? OR phone = ?) AND password = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -24,7 +61,7 @@ public class UserDAO {
                     ps.setString(4, password);
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            return new User(
+                            User u = new User(
                                 rs.getInt("user_id"),
                                 rs.getString("username"),
                                 rs.getString("password"),
@@ -35,6 +72,11 @@ public class UserDAO {
                                 rs.getString("role"),
                                 rs.getString("avatar")
                             );
+                            try {
+                                u.setCodLocked(rs.getInt("is_cod_locked") == 1);
+                                u.setBoomCount(rs.getInt("boom_count"));
+                            } catch (Exception ignored) {}
+                            return u;
                         }
                     }
                 }
@@ -259,7 +301,8 @@ public class UserDAO {
     }
 
     public User getUserById(int id) {
-        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar " +
+        ensureBoomSupport();
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count " +
                        "FROM users WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -267,7 +310,7 @@ public class UserDAO {
                     ps.setInt(1, id);
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            return new User(
+                            User u = new User(
                                 rs.getInt("user_id"),
                                 rs.getString("username"),
                                 rs.getString("password"),
@@ -278,6 +321,11 @@ public class UserDAO {
                                 rs.getString("role"),
                                 rs.getString("avatar")
                             );
+                            try {
+                                u.setCodLocked(rs.getInt("is_cod_locked") == 1);
+                                u.setBoomCount(rs.getInt("boom_count"));
+                            } catch (Exception ignored) {}
+                            return u;
                         }
                     }
                 }
@@ -497,5 +545,65 @@ public class UserDAO {
             list.add(new User(2, "customer", "123456", "Nguyễn Văn Khách", "khach@gmail.com", "0987654321", "Quận 1", "CUSTOMER"));
         }
         return list;
+    }
+
+    public boolean recordCustomerBoom(int userId, String reason) {
+        ensureBoomSupport();
+        String query = "UPDATE users SET is_cod_locked = 1, boom_count = boom_count + 1 WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi ghi nhận khách bom hàng: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean isCustomerCodLocked(int userId) {
+        ensureBoomSupport();
+        String query = "SELECT is_cod_locked FROM users WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("is_cod_locked") == 1;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra COD lock: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean unlockCustomerCod(int userId) {
+        ensureBoomSupport();
+        String query = "UPDATE users SET is_cod_locked = 0 WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi mở khóa COD cho khách: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public int getCustomerBoomCount(int userId) {
+        ensureBoomSupport();
+        String query = "SELECT boom_count FROM users WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("boom_count");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy số lần bom hàng: " + e.getMessage());
+        }
+        return 0;
     }
 }

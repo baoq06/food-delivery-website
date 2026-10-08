@@ -212,4 +212,27 @@ public class NotificationService {
             notificationDAO.createNotification(new Notification(merchantUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/merchant/orders"));
         }
     }
+
+    public void notifyBoomReported(Integer customerUserId, Integer merchantUserId, int orderId, String reason) {
+        if (customerUserId != null && customerUserId > 0) {
+            notificationDAO.createNotification(new Notification(
+                customerUserId,
+                orderId,
+                "⚠️ Khóa phương thức tiền mặt (COD)",
+                "Đơn hàng #DH-" + orderId + " bị ghi nhận giao không thành công (" + (reason != null ? reason : "Khách không nhận") + "). Tài khoản của bạn đã bị tạm khóa COD và chuyển sang thanh toán trước.",
+                "ORDER_CANCELLED",
+                "/profile?tab=orders"
+            ));
+        }
+        if (merchantUserId != null && merchantUserId > 0) {
+            notificationDAO.createNotification(new Notification(
+                merchantUserId,
+                orderId,
+                "⚠️ Đơn hàng #DH-" + orderId + " bị bom hàng",
+                "Tài xế báo cáo đơn hàng #DH-" + orderId + " giao thất bại: " + (reason != null ? reason : "Khách không nhận") + ". Hệ thống đã ghi nhận vi phạm và khóa COD của khách.",
+                "ORDER_CANCELLED",
+                "/merchant/orders"
+            ));
+        }
+    }
 }

@@ -237,18 +237,32 @@
                             <!-- Payment Method -->
                             <div class="form-group">
                                 <label class="option-label">Phương thức thanh toán:</label>
+                                <c:if test="${isCodLocked}">
+                                    <div class="alert alert-warning p-2 mb-2" style="border-radius: 12px; font-size: 0.84rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
+                                        <i class="fa-solid fa-triangle-exclamation text-warning mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>
+                                        <div>
+                                            <strong>Tạm khóa thanh toán Tiền mặt (COD):</strong> Tài khoản của bạn đã bị giới hạn thanh toán sau do có lịch sử hủy đơn hoặc không nhận hàng (${boomCount} lần). Vui lòng thanh toán trước qua chuyển khoản VietQR để tiếp tục đặt món.
+                                        </div>
+                                    </div>
+                                </c:if>
                                 <div class="payment-options">
-                                    <label class="payment-radio">
-                                        <input type="radio" name="paymentMethod" value="COD" ${empty stickyPaymentMethod or stickyPaymentMethod eq 'COD' ? 'checked' : ''}>
+                                    <label class="payment-radio ${isCodLocked ? 'disabled' : ''}" style="${isCodLocked ? 'opacity: 0.5; cursor: not-allowed; pointer-events: none; background: #f8fafc;' : ''}">
+                                        <input type="radio" name="paymentMethod" value="COD" ${isCodLocked ? 'disabled' : (empty stickyPaymentMethod or stickyPaymentMethod eq 'COD' ? 'checked' : '')}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-hand-holding-dollar text-primary"></i>
                                         <span>Tiền mặt khi nhận (COD)</span>
+                                        <c:if test="${isCodLocked}">
+                                            <span class="badge bg-danger ms-auto" style="font-size: 0.7rem; padding: 2px 7px; border-radius: 4px;">Tạm khóa</span>
+                                        </c:if>
                                     </label>
                                     <label class="payment-radio">
-                                        <input type="radio" name="paymentMethod" value="QR" ${stickyPaymentMethod eq 'QR' ? 'checked' : ''}>
+                                        <input type="radio" name="paymentMethod" value="QR" ${isCodLocked or stickyPaymentMethod eq 'QR' ? 'checked' : ''}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-qrcode text-primary"></i>
                                         <span>Chuyển khoản mã VietQR</span>
+                                        <c:if test="${isCodLocked}">
+                                            <span class="badge bg-success ms-auto" style="font-size: 0.7rem; padding: 2px 7px; border-radius: 4px;"><i class="fa-solid fa-shield-check"></i> Khuyên dùng</span>
+                                        </c:if>
                                     </label>
                                 </div>
                             </div>

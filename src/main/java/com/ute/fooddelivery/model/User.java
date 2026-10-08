@@ -40,14 +40,24 @@ public class User implements Serializable {
     @Column(name = "avatar")
     private String avatar;
 
+    @Column(name = "is_cod_locked")
+    private boolean isCodLocked = false;
+
+    @Column(name = "boom_count")
+    private int boomCount = 0;
+
     public User() {
     }
 
     public User(int id, String username, String password, String fullName, String email, String phone, String address, String role) {
-        this(id, username, password, fullName, email, phone, address, role, null);
+        this(id, username, password, fullName, email, phone, address, role, null, false, 0);
     }
 
     public User(int id, String username, String password, String fullName, String email, String phone, String address, String role, String avatar) {
+        this(id, username, password, fullName, email, phone, address, role, avatar, false, 0);
+    }
+
+    public User(int id, String username, String password, String fullName, String email, String phone, String address, String role, String avatar, boolean isCodLocked, int boomCount) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -57,6 +67,8 @@ public class User implements Serializable {
         this.address = address;
         this.role = role;
         this.avatar = avatar;
+        this.isCodLocked = isCodLocked;
+        this.boomCount = boomCount;
     }
 
     public int getId() {
@@ -145,5 +157,21 @@ public class User implements Serializable {
 
     public boolean isShipper() {
         return "SHIPPER".equalsIgnoreCase(this.role) || "DRIVER".equalsIgnoreCase(this.role);
+    }
+
+    public boolean isCodLocked() {
+        return isCodLocked;
+    }
+
+    public void setCodLocked(boolean codLocked) {
+        this.isCodLocked = codLocked;
+    }
+
+    public int getBoomCount() {
+        return boomCount;
+    }
+
+    public void setBoomCount(int boomCount) {
+        this.boomCount = boomCount;
     }
 }

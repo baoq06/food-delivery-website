@@ -736,24 +736,25 @@
                                                             </c:otherwise>
                                                         </c:choose>
 
-                                                        <!-- Button Báo Sự Cố / Hủy Cuốc (chỉ hiện khi chưa giao) -->
+                                                        <!-- Button Báo Sự Cố / Hủy Cuốc / Báo Bom Hàng (chỉ hiện khi chưa giao) -->
                                                         <c:if test="${not activeOrder.shipperDelivered}">
-                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi hủy!'); return false; } return confirm('Bạn có chắc muốn báo hủy đơn #FZ-${activeOrder.id}? Việc này sẽ cập nhật trạng thái hủy và ghi chú trên hệ thống.');">
+                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi thực hiện!'); return false; } const isBoom = this.cancelReason.selectedOptions && this.cancelReason.selectedOptions[0] && this.cancelReason.selectedOptions[0].getAttribute('data-boom') === 'true'; if (isBoom) { this.status.value = 'FAILED_DELIVERY'; return confirm('Xác nhận báo cáo KHÁCH BOM HÀNG cho đơn #FZ-${activeOrder.id}? Hệ thống sẽ ghi nhận vi phạm và KHÓA THANH TOÁN TIỀN MẶT (COD) của khách hàng này.'); } else { this.status.value = 'CANCELLED'; return confirm('Bạn có chắc muốn báo trả/hủy cuốc đơn #FZ-${activeOrder.id}?'); }">
                                                                 <input type="hidden" name="action" value="updateOrder">
                                                                 <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                 <input type="hidden" name="status" value="CANCELLED">
                                                                 
                                                                 <select name="cancelReason" class="form-select" style="flex: 1; border-radius: 50px; padding: 10px 16px; font-size: 0.9rem; min-width: 140px; border-color: #cbd5e1; background-color: #f8fafc;">
-                                                                    <option value="">-- Chọn lý do hủy cuốc --</option>
-                                                                    <option value="Xe bị hỏng / Tai nạn">Xe bị hỏng / Tai nạn</option>
-                                                                    <option value="Không liên lạc được Khách">Không gọi được Khách</option>
-                                                                    <option value="Quán ăn đóng cửa / Không có món">Quán đóng cửa / Hết món</option>
-                                                                    <option value="Khách đổi địa chỉ sai">Khách đổi địa chỉ</option>
-                                                                    <option value="Lý do cá nhân khác">Lý do cá nhân khác</option>
+                                                                    <option value="">-- Chọn lý do sự cố / hủy / bom hàng --</option>
+                                                                    <option value="Khách bom hàng - gọi nhiều cuộc không bắt máy" data-boom="true" style="color: #dc2626; font-weight: 700;">🚨 Khách bom hàng - Gọi không nghe máy (Khóa COD)</option>
+                                                                    <option value="Khách từ chối nhận món khi giao tới" data-boom="true" style="color: #dc2626; font-weight: 700;">🚨 Khách từ chối nhận món vô lý (Khóa COD)</option>
+                                                                    <option value="Xe bị hỏng / Tai nạn giữa đường">🔧 Xe bị hỏng / Sự cố giao thông (Trả đơn)</option>
+                                                                    <option value="Quán ăn đóng cửa / Hết món">🏪 Quán đóng cửa / Hết món</option>
+                                                                    <option value="Khách đổi địa chỉ quá xa">📍 Khách đổi địa chỉ quá xa</option>
+                                                                    <option value="Lý do cá nhân khác">⚠️ Lý do cá nhân khác</option>
                                                                 </select>
 
                                                                 <button type="submit" class="btn btn-outline-danger flex-shrink-0" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; white-space: nowrap;">
-                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Hủy Cuốc
+                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Cáo / Khóa COD
                                                                 </button>
                                                             </form>
                                                         </c:if>
