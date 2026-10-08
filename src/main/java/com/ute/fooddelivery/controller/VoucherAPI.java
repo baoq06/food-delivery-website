@@ -1,6 +1,12 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.dao.UserVoucherDAO;
+import com.ute.fooddelivery.dao.VoucherDAO;
+import com.ute.fooddelivery.model.Restaurant;
+import com.ute.fooddelivery.model.User;
+import com.ute.fooddelivery.model.UserVoucher;
 import com.ute.fooddelivery.model.Voucher;
+import com.ute.fooddelivery.service.RestaurantService;
 import com.ute.fooddelivery.service.VoucherService;
 import com.ute.fooddelivery.service.VoucherService.ValidationResult;
 import jakarta.servlet.ServletException;
@@ -8,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -17,8 +24,9 @@ import java.util.Locale;
 @WebServlet("/api/voucher")
 public class VoucherAPI extends HttpServlet {
     private final VoucherService voucherService = new VoucherService();
-    private final com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
-    private final com.ute.fooddelivery.service.RestaurantService restaurantService = new com.ute.fooddelivery.service.RestaurantService();
+    private final UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
+    private final RestaurantService restaurantService = new RestaurantService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -34,8 +42,8 @@ public class VoucherAPI extends HttpServlet {
         resp.setContentType("application/json;charset=UTF-8");
         req.setCharacterEncoding("UTF-8");
 
-        jakarta.servlet.http.HttpSession session = req.getSession(false);
-        com.ute.fooddelivery.model.User currentUser = session != null ? (com.ute.fooddelivery.model.User) session.getAttribute("currentUser") : null;
+        HttpSession session = req.getSession(false);
+        User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
         int userId = currentUser != null ? currentUser.getId() : 0;
 
         String action = req.getParameter("action");
@@ -74,9 +82,9 @@ public class VoucherAPI extends HttpServlet {
             sb.append("{\"success\":true,\"vouchers\":[");
 
             if (userId > 0) {
-                List<com.ute.fooddelivery.model.UserVoucher> uvList = userVoucherDAO.getUserVouchers(userId);
+                List<UserVoucher> uvList = userVoucherDAO.getUserVouchers(userId);
                 for (int i = 0; i < uvList.size(); i++) {
-                    com.ute.fooddelivery.model.UserVoucher uv = uvList.get(i);
+                    UserVoucher uv = uvList.get(i);
                     boolean eligibleOrder = subtotal >= uv.getMinOrderAmount();
                     boolean eligibleRest = uv.isEligibleForRestaurant(restaurantId);
                     boolean eligible = eligibleOrder && eligibleRest;
@@ -146,8 +154,8 @@ public class VoucherAPI extends HttpServlet {
                     freeshipCode, foodCode, subtotal, shippingFee, restaurantId, userId
             );
 
-            String appliedFreeship = dResult.getFreeshipVoucher() != null ? dResult.getFreeshipVoucher().getCode() : (dResult.isValid() && freeshipCode != null && !freeshipCode.trim().isEmpty() && dResult.getShippingDiscount() > 0 ? freeshipCode.trim().toUpperCase() : "");
-            String appliedFood = dResult.getFoodVoucher() != null ? dResult.getFoodVoucher().getCode() : (dResult.isValid() && foodCode != null && !foodCode.trim().isEmpty() && dResult.getFoodDiscount() > 0 ? foodCode.trim().toUpperCase() : "");
+            String appliedFreeship = dResult.getFreeshipVoucher() != null ? dResult.getFreeshipVoucher().getCode() : (dResult.isValid() && freeshipCode != null && !freeshipCode.trim().isEmpty() && dResult.getShippingDiscount() > 0 ? freeshipCode.trim().toUpperCase(Locale.ROOT) : "");
+            String appliedFood = dResult.getFoodVoucher() != null ? dResult.getFoodVoucher().getCode() : (dResult.isValid() && foodCode != null && !foodCode.trim().isEmpty() && dResult.getFoodDiscount() > 0 ? foodCode.trim().toUpperCase(Locale.ROOT) : "");
 
             StringBuilder sb = new StringBuilder();
             sb.append("{");
@@ -170,6 +178,78 @@ public class VoucherAPI extends HttpServlet {
             return;
         }
 
+        if ("claim-code".equalsIgnoreCase(action) || "claim".equalsIgnoreCase(action)) {
+            if (userId <= 0) {
+                resp.getWriter().write("{\"success\":false,\"requireLogin\":true,\"message\":\"Vui lòng đăng nhập để lưu mã ưu đãi này vào ví!\"}");
+                return;
+            }
+            String targetCode = req.getParameter("code");
+            if (targetCode == null || targetCode.trim().isEmpty()) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Mã voucher không hợp lệ!\"}");
+                return;
+            }
+
+            String cleanTargetCode = targetCode.trim().toUpperCase(Locale.ROOT);
+            Voucher v = voucherDAO.getVoucherByCode(cleanTargetCode);
+            if (v == null) {
+                v = voucherService.findVoucherByCode(cleanTargetCode);
+            }
+            if (v == null) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Không tìm thấy thông tin mã voucher!\"}");
+                return;
+            }
+            if (!v.isActive()) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Voucher này hiện đang tạm ngưng hoạt động!\"}");
+                return;
+            }
+            if (v.isExpired()) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Voucher này đã hết hạn sử dụng!\"}");
+                return;
+            }
+            if (v.isFullyUsed()) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Voucher này đã hết số lượt sử dụng tối đa!\"}");
+                return;
+            }
+
+            UserVoucher existing = userVoucherDAO.getUserVoucherRecord(userId, cleanTargetCode);
+            int currentSavedQty = (existing != null) ? existing.getQuantity() : 0;
+            int maxLimit = v.getPerUserLimit() > 0 ? v.getPerUserLimit() : 1;
+
+            if (currentSavedQty >= maxLimit) {
+                resp.getWriter().write(String.format(Locale.US,
+                        "{\"success\":true,\"alreadySaved\":true,\"code\":\"%s\",\"message\":\"Mã %s đã có trong Kho Voucher của bạn rồi!\"}",
+                        escapeJson(v.getCode()), escapeJson(v.getCode())));
+                return;
+            }
+
+            String rName = v.getRestaurantName();
+            if ((rName == null || rName.isEmpty()) && v.getRestaurantId() != null && v.getRestaurantId() > 0) {
+                Restaurant r = restaurantService.getRestaurantById(v.getRestaurantId());
+                if (r != null) rName = r.getName();
+            }
+
+            userVoucherDAO.addOrIncrementVoucher(
+                    userId,
+                    v.getCode(),
+                    v.getTitle(),
+                    v.getDescription(),
+                    v.getDiscountType(),
+                    v.getDiscountValue(),
+                    v.getMinOrderAmount(),
+                    v.getMaxDiscount(),
+                    v.isFreeShip(),
+                    v.getBadge(),
+                    v.getRestaurantId(),
+                    rName,
+                    1
+            );
+
+            resp.getWriter().write(String.format(Locale.US,
+                    "{\"success\":true,\"claimed\":true,\"code\":\"%s\",\"title\":\"%s\",\"message\":\"Đã lưu mã %s thành công vào Kho Voucher của bạn!\"}",
+                    escapeJson(v.getCode()), escapeJson(v.getTitle()), escapeJson(v.getCode())));
+            return;
+        }
+
         if ("claim-restaurant".equalsIgnoreCase(action)) {
             if (userId <= 0) {
                 resp.getWriter().write("{\"success\":false,\"message\":\"Vui lòng đăng nhập để nhận mã ưu đãi từ quán!\"}");
@@ -179,13 +259,13 @@ public class VoucherAPI extends HttpServlet {
                 resp.getWriter().write("{\"success\":false,\"message\":\"Không tìm thấy thông tin quán ăn!\"}");
                 return;
             }
-            com.ute.fooddelivery.model.Restaurant r = restaurantService.getRestaurantById(restaurantId);
+            Restaurant r = restaurantService.getRestaurantById(restaurantId);
             if (r == null) {
                 resp.getWriter().write("{\"success\":false,\"message\":\"Quán ăn không tồn tại!\"}");
                 return;
             }
 
-            com.ute.fooddelivery.model.UserVoucher uv = userVoucherDAO.grantRestaurantVoucherIfEligible(userId, r);
+            UserVoucher uv = userVoucherDAO.grantRestaurantVoucherIfEligible(userId, r);
             if (uv != null) {
                 resp.getWriter().write(String.format(Locale.US,
                         "{\"success\":true,\"claimed\":true,\"code\":\"%s\",\"title\":\"%s\",\"message\":\"Chúc mừng! Đã lưu mã %s (Giảm 20K tại %s) vào kho voucher của bạn!\"}",

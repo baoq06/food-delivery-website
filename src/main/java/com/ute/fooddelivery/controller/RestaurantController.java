@@ -1,21 +1,34 @@
 package com.ute.fooddelivery.controller;
 
 import com.ute.fooddelivery.dao.FoodDAO;
+import com.ute.fooddelivery.dao.UserVoucherDAO;
+import com.ute.fooddelivery.dao.VoucherDAO;
 import com.ute.fooddelivery.model.Food;
 import com.ute.fooddelivery.model.Restaurant;
+import com.ute.fooddelivery.model.User;
+import com.ute.fooddelivery.model.UserVoucher;
+import com.ute.fooddelivery.model.Voucher;
 import com.ute.fooddelivery.service.RestaurantService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 @WebServlet(name = "RestaurantController", urlPatterns = {"/restaurant-detail", "/restaurant"})
 public class RestaurantController extends HttpServlet {
     private final RestaurantService restaurantService = new RestaurantService();
     private final FoodDAO foodDAO = new FoodDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
+    private final UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -27,8 +40,8 @@ public class RestaurantController extends HttpServlet {
                 Restaurant restaurant = restaurantService.getRestaurantById(id);
                 if (restaurant != null) {
                     List<Food> foods = foodDAO.getFoodsByRestaurantId(id);
-                    List<Food> comboFoods = new java.util.ArrayList<>();
-                    List<Food> regularFoods = new java.util.ArrayList<>();
+                    List<Food> comboFoods = new ArrayList<>();
+                    List<Food> regularFoods = new ArrayList<>();
                     for (Food f : foods) {
                         if (f.isCombo()) {
                             comboFoods.add(f);
@@ -41,23 +54,29 @@ public class RestaurantController extends HttpServlet {
                     req.setAttribute("comboFoods", comboFoods);
                     req.setAttribute("regularFoods", regularFoods);
 
-                    // Tặng mã giảm giá riêng của quán ăn khi khách hàng lần đầu (hoặc sau 7 ngày) ghé thăm
-                    jakarta.servlet.http.HttpSession session = req.getSession(false);
-                    com.ute.fooddelivery.model.User currentUser = session != null ? (com.ute.fooddelivery.model.User) session.getAttribute("currentUser") : null;
+                    // Lấy danh sách voucher khuyến mãi đang hoạt động của quán ăn
+                    List<Voucher> restaurantVouchers = voucherDAO.getActiveVouchersByRestaurant(id);
+                    req.setAttribute("restaurantVouchers", restaurantVouchers);
+
+                    // Kiểm tra các voucher người dùng đã lưu vào ví
+                    HttpSession session = req.getSession(false);
+                    User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+                    Set<String> claimedVoucherCodes = new HashSet<>();
+
                     if (currentUser != null && currentUser.getId() > 0) {
                         try {
-                            com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
-                            com.ute.fooddelivery.model.UserVoucher grantedVoucher = userVoucherDAO.grantRestaurantVoucherIfEligible(currentUser.getId(), restaurant);
-                            if (grantedVoucher != null) {
-                                req.setAttribute("grantedRestaurantVoucher", grantedVoucher);
+                            List<UserVoucher> userVouchers = userVoucherDAO.getUserVouchers(currentUser.getId());
+                            for (UserVoucher uv : userVouchers) {
+                                if (uv.getQuantity() > 0) {
+                                    claimedVoucherCodes.add(uv.getVoucherCode().toUpperCase(Locale.ROOT));
+                                }
                             }
                         } catch (Exception e) {
-                            System.err.println("Lỗi khi tặng voucher quán ăn: " + e.getMessage());
+                            System.err.println("Lỗi khi kiểm tra voucher đã lưu: " + e.getMessage());
                         }
-                    } else {
-                        // Khách chưa đăng nhập: gửi thông tin voucher ưu đãi của quán để hiển thị banner mời gọi
-                        req.setAttribute("guestRestaurantPromoCode", "QUAN" + restaurant.getId() + "_20K");
                     }
+
+                    req.setAttribute("claimedVoucherCodes", claimedVoucherCodes);
 
                     req.getRequestDispatcher("/WEB-INF/views/client/restaurant-detail.jsp").forward(req, resp);
                     return;

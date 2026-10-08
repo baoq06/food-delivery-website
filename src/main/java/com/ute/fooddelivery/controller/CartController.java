@@ -35,6 +35,7 @@ public class CartController extends HttpServlet {
     private final DriverDAO driverDAO = new DriverDAO();
     private final com.ute.fooddelivery.service.VoucherService voucherService = new com.ute.fooddelivery.service.VoucherService();
     private final com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
+    private final com.ute.fooddelivery.dao.VoucherDAO voucherDAO = new com.ute.fooddelivery.dao.VoucherDAO();
     private static final int DELI_COOKIE_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
 
@@ -383,6 +384,9 @@ public class CartController extends HttpServlet {
                     if (!codesToDeduct.isEmpty()) {
                         try {
                             userVoucherDAO.useVouchers(userId, codesToDeduct);
+                            for (String c : codesToDeduct) {
+                                voucherDAO.incrementUsedCount(c);
+                            }
                         } catch (Exception e) {
                             System.err.println("Lỗi khi trừ số lượng voucher trong kho: " + e.getMessage());
                         }

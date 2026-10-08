@@ -1,6 +1,9 @@
 package com.ute.fooddelivery.model;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Voucher implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -10,10 +13,11 @@ public class Voucher implements Serializable {
         PERCENT
     }
 
+    private int id;
     private String code;
     private String title;
     private String description;
-    private DiscountType discountType;
+    private DiscountType discountType = DiscountType.FIXED;
     private double discountValue;
     private double minOrderAmount;
     private double maxDiscount;
@@ -21,6 +25,12 @@ public class Voucher implements Serializable {
     private String badge;
     private Integer restaurantId;
     private String restaurantName;
+    private int usageLimit = 0; // 0: Không giới hạn
+    private int usedCount = 0;
+    private int perUserLimit = 1;
+    private String startDate;
+    private String endDate;
+    private boolean isActive = true;
 
     public Voucher() {
     }
@@ -45,6 +55,7 @@ public class Voucher implements Serializable {
         this.badge = badge;
         this.restaurantId = restaurantId;
         this.restaurantName = restaurantName;
+        this.isActive = true;
     }
 
     public double calculateDiscount(double subtotal, double shippingFee) {
@@ -76,6 +87,90 @@ public class Voucher implements Serializable {
     public double getMissingAmount(double subtotal) {
         if (isEligible(subtotal)) return 0.0;
         return minOrderAmount - subtotal;
+    }
+
+    public boolean isExpired() {
+        if (endDate == null || endDate.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            LocalDate end = LocalDate.parse(endDate.trim());
+            return LocalDate.now().isAfter(end);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isStarted() {
+        if (startDate == null || startDate.trim().isEmpty()) {
+            return true;
+        }
+        try {
+            LocalDate start = LocalDate.parse(startDate.trim());
+            return !LocalDate.now().isBefore(start);
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
+    public boolean isFullyUsed() {
+        return usageLimit > 0 && usedCount >= usageLimit;
+    }
+
+    public boolean isAvailable() {
+        return isActive && !isExpired() && isStarted() && !isFullyUsed();
+    }
+
+    public int getRemainingUsage() {
+        if (usageLimit <= 0) return -1; // Vô hạn
+        return Math.max(0, usageLimit - usedCount);
+    }
+
+    public int getUsagePercentage() {
+        if (usageLimit <= 0) return 0;
+        return (int) Math.min(100, Math.round(((double) usedCount / usageLimit) * 100));
+    }
+
+    public String getFormattedDiscount() {
+        DecimalFormat df = new DecimalFormat("#,###");
+        if (isFreeShip) {
+            return "Freeship " + df.format(discountValue) + " đ";
+        }
+        if (discountType == DiscountType.PERCENT) {
+            String s = "Giảm " + df.format(discountValue) + "%";
+            if (maxDiscount > 0) {
+                s += " (Tối đa " + df.format(maxDiscount) + " đ)";
+            }
+            return s;
+        }
+        return "Giảm " + df.format(discountValue) + " đ";
+    }
+
+    public String getFormattedMinOrder() {
+        DecimalFormat df = new DecimalFormat("#,###");
+        if (minOrderAmount <= 0) return "Đơn bất kỳ";
+        return "Đơn từ " + df.format(minOrderAmount) + " đ";
+    }
+
+    public String getFormattedExpiry() {
+        if (endDate == null || endDate.trim().isEmpty()) {
+            return "Vô thời hạn";
+        }
+        try {
+            LocalDate end = LocalDate.parse(endDate.trim());
+            return "HSD: " + end.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        } catch (Exception e) {
+            return "HSD: " + endDate;
+        }
+    }
+
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getCode() {
@@ -164,5 +259,53 @@ public class Voucher implements Serializable {
 
     public void setRestaurantName(String restaurantName) {
         this.restaurantName = restaurantName;
+    }
+
+    public int getUsageLimit() {
+        return usageLimit;
+    }
+
+    public void setUsageLimit(int usageLimit) {
+        this.usageLimit = usageLimit;
+    }
+
+    public int getUsedCount() {
+        return usedCount;
+    }
+
+    public void setUsedCount(int usedCount) {
+        this.usedCount = usedCount;
+    }
+
+    public int getPerUserLimit() {
+        return perUserLimit;
+    }
+
+    public void setPerUserLimit(int perUserLimit) {
+        this.perUserLimit = perUserLimit;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 }
