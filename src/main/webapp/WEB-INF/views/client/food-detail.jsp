@@ -315,6 +315,96 @@
             </div>
         </c:if>
 
+        <!-- Gợi ý các món ăn cùng loại / thể loại (Similar Category Foods) -->
+        <c:if test="${not empty similarFoods}">
+            <div class="category-similar-foods-section" style="margin-top: 45px; padding-top: 35px; border-top: 1px solid rgba(226, 232, 240, 0.8);">
+                <div class="section-header-flex align-items-center mb-4">
+                    <div>
+                        <span class="sub-heading"><i class="fa-solid fa-layer-group text-primary"></i> Đề Xuất Cùng Loại</span>
+                        <h2 class="section-title mb-1" style="font-size: 1.6rem;">Món Ăn Cùng Loại ${not empty food.categoryName ? food.categoryName : ''}</h2>
+                        <p class="section-desc mb-0 text-muted">
+                            Khám phá thêm các món ${not empty food.categoryName ? food.categoryName : ''} đặc sắc được yêu thích nhất từ nhiều quán ăn khác
+                        </p>
+                    </div>
+                    <c:if test="${food.categoryId > 0}">
+                        <a href="${pageContext.request.contextPath}/foods?cat=${food.categoryId}" class="btn btn-outline" style="border-radius: 50px; font-weight: 700; white-space: nowrap;">
+                            <span>Xem thêm ${not empty food.categoryName ? food.categoryName : 'món cùng loại'}</span>
+                            <i class="fa-solid fa-arrow-right ms-2"></i>
+                        </a>
+                    </c:if>
+                </div>
+
+                <div class="food-grid">
+                    <c:forEach items="${similarFoods}" var="sFood">
+                        <div class="food-card" data-id="${sFood.id}" data-category="${sFood.categoryId}" data-name="${sFood.name}" data-price="${sFood.price}" data-rating="${sFood.rating}"
+                             onclick="if (!event.target.closest('.btn-add-cart, .add-cart-form, .food-distance-link, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${sFood.id}'; }">
+                            <div class="food-card-img-wrap">
+                                <span class="food-tag"><c:out value="${not empty sFood.categoryName ? sFood.categoryName : 'Món ngon'}" /></span>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${sFood.id}">
+                                    <img src="${sFood.image}" alt="${sFood.name}" class="food-image" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                                </a>
+                                <div class="food-time-badge">
+                                    <i class="fa-solid fa-clock"></i> 20-25 phút
+                                </div>
+                            </div>
+                            <div class="food-body">
+                                <div class="food-meta" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                    <c:choose>
+                                        <c:when test="${sFood.reviewCount > 0}">
+                                            <span class="food-rating"><i class="fa-solid fa-star"></i> ${sFood.rating} (${sFood.reviewCount})</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <c:if test="${not empty sFood.restaurantName}">
+                                        <span class="food-distance text-truncate" style="max-width: 140px; font-size: 0.78rem;" title="${sFood.restaurantName}">
+                                            <i class="fa-solid fa-store text-primary"></i> ${sFood.restaurantName}
+                                        </span>
+                                    </c:if>
+                                </div>
+                                <a href="${pageContext.request.contextPath}/food-detail?id=${sFood.id}" class="food-title-link">
+                                    <h3 class="food-title">${sFood.name}</h3>
+                                </a>
+                                <p class="food-desc">${sFood.description}</p>
+                                <div class="food-footer">
+                                    <div class="price-box">
+                                        <span class="price-label">Giá chỉ</span>
+                                        <span class="food-price">${String.format("%,.0f", sFood.price)} đ</span>
+                                    </div>
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.currentUser and sessionScope.currentUser.shipper and (sessionScope.shipperActive eq true or (not empty sessionScope.driverStatus and sessionScope.driverStatus ne 'OFFLINE'))}">
+                                            <button type="button" class="btn-add-cart disabled" onclick="alert('Bạn đang BẬT chế độ Shipper nhận đơn. Vui lòng tắt chế độ Shipper ở góc trên màn hình nếu muốn đặt món như khách hàng!');" style="opacity: 0.6; cursor: not-allowed; background: #94a3b8;" title="Chế độ Shipper đang bật">
+                                                <i class="fa-solid fa-motorcycle"></i>
+                                                <span>Đang là Shipper</span>
+                                            </button>
+                                        </c:when>
+                                        <c:when test="${not empty sessionScope.currentUser and (sessionScope.currentUser.role eq 'SELLER' or sessionScope.currentUser.seller)}">
+                                            <a href="${pageContext.request.contextPath}/food-detail?id=${sFood.id}" class="btn-add-cart btn-view-only" title="Xem chi tiết món này">
+                                                <i class="fa-solid fa-eye text-primary"></i>
+                                                <span>Xem món</span>
+                                            </a>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="${pageContext.request.contextPath}/cart" method="POST" class="add-cart-form ajax-cart-form" data-food-id="${sFood.id}">
+                                                <input type="hidden" name="action" value="add">
+                                                <input type="hidden" name="foodId" value="${sFood.id}">
+                                                <input type="hidden" name="quantity" value="1">
+                                                <button type="submit" class="btn-add-cart btn-ajax-add" title="Thêm vào giỏ hàng">
+                                                    <i class="fa-solid fa-cart-plus"></i>
+                                                    <span>Đặt món</span>
+                                                </button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </div>
+        </c:if>
+
         <!-- Full Customer Reviews & Comments Section for this Food -->
         <div class="section-food-reviews mt-5">
             <div class="reviews-header-block mb-4">

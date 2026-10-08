@@ -341,7 +341,7 @@ public class FoodDAO {
         List<Food> list = new ArrayList<>();
         String query = BASE_QUERY + "WHERE f.is_available = 1 AND f.category_id = ? " +
                        (excludeFoodId > 0 ? "AND f.food_id != ? " : "") +
-                       "ORDER BY f.avg_rating DESC, f.review_count DESC, f.food_id ASC LIMIT ?";
+                       "ORDER BY sub.avg_rating DESC, sub.review_count DESC, f.food_id ASC LIMIT ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
