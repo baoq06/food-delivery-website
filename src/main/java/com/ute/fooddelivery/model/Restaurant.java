@@ -72,6 +72,17 @@ public class Restaurant implements Serializable {
     @Transient
     private int totalOrders;
 
+    @Transient
+    private Double distanceKm;
+
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
+    }
+
     public Restaurant() {
     }
 

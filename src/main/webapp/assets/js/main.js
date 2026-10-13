@@ -493,6 +493,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         homeCatCards.forEach(catCard => {
             catCard.addEventListener("click", (e) => {
+                if (homeCards.length === 0) {
+                    // Nếu danh sách món ở trang chủ đang để trống (mục Cho bạn mặc định), cho phép chuyển hướng sang trang /foods?cat=...
+                    return;
+                }
                 e.preventDefault();
                 const catId = catCard.dataset.catId;
                 const catName = catCard.dataset.catName || catCard.querySelector(".cat-card-title")?.innerText.trim();
@@ -522,6 +526,45 @@ document.addEventListener("DOMContentLoaded", () => {
             btnResetHomeFilter.addEventListener("click", () => {
                 homeCatCards.forEach(c => c.classList.remove("active"));
                 filterHomeByCategory("all", "");
+            });
+        }
+    }
+
+    // ==========================================================================
+    // 5.2. Filter Dropdown Menu Đề Xuất (Trang Chủ)
+    // ==========================================================================
+    const recommendFilterDropdown = document.getElementById("recommendFilterDropdown");
+    const filterDropdownToggle = document.getElementById("filterDropdownToggle");
+    const filterDropdownMenu = document.getElementById("filterDropdownMenu");
+
+    if (recommendFilterDropdown && filterDropdownToggle) {
+        filterDropdownToggle.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const isOpen = recommendFilterDropdown.classList.toggle("open");
+            filterDropdownToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!recommendFilterDropdown.contains(e.target)) {
+                recommendFilterDropdown.classList.remove("open");
+                filterDropdownToggle.setAttribute("aria-expanded", "false");
+            }
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && recommendFilterDropdown.classList.contains("open")) {
+                recommendFilterDropdown.classList.remove("open");
+                filterDropdownToggle.setAttribute("aria-expanded", "false");
+                filterDropdownToggle.focus();
+            }
+        });
+
+        if (filterDropdownMenu) {
+            filterDropdownMenu.querySelectorAll(".filter-menu-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    recommendFilterDropdown.classList.remove("open");
+                    filterDropdownToggle.setAttribute("aria-expanded", "false");
+                });
             });
         }
     }

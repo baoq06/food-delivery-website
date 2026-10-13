@@ -105,6 +105,7 @@
                 </c:choose>
             </div>
         </div>
+    </c:if>
     <!-- COD Locked Warning Banner for Customer -->
     <c:if test="${user.isCodLocked()}">
         <div class="alert alert-warning" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(245,158,11,0.08); border-left: 5px solid #f59e0b; background: #fffbeb;">

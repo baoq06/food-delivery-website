@@ -1188,7 +1188,61 @@ button, input, select, textarea {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    gap: 24px;
     margin-bottom: 38px;
+}
+
+.section-header-flex > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Button "Xem tất cả thực đơn / Xem tất cả quán" - UI/UX Pro Max */
+.btn-section-viewall,
+.section-header-flex .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 22px;
+    border-radius: var(--radius-full);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: #ffffff;
+    border: 1.5px solid var(--primary-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-section-viewall:hover,
+.section-header-flex .btn-outline:hover {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 6px 18px var(--primary-glow);
+    transform: translateY(-2px);
+}
+
+.btn-section-viewall i,
+.section-header-flex .btn-outline i {
+    font-size: 0.88rem;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-section-viewall:hover i,
+.section-header-flex .btn-outline:hover i {
+    transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+    .section-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
 }
 
 .sub-heading {
@@ -10511,6 +10565,309 @@ select.form-control,
     position: relative;
 }
 
+/* UI/UX Pro Max: Recommend Food Filter Dropdown Menu */
+.recommend-filter-wrapper {
+    position: relative;
+    z-index: 40;
+    margin-top: 22px;
+    margin-bottom: 34px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.recommend-filter-label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.recommend-filter-label i {
+    color: var(--primary-color);
+    font-size: 0.95rem;
+}
+
+.filter-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--radius-full);
+    padding: 10px 22px;
+    min-height: 48px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1e293b;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+    user-select: none;
+}
+
+.filter-dropdown-toggle:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 6px 20px rgba(240, 84, 84, 0.12);
+    transform: translateY(-1px);
+}
+
+.filter-dropdown.open .filter-dropdown-toggle,
+.filter-dropdown-toggle:focus-visible {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(240, 84, 84, 0.15), 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.filter-dropdown-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-dropdown-current .filter-icon {
+    font-size: 1rem;
+}
+
+.filter-dropdown-current .filter-label {
+    letter-spacing: -0.01em;
+}
+
+.filter-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    background: #f1f5f9;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.filter-badge.badge-default {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.filter-arrow {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+}
+
+.filter-dropdown.open .filter-arrow {
+    transform: rotate(180deg);
+    color: var(--primary-color);
+}
+
+/* Dropdown Menu Popup */
+.filter-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 320px;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 8px;
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.16), 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px) scale(0.97);
+    transform-origin: top left;
+    transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.2s;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.filter-dropdown.open .filter-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.filter-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #334155;
+    transition: all 0.2s ease;
+    margin-bottom: 3px;
+}
+
+.filter-menu-item:last-child {
+    margin-bottom: 0;
+}
+
+.filter-menu-item:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    transform: translateX(2px);
+}
+
+.filter-menu-item.active {
+    background: #fff5f5;
+    color: var(--primary-color);
+}
+
+.filter-menu-item.active .filter-item-title {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.filter-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-item-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.filter-menu-item:hover .filter-item-icon-box {
+    transform: scale(1.08);
+}
+
+.icon-foryou-box {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.icon-nearby-box {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.icon-bestseller-box {
+    background: #fff7ed;
+    color: #ea580c;
+}
+
+.icon-toprated-box {
+    background: #fefce8;
+    color: #ca8a04;
+}
+
+.icon-foryou-color { color: #3b82f6; }
+.icon-nearby-color { color: #10b981; }
+.icon-bestseller-color { color: #ea580c; }
+.icon-toprated-color { color: #ca8a04; }
+
+.filter-item-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.filter-item-title-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-item-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.filter-item-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.filter-item-desc {
+    font-size: 0.76rem;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.filter-check-icon {
+    font-size: 0.88rem;
+    color: var(--primary-color);
+    margin-right: 4px;
+}
+
+/* Empty state for 'Cho bạn' when no order history exists yet */
+.foryou-empty-state {
+    background: #ffffff;
+    border: 2px dashed #cbd5e1;
+    border-radius: 24px;
+    padding: 50px 24px;
+    text-align: center;
+    max-width: 600px;
+    margin: 20px auto 40px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+.foryou-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
+}
+
+.foryou-empty-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.foryou-empty-text {
+    font-size: 0.95rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.foryou-empty-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
 .recommend-tabs-wrap {
     display: inline-flex;
     align-items: center;
@@ -12854,6 +13211,32 @@ select.form-control,
         white-space: nowrap !important;
         font-size: 0.8rem !important;
         padding: 6px 12px !important;
+    }
+
+    /* Filter Dropdown Đề Xuất trên Mobile */
+    .recommend-filter-wrapper {
+        width: 100% !important;
+        margin-top: 14px !important;
+        margin-bottom: 22px !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    .recommend-filter-wrapper .filter-dropdown {
+        width: 100% !important;
+    }
+
+    .recommend-filter-wrapper .filter-dropdown-toggle {
+        width: 100% !important;
+        padding: 9px 18px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .recommend-filter-wrapper .filter-dropdown-menu {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
     }
 
     /* 3 Tabs Đề Xuất (Gần tôi • Bán chạy • Đánh giá cao) */

@@ -170,4 +170,81 @@ public class GeoLocationUtils {
 
         return new double[]{DEFAULT_LAT + latOffset, DEFAULT_LNG + lngOffset};
     }
+
+    /**
+     * Tính khoảng cách từ 1 điểm gốc (địa chỉ người dùng) tới danh sách các điểm đích (các quán ăn)
+     * Sử dụng OSRM Table API tính toán khoảng cách mạng lưới giao thông đường bộ trong 1 request.
+     * Tự động fallback sang Haversine * hệ số đô thị nếu OSRM timeout hoặc không có internet.
+     */
+    public static java.util.List<Double> calculateDistancesFromOrigin(double originLat, double originLng, java.util.List<double[]> destinations) {
+        java.util.List<Double> results = new java.util.ArrayList<>();
+        if (destinations == null || destinations.isEmpty()) {
+            return results;
+        }
+
+        // Thử gọi OSRM Table API
+        try {
+            StringBuilder coordsBuilder = new StringBuilder();
+            coordsBuilder.append(String.format(java.util.Locale.US, "%.6f,%.6f", originLng, originLat));
+            for (double[] dest : destinations) {
+                double dLat = (dest != null && dest.length > 0) ? dest[0] : DEFAULT_LAT;
+                double dLng = (dest != null && dest.length > 1) ? dest[1] : DEFAULT_LNG;
+                coordsBuilder.append(String.format(java.util.Locale.US, ";%.6f,%.6f", dLng, dLat));
+            }
+
+            String urlStr = "http://router.project-osrm.org/table/v1/driving/" + coordsBuilder.toString() + "?sources=0&annotations=distance";
+            URL url = URI.create(urlStr).toURL();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(1800);
+            conn.setReadTimeout(1800);
+            conn.setRequestProperty("User-Agent", "UteeFoodDeliveryApp/1.0");
+
+            if (conn.getResponseCode() == 200) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    String json = sb.toString();
+                    int distStart = json.indexOf("\"distances\":[[");
+                    if (distStart != -1) {
+                        int rowStart = distStart + 14;
+                        int rowEnd = json.indexOf("]]", rowStart);
+                        if (rowEnd != -1) {
+                            String[] distParts = json.substring(rowStart, rowEnd).split(",");
+                            if (distParts.length >= destinations.size() + 1) {
+                                for (int i = 1; i < distParts.length && (i - 1) < destinations.size(); i++) {
+                                    String valStr = distParts[i].trim();
+                                    if ("null".equalsIgnoreCase(valStr)) {
+                                        double[] d = destinations.get(i - 1);
+                                        results.add(calculateRouteDistance(originLat, originLng, d[0], d[1]));
+                                    } else {
+                                        double meters = Double.parseDouble(valStr);
+                                        double km = Math.round((meters / 1000.0) * 10.0) / 10.0;
+                                        results.add(Math.max(0.3, km));
+                                    }
+                                }
+                                if (results.size() == destinations.size()) {
+                                    return results;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+            // Fallback khi OSRM timeout / lỗi
+        }
+
+        // Fallback: tính từng điểm an toàn
+        results.clear();
+        for (double[] dest : destinations) {
+            double dLat = (dest != null && dest.length > 0) ? dest[0] : DEFAULT_LAT;
+            double dLng = (dest != null && dest.length > 1) ? dest[1] : DEFAULT_LNG;
+            results.add(calculateRouteDistance(originLat, originLng, dLat, dLng));
+        }
+        return results;
+    }
 }
