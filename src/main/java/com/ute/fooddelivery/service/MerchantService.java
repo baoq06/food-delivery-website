@@ -4,8 +4,10 @@ import com.ute.fooddelivery.dao.DriverDAO;
 import com.ute.fooddelivery.dao.FoodDAO;
 import com.ute.fooddelivery.dao.OrderDAO;
 import com.ute.fooddelivery.dao.RestaurantDAO;
+import com.ute.fooddelivery.dao.VoucherDAO;
 import com.ute.fooddelivery.model.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class MerchantService {
     private final FoodDAO foodDAO = new FoodDAO();
     private final OrderDAO orderDAO = new OrderDAO();
     private final DriverDAO driverDAO = new DriverDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     // Quản lý Nhà Hàng / Quán Ăn
     public Restaurant getRestaurantForUser(int userId) {
@@ -51,6 +54,47 @@ public class MerchantService {
 
     public boolean toggleFoodAvailability(int foodId, int restaurantId, boolean isAvailable) {
         return foodDAO.toggleAvailability(foodId, restaurantId, isAvailable);
+    }
+
+    // Quản lý Voucher / Khuyến Mãi Của Quán
+    public List<Voucher> getRestaurantVouchers(int restaurantId) {
+        return voucherDAO.getVouchersByRestaurant(restaurantId);
+    }
+
+    public List<Voucher> getActiveRestaurantVouchers(int restaurantId) {
+        return voucherDAO.getActiveVouchersByRestaurant(restaurantId);
+    }
+
+    public Voucher getVoucherById(int id) {
+        return voucherDAO.getVoucherById(id);
+    }
+
+    public boolean addVoucher(Voucher voucher) {
+        return voucherDAO.insertVoucher(voucher);
+    }
+
+    public boolean updateVoucher(Voucher voucher) {
+        return voucherDAO.updateVoucher(voucher);
+    }
+
+    public boolean deleteVoucher(int id, int restaurantId) {
+        return voucherDAO.deleteVoucher(id, restaurantId);
+    }
+
+    public boolean toggleVoucherStatus(int id, int restaurantId) {
+        return voucherDAO.toggleVoucherStatus(id, restaurantId);
+    }
+
+    public boolean isVoucherCodeExists(String code, Integer excludeId) {
+        return voucherDAO.isCodeExists(code, excludeId);
+    }
+
+    public Map<String, Object> getVoucherKPIs(int restaurantId) {
+        Map<String, Object> kpi = new HashMap<>();
+        kpi.put("totalVouchers", voucherDAO.countVouchersByRestaurant(restaurantId));
+        kpi.put("activeVouchers", voucherDAO.countActiveVouchersByRestaurant(restaurantId));
+        kpi.put("totalUsedCount", voucherDAO.getTotalUsedCountByRestaurant(restaurantId));
+        return kpi;
     }
 
     // Quản lý Đơn Hàng & Tài Xế

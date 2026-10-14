@@ -89,13 +89,14 @@
                 <c:when test="${reqUri.endsWith('/merchant/dashboard') or reqUri.contains('/dashboard.jsp')}"><c:set var="curActive" value="dashboard" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/orders') or reqUri.contains('/orders.jsp')}"><c:set var="curActive" value="orders" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/foods') or reqUri.contains('/foods.jsp')}"><c:set var="curActive" value="foods" /></c:when>
+                <c:when test="${reqUri.endsWith('/merchant/vouchers') or reqUri.contains('/vouchers.jsp')}"><c:set var="curActive" value="vouchers" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/chat') or reqUri.contains('/chat.jsp')}"><c:set var="curActive" value="chat" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/revenue') or reqUri.contains('/revenue.jsp')}"><c:set var="curActive" value="revenue" /></c:when>
                 <c:when test="${reqUri.endsWith('/merchant/profile') or reqUri.contains('/profile.jsp')}"><c:set var="curActive" value="profile" /></c:when>
             </c:choose>
         </c:if>
 
-        <!-- Modern Floating Navigation Tabs Bar (6 Balanced Tabs) -->
+        <!-- Modern Floating Navigation Tabs Bar (7 Balanced Tabs) -->
         <div class="merchant-tabs-bar">
             <a href="${pageContext.request.contextPath}/merchant/dashboard" class="merchant-tab-btn ${curActive eq 'dashboard' ? 'active' : ''}">
                 <i class="fa-solid fa-chart-pie"></i>
@@ -108,6 +109,10 @@
             <a href="${pageContext.request.contextPath}/merchant/foods" class="merchant-tab-btn ${curActive eq 'foods' ? 'active' : ''}">
                 <i class="fa-solid fa-bowl-food"></i>
                 <span>Thực đơn món</span>
+            </a>
+            <a href="${pageContext.request.contextPath}/merchant/vouchers" class="merchant-tab-btn ${curActive eq 'vouchers' ? 'active' : ''}">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Khuyến mãi</span>
             </a>
             <a href="${pageContext.request.contextPath}/merchant/chat" class="merchant-tab-btn ${curActive eq 'chat' ? 'active' : ''}">
                 <i class="fa-solid fa-comments"></i>

@@ -142,6 +142,45 @@ public class ShipperDashboardController extends HttpServlet {
                         session.setAttribute("shipperActive", true);
                         session.setAttribute("driverStatus", "BUSY");
                     }
+                } else if ("FAILED_DELIVERY".equalsIgnoreCase(status) || "BOOM".equalsIgnoreCase(status)) {
+                    String boomReason = req.getParameter("cancelReason");
+                    if (boomReason == null || boomReason.trim().isEmpty()) {
+                        boomReason = "Khách hàng không nhận hàng / không liên lạc được khi giao";
+                    }
+                    Order targetOrder = orderDAO.getOrderById(orderId);
+                    if (targetOrder != null) {
+                        int customerUserId = targetOrder.getUserId();
+                        try (java.sql.Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
+                             java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET status = 'CANCELLED', note = CONCAT(IFNULL(note, ''), ' [BOM HÀNG: ', ?, ']') WHERE order_id = ?")) {
+                            ps.setString(1, boomReason.trim());
+                            ps.setInt(2, orderId);
+                            ps.executeUpdate();
+                        } catch (Exception ex) {
+                            orderDAO.updateOrderStatus(orderId, "CANCELLED");
+                        }
+
+                        // Ghi nhận vi phạm bom hàng và khóa COD của khách hàng
+                        com.ute.fooddelivery.dao.UserDAO userDAO = new com.ute.fooddelivery.dao.UserDAO();
+                        userDAO.recordCustomerBoom(customerUserId, boomReason);
+
+                        // Gửi thông báo cho khách hàng và chủ quán
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        notificationService.notifyBoomReported(customerUserId, merchantUserId, orderId, boomReason);
+                    }
+                    List<Order> activeLeft = orderDAO.getOrdersByDriver(driver.getId(), "SHIPPING");
+                    boolean stillHasActive = activeLeft.stream().anyMatch(o -> o.getId() != orderId);
+                    if (!stillHasActive) {
+                        driverDAO.updateStatusByUserId(user.getId(), "AVAILABLE");
+                        if (driver != null) driver.setStatus("AVAILABLE");
+                        session.setAttribute("shipperActive", true);
+                        session.setAttribute("driverStatus", "AVAILABLE");
+                    } else {
+                        if (driver != null) driver.setStatus("BUSY");
+                        session.setAttribute("shipperActive", true);
+                        session.setAttribute("driverStatus", "BUSY");
+                    }
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?msg=boom_reported");
+                    return;
                 } else if ("SHIPPING".equalsIgnoreCase(status)) {
                     orderDAO.updateOrderStatus(orderId, "SHIPPING");
                     driverDAO.updateStatusByUserId(user.getId(), "BUSY");

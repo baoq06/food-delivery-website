@@ -136,44 +136,51 @@
             <c:choose>
                 <c:when test="${not empty categories}">
                     <c:forEach items="${categories}" var="cat">
-                        <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
-                        <c:choose>
-                            <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" />
-                            </c:when>
-                            <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}">
-                                <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" />
-                            </c:when>
-                            <c:otherwise>
-                                <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
-                            </c:otherwise>
-                        </c:choose>
-                        <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card" data-cat-id="${cat.id}" data-cat-name="${cat.name}">
-                            <div class="cat-img-box">
-                                <img src="${catImg}" alt="${cat.name}" class="cat-food-img" loading="lazy">
-                                <div class="cat-img-badge">
-                                    <c:choose>
-                                        <c:when test="${cat.id eq 1}"><i class="fa-solid fa-bowl-rice"></i></c:when>
-                                        <c:when test="${cat.id eq 2}"><i class="fa-solid fa-bowl-food"></i></c:when>
-                                        <c:when test="${cat.id eq 3}"><i class="fa-solid fa-mug-hot"></i></c:when>
-                                        <c:when test="${cat.id eq 4}"><i class="fa-solid fa-burger"></i></c:when>
-                                        <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
-                                    </c:choose>
+                        <c:if test="${not cat.name.toLowerCase().contains('combo') and cat.id ne 60002}">
+                            <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                            <c:set var="catDisplayName" value="${cat.name}" />
+                            <c:choose>
+                                <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_rice.jpg" />
+                                    <c:set var="catDisplayName" value="Cơm & Món Mặn" />
+                                </c:when>
+                                <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_noodle.jpg" />
+                                    <c:set var="catDisplayName" value="Phở & Bún Mì" />
+                                </c:when>
+                                <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_drink.jpg" />
+                                    <c:set var="catDisplayName" value="Trà Sữa & Đồ Uống" />
+                                </c:when>
+                                <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}">
+                                    <c:set var="catImg" value="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" />
+                                    <c:set var="catDisplayName" value="Fastfood & Đồ Ăn Vặt" />
+                                </c:when>
+                                <c:otherwise>
+                                    <c:set var="catImg" value="${not empty cat.imageIcon && (cat.imageIcon.startsWith('http') || cat.imageIcon.startsWith('/')) ? cat.imageIcon : pageContext.request.contextPath.concat('/assets/images/categories/cat_rice.jpg')}" />
+                                </c:otherwise>
+                            </c:choose>
+                            <a href="${pageContext.request.contextPath}/foods?cat=${cat.id}" class="cat-card" data-cat-id="${cat.id}" data-cat-name="${catDisplayName}">
+                                <div class="cat-img-box">
+                                    <img src="${catImg}" alt="${catDisplayName}" class="cat-food-img" loading="lazy">
+                                    <div class="cat-img-badge">
+                                        <c:choose>
+                                            <c:when test="${cat.id eq 1 || cat.name.contains('Cơm')}"><i class="fa-solid fa-bowl-rice"></i></c:when>
+                                            <c:when test="${cat.id eq 2 || cat.name.contains('Phở') || cat.name.contains('Bún')}"><i class="fa-solid fa-bowl-food"></i></c:when>
+                                            <c:when test="${cat.id eq 3 || cat.name.contains('Trà') || cat.name.contains('Uống')}"><i class="fa-solid fa-mug-hot"></i></c:when>
+                                            <c:when test="${cat.id eq 4 || cat.name.contains('Fastfood') || cat.name.contains('Vặt')}"><i class="fa-solid fa-burger"></i></c:when>
+                                            <c:otherwise><i class="fa-solid fa-utensils"></i></c:otherwise>
+                                        </c:choose>
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 class="cat-card-title">${cat.name}</h3>
-                            <p class="cat-card-desc">${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</p>
-                            <div class="cat-card-action">
-                                <span>Khám phá</span>
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </div>
-                        </a>
+                                <h3 class="cat-card-title">${catDisplayName}</h3>
+                                <p class="cat-card-desc">${not empty cat.description ? cat.description : 'Món ngon nổi bật'}</p>
+                                <div class="cat-card-action">
+                                    <span>Khám phá</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </div>
+                            </a>
+                        </c:if>
                     </c:forEach>
                 </c:when>
                 <c:otherwise>
@@ -213,12 +220,12 @@
                             <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </a>
-                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Ăn Vặt">
+                    <a href="${pageContext.request.contextPath}/foods?cat=4" class="cat-card" data-cat-id="4" data-cat-name="Fastfood & Đồ Ăn Vặt">
                         <div class="cat-img-box">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Ăn Vặt" class="cat-food-img" loading="lazy">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/cat_fastfood.jpg" alt="Fastfood & Đồ Ăn Vặt" class="cat-food-img" loading="lazy">
                             <div class="cat-img-badge"><i class="fa-solid fa-burger"></i></div>
                         </div>
-                        <h3 class="cat-card-title">Fastfood & Ăn Vặt</h3>
+                        <h3 class="cat-card-title">Fastfood & Đồ Ăn Vặt</h3>
                         <p class="cat-card-desc">Giòn ngon hấp dẫn</p>
                         <div class="cat-card-action">
                             <span>Khám phá</span>
@@ -236,54 +243,206 @@
     <div class="container">
         <div class="section-header-flex align-items-center">
             <div>
-                <span class="sub-heading"><i class="fa-solid fa-fire text-danger"></i> Thực Đơn Đề Xuất</span>
+                <span class="sub-heading">
+                    <c:choose>
+                        <c:when test="${activeTab eq 'toprated'}"><i class="fa-solid fa-star text-warning"></i> Đánh Giá Xuất Sắc</c:when>
+                        <c:when test="${activeTab eq 'nearby'}"><i class="fa-solid fa-location-crosshairs text-primary"></i> Vị Trí Của Bạn</c:when>
+                        <c:when test="${activeTab eq 'bestseller'}"><i class="fa-solid fa-fire text-danger"></i> Bán Chạy Nhất</c:when>
+                        <c:otherwise><i class="fa-solid fa-sparkles text-primary"></i> Dành Riêng Cho Bạn</c:otherwise>
+                    </c:choose>
+                </span>
                 <h2 class="section-title">
                     <c:choose>
                         <c:when test="${activeTab eq 'toprated'}">Món Ăn Được Đánh Giá Cao Nhất</c:when>
-                        <c:when test="${activeTab eq 'nearby'}">Món Ăn Gần Vị Trí Của Bạn</c:when>
-                        <c:otherwise>Món Ăn Bán Chạy Nhất</c:otherwise>
+                        <c:when test="${activeTab eq 'nearby'}">Món Ăn Gần Đây</c:when>
+                        <c:when test="${activeTab eq 'bestseller'}">Món Ăn Bán Chạy Nhất</c:when>
+                        <c:otherwise>Món Ăn Cho Bạn</c:otherwise>
                     </c:choose>
                 </h2>
                 <p class="section-desc mb-0">
                     <c:choose>
                         <c:when test="${activeTab eq 'toprated'}">Tuyển tập các món ăn chuẩn vị được thực khách chấm điểm cao nhất trên hệ thống</c:when>
-                        <c:when test="${activeTab eq 'nearby'}">Khám phá các món ngon gần bạn nhất, thời gian giao hàng siêu tốc chỉ từ 15-25 phút</c:when>
-                        <c:otherwise>Khám phá các món ăn có lượt đặt nhiều nhất, nóng hổi giao tận nơi trong 30 phút</c:otherwise>
+                        <c:when test="${activeTab eq 'nearby'}">Khám phá các quán và món ngon gần bạn nhất, ưu tiên món bán chạy</c:when>
+                        <c:when test="${activeTab eq 'bestseller'}">Khám phá các món ăn có lượt đặt nhiều nhất, nóng hổi giao tận nơi trong 30 phút</c:when>
+                        <c:otherwise>Gợi ý thực đơn cá nhân hóa dựa trên khẩu vị và sở thích của bạn</c:otherwise>
                     </c:choose>
                 </p>
             </div>
-            <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline">Xem tất cả thực đơn <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-section-viewall">
+                <span>Xem tất cả thực đơn</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
         </div>
 
-        <!-- 3 Sub-Tabs UI/UX Pro Max -->
-        <div class="recommend-tabs-wrap">
-            <a href="${pageContext.request.contextPath}/home?tab=nearby#recommend-section" 
-               class="recommend-tab-pill ${activeTab eq 'nearby' ? 'active' : ''}" 
-               title="Món ăn &amp; Quán ăn gần vị trí của bạn">
-                <i class="fa-solid fa-location-crosshairs"></i>
-                <span>Gần tôi</span>
-                <span class="tab-badge-pill">Định vị</span>
-            </a>
+        <!-- Filter Dropdown Menu (UI/UX Pro Max) -->
+        <div class="recommend-filter-wrapper">
+            <span class="recommend-filter-label"><i class="fa-solid fa-sliders"></i> Sắp xếp &amp; Lọc theo:</span>
+            <div class="filter-dropdown" id="recommendFilterDropdown">
+                <button type="button" 
+                        class="filter-dropdown-toggle" 
+                        id="filterDropdownToggle" 
+                        aria-expanded="false" 
+                        aria-haspopup="true"
+                        aria-label="Chọn bộ lọc món ăn">
+                    <span class="filter-dropdown-current">
+                        <c:choose>
+                            <c:when test="${activeTab eq 'bestseller' || (empty sessionScope.currentUser && empty activeTab)}">
+                                <i class="fa-solid fa-fire-flame-curved filter-icon icon-bestseller-color"></i>
+                                <span class="filter-label">Bán chạy</span>
+                                <span class="filter-badge ${empty sessionScope.currentUser ? 'badge-default' : ''}">${empty sessionScope.currentUser ? 'Mặc định' : 'Phổ biến'}</span>
+                            </c:when>
+                            <c:when test="${activeTab eq 'toprated'}">
+                                <i class="fa-solid fa-star filter-icon icon-toprated-color"></i>
+                                <span class="filter-label">Đánh giá cao</span>
+                                <span class="filter-badge">4.5+</span>
+                            </c:when>
+                            <c:when test="${activeTab eq 'nearby'}">
+                                <i class="fa-solid fa-location-crosshairs filter-icon icon-nearby-color"></i>
+                                <span class="filter-label">Gần đây</span>
+                                <span class="filter-badge">Vị trí</span>
+                            </c:when>
+                            <c:otherwise>
+                                <i class="fa-solid fa-sparkles filter-icon icon-foryou-color"></i>
+                                <span class="filter-label">Cho bạn</span>
+                                <span class="filter-badge badge-default">Mặc định</span>
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                    <i class="fa-solid fa-chevron-down filter-arrow"></i>
+                </button>
 
-            <a href="${pageContext.request.contextPath}/home?tab=bestseller#recommend-section" 
-               class="recommend-tab-pill ${activeTab eq 'bestseller' ? 'active' : ''}" 
-               title="Món ăn bán chạy nhất theo đơn hàng thực tế">
-                <i class="fa-solid fa-fire-flame-curved"></i>
-                <span>Bán chạy</span>
-                <c:if test="${activeTab eq 'bestseller'}">
-                    <span class="tab-indicator-dot"></span>
-                </c:if>
-            </a>
+                <div class="filter-dropdown-menu" id="filterDropdownMenu" role="menu" aria-labelledby="filterDropdownToggle">
+                    <c:choose>
+                        <%-- Đối với tài khoản đã đăng nhập: Hiển thị đầy đủ 4 tùy chọn --%>
+                        <c:when test="${not empty sessionScope.currentUser}">
+                            <!-- Option 1: Cho bạn (Mặc định cho User đã đăng nhập) -->
+                            <a href="${pageContext.request.contextPath}/home?tab=foryou#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'foryou' || empty activeTab ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-foryou-box">
+                                        <i class="fa-solid fa-sparkles"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Cho bạn</span>
+                                            <span class="filter-item-pill">Mặc định</span>
+                                        </div>
+                                        <span class="filter-item-desc">Đề xuất riêng dành cho bạn</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'foryou' || empty activeTab}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
 
-            <a href="${pageContext.request.contextPath}/home?tab=toprated#recommend-section" 
-               class="recommend-tab-pill ${activeTab eq 'toprated' ? 'active' : ''}" 
-               title="Món ăn được đánh giá cao nhất từ khách hàng">
-                <i class="fa-solid fa-star"></i>
-                <span>Đánh giá cao</span>
-                <c:if test="${activeTab eq 'toprated'}">
-                    <span class="tab-indicator-dot"></span>
-                </c:if>
-            </a>
+                            <!-- Option 2: Gần đây -->
+                            <a href="${pageContext.request.contextPath}/home?tab=nearby#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'nearby' ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-nearby-box">
+                                        <i class="fa-solid fa-location-crosshairs"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Gần đây</span>
+                                        </div>
+                                        <span class="filter-item-desc">Món ăn quanh vị trí của bạn</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'nearby'}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
+
+                            <!-- Option 3: Bán chạy -->
+                            <a href="${pageContext.request.contextPath}/home?tab=bestseller#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'bestseller' ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-bestseller-box">
+                                        <i class="fa-solid fa-fire-flame-curved"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Bán chạy</span>
+                                        </div>
+                                        <span class="filter-item-desc">Món ăn có lượt đặt nhiều nhất</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'bestseller'}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
+
+                            <!-- Option 4: Đánh giá cao -->
+                            <a href="${pageContext.request.contextPath}/home?tab=toprated#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'toprated' ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-toprated-box">
+                                        <i class="fa-solid fa-star"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Đánh giá cao</span>
+                                        </div>
+                                        <span class="filter-item-desc">Điểm đánh giá thực khách cao nhất</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'toprated'}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
+                        </c:when>
+
+                        <%-- Đối với khách ngoài (chưa có tài khoản / chưa đăng nhập): Chỉ hiển thị 2 tùy chọn Bán chạy và Đánh giá cao --%>
+                        <c:otherwise>
+                            <!-- Option 1: Bán chạy (Mặc định cho người ngoài) -->
+                            <a href="${pageContext.request.contextPath}/home?tab=bestseller#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'bestseller' || empty activeTab ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-bestseller-box">
+                                        <i class="fa-solid fa-fire-flame-curved"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Bán chạy</span>
+                                            <span class="filter-item-pill">Mặc định</span>
+                                        </div>
+                                        <span class="filter-item-desc">Món ăn có lượt đặt nhiều nhất</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'bestseller' || empty activeTab}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
+
+                            <!-- Option 2: Đánh giá cao -->
+                            <a href="${pageContext.request.contextPath}/home?tab=toprated#recommend-section" 
+                               class="filter-menu-item ${activeTab eq 'toprated' ? 'active' : ''}" 
+                               role="menuitem">
+                                <div class="filter-item-left">
+                                    <span class="filter-item-icon-box icon-toprated-box">
+                                        <i class="fa-solid fa-star"></i>
+                                    </span>
+                                    <div class="filter-item-info">
+                                        <div class="filter-item-title-row">
+                                            <span class="filter-item-title">Đánh giá cao</span>
+                                        </div>
+                                        <span class="filter-item-desc">Điểm đánh giá thực khách cao nhất</span>
+                                    </div>
+                                </div>
+                                <c:if test="${activeTab eq 'toprated'}">
+                                    <i class="fa-solid fa-check filter-check-icon"></i>
+                                </c:if>
+                            </a>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+            </div>
         </div>
 
         <!-- Live Instant Filter Indicator Bar (Appears when user clicks a category) -->
@@ -300,7 +459,7 @@
         <!-- Food Grid -->
         <div class="food-grid" id="home-food-grid">
             <c:forEach items="${tabFoods}" var="food">
-                <div class="food-card" data-id="${food.id}" data-category="${food.categoryId}" data-name="${food.name}" data-price="${food.price}" data-rating="${food.rating}">
+                <div class="food-card" data-id="${food.id}" data-category="${food.categoryId}" data-name="${food.name}" data-price="${food.price}" data-rating="${food.rating}" onclick="if (!event.target.closest('.btn-add-cart, .add-cart-form, .food-distance-link, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${food.id}'; }">
                     <div class="food-card-img-wrap">
                         <span class="food-tag"><c:out value="${not empty food.categoryName ? food.categoryName : 'Đặc sản'}" /></span>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}">
@@ -320,9 +479,21 @@
                                     <span class="food-rating text-muted" style="color: #94a3b8; font-weight: normal;"><i class="fa-regular fa-star"></i> Chưa có đánh giá</span>
                                 </c:otherwise>
                             </c:choose>
-                            <a href="${pageContext.request.contextPath}/restaurant-detail?id=${food.restaurantId}" class="food-distance-link" title="Xem quán ${food.restaurantName}">
+                            <c:if test="${food.totalSold > 0}">
+                                <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; font-size: 0.75rem; font-weight: 700; border-radius: 50px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 3px;" title="Số lượng đã bán">
+                                    <i class="fa-solid fa-fire text-warning"></i> Đã bán ${food.totalSold}
+                                </span>
+                            </c:if>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px; font-size: 0.82rem;">
+                            <a href="${pageContext.request.contextPath}/restaurant-detail?id=${food.restaurantId}" class="food-distance-link text-truncate" style="max-width: 170px;" title="Xem quán ${food.restaurantName}">
                                 <i class="fa-solid fa-store text-primary"></i> ${not empty food.restaurantName ? food.restaurantName : 'Quán đối tác'}
                             </a>
+                            <c:if test="${food.distanceKm != null}">
+                                <span class="badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 0.75rem; font-weight: 700; border-radius: 50px; padding: 2px 7px; display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;" title="Khoảng cách từ địa chỉ của bạn tới quán">
+                                    <i class="fa-solid fa-motorcycle text-primary"></i> ${food.distanceKm} km
+                                </span>
+                            </c:if>
                         </div>
                         <a href="${pageContext.request.contextPath}/food-detail?id=${food.id}" class="food-title-link">
                             <h3 class="food-title">${food.name}</h3>
@@ -363,6 +534,26 @@
                 </div>
             </c:forEach>
         </div>
+
+        <c:if test="${empty tabFoods and (activeTab eq 'foryou' or empty activeTab)}">
+            <div class="foryou-empty-state">
+                <div class="foryou-empty-icon">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <h3 class="foryou-empty-title">Chưa có lịch sử đặt món</h3>
+                <p class="foryou-empty-text">
+                    Hãy đặt những món ngon đầu tiên để Utee có thể hiểu khẩu vị và gợi ý thực đơn chuẩn gu riêng cho bạn nhé!
+                </p>
+                <div class="foryou-empty-actions">
+                    <a href="${pageContext.request.contextPath}/home?tab=bestseller#recommend-section" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-fire-flame-curved"></i> Khám phá món bán chạy
+                    </a>
+                    <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-sm">
+                        <i class="fa-solid fa-utensils"></i> Xem tất cả thực đơn
+                    </a>
+                </div>
+            </div>
+        </c:if>
     </div>
 </section>
 
@@ -383,12 +574,15 @@
                         Khám phá các quán ăn đối tác uy tín, chất lượng với thực đơn đa dạng và điểm đánh giá thực tế xuất sắc
                     </p>
                 </div>
-                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline">Xem tất cả quán <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline btn-section-viewall">
+                    <span>Xem tất cả quán</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
             </div>
 
             <div class="restaurant-grid mt-4">
                 <c:forEach items="${tabRestaurants}" var="rest">
-                    <div class="restaurant-card">
+                    <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" class="restaurant-card" title="Xem quán ${rest.name}">
                         <div class="restaurant-card-banner">
                             <c:set var="rawBanner" value="${not empty rest.imageUrl ? rest.imageUrl : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80'}" />
                             <c:set var="finalBannerUrl" value="${rawBanner.startsWith('http') || rawBanner.startsWith('/') ? (rawBanner.startsWith('/') ? pageContext.request.contextPath.concat(rawBanner) : rawBanner) : pageContext.request.contextPath.concat('/').concat(rawBanner)}" />
@@ -416,25 +610,23 @@
                                 </span>
                             </div>
 
-                            <h3 class="restaurant-card-name">
-                                <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}">${rest.name}</a>
-                            </h3>
+                            <h3 class="restaurant-card-name">${rest.name}</h3>
 
-                            <div class="restaurant-card-address">
-                                <i class="fa-solid fa-location-dot text-danger"></i>
-                                <span>${rest.address}</span>
+                            <div class="restaurant-card-address" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <i class="fa-solid fa-location-dot text-danger"></i>
+                                    <span class="text-truncate">${rest.address}</span>
+                                </div>
+                                <c:if test="${rest.distanceKm != null}">
+                                    <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.78rem; font-weight: 700; border-radius: 50px; padding: 3px 8px; flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fa-solid fa-motorcycle text-primary"></i> ${rest.distanceKm} km
+                                    </span>
+                                </c:if>
                             </div>
 
-                            <p class="restaurant-card-desc">${rest.description}</p>
-
-                            <div class="restaurant-card-action mt-3">
-                                <a href="${pageContext.request.contextPath}/restaurant-detail?id=${rest.id}" class="btn btn-primary w-100">
-                                    <span>Xem Quán &amp; Thực Đơn</span>
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                            </div>
+                            <p class="restaurant-card-desc mb-0">${rest.description}</p>
                         </div>
-                    </div>
+                    </a>
                 </c:forEach>
             </div>
         </div>
@@ -454,7 +646,7 @@
 
             <div class="food-grid">
                 <c:forEach items="${recentFoods}" var="rFood">
-                    <div class="food-card">
+                    <div class="food-card" onclick="if (!event.target.closest('.btn, a, button, input, form')) { window.location.href='${pageContext.request.contextPath}/food-detail?id=${rFood.id}'; }">
                         <div class="food-card-img-wrap">
                             <span class="food-tag">${not empty rFood.categoryName ? rFood.categoryName : 'Vừa xem'}</span>
                             <a href="${pageContext.request.contextPath}/food-detail?id=${rFood.id}">

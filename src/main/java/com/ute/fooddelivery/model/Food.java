@@ -64,6 +64,28 @@ public class Food implements Serializable {
     @Transient
     private List<Review> reviews = new ArrayList<>();
 
+    @Transient
+    private Double distanceKm;
+
+    @Transient
+    private int totalSold;
+
+    public Double getDistanceKm() {
+        return distanceKm;
+    }
+
+    public void setDistanceKm(Double distanceKm) {
+        this.distanceKm = distanceKm;
+    }
+
+    public int getTotalSold() {
+        return totalSold;
+    }
+
+    public void setTotalSold(int totalSold) {
+        this.totalSold = totalSold;
+    }
+
     public Food() {
     }
 

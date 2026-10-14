@@ -1,5 +1,8 @@
 package com.ute.fooddelivery.service;
 
+import com.ute.fooddelivery.dao.UserVoucherDAO;
+import com.ute.fooddelivery.dao.VoucherDAO;
+import com.ute.fooddelivery.model.UserVoucher;
 import com.ute.fooddelivery.model.Voucher;
 import com.ute.fooddelivery.model.Voucher.DiscountType;
 
@@ -87,7 +90,8 @@ public class VoucherService {
         VOUCHER_CATALOG.put(voucher.getCode().toUpperCase(Locale.ROOT), voucher);
     }
 
-    private final com.ute.fooddelivery.dao.UserVoucherDAO userVoucherDAO = new com.ute.fooddelivery.dao.UserVoucherDAO();
+    private final UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     public List<Voucher> getAllVouchers() {
         return Collections.unmodifiableList(new ArrayList<>(VOUCHER_CATALOG.values()));
@@ -101,7 +105,10 @@ public class VoucherService {
         if (CODE_ALIASES.containsKey(cleanCode)) {
             cleanCode = CODE_ALIASES.get(cleanCode);
         }
-        return VOUCHER_CATALOG.get(cleanCode);
+        if (VOUCHER_CATALOG.containsKey(cleanCode)) {
+            return VOUCHER_CATALOG.get(cleanCode);
+        }
+        return voucherDAO.getVoucherByCode(cleanCode);
     }
 
     public Voucher findVoucherForUser(String inputCode, int userId) {
@@ -113,10 +120,11 @@ public class VoucherService {
             cleanCode = CODE_ALIASES.get(cleanCode);
         }
         if (userId > 0) {
-            com.ute.fooddelivery.model.UserVoucher uvRecord = userVoucherDAO.getUserVoucherRecord(userId, cleanCode);
+            UserVoucher uvRecord = userVoucherDAO.getUserVoucherRecord(userId, cleanCode);
             if (uvRecord != null) {
                 if (uvRecord.getQuantity() > 0) {
-                    return new Voucher(
+                    Voucher dbV = voucherDAO.getVoucherByCode(cleanCode);
+                    Voucher v = new Voucher(
                             uvRecord.getVoucherCode(),
                             uvRecord.getTitle(),
                             uvRecord.getDescription(),
@@ -129,6 +137,15 @@ public class VoucherService {
                             uvRecord.getRestaurantId(),
                             uvRecord.getRestaurantName()
                     );
+                    if (dbV != null) {
+                        v.setId(dbV.getId());
+                        v.setUsageLimit(dbV.getUsageLimit());
+                        v.setUsedCount(dbV.getUsedCount());
+                        v.setStartDate(dbV.getStartDate());
+                        v.setEndDate(dbV.getEndDate());
+                        v.setActive(dbV.isActive());
+                    }
+                    return v;
                 } else {
                     // Đã hết số lượng mã trong kho -> không cho phép áp dụng
                     return null;
@@ -150,6 +167,22 @@ public class VoucherService {
         Voucher voucher = findVoucherForUser(inputCode, userId);
         if (voucher == null) {
             return new ValidationResult(false, "Mã ưu đãi không hợp lệ hoặc đã hết lượt dùng trong kho!", 0.0, "0 đ", null);
+        }
+
+        if (!voucher.isActive()) {
+            return new ValidationResult(false, "Mã ưu đãi " + voucher.getCode() + " hiện đang tạm ngưng hoạt động!", 0.0, "0 đ", voucher);
+        }
+
+        if (!voucher.isStarted()) {
+            return new ValidationResult(false, "Mã " + voucher.getCode() + " chưa đến thời gian áp dụng (bắt đầu từ " + voucher.getStartDate() + ")!", 0.0, "0 đ", voucher);
+        }
+
+        if (voucher.isExpired()) {
+            return new ValidationResult(false, "Mã ưu đãi " + voucher.getCode() + " đã hết hạn sử dụng (" + voucher.getFormattedExpiry() + ")!", 0.0, "0 đ", voucher);
+        }
+
+        if (voucher.isFullyUsed()) {
+            return new ValidationResult(false, "Mã ưu đãi " + voucher.getCode() + " đã đạt giới hạn số lần sử dụng tối đa (" + voucher.getUsageLimit() + " lượt)!", 0.0, "0 đ", voucher);
         }
 
         if (voucher.getRestaurantId() != null && voucher.getRestaurantId() > 0) {
@@ -197,6 +230,15 @@ public class VoucherService {
             if (!vShip.isFreeShip()) {
                 return new DualValidationResult(false, "Mã " + vShip.getCode() + " không phải là mã giảm phí vận chuyển!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
             }
+            if (!vShip.isActive()) {
+                return new DualValidationResult(false, "Mã freeship " + vShip.getCode() + " đang tạm ngưng hoạt động!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (vShip.isExpired()) {
+                return new DualValidationResult(false, "Mã freeship " + vShip.getCode() + " đã hết hạn sử dụng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (vShip.isFullyUsed()) {
+                return new DualValidationResult(false, "Mã freeship " + vShip.getCode() + " đã hết số lượt dùng tối đa!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
             if (subtotal < vShip.getMinOrderAmount()) {
                 double missing = vShip.getMinOrderAmount() - subtotal;
                 return new DualValidationResult(false, "Mã freeship " + vShip.getCode() + " yêu cầu đơn từ " + df.format(vShip.getMinOrderAmount()) + " đ (còn thiếu " + df.format(missing) + " đ)!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
@@ -215,6 +257,18 @@ public class VoucherService {
             }
             if (vFood.isFreeShip()) {
                 return new DualValidationResult(false, "Mã " + vFood.getCode() + " là mã vận chuyển, vui lòng chọn ở mục Freeship!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (!vFood.isActive()) {
+                return new DualValidationResult(false, "Mã " + vFood.getCode() + " hiện đang tạm ngưng hoạt động!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (!vFood.isStarted()) {
+                return new DualValidationResult(false, "Mã " + vFood.getCode() + " chưa đến ngày áp dụng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (vFood.isExpired()) {
+                return new DualValidationResult(false, "Mã " + vFood.getCode() + " đã hết hạn sử dụng (" + vFood.getFormattedExpiry() + ")!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+            }
+            if (vFood.isFullyUsed()) {
+                return new DualValidationResult(false, "Mã " + vFood.getCode() + " đã hết số lượt dùng tối đa (" + vFood.getUsageLimit() + " lượt)!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
             }
             if (vFood.getRestaurantId() != null && vFood.getRestaurantId() > 0) {
                 if (cartRestaurantId > 0 && vFood.getRestaurantId() != cartRestaurantId) {
