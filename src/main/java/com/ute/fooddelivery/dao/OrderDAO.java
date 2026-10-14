@@ -1052,6 +1052,90 @@ public class OrderDAO {
         return null;
     }
 
+    public Order getCustomerOrderForTracking(int orderId, int userId) {
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.address AS restaurant_address, " +
+            "       rest.latitude AS restaurant_lat, rest.longitude AS restaurant_lng " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi2.order_id, f2.restaurant_id, r2.name, r2.image_url, r2.address, r2.latitude, r2.longitude " +
+            "    FROM order_items oi2 " +
+            "    JOIN foods f2 ON oi2.food_id = f2.food_id " +
+            "    JOIN restaurants r2 ON f2.restaurant_id = r2.restaurant_id " +
+            "    WHERE oi2.order_id = ? LIMIT 1 " +
+            ") rest ON o.order_id = rest.order_id " +
+            "WHERE o.order_id = ? AND (o.user_id = ? OR o.user_id IS NULL)";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+                            order.setRestaurantId((Integer) rs.getObject("restaurant_id"));
+                            order.setRestaurantName(rs.getString("restaurant_name"));
+                            order.setRestaurantImage(rs.getString("restaurant_image"));
+                            order.setRestaurantAddress(rs.getString("restaurant_address"));
+
+                            double restLat = rs.getDouble("restaurant_lat");
+                            double restLng = rs.getDouble("restaurant_lng");
+                            if (!rs.wasNull() && restLat != 0.0 && restLng != 0.0) {
+                                order.setRestaurantLatitude(restLat);
+                                order.setRestaurantLongitude(restLng);
+                            } else {
+                                double[] restCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(order.getRestaurantAddress());
+                                order.setRestaurantLatitude(restCoords[0]);
+                                order.setRestaurantLongitude(restCoords[1]);
+                            }
+
+                            double[] custCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(order.getAddress());
+                            order.setCustomerLatitude(custCoords[0]);
+                            order.setCustomerLongitude(custCoords[1]);
+
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            return order;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thông tin tracking đơn hàng: " + e.getMessage());
+        }
+        return null;
+    }
+
     public boolean cancelOrderByCustomer(int orderId, int userId) {
         String sql = "UPDATE orders SET status = 'CANCELLED' WHERE order_id = ? AND user_id = ? AND status IN ('PENDING', 'CONFIRMED')";
         try (Connection conn = DBContext.getConnection()) {

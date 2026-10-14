@@ -363,8 +363,11 @@
             </div>
         </div>
 
-        <div class="modal-actions">
-            <a href="${pageContext.request.contextPath}/home" class="btn btn-primary btn-block">Về Trang Chủ</a>
+        <div class="modal-actions" style="display: flex; gap: 10px; flex-direction: column;">
+            <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-primary btn-block" style="font-weight: 700;">
+                <i class="fa-solid fa-receipt me-1"></i> Xem Tiến Độ Đơn Hàng
+            </a>
+            <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-secondary btn-block">Về Trang Chủ</a>
         </div>
     </div>
 </div>

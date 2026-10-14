@@ -744,6 +744,11 @@
                                                 </button>
                                             </form>
                                         </c:if>
+                                        <c:if test="${order.status eq 'SHIPPING'}">
+                                            <a href="${pageContext.request.contextPath}/order/tracking?orderId=${order.id}" class="btn btn-sm" style="border-radius: 50px; font-weight: 700; padding: 6px 14px; background: linear-gradient(135deg, #ef4444, #f97316); color: #fff; text-decoration: none;" title="Xem bản đồ live shipper di chuyển">
+                                                <i class="fa-solid fa-map-location-dot me-1"></i> Theo dõi trực tiếp
+                                            </a>
+                                        </c:if>
                                         <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-sm">
                                             <i class="fa-solid fa-cart-plus"></i> Đặt lại món
                                         </a>
