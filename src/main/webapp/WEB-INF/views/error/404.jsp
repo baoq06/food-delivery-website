@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="404 - Không Tìm Thấy Trang | FoodZone" />
+    <jsp:param name="title" value="404 - Không Tìm Thấy Trang | Utee Express" />
 </jsp:include>
 
 <div class="error-page-wrapper">
@@ -10,7 +10,7 @@
         <div class="error-code-num">404</div>
         <h1 class="error-title">Không Tìm Thấy Trang Món Ngon!</h1>
         <p class="error-desc">
-            Trang bạn đang tìm kiếm có thể đã bị đổi tên, bị gỡ bỏ hoặc đường dẫn không chính xác. Đừng lo lắng, hãy để FoodZone dẫn bạn đến những món ngon nóng hổi khác!
+            Trang bạn đang tìm kiếm có thể đã bị đổi tên, bị gỡ bỏ hoặc đường dẫn không chính xác. Đừng lo lắng, hãy để Utee Express dẫn bạn đến những món ngon nóng hổi khác!
         </p>
 
         <div class="error-actions-group">

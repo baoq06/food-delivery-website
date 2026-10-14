@@ -1,7 +1,7 @@
 <%@ page isErrorPage="true" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
-    <jsp:param name="title" value="500 - Đã Xảy Ra Lỗi Hệ Thống | FoodZone" />
+    <jsp:param name="title" value="500 - Đã Xảy Ra Lỗi Hệ Thống | Utee Express" />
 </jsp:include>
 
 <div class="error-page-wrapper">
@@ -10,7 +10,7 @@
         <div class="error-code-num">500</div>
         <h1 class="error-title">Rất Tiếc, Đã Xảy Ra Lỗi Máy Chủ!</h1>
         <p class="error-desc">
-            Hệ thống FoodZone đang gặp trục trặc kỹ thuật tạm thời trong quá trình xử lý yêu cầu của bạn. Đội ngũ kỹ thuật đang nỗ lực khắc phục trong thời gian sớm nhất.
+            Hệ thống Utee Express đang gặp trục trặc kỹ thuật tạm thời trong quá trình xử lý yêu cầu của bạn. Đội ngũ kỹ thuật đang nỗ lực khắc phục trong thời gian sớm nhất.
         </p>
 
         <div class="error-actions-group">

@@ -107,7 +107,7 @@
         </div>
     </c:if>
     <!-- COD Locked Warning Banner for Customer -->
-    <c:if test="${user.isCodLocked()}">
+    <c:if test="${user.codLocked}">
         <div class="alert alert-warning" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(245,158,11,0.08); border-left: 5px solid #f59e0b; background: #fffbeb;">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706; font-size: 1.3rem;">
@@ -323,7 +323,7 @@
                             <i class="fa-solid fa-coins"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">${String.format("%,.0f", totalSpent)} đ</div>
+                            <div class="stat-value"><fmt:formatNumber value="${totalSpent}" pattern="#,###" /> đ</div>
                             <div class="stat-label">Tổng chi tiêu</div>
                         </div>
                     </div>
@@ -709,11 +709,11 @@
                                             <h4 class="order-item-title">${item.foodName}</h4>
                                             <div class="order-item-pricing">
                                                 <span class="order-item-qty">x${item.quantity} phần</span>
-                                                <span class="order-item-unit">${String.format("%,.0f", item.unitPrice)} đ</span>
+                                                <span class="order-item-unit"><fmt:formatNumber value="${item.unitPrice}" pattern="#,###" /> đ</span>
                                             </div>
                                         </div>
                                         <div class="order-item-subtotal">
-                                            ${String.format("%,.0f", item.subtotal)} đ
+                                            <fmt:formatNumber value="${item.subtotal}" pattern="#,###" /> đ
                                         </div>
                                     </div>
                                 </c:forEach>
@@ -740,9 +740,9 @@
                                 <div class="order-total-action-group">
                                     <div class="order-total-block">
                                         <span class="total-label">Tổng thanh toán:</span>
-                                        <span class="total-amount">${String.format("%,.0f", order.totalAmount)} đ</span>
+                                        <span class="total-amount"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###" /> đ</span>
                                         <small class="text-muted d-block" style="font-size: 0.78rem;">
-                                            (Đã gồm phí ship: ${String.format("%,.0f", order.shippingFee != null ? order.shippingFee : 15000)} đ • ${order.distanceKm != null ? order.distanceKm : 2.0} km)
+                                            (Đã gồm phí ship: <fmt:formatNumber value="${order.shippingFee != null and order.shippingFee > 0 ? order.shippingFee : 15000}" pattern="#,###" /> đ • ${order.distanceKm != null ? order.distanceKm : 2.0} km)
                                         </small>
                                     </div>
 
