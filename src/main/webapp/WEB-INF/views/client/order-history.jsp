@@ -192,7 +192,21 @@
                         <div class="col-md-6">
                             <p><strong><i class="fa-solid fa-location-dot text-danger"></i> Giao đến:</strong> ${order.address}</p>
                             <p><strong><i class="fa-solid fa-route text-primary"></i> Cự ly &amp; Phí giao:</strong> ${order.distanceKm != null ? order.distanceKm : 2.0} km (Cước ship: <fmt:formatNumber value="${order.shippingFee != null ? order.shippingFee : 15000}" pattern="#,###"/> đ)</p>
-                            <p><strong><i class="fa-solid fa-money-bill-wave text-success"></i> Phương thức thanh toán:</strong> ${not empty order.paymentMethod ? order.paymentMethod : 'COD'}</p>
+                            <p>
+                                <strong><i class="fa-solid fa-money-bill-wave text-success"></i> Phương thức thanh toán:</strong> 
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'QR'}">
+                                        <span class="badge bg-primary" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 6px;">
+                                            <i class="fa-solid fa-qrcode me-1"></i> Chuyển khoản VietQR
+                                        </span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge bg-secondary" style="font-size: 0.8rem; padding: 4px 8px; border-radius: 6px;">
+                                            <i class="fa-solid fa-hand-holding-dollar me-1"></i> Tiền mặt khi nhận (COD)
+                                        </span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </p>
                             <c:if test="${order.discountAmount > 0 or not empty order.voucherCode}">
                                 <p class="text-success" style="margin-bottom: 6px;">
                                     <strong><i class="fa-solid fa-tag"></i> Giảm giá voucher <c:if test="${not empty order.voucherCode}">(${order.voucherCode})</c:if>:</strong> 
@@ -216,6 +230,12 @@
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center gap-2">
+                            <c:if test="${order.paymentMethod eq 'QR' and (order.status eq 'PENDING' or order.status eq 'CONFIRMED')}">
+                                <button type="button" class="btn btn-outline-primary btn-sm" style="border-radius: 8px; font-weight: 600;"
+                                        onclick="openOrderVietQrModal('${order.id}', '${order.vietQrUrl}', '${order.restaurantBankName}', '${order.restaurantBankCode}', '${order.restaurantBankAccountNo}', '${order.cleanRestaurantBankAccountNo}', '${order.restaurantBankAccountName}', '${order.totalAmount}')">
+                                    <i class="fa-solid fa-qrcode me-1"></i> Mã VietQR
+                                </button>
+                            </c:if>
                             <c:if test="${order.status eq 'PENDING'}">
                                 <form action="${pageContext.request.contextPath}/profile" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #FZ-${order.id} không?');" style="display:inline; margin:0;">
                                     <input type="hidden" name="action" value="cancel_order">
@@ -286,5 +306,112 @@
         </c:otherwise>
     </c:choose>
 </div>
+
+<!-- Modal xem lại mã VietQR thanh toán cho đơn hàng -->
+<div id="orderVietQrModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="background: #ffffff; border-radius: 16px; padding: 24px; max-width: 440px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto;">
+        <button type="button" class="btn-close" style="position: absolute; top: 16px; right: 16px;" onclick="closeOrderVietQrModal()" title="Đóng"></button>
+        
+        <div class="text-center mb-2">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(37, 99, 235, 0.1); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-qrcode"></i>
+            </div>
+            <h4 class="fw-bold mb-1" style="font-size: 1.2rem;">Thanh Toán Mã VietQR</h4>
+            <p class="text-muted" style="font-size: 0.82rem; margin-bottom: 12px;">Quét mã QR bằng ứng dụng ngân hàng bất kỳ để thanh toán cho quán</p>
+        </div>
+
+        <div class="text-center p-2 rounded-3 my-2" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+            <img id="vqrModalImg" src="" alt="VietQR" style="max-width: 210px; width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.06); background: #fff; padding: 4px;" />
+        </div>
+
+        <!-- Bảng chi tiết STK -->
+        <div class="bank-details-card text-start p-2 rounded-2 mt-3" style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                <span class="text-muted">Ngân hàng:</span>
+                <strong id="vqrModalBank" class="text-dark">Techcombank (TCB)</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                <span class="text-muted">Số tài khoản:</span>
+                <div class="d-flex align-items-center gap-1">
+                    <strong class="text-danger" id="vqrModalAcc">1907 2878 4280 15</strong>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 border" style="font-size: 0.72rem;" onclick="copyVqrText('vqrModalAccClean', 'Đã sao chép STK!')" title="Sao chép STK">
+                        <i class="fa-regular fa-copy text-primary"></i>
+                    </button>
+                    <input type="hidden" id="vqrModalAccClean" value="" />
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                <span class="text-muted">Chủ tài khoản:</span>
+                <strong id="vqrModalAccName" class="text-dark" style="text-transform: uppercase;">LE HAI DANG</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+                <span class="text-muted">Số tiền:</span>
+                <div class="d-flex align-items-center gap-1">
+                    <strong class="text-danger" id="vqrModalAmount" style="font-size: 0.95rem;">0 đ</strong>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 border" style="font-size: 0.72rem;" onclick="copyVqrText('vqrModalAmountRaw', 'Đã sao chép số tiền!')" title="Sao chép số tiền">
+                        <i class="fa-regular fa-copy text-primary"></i>
+                    </button>
+                    <input type="hidden" id="vqrModalAmountRaw" value="" />
+                </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center py-1">
+                <span class="text-muted">Nội dung CK:</span>
+                <div class="d-flex align-items-center gap-1">
+                    <strong class="text-primary" id="vqrModalMemo" style="font-family: monospace; font-size: 0.95rem;">DH0</strong>
+                    <button type="button" class="btn btn-sm btn-light p-0 px-1 border" style="font-size: 0.72rem;" onclick="copyVqrText('vqrModalMemo', 'Đã sao chép nội dung!')" title="Sao chép nội dung">
+                        <i class="fa-regular fa-copy text-primary"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary w-100 mt-3" style="font-weight: 700; border-radius: 10px;" onclick="closeOrderVietQrModal()">
+            <i class="fa-solid fa-check me-1"></i> Đã Hiểu &amp; Đóng
+        </button>
+    </div>
+</div>
+
+<script>
+function openOrderVietQrModal(orderId, vietQrUrl, bankName, bankCode, bankAccNo, bankAccClean, bankAccName, totalAmount) {
+    const modal = document.getElementById('orderVietQrModal');
+    if (!modal) return;
+    
+    document.getElementById('vqrModalImg').src = vietQrUrl;
+    document.getElementById('vqrModalBank').textContent = (bankName || 'Techcombank') + ' (' + (bankCode || 'TCB') + ')';
+    document.getElementById('vqrModalAcc').textContent = bankAccNo || '1907 2878 4280 15';
+    document.getElementById('vqrModalAccClean').value = bankAccClean || (bankAccNo ? bankAccNo.replace(/[\s\-\.]/g, '') : '19072878428015');
+    document.getElementById('vqrModalAccName').textContent = bankAccName || 'LE HAI DANG';
+    
+    const parsedAmount = Math.round(parseFloat(totalAmount) || 0);
+    document.getElementById('vqrModalAmount').textContent = parsedAmount.toLocaleString('vi-VN') + ' đ';
+    document.getElementById('vqrModalAmountRaw').value = parsedAmount;
+    document.getElementById('vqrModalMemo').textContent = 'DH' + orderId;
+    
+    modal.style.display = 'flex';
+}
+
+function closeOrderVietQrModal() {
+    const modal = document.getElementById('orderVietQrModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function copyVqrText(elementId, msg) {
+    const el = document.getElementById(elementId);
+    let val = '';
+    if (el) {
+        val = el.value !== undefined ? el.value : el.textContent;
+    }
+    if (!val) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(function() {
+            alert(msg || 'Đã sao chép!');
+        }).catch(function() {
+            alert('Đã sao chép: ' + val);
+        });
+    } else {
+        alert('Đã sao chép: ' + val);
+    }
+}
+</script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

@@ -107,9 +107,27 @@ public class MerchantProfileController extends HttpServlet {
                     restaurant.setAddress(address != null ? address.trim() : "");
                     restaurant.setDescription(description != null ? description.trim() : "");
 
+                    String bankCode = req.getParameter("bankCode");
+                    String bankName = req.getParameter("bankName");
+                    String bankAccountNo = req.getParameter("bankAccountNo");
+                    String bankAccountName = req.getParameter("bankAccountName");
+
+                    if (bankCode != null && !bankCode.trim().isEmpty()) {
+                        restaurant.setBankCode(bankCode.trim().toUpperCase());
+                    }
+                    if (bankName != null && !bankName.trim().isEmpty()) {
+                        restaurant.setBankName(bankName.trim());
+                    }
+                    if (bankAccountNo != null && !bankAccountNo.trim().isEmpty()) {
+                        restaurant.setBankAccountNo(bankAccountNo.trim());
+                    }
+                    if (bankAccountName != null && !bankAccountName.trim().isEmpty()) {
+                        restaurant.setBankAccountName(bankAccountName.trim().toUpperCase());
+                    }
+
                     boolean success = merchantService.updateRestaurantProfile(restaurant);
                     if (success) {
-                        req.getSession().setAttribute("flashMessage", "Đã cập nhật thông tin và hình ảnh quán thành công!");
+                        req.getSession().setAttribute("flashMessage", "Đã cập nhật thông tin quán và tài khoản ngân hàng thành công!");
                     } else {
                         req.getSession().setAttribute("flashError", "Cập nhật thông tin thất bại!");
                     }

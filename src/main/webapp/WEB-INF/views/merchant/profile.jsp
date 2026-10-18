@@ -145,6 +145,77 @@
                         </div>
                     </div>
 
+                    <!-- 4. Cài đặt Tài Khoản Ngân Hàng Thụ Hưởng (VietQR) -->
+                    <div class="card mb-3 p-3 border-0" style="background: #f8fafc; border: 1px solid #e2e8f0 !important; border-radius: 12px;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <h5 class="mb-0 fw-bold" style="font-size: 0.98rem; color: #1e293b;">
+                                    <i class="fa-solid fa-building-columns text-primary me-2"></i>Tài Khoản Ngân Hàng Thụ Hưởng (VietQR)
+                                </h5>
+                                <span class="text-muted" style="font-size: 0.8rem;">
+                                    Khi khách chọn thanh toán qua VietQR, mã QR và thông tin này sẽ được sinh động để khách quét trả tiền trực tiếp.
+                                </span>
+                            </div>
+                            <span class="badge bg-success" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px;">
+                                <i class="fa-solid fa-qrcode me-1"></i> VietQR Auto
+                            </span>
+                        </div>
+
+                        <div class="row g-2 mt-1">
+                            <div class="col-md-5 form-group">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.85rem;">Ngân hàng thụ hưởng <span class="text-danger">*</span></label>
+                                <input type="hidden" id="merchantBankName" name="bankName" value="${not empty currentRestaurant.bankName ? currentRestaurant.bankName : 'Techcombank'}" />
+                                <select id="merchantBankSelect" name="bankCode" class="form-select form-control" style="border-radius: 8px; font-size: 0.88rem;" onchange="handleBankSelectChange(this)">
+                                    <option value="TCB" data-name="Techcombank" ${empty currentRestaurant.bankCode || currentRestaurant.bankCode eq 'TCB' ? 'selected' : ''}>TCB - Techcombank (Kỹ Thương)</option>
+                                    <option value="VCB" data-name="Vietcombank" ${currentRestaurant.bankCode eq 'VCB' ? 'selected' : ''}>VCB - Vietcombank (Ngoại Thương)</option>
+                                    <option value="MB" data-name="MBBank" ${currentRestaurant.bankCode eq 'MB' ? 'selected' : ''}>MB - MBBank (Quân Đội)</option>
+                                    <option value="ICB" data-name="VietinBank" ${currentRestaurant.bankCode eq 'ICB' ? 'selected' : ''}>ICB - VietinBank (Công Thương)</option>
+                                    <option value="BIDV" data-name="BIDV" ${currentRestaurant.bankCode eq 'BIDV' ? 'selected' : ''}>BIDV - BIDV (Đầu Tư &amp; Phát Triển)</option>
+                                    <option value="ACB" data-name="ACB" ${currentRestaurant.bankCode eq 'ACB' ? 'selected' : ''}>ACB - Á Châu</option>
+                                    <option value="TPB" data-name="TPBank" ${currentRestaurant.bankCode eq 'TPB' ? 'selected' : ''}>TPB - TPBank (Tiên Phong)</option>
+                                    <option value="VPB" data-name="VPBank" ${currentRestaurant.bankCode eq 'VPB' ? 'selected' : ''}>VPB - VPBank (Việt Nam Thịnh Vượng)</option>
+                                    <option value="STB" data-name="Sacombank" ${currentRestaurant.bankCode eq 'STB' ? 'selected' : ''}>STB - Sacombank (Sài Gòn Thương Tín)</option>
+                                    <option value="HDB" data-name="HDBank" ${currentRestaurant.bankCode eq 'HDB' ? 'selected' : ''}>HDB - HDBank (Phát Triển TP.HCM)</option>
+                                    <option value="VIB" data-name="VIB" ${currentRestaurant.bankCode eq 'VIB' ? 'selected' : ''}>VIB - Quốc Tế (VIB)</option>
+                                    <option value="MSB" data-name="MSB" ${currentRestaurant.bankCode eq 'MSB' ? 'selected' : ''}>MSB - Hàng Hải Việt Nam</option>
+                                </select>
+                            </div>
+                            <div class="col-md-7 form-group">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.85rem;">Số tài khoản ngân hàng <span class="text-danger">*</span></label>
+                                <input type="text" id="merchantBankAccNo" name="bankAccountNo" 
+                                       value="${not empty currentRestaurant.bankAccountNo ? currentRestaurant.bankAccountNo : '1907 2878 4280 15'}" 
+                                       required class="form-control" style="border-radius: 8px; font-size: 0.88rem; font-weight: 600; letter-spacing: 0.5px;" 
+                                       placeholder="1907 2878 4280 15" oninput="updateMerchantVietQrPreview()" />
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mt-2">
+                            <div class="col-md-7 form-group">
+                                <label class="form-label fw-bold mb-1" style="font-size: 0.85rem;">Tên chủ tài khoản (Viết hoa không dấu) <span class="text-danger">*</span></label>
+                                <input type="text" id="merchantBankAccName" name="bankAccountName" 
+                                       value="${not empty currentRestaurant.bankAccountName ? currentRestaurant.bankAccountName : 'LE HAI DANG'}" 
+                                       required class="form-control" style="border-radius: 8px; font-size: 0.88rem; text-transform: uppercase;" 
+                                       placeholder="LE HAI DANG" oninput="updateMerchantVietQrPreview()" />
+                            </div>
+                            <div class="col-md-5 d-flex align-items-end">
+                                <button type="button" class="btn btn-outline-secondary w-100" style="border-radius: 8px; font-size: 0.82rem; height: 38px;" onclick="toggleMerchantQrPreviewBox()">
+                                    <i class="fa-solid fa-qrcode me-1"></i> <span id="toggleQrPreviewText">Xem mã QR mẫu</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Khung xem trước mã VietQR của quán -->
+                        <div id="merchantQrPreviewBox" class="mt-3 p-3 text-center bg-white rounded border" style="display: none;">
+                            <span class="text-muted d-block mb-2" style="font-size: 0.8rem;">
+                                <i class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i> Mã VietQR thực tế khách hàng sẽ thấy (Demo thanh toán 50.000 đ)
+                            </span>
+                            <img id="merchantPreviewQrImg" src="" alt="VietQR Preview" style="max-width: 190px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);" />
+                            <div class="mt-2 text-muted" style="font-size: 0.8rem;">
+                                Ngân hàng: <strong id="lblPreviewBankName" class="text-dark">Techcombank</strong> | STK: <strong id="lblPreviewAccNo" class="text-danger">1907 2878 4280 15</strong>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group mb-4">
                         <label class="form-label fw-bold mb-1">Mô tả giới thiệu quán</label>
                         <textarea name="description" rows="4" class="form-control" style="border-radius: 10px;" placeholder="Giới thiệu về thực đơn, phong cách ẩm thực, cam kết vệ sinh...">${currentRestaurant.description}</textarea>
@@ -236,6 +307,49 @@
             });
         }
     });
+
+    function handleBankSelectChange(select) {
+        const opt = select.options[select.selectedIndex];
+        const bankName = opt ? opt.getAttribute('data-name') : 'Techcombank';
+        const hiddenBankName = document.getElementById('merchantBankName');
+        if (hiddenBankName) hiddenBankName.value = bankName;
+        updateMerchantVietQrPreview();
+    }
+
+    function updateMerchantVietQrPreview() {
+        const bankSel = document.getElementById('merchantBankSelect');
+        const bankCode = bankSel ? bankSel.value : 'TCB';
+        const opt = bankSel ? bankSel.options[bankSel.selectedIndex] : null;
+        const bankName = opt ? opt.getAttribute('data-name') : 'Techcombank';
+        const rawAcc = document.getElementById('merchantBankAccNo') ? document.getElementById('merchantBankAccNo').value.trim() : '1907 2878 4280 15';
+        const cleanAcc = rawAcc.replace(/[\s\-\.]/g, '');
+        const accName = document.getElementById('merchantBankAccName') ? document.getElementById('merchantBankAccName').value.trim().toUpperCase() : 'LE HAI DANG';
+
+        const lblBank = document.getElementById('lblPreviewBankName');
+        const lblAcc = document.getElementById('lblPreviewAccNo');
+        if (lblBank) lblBank.textContent = bankName;
+        if (lblAcc) lblAcc.textContent = rawAcc;
+
+        const qrImg = document.getElementById('merchantPreviewQrImg');
+        if (qrImg && cleanAcc.length > 0) {
+            const encodedName = encodeURIComponent(accName);
+            qrImg.src = 'https://img.vietqr.io/image/' + bankCode + '-' + cleanAcc + '-compact2.png?amount=50000&addInfo=DEMO&accountName=' + encodedName;
+        }
+    }
+
+    function toggleMerchantQrPreviewBox() {
+        const box = document.getElementById('merchantQrPreviewBox');
+        const txt = document.getElementById('toggleQrPreviewText');
+        if (!box) return;
+        if (box.style.display === 'none' || box.style.display === '') {
+            updateMerchantVietQrPreview();
+            box.style.display = 'block';
+            if (txt) txt.textContent = 'Ẩn mã QR mẫu';
+        } else {
+            box.style.display = 'none';
+            if (txt) txt.textContent = 'Xem mã QR mẫu';
+        }
+    }
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

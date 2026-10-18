@@ -131,6 +131,42 @@ public class Order implements Serializable {
     @Transient
     private Double customerLongitude;
 
+    @Transient
+    private String restaurantBankCode = "TCB";
+
+    @Transient
+    private String restaurantBankName = "Techcombank";
+
+    @Transient
+    private String restaurantBankAccountNo = "1907 2878 4280 15";
+
+    @Transient
+    private String restaurantBankAccountName = "LE HAI DANG";
+
+    public String getRestaurantBankCode() { return restaurantBankCode; }
+    public void setRestaurantBankCode(String restaurantBankCode) { this.restaurantBankCode = restaurantBankCode; }
+    public String getRestaurantBankName() { return restaurantBankName; }
+    public void setRestaurantBankName(String restaurantBankName) { this.restaurantBankName = restaurantBankName; }
+    public String getRestaurantBankAccountNo() { return restaurantBankAccountNo; }
+    public void setRestaurantBankAccountNo(String restaurantBankAccountNo) { this.restaurantBankAccountNo = restaurantBankAccountNo; }
+    public String getRestaurantBankAccountName() { return restaurantBankAccountName; }
+    public void setRestaurantBankAccountName(String restaurantBankAccountName) { this.restaurantBankAccountName = restaurantBankAccountName; }
+
+    public String getCleanRestaurantBankAccountNo() {
+        return restaurantBankAccountNo != null ? restaurantBankAccountNo.replaceAll("[\\s\\-\\.]", "") : "19072878428015";
+    }
+
+    public String getVietQrUrl() {
+        String code = (restaurantBankCode != null && !restaurantBankCode.trim().isEmpty()) ? restaurantBankCode.trim() : "TCB";
+        String acc = getCleanRestaurantBankAccountNo();
+        String name = (restaurantBankAccountName != null && !restaurantBankAccountName.trim().isEmpty()) ? restaurantBankAccountName.trim() : (restaurantName != null ? restaurantName : "LE HAI DANG");
+        try {
+            return "https://img.vietqr.io/image/" + code + "-" + acc + "-compact2.png?amount=" + (long) Math.round(totalAmount) + "&addInfo=DH" + id + "&accountName=" + java.net.URLEncoder.encode(name, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return "https://img.vietqr.io/image/" + code + "-" + acc + "-compact2.png?amount=" + (long) Math.round(totalAmount) + "&addInfo=DH" + id;
+        }
+    }
+
     public Integer getRestaurantId() { return restaurantId; }
     public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
     public String getRestaurantName() { return restaurantName; }

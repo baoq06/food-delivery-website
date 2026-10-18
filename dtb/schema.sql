@@ -58,6 +58,10 @@ CREATE TABLE `restaurants` (
     `status` VARCHAR(20) DEFAULT 'OPEN', -- 'OPEN', 'CLOSED'
     `latitude` DOUBLE DEFAULT 10.8505,
     `longitude` DOUBLE DEFAULT 106.7719,
+    `bank_code` VARCHAR(50) DEFAULT 'TCB',
+    `bank_name` VARCHAR(100) DEFAULT 'Techcombank',
+    `bank_account_no` VARCHAR(50) DEFAULT '1907 2878 4280 15',
+    `bank_account_name` VARCHAR(150) DEFAULT 'LE HAI DANG',
     CONSTRAINT `fk_restaurants_users`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
         ON DELETE SET NULL ON UPDATE CASCADE

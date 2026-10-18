@@ -16,6 +16,439 @@
     </div>
 </div>
 
+<style>
+/* ========================================================
+   VIETQR CHECKOUT & FINTECH MODAL ENHANCEMENTS (/ui-ux-pro-max)
+   ======================================================== */
+.vietqr-checkout-card {
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+    border: 1.5px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+    animation: vqrFadeIn 0.3s ease-out;
+}
+@keyframes vqrFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.vqr-guide-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.vqr-guide-icon-pill {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: #dbeafe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.vqr-guide-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    display: block;
+    line-height: 1.2;
+}
+.vqr-guide-sub {
+    font-size: 0.74rem;
+    color: #64748b;
+    display: block;
+}
+.vqr-napas-pill {
+    background: #1e40af;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+.vqr-benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.vqr-benefit-chip {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.vqr-preview-recipient {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+.vqr-recipient-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+}
+.vqr-recipient-body {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.vqr-rcp-col {
+    display: flex;
+    flex-direction: column;
+}
+.vqr-rcp-hint {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+.vqr-rcp-val {
+    font-size: 0.82rem;
+    color: #0f172a;
+    word-break: break-word;
+}
+.vqr-preview-footer-note {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin-top: 8px;
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Modal VietQR Styles */
+.vqr-modal-content {
+    background: #ffffff;
+    padding: 26px 22px 22px;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+    text-align: center;
+}
+.vqr-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+.vqr-modal-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 4px 0;
+}
+.vqr-modal-desc {
+    font-size: 0.84rem;
+    color: #64748b;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+.vqr-viewfinder-container {
+    margin: 8px 0 14px;
+}
+.vqr-viewfinder {
+    position: relative;
+    display: inline-block;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+}
+.vqr-corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-color: #2563eb;
+    border-style: solid;
+    pointer-events: none;
+}
+.vqr-corner.top-left { top: 8px; left: 8px; border-width: 3.5px 0 0 3.5px; border-top-left-radius: 8px; }
+.vqr-corner.top-right { top: 8px; right: 8px; border-width: 3.5px 3.5px 0 0; border-top-right-radius: 8px; }
+.vqr-corner.bottom-left { bottom: 8px; left: 8px; border-width: 0 0 3.5px 3.5px; border-bottom-left-radius: 8px; }
+.vqr-corner.bottom-right { bottom: 8px; right: 8px; border-width: 0 3.5px 3.5px 0; border-bottom-right-radius: 8px; }
+.vqr-qrcode-img {
+    width: 220px;
+    height: 220px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    display: block;
+}
+.vqr-live-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    color: #059669;
+    font-weight: 600;
+}
+.vqr-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: vqrPulse 1.8s infinite;
+}
+@keyframes vqrPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Receipt Card */
+.vqr-receipt-card {
+    background: #f8fafc;
+    border: 1.5px dashed #cbd5e1;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.84rem;
+}
+.vqr-receipt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 6px;
+}
+.vqr-receipt-title {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.86rem;
+}
+.vqr-receipt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.vqr-receipt-row:last-of-type {
+    border-bottom: none;
+}
+.vqr-receipt-label {
+    color: #64748b;
+    font-size: 0.82rem;
+}
+.vqr-receipt-value {
+    color: #1e293b;
+    font-weight: 600;
+}
+.vqr-receipt-action-val {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.vqr-val-highlight {
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+.vqr-amount-highlight {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #ea580c;
+}
+.vqr-memo-tag {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.92rem;
+}
+.vqr-btn-copy {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+.vqr-btn-copy:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+.vqr-btn-copy.btn-copied {
+    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #16a34a !important;
+}
+.vqr-receipt-warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    color: #92400e;
+    line-height: 1.35;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Verification Zone (Countdown + Checkbox) */
+.vqr-verification-zone {
+    margin: 14px 0;
+}
+.vqr-countdown-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: left;
+}
+.vqr-countdown-text {
+    font-size: 0.8rem;
+    color: #92400e;
+    font-weight: 600;
+}
+.vqr-countdown-badge {
+    background: #f59e0b;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+.vqr-progress-track {
+    width: 100%;
+    height: 5px;
+    background: #fde68a;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+.vqr-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #10b981);
+    width: 0%;
+    transition: width 0.3s linear;
+}
+.vqr-checkbox-card {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 14px;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+.vqr-checkbox-card:hover, .vqr-checkbox-card.checked {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+.vqr-confirm-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    margin: 0;
+    font-size: 0.82rem;
+    color: #1e293b;
+    line-height: 1.35;
+}
+.vqr-confirm-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    accent-color: #10b981;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Action Button */
+.btn-vqr-action {
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.btn-vqr-action.disabled {
+    background: #94a3b8 !important;
+    color: #f8fafc !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+    box-shadow: none;
+}
+.btn-vqr-action.btn-vqr-ready {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4) !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    animation: vqrReadyPulse 2s infinite;
+}
+@keyframes vqrReadyPulse {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.btn-vqr-action.btn-vqr-verifying {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    color: #ffffff !important;
+    cursor: wait !important;
+}
+.btn-vqr-action.btn-vqr-verified {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #ffffff !important;
+}
+.vqr-secondary-link {
+    font-size: 0.82rem;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.vqr-secondary-link:hover {
+    color: #1e293b;
+    text-decoration: underline;
+}
+</style>
+
 <div class="container section">
     <c:choose>
         <c:when test="${not empty sessionScope.cart and sessionScope.cart.size() > 0}">
@@ -284,7 +717,7 @@
                                 </c:if>
                                 <div class="payment-options">
                                     <label class="payment-radio ${isCodLocked ? 'disabled' : ''}" style="${isCodLocked ? 'opacity: 0.5; cursor: not-allowed; pointer-events: none; background: #f8fafc;' : ''}">
-                                        <input type="radio" name="paymentMethod" value="COD" ${isCodLocked ? 'disabled' : (empty stickyPaymentMethod or stickyPaymentMethod eq 'COD' ? 'checked' : '')}>
+                                        <input type="radio" name="paymentMethod" value="COD" onchange="handlePaymentMethodChange(this)" ${isCodLocked ? 'disabled' : (empty stickyPaymentMethod or stickyPaymentMethod eq 'COD' ? 'checked' : '')}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-hand-holding-dollar text-primary"></i>
                                         <span>Tiền mặt khi nhận (COD)</span>
@@ -293,14 +726,67 @@
                                         </c:if>
                                     </label>
                                     <label class="payment-radio">
-                                        <input type="radio" name="paymentMethod" value="QR" ${isCodLocked or stickyPaymentMethod eq 'QR' ? 'checked' : ''}>
+                                        <input type="radio" name="paymentMethod" value="QR" onchange="handlePaymentMethodChange(this)" ${isCodLocked or stickyPaymentMethod eq 'QR' ? 'checked' : ''}>
                                         <span class="radio-custom"></span>
                                         <i class="fa-solid fa-qrcode text-primary"></i>
                                         <span>Chuyển khoản mã VietQR</span>
-                                        <c:if test="${isCodLocked}">
-                                            <span class="badge bg-success ms-auto" style="font-size: 0.7rem; padding: 2px 7px; border-radius: 4px;"><i class="fa-solid fa-shield-check"></i> Khuyên dùng</span>
-                                        </c:if>
+                                        <span class="badge bg-success ms-auto" style="font-size: 0.7rem; padding: 2px 8px; border-radius: 4px;">
+                                            <i class="fa-solid fa-bolt me-1"></i> 24/7 Miễn phí
+                                        </span>
                                     </label>
+                                </div>
+
+                                <!-- VietQR Checkout Guide Box (Hiển thị khi chọn VietQR) -->
+                                <div id="vietqrCheckoutGuide" class="vietqr-checkout-card mt-2" style="display: ${isCodLocked or stickyPaymentMethod eq 'QR' ? 'block' : 'none'};">
+                                    <div class="vqr-guide-header">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="vqr-guide-icon-pill">
+                                                <i class="fa-solid fa-qrcode text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <span class="vqr-guide-title">Chuyển khoản VietQR Siêu Tốc</span>
+                                                <span class="vqr-guide-sub">Hỗ trợ 40+ app ngân hàng &amp; ví điện tử (MoMo, ZaloPay...)</span>
+                                            </div>
+                                        </div>
+                                        <span class="vqr-napas-pill">NAPAS 24/7</span>
+                                    </div>
+                                    <div class="vqr-benefits-grid">
+                                        <div class="vqr-benefit-chip">
+                                            <i class="fa-solid fa-wand-magic-sparkles text-warning"></i>
+                                            <span>Tự khớp STK &amp; số tiền</span>
+                                        </div>
+                                        <div class="vqr-benefit-chip">
+                                            <i class="fa-solid fa-shield-halved text-success"></i>
+                                            <span>Bảo mật, an toàn 100%</span>
+                                        </div>
+                                        <div class="vqr-benefit-chip">
+                                            <i class="fa-solid fa-fire-burner text-danger"></i>
+                                            <span>Quán nhận đơn &amp; nấu ngay</span>
+                                        </div>
+                                    </div>
+                                    <div class="vqr-preview-recipient">
+                                        <div class="vqr-recipient-label">
+                                            <i class="fa-solid fa-building-columns text-primary me-1"></i> Tài khoản thụ hưởng quán ăn:
+                                        </div>
+                                        <div class="vqr-recipient-body">
+                                            <div class="vqr-rcp-col">
+                                                <span class="vqr-rcp-hint">Ngân hàng</span>
+                                                <strong class="vqr-rcp-val">${not empty cartRestaurantBankName ? cartRestaurantBankName : 'Techcombank'} (${not empty cartRestaurantBankCode ? cartRestaurantBankCode : 'TCB'})</strong>
+                                            </div>
+                                            <div class="vqr-rcp-col">
+                                                <span class="vqr-rcp-hint">Số tài khoản</span>
+                                                <strong class="vqr-rcp-val text-primary">${not empty cartRestaurantBankAccNo ? cartRestaurantBankAccNo : '1907 2878 4280 15'}</strong>
+                                            </div>
+                                            <div class="vqr-rcp-col">
+                                                <span class="vqr-rcp-hint">Chủ tài khoản</span>
+                                                <strong class="vqr-rcp-val text-dark text-uppercase">${not empty cartRestaurantBankAccName ? cartRestaurantBankAccName : 'LE HAI DANG'}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="vqr-preview-footer-note">
+                                        <i class="fa-solid fa-circle-info text-info me-1 mt-1"></i>
+                                        <span>Mã VietQR động chứa mã đơn hàng sẽ được tạo tức thì ngay sau khi bạn bấm <strong>XÁC NHẬN ĐẶT MÓN</strong>.</span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -370,56 +856,194 @@
 
 <!-- Order Success Modal -->
 <div id="orderSuccessModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="success-icon-wrap">
-            <i class="fa-solid fa-circle-check"></i>
-        </div>
-        <h2>Đặt Hàng Thành Công!</h2>
-        <p class="modal-sub">Cảm ơn bạn đã lựa chọn Utee. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.</p>
-        
-        <div class="order-info-card">
-            <div class="info-row">
-                <span>Mã đơn hàng:</span>
-                <strong id="modalOrderId"><c:out value="${placedOrderId}" /></strong>
-            </div>
-            <c:if test="${not empty successSubtotal}">
-                <div class="info-row">
-                    <span>Tạm tính món:</span>
-                    <span>${String.format("%,.0f", successSubtotal)} đ</span>
+    <div class="modal-content vqr-modal-content" style="max-width: ${successPaymentMethod eq 'QR' ? '520px' : '460px'}; max-height: 92vh; overflow-y: auto;">
+        <c:choose>
+            <c:when test="${successPaymentMethod eq 'QR'}">
+                <!-- ================= VIETQR FINTECH PAYMENT MODAL ================= -->
+                <div class="vqr-modal-header text-center">
+                    <div class="vqr-brand-pill">
+                        <i class="fa-solid fa-qrcode text-primary"></i>
+                        <span>VIETQR • NAPAS 24/7</span>
+                    </div>
+                    <h2 class="vqr-modal-title">Quét Mã VietQR Chuyển Khoản</h2>
+                    <p class="vqr-modal-desc">
+                        Đơn hàng <strong class="text-primary">#<c:out value="${placedOrderId}" /></strong> đã được tạo. Vui lòng quét mã bên dưới để quán <strong><c:out value="${restaurantName}" /></strong> tiến hành nấu ngay.
+                    </p>
                 </div>
-                <div class="info-row">
-                    <span>Phí vận chuyển:</span>
-                    <span>${String.format("%,.0f", successShippingFee)} đ</span>
-                </div>
-            </c:if>
-            <c:if test="${not empty successVoucherCode and successDiscountAmount > 0}">
-                <div class="info-row text-success">
-                    <span><i class="fa-solid fa-tag me-1"></i> Giảm giá voucher (${successVoucherCode}):</span>
-                    <strong>-${String.format("%,.0f", successDiscountAmount)} đ</strong>
-                </div>
-            </c:if>
-            <c:if test="${not empty successTotalAmount}">
-                <div class="info-row" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px;">
-                    <span style="font-weight: 700; color: #1e293b;">Tổng thanh toán:</span>
-                    <strong style="color: var(--primary-color, #ff4757); font-size: 1.15rem;">${String.format("%,.0f", successTotalAmount)} đ</strong>
-                </div>
-            </c:if>
-            <div class="info-row">
-                <span>Dự kiến giao hàng:</span>
-                <strong class="text-primary">25 - 30 phút nữa</strong>
-            </div>
-            <div class="info-row">
-                <span>Trạng thái:</span>
-                <span class="status-badge">Đang chuẩn bị món</span>
-            </div>
-        </div>
 
-        <div class="modal-actions" style="display: flex; gap: 10px; flex-direction: column;">
-            <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-primary btn-block" style="font-weight: 700;">
-                <i class="fa-solid fa-receipt me-1"></i> Xem Tiến Độ Đơn Hàng
-            </a>
-            <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-secondary btn-block">Về Trang Chủ</a>
-        </div>
+                <!-- Viewfinder QR Scanner Area -->
+                <div class="vqr-viewfinder-container text-center my-2">
+                    <div class="vqr-viewfinder">
+                        <!-- 4 Viewfinder Corners -->
+                        <span class="vqr-corner top-left"></span>
+                        <span class="vqr-corner top-right"></span>
+                        <span class="vqr-corner bottom-left"></span>
+                        <span class="vqr-corner bottom-right"></span>
+                        
+                        <img src="${vietQrUrl}" 
+                             alt="Mã QR VietQR chuyển khoản" 
+                             class="vqr-qrcode-img"
+                             id="vqrQrImage" />
+                    </div>
+                    <div class="vqr-live-indicator mt-2">
+                        <span class="vqr-pulse-dot"></span>
+                        <span>Sẵn sàng quét trên mọi App Ngân hàng &amp; Ví MoMo / ZaloPay</span>
+                    </div>
+                </div>
+
+                <!-- Bank Receipt Details Card -->
+                <div class="vqr-receipt-card">
+                    <div class="vqr-receipt-header">
+                        <span class="vqr-receipt-title"><i class="fa-solid fa-receipt text-primary me-1"></i> Thông Tin Chuyển Khoản</span>
+                        <span class="badge bg-light text-secondary border" style="font-size: 0.72rem;">Không mất phí</span>
+                    </div>
+
+                    <div class="vqr-receipt-row">
+                        <span class="vqr-receipt-label">Ngân hàng:</span>
+                        <span class="vqr-receipt-value"><strong>${restaurantBankName}</strong> (${restaurantBankCode})</span>
+                    </div>
+                    
+                    <div class="vqr-receipt-row">
+                        <span class="vqr-receipt-label">Số tài khoản:</span>
+                        <div class="vqr-receipt-action-val">
+                            <span class="vqr-val-highlight text-primary font-monospace" id="vqrStkDisplay">${restaurantBankAccNo}</span>
+                            <button type="button" class="vqr-btn-copy" onclick="copyVqrField(this, '${restaurantBankAccClean}', 'Số tài khoản')">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="vqr-receipt-row">
+                        <span class="vqr-receipt-label">Chủ tài khoản:</span>
+                        <span class="vqr-receipt-value text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">${restaurantBankAccName}</span>
+                    </div>
+
+                    <div class="vqr-receipt-row vqr-amount-row">
+                        <span class="vqr-receipt-label">Số tiền cần chuyển:</span>
+                        <div class="vqr-receipt-action-val">
+                            <span class="vqr-amount-highlight">${String.format("%,.0f", successTotalAmount)} đ</span>
+                            <button type="button" class="vqr-btn-copy" onclick="copyVqrField(this, '${Math.round(successTotalAmount)}', 'Số tiền')">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="vqr-receipt-row vqr-memo-row">
+                        <span class="vqr-receipt-label">Nội dung CK:</span>
+                        <div class="vqr-receipt-action-val">
+                            <span class="vqr-memo-tag font-monospace">DH${successOrderIdRaw}</span>
+                            <button type="button" class="vqr-btn-copy" onclick="copyVqrField(this, 'DH${successOrderIdRaw}', 'Nội dung chuyển khoản')">
+                                <i class="fa-regular fa-copy"></i> <span>Sao chép</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="vqr-receipt-warning">
+                        <i class="fa-solid fa-triangle-exclamation text-warning me-1 mt-1"></i>
+                        <span>Quý khách vui lòng <strong>giữ nguyên nội dung chuyển khoản DH${successOrderIdRaw}</strong> để hệ thống tự động xác nhận đơn.</span>
+                    </div>
+                </div>
+
+                <!-- SAFETY CONTROL: Đợi người dùng thật sự chuyển tiền xong -->
+                <div class="vqr-verification-zone my-3">
+                    <!-- Countdown & Progress Bar -->
+                    <div id="vqrCountdownBox" class="vqr-countdown-box">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="vqr-countdown-text">
+                                <i class="fa-solid fa-hourglass-half text-warning me-1" id="vqrTimerIcon"></i>
+                                <span id="vqrTimerMsg">Đang chờ bạn mở app &amp; quét mã chuyển tiền...</span>
+                            </span>
+                            <span class="vqr-countdown-badge" id="vqrCountdownBadge">8s</span>
+                        </div>
+                        <div class="vqr-progress-track">
+                            <div class="vqr-progress-bar" id="vqrProgressBar"></div>
+                        </div>
+                    </div>
+
+                    <!-- Checkbox Confirmation -->
+                    <div class="vqr-checkbox-card mt-2" id="vqrCheckboxCard">
+                        <label class="vqr-confirm-label" for="vqrTransferConfirmed">
+                            <input type="checkbox" id="vqrTransferConfirmed" onchange="handleVqrCheckboxToggle(this)">
+                            <span class="vqr-checkbox-text">
+                                Tôi xác nhận đã mở ứng dụng ngân hàng và <strong>chuyển tiền thành công</strong> số tiền <span class="text-danger fw-bold">${String.format("%,.0f", successTotalAmount)} đ</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="modal-actions" style="display: flex; gap: 8px; flex-direction: column;">
+                    <button type="button" id="btnConfirmVqrPaid" class="btn btn-vqr-action disabled" disabled onclick="handleSimulatedVerification()">
+                        <span id="vqrBtnIcon"><i class="fa-solid fa-lock"></i></span>
+                        <span id="vqrBtnText">Đang đợi bạn chuyển tiền (8s)...</span>
+                    </button>
+                    
+                    <div class="vqr-escape-row text-center mt-2">
+                        <a href="${pageContext.request.contextPath}/client/orders" class="vqr-secondary-link">
+                            <i class="fa-solid fa-clock-rotate-left me-1"></i> Để tôi thanh toán sau (Vào xem danh sách đơn hàng)
+                        </a>
+                    </div>
+                    <a href="${pageContext.request.contextPath}/home" class="btn btn-link text-secondary" style="font-size: 0.85rem; text-decoration: none; padding: 4px;">
+                        Về Trang Chủ
+                    </a>
+                </div>
+            </c:when>
+
+            <c:otherwise>
+                <!-- ================= STANDARD COD / SUCCESS MODAL ================= -->
+                <div class="success-icon-wrap">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h2>Đặt Hàng Thành Công!</h2>
+                <p class="modal-sub">
+                    Cảm ơn bạn đã lựa chọn Utee. Đơn hàng của bạn đã được tiếp nhận và nhà bếp đang chuẩn bị.
+                </p>
+                
+                <div class="order-info-card">
+                    <div class="info-row">
+                        <span>Mã đơn hàng:</span>
+                        <strong id="modalOrderId"><c:out value="${placedOrderId}" /></strong>
+                    </div>
+                    <c:if test="${not empty successSubtotal}">
+                        <div class="info-row">
+                            <span>Tạm tính món:</span>
+                            <span>${String.format("%,.0f", successSubtotal)} đ</span>
+                        </div>
+                        <div class="info-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>${String.format("%,.0f", successShippingFee)} đ</span>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty successVoucherCode and successDiscountAmount > 0}">
+                        <div class="info-row text-success">
+                            <span><i class="fa-solid fa-tag me-1"></i> Giảm giá voucher (${successVoucherCode}):</span>
+                            <strong>-${String.format("%,.0f", successDiscountAmount)} đ</strong>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty successTotalAmount}">
+                        <div class="info-row" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px;">
+                            <span style="font-weight: 700; color: #1e293b;">Tổng thanh toán:</span>
+                            <strong style="color: var(--primary-color, #ff4757); font-size: 1.15rem;">${String.format("%,.0f", successTotalAmount)} đ</strong>
+                        </div>
+                    </c:if>
+                    <div class="info-row">
+                        <span>Dự kiến giao hàng:</span>
+                        <strong class="text-primary">25 - 30 phút nữa</strong>
+                    </div>
+                    <div class="info-row">
+                        <span>Trạng thái:</span>
+                        <span class="status-badge">Đang chuẩn bị món</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="display: flex; gap: 10px; flex-direction: column; margin-top: 20px;">
+                    <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-primary btn-block" style="font-weight: 700;">
+                        <i class="fa-solid fa-receipt me-1"></i> Xem Tiến Độ Đơn Hàng
+                    </a>
+                    <a href="${pageContext.request.contextPath}/home" class="btn btn-outline-secondary btn-block">Về Trang Chủ</a>
+                </div>
+            </c:otherwise>
+        </c:choose>
     </div>
 </div>
 
@@ -1132,14 +1756,196 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+function handlePaymentMethodChange(radioEl) {
+    const guide = document.getElementById('vietqrCheckoutGuide');
+    if (!guide) return;
+    if (radioEl && radioEl.value === 'QR') {
+        guide.style.display = 'block';
+    } else {
+        guide.style.display = 'none';
+    }
+}
+
+function copyVqrField(btn, text, label) {
+    if (!text) return;
+    copyToClipboard(text, 'Đã sao chép ' + label + '!');
+    if (btn) {
+        const origContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check text-success"></i> <span>Đã chép</span>';
+        btn.classList.add('btn-copied');
+        setTimeout(function() {
+            btn.innerHTML = origContent;
+            btn.classList.remove('btn-copied');
+        }, 1800);
+    }
+}
+
+let vqrCountdownTimer = null;
+let vqrCountdownCompleted = false;
+
+function initVqrSafetyFlow() {
+    const btn = document.getElementById('btnConfirmVqrPaid');
+    if (!btn) return;
+
+    let timeLeft = 8;
+    const totalTime = 8;
+    const badge = document.getElementById('vqrCountdownBadge');
+    const bar = document.getElementById('vqrProgressBar');
+    const msg = document.getElementById('vqrTimerMsg');
+    const icon = document.getElementById('vqrTimerIcon');
+    const btnText = document.getElementById('vqrBtnText');
+    const btnIcon = document.getElementById('vqrBtnIcon');
+
+    if (vqrCountdownTimer) {
+        clearInterval(vqrCountdownTimer);
+    }
+
+    if (bar) bar.style.width = '0%';
+    if (badge) badge.innerText = timeLeft + 's';
+
+    vqrCountdownTimer = setInterval(function() {
+        timeLeft--;
+        const percent = Math.round(((totalTime - timeLeft) / totalTime) * 100);
+        if (bar) bar.style.width = percent + '%';
+        if (badge) badge.innerText = timeLeft + 's';
+
+        if (timeLeft > 0) {
+            if (btnText && btn.disabled) {
+                btnText.innerText = 'Đang đợi bạn chuyển tiền (' + timeLeft + 's)...';
+            }
+        } else {
+            clearInterval(vqrCountdownTimer);
+            vqrCountdownCompleted = true;
+            if (badge) badge.style.display = 'none';
+            if (msg) msg.innerHTML = '<strong class="text-success"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành thời gian chờ chuyển tiền!</strong>';
+            if (icon) icon.className = 'fa-solid fa-circle-check text-success me-1';
+            
+            const cb = document.getElementById('vqrTransferConfirmed');
+            if (cb && cb.checked) {
+                enableVqrButton();
+            } else {
+                if (btnText) btnText.innerText = 'Vui lòng tích vào ô xác nhận phía trên';
+                if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-square-check"></i>';
+            }
+        }
+    }, 1000);
+}
+
+function handleVqrCheckboxToggle(cb) {
+    const card = document.getElementById('vqrCheckboxCard');
+    if (card) {
+        if (cb.checked) {
+            card.classList.add('checked');
+        } else {
+            card.classList.remove('checked');
+        }
+    }
+
+    if (cb.checked) {
+        enableVqrButton();
+    } else {
+        disableVqrButton();
+    }
+}
+
+function enableVqrButton() {
+    const btn = document.getElementById('btnConfirmVqrPaid');
+    const btnText = document.getElementById('vqrBtnText');
+    const btnIcon = document.getElementById('vqrBtnIcon');
+    if (!btn) return;
+    btn.disabled = false;
+    btn.className = 'btn btn-vqr-action btn-vqr-ready';
+    if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    if (btnText) btnText.innerText = 'Tôi Đã Chuyển Khoản Xong';
+}
+
+function disableVqrButton() {
+    const btn = document.getElementById('btnConfirmVqrPaid');
+    const btnText = document.getElementById('vqrBtnText');
+    const btnIcon = document.getElementById('vqrBtnIcon');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.className = 'btn btn-vqr-action disabled';
+    if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-lock"></i>';
+    if (btnText) {
+        if (!vqrCountdownCompleted) {
+            btnText.innerText = 'Đang đợi bạn chuyển tiền...';
+        } else {
+            btnText.innerText = 'Vui lòng tích vào ô xác nhận phía trên';
+        }
+    }
+}
+
+function handleSimulatedVerification() {
+    const btn = document.getElementById('btnConfirmVqrPaid');
+    const btnText = document.getElementById('vqrBtnText');
+    const btnIcon = document.getElementById('vqrBtnIcon');
+    if (!btn || btn.disabled) return;
+
+    btn.disabled = true;
+    btn.className = 'btn btn-vqr-action btn-vqr-verifying';
+    if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+    if (btnText) btnText.innerText = 'Đang đối soát ngân hàng Techcombank...';
+
+    setTimeout(function() {
+        btn.className = 'btn btn-vqr-action btn-vqr-verified';
+        if (btnIcon) btnIcon.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+        if (btnText) btnText.innerText = 'Xác nhận thành công! Đang chuyển tiếp...';
+
+        setTimeout(function() {
+            window.location.href = '${pageContext.request.contextPath}/client/orders?success=vqr_paid';
+        }, 700);
+    }, 1500);
+}
+
 <c:if test="${orderSuccess}">
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('orderSuccessModal');
     if (modal) {
         modal.classList.add('active');
+        <c:if test="${successPaymentMethod eq 'QR'}">
+        initVqrSafetyFlow();
+        </c:if>
     }
 });
 </c:if>
+
+function copyToClipboard(text, successMsg) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+            if (typeof window.showToast === 'function') {
+                window.showToast('✅ ' + (successMsg || 'Đã sao chép!'));
+            } else {
+                alert(successMsg || 'Đã sao chép vào bộ nhớ tạm!');
+            }
+        }).catch(function() {
+            fallbackCopy(text, successMsg);
+        });
+    } else {
+        fallbackCopy(text, successMsg);
+    }
+}
+
+function fallbackCopy(text, successMsg) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.select();
+    try {
+        document.execCommand('copy');
+        if (typeof window.showToast === 'function') {
+            window.showToast('✅ ' + (successMsg || 'Đã sao chép!'));
+        } else {
+            alert(successMsg || 'Đã sao chép vào bộ nhớ tạm!');
+        }
+    } catch (e) {
+        alert('Không thể tự động sao chép: ' + text);
+    }
+    document.body.removeChild(el);
+}
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

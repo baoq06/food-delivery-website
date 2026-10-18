@@ -98,12 +98,16 @@ public class CartController extends HttpServlet {
                         }
                     }
                 }
-                if ((cartRestaurantName == null || cartRestaurantName.trim().isEmpty()) && restaurantId > 0) {
-                    com.ute.fooddelivery.dao.RestaurantDAO rDao = new com.ute.fooddelivery.dao.RestaurantDAO();
-                    com.ute.fooddelivery.model.Restaurant r = rDao.getRestaurantById(restaurantId);
-                    if (r != null) {
+                com.ute.fooddelivery.dao.RestaurantDAO rDao = new com.ute.fooddelivery.dao.RestaurantDAO();
+                com.ute.fooddelivery.model.Restaurant r = rDao.getRestaurantById(restaurantId);
+                if (r != null) {
+                    if (cartRestaurantName == null || cartRestaurantName.trim().isEmpty()) {
                         cartRestaurantName = r.getName();
                     }
+                    req.setAttribute("cartRestaurantBankCode", r.getBankCode());
+                    req.setAttribute("cartRestaurantBankName", r.getBankName());
+                    req.setAttribute("cartRestaurantBankAccNo", r.getBankAccountNo());
+                    req.setAttribute("cartRestaurantBankAccName", r.getBankAccountName());
                 }
             }
         }
@@ -522,6 +526,8 @@ public class CartController extends HttpServlet {
 
                     session.removeAttribute("cart");
                     req.setAttribute("placedOrderId", "#DH-" + orderId);
+                    req.setAttribute("successOrderIdRaw", orderId);
+                    req.setAttribute("successPaymentMethod", paymentMethod != null ? paymentMethod : "COD");
                     req.setAttribute("orderSuccess", true);
                     req.setAttribute("successSubtotal", subtotalBill);
                     req.setAttribute("successShippingFee", shippingFee);
@@ -530,6 +536,29 @@ public class CartController extends HttpServlet {
                     req.setAttribute("successFoodDiscount", dualResult.getFoodDiscount());
                     req.setAttribute("successVoucherCode", appliedVoucherCode);
                     req.setAttribute("successTotalAmount", totalBill);
+
+                    // Lấy thông tin tài khoản ngân hàng của quán ăn thụ hưởng để sinh mã VietQR
+                    String bCode = (restaurant != null && restaurant.getBankCode() != null && !restaurant.getBankCode().trim().isEmpty()) ? restaurant.getBankCode().trim() : "TCB";
+                    String bName = (restaurant != null && restaurant.getBankName() != null && !restaurant.getBankName().trim().isEmpty()) ? restaurant.getBankName().trim() : "Techcombank";
+                    String bAccNo = (restaurant != null && restaurant.getBankAccountNo() != null && !restaurant.getBankAccountNo().trim().isEmpty()) ? restaurant.getBankAccountNo().trim() : "1907 2878 4280 15";
+                    String bAccClean = (restaurant != null && restaurant.getCleanBankAccountNo() != null && !restaurant.getCleanBankAccountNo().trim().isEmpty()) ? restaurant.getCleanBankAccountNo().trim() : "19072878428015";
+                    String bAccName = (restaurant != null && restaurant.getBankAccountName() != null && !restaurant.getBankAccountName().trim().isEmpty()) ? restaurant.getBankAccountName().trim() : (restaurant != null ? restaurant.getName() : "LE HAI DANG");
+
+                    req.setAttribute("restaurantBankCode", bCode);
+                    req.setAttribute("restaurantBankName", bName);
+                    req.setAttribute("restaurantBankAccNo", bAccNo);
+                    req.setAttribute("restaurantBankAccClean", bAccClean);
+                    req.setAttribute("restaurantBankAccName", bAccName);
+                    req.setAttribute("restaurantName", restaurant != null ? restaurant.getName() : "Quán ăn");
+
+                    try {
+                        String encodedAccName = java.net.URLEncoder.encode(bAccName, java.nio.charset.StandardCharsets.UTF_8);
+                        String vietQrUrl = "https://img.vietqr.io/image/" + bCode + "-" + bAccClean + "-compact2.png?amount=" + (long) Math.round(totalBill) + "&addInfo=DH" + orderId + "&accountName=" + encodedAccName;
+                        req.setAttribute("vietQrUrl", vietQrUrl);
+                    } catch (Exception e) {
+                        req.setAttribute("vietQrUrl", "https://img.vietqr.io/image/" + bCode + "-" + bAccClean + "-compact2.png?amount=" + (long) Math.round(totalBill) + "&addInfo=DH" + orderId);
+                    }
+
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
                     return;
                 }

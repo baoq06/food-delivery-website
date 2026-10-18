@@ -57,6 +57,18 @@ public class Restaurant implements Serializable {
     @Column(name = "longitude")
     private Double longitude;
 
+    @Column(name = "bank_code")
+    private String bankCode = "TCB";
+
+    @Column(name = "bank_name")
+    private String bankName = "Techcombank";
+
+    @Column(name = "bank_account_no")
+    private String bankAccountNo = "1907 2878 4280 15";
+
+    @Column(name = "bank_account_name")
+    private String bankAccountName = "LE HAI DANG";
+
     @Transient
     private double rating;
 
@@ -272,5 +284,42 @@ public class Restaurant implements Serializable {
             return imageUrl.trim();
         }
         return "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=80";
+    }
+
+    public String getBankCode() {
+        return (bankCode != null && !bankCode.trim().isEmpty()) ? bankCode : "TCB";
+    }
+
+    public void setBankCode(String bankCode) {
+        this.bankCode = bankCode;
+    }
+
+    public String getBankName() {
+        return (bankName != null && !bankName.trim().isEmpty()) ? bankName : "Techcombank";
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBankAccountNo() {
+        return (bankAccountNo != null && !bankAccountNo.trim().isEmpty()) ? bankAccountNo : "1907 2878 4280 15";
+    }
+
+    public void setBankAccountNo(String bankAccountNo) {
+        this.bankAccountNo = bankAccountNo;
+    }
+
+    public String getCleanBankAccountNo() {
+        String acc = getBankAccountNo();
+        return acc != null ? acc.replaceAll("[\\s\\-\\.]", "") : "19072878428015";
+    }
+
+    public String getBankAccountName() {
+        return (bankAccountName != null && !bankAccountName.trim().isEmpty()) ? bankAccountName : (this.name != null ? this.name : "LE HAI DANG");
+    }
+
+    public void setBankAccountName(String bankAccountName) {
+        this.bankAccountName = bankAccountName;
     }
 }
