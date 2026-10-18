@@ -928,6 +928,14 @@
                                                     <i class="fa-solid fa-triangle-exclamation text-warning"></i> Điểm
                                                     vi phạm
                                                 </a>
+                                                <a
+                                                    href="${pageContext.request.contextPath}/shipper/dashboard?tab=settings">
+                                                    <i class="fa-solid fa-gear text-secondary"></i> Cài đặt hoạt động
+                                                </a>
+                                                <a
+                                                    href="${pageContext.request.contextPath}/shipper/dashboard?tab=help">
+                                                    <i class="fa-solid fa-circle-question text-primary"></i> Trung tâm trợ giúp
+                                                </a>
                                             </c:if>
 
                                             <!-- Link tới Trang Thông Báo Chung -->
