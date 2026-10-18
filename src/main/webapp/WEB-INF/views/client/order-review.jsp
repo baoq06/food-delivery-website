@@ -642,7 +642,7 @@
         <div class="review-breadcrumb">
             <a href="${pageContext.request.contextPath}/home"><i class="fa-solid fa-house"></i> Trang chủ</a>
             <i class="fa-solid fa-chevron-right"></i>
-            <a href="${pageContext.request.contextPath}/profile?tab=orders">Đơn hàng của tôi</a>
+            <a href="${pageContext.request.contextPath}/client/orders">Đơn hàng của tôi</a>
             <i class="fa-solid fa-chevron-right"></i>
             <span>Đánh giá đơn #FZ-${order.id}</span>
         </div>
@@ -725,7 +725,7 @@
                 </div>
 
                 <div style="margin-top: 20px;">
-                    <a href="${pageContext.request.contextPath}/profile?tab=orders" class="btn btn-outline w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 50px; font-weight: 600; padding: 10px;">
+                    <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-outline w-100 d-flex align-items-center justify-content-center gap-2" style="border-radius: 50px; font-weight: 600; padding: 10px;">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại lịch sử đơn hàng
                     </a>
                 </div>
@@ -805,7 +805,7 @@
                         </div>
 
                         <div class="review-actions-bar" style="margin-top: 24px;">
-                            <a href="${pageContext.request.contextPath}/profile?tab=orders" class="btn btn-outline" style="border-radius: 50px; font-weight: 600; padding: 12px 24px;">
+                            <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-outline" style="border-radius: 50px; font-weight: 600; padding: 12px 24px;">
                                 <i class="fa-solid fa-receipt me-1"></i> Danh sách đơn hàng
                             </a>
                             <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 12px 28px;">
@@ -971,7 +971,7 @@
 
                             <!-- Actions Bar -->
                             <div class="review-actions-bar">
-                                <a href="${pageContext.request.contextPath}/profile?tab=orders" class="btn btn-outline" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                                <a href="${pageContext.request.contextPath}/client/orders" class="btn btn-outline" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
                                     <i class="fa-solid fa-xmark me-1"></i> Để sau
                                 </a>
                                 <button type="submit" class="btn-submit-review">

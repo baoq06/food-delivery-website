@@ -762,7 +762,7 @@
 
                                     <!-- Đơn hàng đã đặt & Kho Voucher: ẨN hoàn toàn khi shipper đang BẬT nhận đơn; HIỆN khi shipper TẮT nhận đơn hoặc là khách thường -->
                                     <c:if test="${not isSeller and not isShipperActive}">
-                                        <a href="${pageContext.request.contextPath}/profile?tab=orders" class="${pageContext.request.servletPath eq '/profile' and param.tab eq 'orders' ? 'active-link' : ''}">
+                                        <a href="${pageContext.request.contextPath}/client/orders" class="${pageContext.request.servletPath eq '/client/orders' ? 'active-link' : ''}">
                                             <i class="fa-solid fa-clock-rotate-left text-secondary"></i> Đơn hàng đã đặt
                                         </a>
                                         <a href="${pageContext.request.contextPath}/profile?tab=vouchers" class="${pageContext.request.servletPath eq '/profile' and param.tab eq 'vouchers' ? 'active-link' : ''}">
@@ -1080,7 +1080,7 @@
                         </li>
                         <c:if test="${not isSeller and not isShipperActive}">
                             <li>
-                                <a href="${pageContext.request.contextPath}/profile?tab=orders">
+                                <a href="${pageContext.request.contextPath}/client/orders">
                                     <i class="fa-solid fa-clock-rotate-left text-info"></i> Đơn hàng đã đặt
                                 </a>
                             </li>

@@ -60,7 +60,7 @@ public class NotificationService {
                 "Tài xế đã nhận đơn #DH-" + orderId,
                 "Tài xế " + driverName + " (" + driverPhone + ") sẽ giao đơn hàng của bạn. Quán đang chuẩn bị món ăn!",
                 "SHIPPER_ACCEPTED",
-                "/profile?tab=orders"
+                "/client/orders"
             );
             notificationDAO.createNotification(notifCustomer);
         }
@@ -88,7 +88,7 @@ public class NotificationService {
                 "Quán đang chế biến & giao đơn #DH-" + orderId,
                 "Món ăn của bạn đang được quán chuẩn bị và giao cho tài xế vận chuyển đến bạn!",
                 "ORDER_SHIPPING",
-                "/profile?tab=orders"
+                "/client/orders"
             );
             notificationDAO.createNotification(notif);
         }
@@ -114,7 +114,7 @@ public class NotificationService {
                 "Tài xế báo đã giao đơn #DH-" + orderId,
                 "Tài xế " + driverName + " báo đã giao hàng đến bạn. Vui lòng kiểm tra và bấm 'Đã nhận được hàng'!",
                 "SHIPPER_DELIVERED",
-                "/profile?tab=orders"
+                "/client/orders"
             );
             notificationDAO.createNotification(notif);
         }
@@ -170,7 +170,7 @@ public class NotificationService {
                 "Đơn hàng #DH-" + orderId + " đã hoàn tất!",
                 "Cả bạn và tài xế đã xác nhận đơn hàng thành công! Hãy để lại đánh giá để quán phục vụ tốt hơn nhé.",
                 "ORDER_COMPLETED",
-                "/profile?tab=orders"
+                "/client/orders"
             );
             notificationDAO.createNotification(notif);
         }
@@ -203,7 +203,7 @@ public class NotificationService {
     public void notifyOrderCancelled(Integer customerUserId, Integer shipperUserId, Integer merchantUserId, int orderId, String reason) {
         String msg = "Đơn hàng #DH-" + orderId + " đã bị hủy. Lý do: " + (reason != null ? reason : "Không xác định");
         if (customerUserId != null && customerUserId > 0) {
-            notificationDAO.createNotification(new Notification(customerUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/profile?tab=orders"));
+            notificationDAO.createNotification(new Notification(customerUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/client/orders"));
         }
         if (shipperUserId != null && shipperUserId > 0) {
             notificationDAO.createNotification(new Notification(shipperUserId, orderId, "Đơn hàng #DH-" + orderId + " đã bị hủy", msg, "ORDER_CANCELLED", "/shipper/dashboard"));
@@ -221,7 +221,7 @@ public class NotificationService {
                 "⚠️ Khóa phương thức tiền mặt (COD)",
                 "Đơn hàng #DH-" + orderId + " bị ghi nhận giao không thành công (" + (reason != null ? reason : "Khách không nhận") + "). Tài khoản của bạn đã bị tạm khóa COD và chuyển sang thanh toán trước.",
                 "ORDER_CANCELLED",
-                "/profile?tab=orders"
+                "/client/orders"
             ));
         }
         if (merchantUserId != null && merchantUserId > 0) {

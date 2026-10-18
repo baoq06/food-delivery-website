@@ -1,7 +1,9 @@
 package com.ute.fooddelivery.controller;
 
+import com.ute.fooddelivery.dao.UserVoucherDAO;
 import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.User;
+import com.ute.fooddelivery.model.UserVoucher;
 import com.ute.fooddelivery.service.OrderService;
 import com.ute.fooddelivery.service.UserService;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,7 @@ import java.util.List;
 public class ProfileController extends HttpServlet {
     private final UserService userService = new UserService();
     private final OrderService orderService = new OrderService();
+    private final UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -68,6 +71,21 @@ public class ProfileController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/profile?tab=profile");
                 return;
             }
+        }
+
+        // Chuyển hướng tab=orders sang trang Đơn hàng (/client/orders) để đồng nhất 1 trang duy nhất
+        String tab = req.getParameter("tab");
+        if ("orders".equalsIgnoreCase(tab)) {
+            String success = req.getParameter("success");
+            String error = req.getParameter("error");
+            String redirectUrl = req.getContextPath() + "/client/orders";
+            if (success != null && !success.trim().isEmpty()) {
+                redirectUrl += "?success=" + success.trim();
+            } else if (error != null && !error.trim().isEmpty()) {
+                redirectUrl += "?error=" + error.trim();
+            }
+            resp.sendRedirect(redirectUrl);
+            return;
         }
 
         // Lấy danh sách đơn hàng của người dùng (nếu là merchant thì không cần tải đơn đặt món)
@@ -122,12 +140,23 @@ public class ProfileController extends HttpServlet {
             req.setAttribute("errorMessage", "Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng đợi nhận món từ shipper trước khi bấm xác nhận!");
         }
 
+        // Lấy danh sách voucher trong ví của người dùng và tính tổng số lượng voucher
+        List<UserVoucher> userVouchers = userVoucherDAO.getUserVouchers(currentUser.getId());
+        int totalVoucherCount = 0;
+        if (userVouchers != null) {
+            for (UserVoucher uv : userVouchers) {
+                totalVoucherCount += uv.getQuantity();
+            }
+        }
+
         req.setAttribute("user", currentUser);
         req.setAttribute("orders", orders);
         req.setAttribute("totalOrders", totalOrders);
         req.setAttribute("activeOrders", activeOrders);
         req.setAttribute("completedOrders", completedOrders);
         req.setAttribute("totalSpent", totalSpent);
+        req.setAttribute("userVouchers", userVouchers);
+        req.setAttribute("totalVoucherCount", totalVoucherCount);
         req.setAttribute("activeTab", activeTab);
 
         req.getRequestDispatcher("/WEB-INF/views/client/profile.jsp").forward(req, resp);
@@ -229,13 +258,13 @@ public class ProfileController extends HttpServlet {
                         Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
                         notifSvc.notifyOrderCancelled(currentUser.getId(), shipperUserId, merchantUserId, orderId, "Khách hàng tự hủy đơn");
                     } catch (Exception ignored) {}
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_cancelled");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?success=order_cancelled");
                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=cancel_failed");
                 }
                 return;
             } catch (Exception e) {
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=cancel_failed");
                 return;
             }
         } else if ("confirm_received".equalsIgnoreCase(action)) {
@@ -244,7 +273,7 @@ public class ProfileController extends HttpServlet {
                 com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
                 com.ute.fooddelivery.model.Order targetOrder = oDAO.getOrderById(orderId);
                 if (targetOrder == null || "CANCELLED".equalsIgnoreCase(targetOrder.getStatus()) || "PENDING".equalsIgnoreCase(targetOrder.getStatus())) {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                     return;
                 }
 
@@ -263,13 +292,13 @@ public class ProfileController extends HttpServlet {
                             notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
                         }
                     } catch (Exception ignored) {}
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?success=order_confirmed");
                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                 }
                 return;
             } catch (Exception e) {
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                 return;
             }
         } else if ("rate".equalsIgnoreCase(action) || "add_review".equalsIgnoreCase(action)) {
@@ -305,11 +334,11 @@ public class ProfileController extends HttpServlet {
 
                 com.ute.fooddelivery.dao.ReviewDAO rDAO = new com.ute.fooddelivery.dao.ReviewDAO();
                 rDAO.addReview(review);
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=review_added");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?success=review_added");
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=review_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=review_failed");
                 return;
             }
         }
