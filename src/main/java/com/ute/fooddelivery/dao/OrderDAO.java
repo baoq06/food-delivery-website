@@ -275,6 +275,11 @@ public class OrderDAO {
                     ps.setInt(3, orderId);
                     int updated = ps.executeUpdate();
                     if (updated > 0 && ("DELIVERED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status))) {
+                        // Tự động kiểm tra phục hồi uy tín COD cho khách hàng nếu hoàn tất đơn
+                        if ("DELIVERED".equalsIgnoreCase(status)) {
+                            handleCodUnlockOnDeliveredByOrderId(orderId);
+                        }
+
                         // Khi đơn hoàn tất hoặc hủy, giải phóng tài xế về trạng thái AVAILABLE
                         String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
                         try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
@@ -1532,13 +1537,14 @@ public class OrderDAO {
      * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
      */
     public boolean checkAndAutoCompleteOrder(int orderId) {
-        String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
+        String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status, user_id FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 boolean shipDelivered = false;
                 boolean custConfirmed = false;
                 int driverId = 0;
                 String currentStatus = null;
+                int customerUserId = 0;
 
                 try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
                     psCheck.setInt(1, orderId);
@@ -1548,6 +1554,7 @@ public class OrderDAO {
                             custConfirmed = rs.getBoolean("customer_confirmed");
                             driverId = rs.getInt("driver_id");
                             currentStatus = rs.getString("status");
+                            customerUserId = rs.getInt("user_id");
                         }
                     }
                 }
@@ -1558,11 +1565,17 @@ public class OrderDAO {
 
                 // Đơn hàng CHỈ chính thức hoàn tất (DELIVERED) khi SHIPPER đã bấm xác nhận đã giao hàng tận nơi
                 if (shipDelivered) {
+                    boolean wasDelivered = "DELIVERED".equalsIgnoreCase(currentStatus);
                     String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
                     try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                         psUpdate.setInt(1, orderId);
                         int updated = psUpdate.executeUpdate();
-                        if (updated > 0 || "DELIVERED".equalsIgnoreCase(currentStatus)) {
+                        if (updated > 0 || wasDelivered) {
+                            // Nếu đơn vừa chính thức hoàn tất DELIVERED lần đầu, xử lý tích lũy đơn uy tín mở lại COD
+                            if (!wasDelivered && customerUserId > 0) {
+                                handleCodUnlockOnDelivered(customerUserId, orderId);
+                            }
+
                             // Giải phóng shipper về AVAILABLE nếu không còn đơn SHIPPING nào khác
                             if (driverId > 0) {
                                 boolean hasOtherShipping = false;
@@ -1605,6 +1618,7 @@ public class OrderDAO {
             psUpdate.setInt(1, orderId);
             int updated = psUpdate.executeUpdate();
             if (updated > 0) {
+                handleCodUnlockOnDeliveredByOrderId(orderId);
                 Order o = getOrderById(orderId);
                 if (o != null && o.getDriverId() != null && o.getDriverId() > 0) {
                     try (PreparedStatement psDriver = conn.prepareStatement("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?")) {
@@ -1618,6 +1632,35 @@ public class OrderDAO {
             System.err.println("Lỗi khi chủ quán hoàn tất đơn: " + e.getMessage());
         }
         return false;
+    }
+
+    private void handleCodUnlockOnDelivered(int customerUserId, int orderId) {
+        if (customerUserId <= 0) return;
+        try {
+            UserDAO uDao = new UserDAO();
+            boolean autoUnlocked = uDao.recordCompletedOrderForCodProgress(customerUserId);
+            if (autoUnlocked) {
+                com.ute.fooddelivery.service.NotificationService notifService = new com.ute.fooddelivery.service.NotificationService();
+                notifService.notifyCodAutoUnlocked(customerUserId, orderId);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra tiến độ mở COD cho khách #" + customerUserId + " (đơn #" + orderId + "): " + e.getMessage());
+        }
+    }
+
+    private void handleCodUnlockOnDeliveredByOrderId(int orderId) {
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement("SELECT user_id FROM orders WHERE order_id = ?")) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int userId = rs.getInt("user_id");
+                    handleCodUnlockOnDelivered(userId, orderId);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi truy vấn user_id từ order_id #" + orderId + ": " + e.getMessage());
+        }
     }
 
     public Integer getMerchantUserIdByOrderId(int orderId) {

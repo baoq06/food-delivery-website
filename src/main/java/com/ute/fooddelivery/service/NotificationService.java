@@ -277,4 +277,53 @@ public class NotificationService {
             System.err.println("Lỗi khi gửi thông báo bom hàng đến Admin: " + e.getMessage());
         }
     }
+
+    public void notifyCodUnlockedByAdmin(Integer customerUserId) {
+        if (customerUserId == null || customerUserId <= 0) return;
+        String title = "[Thông báo] Thanh toán Tiền mặt (COD) đã được mở lại";
+        String msg = "Quản trị viên đã xem xét và kích hoạt lại phương thức thanh toán Tiền mặt (COD) cho tài khoản của bạn. Chúc bạn có trải nghiệm mua sắm tuyệt vời!";
+        notificationDAO.createNotification(new Notification(
+            customerUserId,
+            null,
+            title,
+            msg,
+            "SYSTEM",
+            "/cart"
+        ));
+    }
+
+    public void notifyCodAutoUnlocked(Integer customerUserId, int orderId) {
+        if (customerUserId != null && customerUserId > 0) {
+            String title = "[Chúc mừng] Tự động mở lại thanh toán Tiền mặt (COD)";
+            String msg = "Bạn đã hoàn thành đủ 3 đơn hàng trả trước thành công (vừa hoàn tất đơn #DH-" + orderId + "). Hệ thống đã tự động khôi phục uy tín và mở lại phương thức thanh toán Tiền mặt (COD) cho bạn!";
+            notificationDAO.createNotification(new Notification(
+                customerUserId,
+                orderId,
+                title,
+                msg,
+                "ORDER_COMPLETED",
+                "/cart"
+            ));
+        }
+
+        try {
+            List<Integer> adminIds = userDAO.getAdminUserIds();
+            String adminTitle = "[Hệ thống] Khách hàng #" + customerUserId + " đã tự động phục hồi uy tín COD";
+            String adminMsg = "Khách hàng ID " + customerUserId + " đã hoàn thành 3 đơn hàng uy tín thành công sau đơn #DH-" + orderId + ". Hệ thống đã tự động mở lại COD cho khách hàng.";
+            for (Integer adminId : adminIds) {
+                if (adminId != null && adminId > 0) {
+                    notificationDAO.createNotification(new Notification(
+                        adminId,
+                        orderId,
+                        adminTitle,
+                        adminMsg,
+                        "SYSTEM",
+                        "/admin/dashboard?tab=customers"
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gửi thông báo tự động mở COD đến Admin: " + e.getMessage());
+        }
+    }
 }
