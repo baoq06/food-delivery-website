@@ -526,61 +526,59 @@
 <!-- ====================================================================
      MODAL: CHI TIẾT ĐIỀU KIỆN VOUCHER
      ==================================================================== -->
-<div class="modal fade" id="voucherTermsModal" tabindex="-1" aria-labelledby="voucherTermsModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-md">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #fff; padding: 16px 20px;">
-                <h5 class="modal-title fw-bold" id="voucherTermsModalTitle">
-                    <i class="fa-solid fa-circle-info me-2"></i> Điều Kiện Sử Dụng Voucher
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4" style="background: #fafafa;">
-                <div class="text-center mb-3">
-                    <div style="display: inline-block; background: #fff7ed; border: 2px dashed #fdba74; border-radius: 12px; padding: 6px 18px; margin-bottom: 8px;">
-                        <span id="termsVoucherCode" class="font-monospace fw-bold text-danger" style="font-size: 1.35rem; letter-spacing: 1px;">VOUCHER</span>
-                    </div>
-                    <h5 id="termsVoucherTitle" class="fw-bold text-dark mb-1">Tiêu đề khuyến mãi</h5>
-                    <p id="termsVoucherDesc" class="text-muted mb-0" style="font-size: 0.88rem;">Mô tả chi tiết áp dụng...</p>
+<div class="modal-overlay" id="voucherTermsModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 16px;" onclick="if(event.target===this) closeVoucherTermsModal();">
+    <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); max-width: 520px; width: 100%; padding: 0; background: #fff; text-align: left; animation: popIn 0.3s ease;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #fff; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+            <h5 class="modal-title fw-bold" id="voucherTermsModalTitle" style="margin: 0; font-size: 1.1rem; color: #fff; font-weight: 700;">
+                <i class="fa-solid fa-circle-info me-2"></i> Điều Kiện Sử Dụng Voucher
+            </h5>
+            <button type="button" onclick="closeVoucherTermsModal()" style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 4px; opacity: 0.9;" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body p-4" style="background: #fafafa; padding: 22px;">
+            <div class="text-center mb-3">
+                <div style="display: inline-block; background: #fff7ed; border: 2px dashed #fdba74; border-radius: 12px; padding: 6px 18px; margin-bottom: 8px;">
+                    <span id="termsVoucherCode" class="font-monospace fw-bold text-danger" style="font-size: 1.35rem; letter-spacing: 1px;">VOUCHER</span>
                 </div>
+                <h5 id="termsVoucherTitle" class="fw-bold text-dark mb-1" style="font-size: 1.05rem; font-weight: 700;">Tiêu đề khuyến mãi</h5>
+                <p id="termsVoucherDesc" class="text-muted mb-0" style="font-size: 0.88rem;">Mô tả chi tiết áp dụng...</p>
+            </div>
 
-                <div class="terms-details-list" style="background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 14px 18px;">
-                    <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-solid fa-coins text-warning me-2"></i>Mức giảm giá:</span>
-                        <strong id="termsDiscountVal" class="text-danger">20.000 đ</strong>
-                    </div>
-                    <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-solid fa-basket-shopping text-primary me-2"></i>Đơn tối thiểu:</span>
-                        <strong id="termsMinOrder" class="text-dark">80.000 đ</strong>
-                    </div>
-                    <div class="terms-item" id="termsMaxDiscountRow" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-solid fa-shield text-danger me-2"></i>Giảm tối đa:</span>
-                        <strong id="termsMaxDiscount" class="text-dark">35.000 đ</strong>
-                    </div>
-                    <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-solid fa-list-check text-success me-2"></i>Giới hạn sử dụng:</span>
-                        <strong id="termsUsageLimit" class="text-dark">50 lượt toàn quán</strong>
-                    </div>
-                    <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-solid fa-user-check text-info me-2"></i>Mỗi khách hàng:</span>
-                        <strong id="termsPerUser" class="text-dark">Tối đa 1 lần</strong>
-                    </div>
-                    <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.88rem;">
-                        <span class="text-muted"><i class="fa-regular fa-calendar-check text-danger me-2"></i>Hạn sử dụng:</span>
-                        <strong id="termsExpiry" class="text-dark">31/12/2026</strong>
-                    </div>
+            <div class="terms-details-list" style="background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 14px 18px;">
+                <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-solid fa-coins text-warning me-2"></i>Mức giảm giá:</span>
+                    <strong id="termsDiscountVal" class="text-danger">20.000 đ</strong>
                 </div>
+                <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-solid fa-basket-shopping text-primary me-2"></i>Đơn tối thiểu:</span>
+                    <strong id="termsMinOrder" class="text-dark">80.000 đ</strong>
+                </div>
+                <div class="terms-item" id="termsMaxDiscountRow" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-solid fa-shield text-danger me-2"></i>Giảm tối đa:</span>
+                    <strong id="termsMaxDiscount" class="text-dark">35.000 đ</strong>
+                </div>
+                <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-solid fa-list-check text-success me-2"></i>Giới hạn sử dụng:</span>
+                    <strong id="termsUsageLimit" class="text-dark">50 lượt toàn quán</strong>
+                </div>
+                <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-solid fa-user-check text-info me-2"></i>Mỗi khách hàng:</span>
+                    <strong id="termsPerUser" class="text-dark">Tối đa 1 lần</strong>
+                </div>
+                <div class="terms-item" style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.88rem;">
+                    <span class="text-muted"><i class="fa-regular fa-calendar-check text-danger me-2"></i>Hạn sử dụng:</span>
+                    <strong id="termsExpiry" class="text-dark">31/12/2026</strong>
+                </div>
+            </div>
 
-                <div class="alert alert-info mt-3 mb-0" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 12px; font-size: 0.82rem; padding: 10px 14px;">
-                    <i class="fa-solid fa-circle-check me-1"></i> Mã chỉ áp dụng cho các món ăn được đặt từ <strong>${restaurant.name}</strong> khi thanh toán qua hệ thống Utee.
-                </div>
+            <div class="alert alert-info mt-3 mb-0" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; border-radius: 12px; font-size: 0.82rem; padding: 10px 14px;">
+                <i class="fa-solid fa-circle-check me-1"></i> Mã chỉ áp dụng cho các món ăn được đặt từ <strong>${restaurant.name}</strong> khi thanh toán qua hệ thống Utee.
             </div>
-            <div class="modal-footer bg-white p-3" style="border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnModalClaimVoucher" onclick="claimVoucherFromModal()" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none;">
-                    <i class="fa-solid fa-bookmark me-1"></i> Lưu Mã Này Vào Ví
-                </button>
-            </div>
+        </div>
+        <div class="modal-footer bg-white p-3" style="border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
+            <button type="button" class="btn btn-light rounded-pill px-4" onclick="closeVoucherTermsModal()" style="border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; font-weight: 600; padding: 8px 20px; border-radius: 50px; cursor: pointer;">Đóng</button>
+            <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" id="btnModalClaimVoucher" onclick="claimVoucherFromModal()" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: #fff; font-weight: 700; padding: 8px 22px; border-radius: 50px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35); cursor: pointer;">
+                <i class="fa-solid fa-bookmark me-1"></i> Lưu Mã Này Vào Ví
+            </button>
         </div>
     </div>
 </div>
@@ -994,8 +992,19 @@ function openVoucherTermsModalFromBtn(btn) {
     document.getElementById('termsPerUser').textContent = 'Tối đa ' + perUser + ' lần/khách';
     document.getElementById('termsExpiry').textContent = expiry;
 
-    const modal = new bootstrap.Modal(document.getElementById('voucherTermsModal'));
-    modal.show();
+    const modal = document.getElementById('voucherTermsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeVoucherTermsModal() {
+    const modal = document.getElementById('voucherTermsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
 function claimVoucherFromModal() {
@@ -1006,9 +1015,7 @@ function claimVoucherFromModal() {
     } else {
         claimRestaurantVoucher(currentModalCode, document.getElementById('btnModalClaimVoucher'));
     }
-    const modalEl = document.getElementById('voucherTermsModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalEl);
-    if (modalInstance) modalInstance.hide();
+    closeVoucherTermsModal();
 }
 
 function copyVoucherCode(code) {
