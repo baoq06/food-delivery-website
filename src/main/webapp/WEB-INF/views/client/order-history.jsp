@@ -60,7 +60,14 @@
                 <div class="order-card">
                     <div class="order-card-header">
                         <div>
-                            <h5 style="margin:0;">Mã đơn: <strong class="text-danger">#FZ-${order.id}</strong></h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 style="margin:0;">Mã đơn: <strong class="text-danger">#FZ-${order.id}</strong></h5>
+                                <c:if test="${not empty order.restaurantName}">
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.85rem; font-weight: 600;">
+                                        <i class="fa-solid fa-store me-1 text-danger"></i>${order.restaurantName}
+                                    </span>
+                                </c:if>
+                            </div>
                             <small class="text-muted"><fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></small>
                         </div>
                         
@@ -195,7 +202,7 @@
                             <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 600;">
                                 <i class="fa-solid fa-cart-plus me-1"></i> Đặt lại món
                             </a>
-                            <c:if test="${not empty order.restaurantId}">
+                            <c:if test="${not empty order.restaurantId and order.restaurantId > 0}">
                                 <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; font-weight: 600;"
                                         data-restaurant-id="${order.restaurantId}"
                                         data-restaurant-name="<c:out value='${order.restaurantName}' escapeXml='true'/>"

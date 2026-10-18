@@ -883,9 +883,20 @@ public class OrderDAO {
             "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.image_url, " +
             "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi.order_id, " +
+            "           MIN(f.restaurant_id) AS restaurant_id, " +
+            "           MIN(res.name) AS name, " +
+            "           MIN(res.image_url) AS image_url " +
+            "    FROM order_items oi " +
+            "    JOIN foods f ON oi.food_id = f.food_id " +
+            "    JOIN restaurants res ON f.restaurant_id = res.restaurant_id " +
+            "    GROUP BY oi.order_id " +
+            ") rest ON o.order_id = rest.order_id " +
             "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.user_id = ? " +
             "ORDER BY o.created_at DESC";
@@ -921,6 +932,20 @@ public class OrderDAO {
                             try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
+                            try {
+                                Object restIdObj = rs.getObject("restaurant_id");
+                                if (restIdObj instanceof Number) {
+                                    order.setRestaurantId(((Number) restIdObj).intValue());
+                                }
+                            } catch (Exception ignored) {}
+                            try { order.setRestaurantName(rs.getString("restaurant_name")); } catch (Exception ignored) {}
+                            try {
+                                String restImg = rs.getString("restaurant_image");
+                                if (restImg == null) {
+                                    restImg = rs.getString("image_url");
+                                }
+                                order.setRestaurantImage(restImg);
+                            } catch (Exception ignored) {}
 
                             int reviewId = rs.getInt("review_id");
                             if (!rs.wasNull()) {
