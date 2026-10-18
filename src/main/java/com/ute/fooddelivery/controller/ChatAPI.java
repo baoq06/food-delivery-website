@@ -201,9 +201,19 @@ public class ChatAPI extends HttpServlet {
                 }
 
                 Restaurant rest = restaurantDAO.getRestaurantById(conv.getRestaurantId());
+                boolean isCustomer = (conv.getUserId() == currentUser.getId());
                 boolean isSeller = (rest != null && rest.getUserId() != null && rest.getUserId() == currentUser.getId());
 
-                if (senderRole == null || senderRole.isEmpty()) {
+                if (!isCustomer && !isSeller) {
+                    sendError(resp, 403, "Bạn không có quyền gửi tin nhắn trong cuộc hội thoại này");
+                    return;
+                }
+
+                if (isSeller && !isCustomer) {
+                    senderRole = "SELLER";
+                } else if (isCustomer && !isSeller) {
+                    senderRole = "CUSTOMER";
+                } else if (senderRole == null || senderRole.isEmpty()) {
                     senderRole = isSeller ? "SELLER" : "CUSTOMER";
                 }
 
@@ -292,5 +302,10 @@ public class ChatAPI extends HttpServlet {
             }
             return;
         }
+    }
+
+    private void sendError(HttpServletResponse resp, int status, String message) throws IOException {
+        resp.setStatus(status);
+        resp.getWriter().write(gson.toJson(Map.of("success", false, "message", message)));
     }
 }
