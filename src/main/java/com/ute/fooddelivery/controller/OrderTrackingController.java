@@ -52,10 +52,13 @@ public class OrderTrackingController extends HttpServlet {
             return;
         }
 
-        // Chỉ cho phép theo dõi Live Map khi đơn hàng đang ở bước ĐANG GIAO HÀNG (SHIPPING)
-        // (Khi Quán đã xác nhận chuẩn bị xong và Shipper đã nhận đơn đi giao)
-        boolean isShipping = "SHIPPING".equalsIgnoreCase(order.getStatus());
-        if (!isShipping) {
+        // Cho phép theo dõi Live Map khi đơn hàng đang ở bước ĐANG GIAO HÀNG (SHIPPING)
+        // hoặc ĐÃ GIAO HÀNG (DELIVERED) / khách đã xác nhận nhận hàng thành công
+        boolean isTrackingAllowed = "SHIPPING".equalsIgnoreCase(order.getStatus())
+                || "DELIVERED".equalsIgnoreCase(order.getStatus())
+                || order.isCustomerConfirmed()
+                || "confirmed".equalsIgnoreCase(req.getParameter("success"));
+        if (!isTrackingAllowed) {
             resp.sendRedirect(req.getContextPath() + "/client/orders?notice=tracking_not_available");
             return;
         }
@@ -81,6 +84,12 @@ public class OrderTrackingController extends HttpServlet {
             try {
                 int orderId = Integer.parseInt(orderIdStr.trim());
                 if ("confirm_received".equalsIgnoreCase(action)) {
+                    Order currentOrder = orderDAO.getOrderById(orderId);
+                    if (currentOrder == null || (!currentOrder.isShipperDelivered() && !"DELIVERED".equalsIgnoreCase(currentOrder.getStatus()))) {
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=wait_shipper_delivery");
+                        return;
+                    }
+
                     boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
                     if (confirmed) {
                         try {
@@ -93,8 +102,10 @@ public class OrderTrackingController extends HttpServlet {
                                 notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
                             }
                         } catch (Exception ignored) {}
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&success=confirmed");
+                    } else {
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=wait_shipper_delivery");
                     }
-                    resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&success=confirmed");
                     return;
                 }
             } catch (Exception e) {

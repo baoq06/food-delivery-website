@@ -1411,7 +1411,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED' AND (shipper_delivered = 1 OR status = 'DELIVERED')";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -1427,7 +1427,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId, int userId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED' AND (shipper_delivered = 1 OR status = 'DELIVERED')";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);

@@ -250,6 +250,11 @@ public class ThreePartyOrderFlowTest {
         Order afterPickedUpOrder = orderDAO.getOrderById(testOrderId);
         assertTrue("shipper_picked_up phải = true", afterPickedUpOrder.isShipperPickedUp());
         assertEquals("SHIPPING", afterPickedUpOrder.getStatus());
+        assertFalse("shipper_delivered vẫn = false", afterPickedUpOrder.isShipperDelivered());
+
+        // Kiểm tra logic mới: Khách cố tình xác nhận khi shipper chưa giao cho khách -> Bị từ chối
+        boolean prematureConfirm = orderDAO.confirmCustomerOrder(testOrderId);
+        assertFalse("Khách KHÔNG ĐƯỢC xác nhận nhận món khi shipper chỉ mới lấy món từ quán (chưa giao)", prematureConfirm);
 
         // =========================================================================
         // BƯỚC 6: SHIPPER BÁO ĐÃ GIAO XONG CHO KHÁCH -> ĐƠN HOÀN TẤT NGAY LẬP TỨC

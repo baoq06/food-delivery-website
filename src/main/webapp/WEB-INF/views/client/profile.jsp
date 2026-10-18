@@ -747,12 +747,12 @@
                                     </div>
 
                                     <div class="order-actions">
-                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or order.shipperDelivered or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed)}">
+                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.shipperDelivered or order.status eq 'DELIVERED')}">
                                             <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline;">
                                                 <input type="hidden" name="action" value="confirm_received">
                                                 <input type="hidden" name="orderId" value="${order.id}">
-                                                <button type="submit" class="btn btn-success btn-sm ${order.shipperDelivered ? 'shadow-sm' : ''}" style="border-radius: 50px; font-weight: 700; padding: 6px 16px; ${order.shipperDelivered ? 'background: #10ac84; border-color: #10ac84;' : ''}" title="Xác nhận bạn đã nhận được món ăn từ shipper">
-                                                    <i class="fa-solid fa-circle-check me-1"></i> ${order.shipperDelivered ? 'Xác Nhận Đã Nhận Món' : 'Đã nhận được hàng'}
+                                                <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 50px; font-weight: 700; padding: 6px 16px; background: #10ac84; border-color: #10ac84;" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                                    <i class="fa-solid fa-circle-check me-1"></i> Xác Nhận Đã Nhận Món
                                                 </button>
                                             </form>
                                         </c:if>

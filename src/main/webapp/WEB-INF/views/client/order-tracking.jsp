@@ -264,8 +264,71 @@
         </div>
 
         <c:if test="${param.success eq 'confirmed'}">
-            <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
-                <i class="fa-solid fa-circle-check me-2"></i> <strong>Tuyệt vời!</strong> Bạn đã xác nhận nhận món thành công. Chúc bạn ngon miệng!
+            <!-- Alert Banner chúc mừng giao hàng thành công -->
+            <div class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 shadow-sm" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #10b981; color: #065f46;">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 44px; height: 44px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1" style="color: #065f46;">Giao Hàng Hoàn Tất!</h5>
+                        <p class="mb-0 small" style="color: #047857;">Cảm ơn bạn đã xác nhận đã nhận đủ món. Chúc bạn có một bữa ăn ngon miệng!</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="${pageContext.request.contextPath}/order-review?orderId=${order.id}" class="btn btn-success fw-bold px-3 py-2 rounded-pill shadow-sm" style="white-space: nowrap; background: #059669; border: none;">
+                        <i class="fa-solid fa-star text-warning me-1"></i> Viết đánh giá
+                    </a>
+                </div>
+            </div>
+
+            <!-- Popup Modal Chúc Mừng & Mời Đánh Giá Đơn Hàng -->
+            <div id="deliveredSuccessModal" class="modal-overlay active" onclick="if(event.target===this) this.classList.remove('active');">
+                <div class="modal-content" style="border-radius: 24px; padding: 32px 28px; max-width: 480px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+                    <div class="success-icon-wrap" style="color: #10b981; font-size: 4rem; margin-bottom: 12px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-2">Đã Nhận Món Thành Công!</h3>
+                    <p class="modal-sub mb-3" style="font-size: 0.95rem; color: #64748b;">
+                        Đơn hàng <strong>#FZ-${order.id}</strong> đã được giao tận tay bạn. Chúc bạn có một bữa ăn thật ngon miệng cùng Utee!
+                    </p>
+
+                    <div class="p-3 rounded-4 mb-4 text-start" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Quán ăn:</span>
+                            <strong class="text-dark small">${not empty order.restaurantName ? order.restaurantName : 'Nhà hàng Utee Store'}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Tài xế giao hàng:</span>
+                            <strong class="text-dark small">${not empty order.driverName ? order.driverName : 'Shipper Utee'}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Tổng thanh toán:</span>
+                            <strong class="text-danger small"><fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="đ" maxFractionDigits="0" /></strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="${pageContext.request.contextPath}/order-review?orderId=${order.id}" class="btn btn-danger fw-bold py-2 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none;">
+                            <i class="fa-solid fa-star text-warning me-1"></i> Viết Đánh Giá Ngay (Tặng Voucher)
+                        </a>
+                        <button type="button" class="btn btn-light rounded-pill py-2 fw-semibold text-muted" onclick="document.getElementById('deliveredSuccessModal').classList.remove('active');">
+                            Xem Bản Đồ Lộ Trình / Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </c:if>
+
+        <c:if test="${param.error eq 'wait_shipper_delivery' or param.error eq 'shipper_not_delivered'}">
+            <div class="alert alert-warning alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 12px; border-left: 5px solid #f59e0b; background: #fffbeb;">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
+                    <div>
+                        <strong class="d-block text-dark">Chưa thể xác nhận lúc này!</strong>
+                        <small class="text-secondary">Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng nhận món từ shipper trước khi bấm xác nhận.</small>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </c:if>
@@ -319,7 +382,7 @@
                     <!-- Timeline Progress -->
                     <div class="tracking-status-bar">
                         <div class="status-steps">
-                            <div class="status-progress-fill" id="statusProgressFill" style="width: 66%;"></div>
+                            <div class="status-progress-fill" id="statusProgressFill" style="width: ${order.status eq 'DELIVERED' or order.customerConfirmed ? '100%' : '66%'};"></div>
 
                             <div class="status-step-node active" id="step1">
                                 <div class="step-circle"><i class="fa-solid fa-receipt"></i></div>
@@ -329,9 +392,9 @@
                                 <div class="step-circle"><i class="fa-solid fa-utensils"></i></div>
                                 <span class="step-label">Quán Chuẩn Bị</span>
                             </div>
-                            <div class="status-step-node current" id="step3">
+                            <div class="status-step-node ${order.status eq 'DELIVERED' or order.customerConfirmed ? 'active' : 'current'}" id="step3">
                                 <div class="step-circle"><i class="fa-solid fa-motorcycle"></i></div>
-                                <span class="step-label" id="step3Label">Đang Giao Tới Bạn</span>
+                                <span class="step-label" id="step3Label">${order.status eq 'DELIVERED' or order.customerConfirmed ? 'Đã Giao Tới' : 'Đang Giao Tới Bạn'}</span>
                             </div>
                             <div class="status-step-node ${order.status eq 'DELIVERED' or order.customerConfirmed ? 'active' : ''}" id="step4">
                                 <div class="step-circle"><i class="fa-solid fa-box-check"></i></div>
@@ -348,7 +411,14 @@
                 <div class="tracking-card p-3 mb-3">
                     <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
                         <span class="fw-bold text-dark"><i class="fa-solid fa-id-badge text-primary me-2"></i>Tài Xế Giao Hàng</span>
-                        <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Đang di chuyển</span>
+                        <c:choose>
+                            <c:when test="${order.status eq 'DELIVERED' or order.customerConfirmed}">
+                                <span class="badge bg-success text-white px-2 py-1 rounded-pill"><i class="fa-solid fa-circle-check me-1"></i>Đã giao thành công</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Đang di chuyển</span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <div class="d-flex align-items-center gap-3">
@@ -371,7 +441,7 @@
                         <div style="font-size: 1.8rem; color: #059669;"><i class="fa-solid fa-stopwatch"></i></div>
                         <div>
                             <small class="text-muted text-uppercase fw-bold" style="font-size: 0.72rem;">Thời gian dự kiến còn</small>
-                            <div class="eta-time" id="etaTimeDisplay">8 - 12 phút</div>
+                            <div class="eta-time" id="etaTimeDisplay">${order.status eq 'DELIVERED' or order.customerConfirmed ? 'Đã đến nơi!' : '8 - 12 phút'}</div>
                         </div>
                     </div>
                 </div>
@@ -419,7 +489,7 @@
                     </p>
 
                     <c:choose>
-                        <c:when test="${order.customerConfirmed or order.status eq 'DELIVERED'}">
+                        <c:when test="${order.customerConfirmed}">
                             <div class="p-2 text-center bg-success-subtle text-success rounded-3 fw-bold mb-2">
                                 <i class="fa-solid fa-circle-check me-1"></i> Bạn đã nhận món thành công!
                             </div>
@@ -427,7 +497,10 @@
                                 <i class="fa-solid fa-star me-1"></i> Viết đánh giá quán &amp; shipper
                             </a>
                         </c:when>
-                        <c:otherwise>
+                        <c:when test="${order.shipperDelivered or order.status eq 'DELIVERED'}">
+                            <div class="p-2 text-center bg-warning-subtle text-dark rounded-3 small fw-semibold mb-3 border border-warning">
+                                <i class="fa-solid fa-bell text-warning me-1"></i> Shipper đã giao món đến nơi! Vui lòng kiểm tra món và bấm xác nhận bên dưới.
+                            </div>
                             <form action="${pageContext.request.contextPath}/order/tracking" method="POST" id="confirmReceivedForm">
                                 <input type="hidden" name="action" value="confirm_received">
                                 <input type="hidden" name="orderId" value="${order.id}">
@@ -435,6 +508,19 @@
                                     <i class="fa-solid fa-hand-holding-heart me-1"></i> Đã Nhận Được Món Ăn
                                 </button>
                             </form>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="p-3 text-center bg-light rounded-3 text-muted mb-2 border">
+                                <div class="mb-1 text-primary fw-bold">
+                                    <i class="fa-solid fa-motorcycle me-1 fa-bounce"></i> Shipper đang di chuyển giao món
+                                </div>
+                                <small class="text-secondary d-block">
+                                    Nút xác nhận sẽ mở ngay khi tài xế giao hàng tận nơi và bấm xác nhận đã giao món cho bạn.
+                                </small>
+                            </div>
+                            <button type="button" class="btn btn-secondary w-100 fw-bold py-2" disabled style="opacity: 0.65; cursor: not-allowed;" title="Vui lòng đợi tài xế giao món tận nơi">
+                                <i class="fa-solid fa-clock me-1"></i> Chờ Shipper Giao Món
+                            </button>
                         </c:otherwise>
                     </c:choose>
                 </div>
