@@ -83,6 +83,16 @@ public class EmailService {
             mailProps.setProperty("resend.api.key", envResend.trim());
         }
 
+        String envSmtpUser = System.getenv("MAIL_SMTP_USERNAME");
+        if (envSmtpUser != null && !envSmtpUser.trim().isEmpty()) {
+            mailProps.setProperty("mail.smtp.username", envSmtpUser.trim());
+        }
+
+        String envSmtpPass = System.getenv("MAIL_SMTP_PASSWORD");
+        if (envSmtpPass != null && !envSmtpPass.trim().isEmpty()) {
+            mailProps.setProperty("mail.smtp.password", envSmtpPass.trim());
+        }
+
         configLoaded = true;
     }
 
@@ -94,6 +104,14 @@ public class EmailService {
         loadConfig();
     }
 
+    public static boolean isSmtpConfigured() {
+        reloadConfig();
+        String username = mailProps.getProperty("mail.smtp.username", "").trim();
+        String password = mailProps.getProperty("mail.smtp.password", "").trim();
+        return !username.isEmpty() && !username.toUpperCase().contains("YOUR_")
+                && !password.isEmpty() && !password.toUpperCase().contains("YOUR_");
+    }
+
     public static boolean isResendConfigured() {
         reloadConfig();
         String resendKey = mailProps.getProperty("resend.api.key", "").trim();
@@ -102,6 +120,9 @@ public class EmailService {
 
     public static String getSenderEmail() {
         reloadConfig();
+        if (isSmtpConfigured()) {
+            return mailProps.getProperty("mail.from.email", mailProps.getProperty("mail.smtp.username")).trim();
+        }
         return mailProps.getProperty("mail.from.email", "onboarding@resend.dev").trim();
     }
 
@@ -130,7 +151,11 @@ public class EmailService {
     }
 
     /**
-     * Gửi email mã OTP xác thực tới địa chỉ Gmail của khách hàng qua Resend Global REST API.
+     * Gửi email mã OTP xác thực tới địa chỉ Gmail của khách hàng.
+     * Thứ tự ưu tiên:
+     * 1. Gmail SMTP (nếu cấu hình mail.smtp.username & mail.smtp.password) -> gửi được tới mọi email bất kỳ.
+     * 2. Resend REST API (nếu có resend.api.key).
+     * 3. Dev Sandbox (mô phỏng, in ra console).
      *
      * @param toEmail Địa chỉ email người nhận (Gmail)
      * @param otpCode Mã OTP 6 số
@@ -150,19 +175,63 @@ public class EmailService {
 
         final String htmlBody = buildOtpEmailHtml(cleanToEmail, otpCode);
 
-        // 1. GỬI QUA RESEND GLOBAL REST API
+        // 1. ƯU TIÊN GỬI QUA GMAIL SMTP (Gửi được đến mọi email bất kỳ)
+        if (isSmtpConfigured()) {
+            String smtpUser = mailProps.getProperty("mail.smtp.username", "").trim();
+            String smtpPass = mailProps.getProperty("mail.smtp.password", "").trim();
+            System.out.println(">> [EmailService] Đang gửi OTP qua Gmail SMTP (" + smtpUser + ") tới: " + cleanToEmail);
+            return sendViaSmtp(smtpUser, smtpPass, fromName, cleanToEmail, otpCode, htmlBody);
+        }
+
+        // 2. GỬI QUA RESEND GLOBAL REST API
         String resendKey = mailProps.getProperty("resend.api.key", "").trim();
         if (!resendKey.isEmpty() && !resendKey.toUpperCase().contains("YOUR_")) {
             System.out.println(">> [EmailService] Đang gửi OTP qua Resend REST API tới: " + cleanToEmail);
             return sendViaResendApi(resendKey, fromName, cleanToEmail, otpCode, htmlBody);
         }
 
-        // 2. CHẾ ĐỘ DEV SANDBOX DÀNH CHO CỘNG SỰ / LÀM NHÓM:
-        // Khi cộng sự clone code về chưa cấu hình Resend API key, hệ thống tự động chạy chế độ Dev Sandbox
+        // 3. CHẾ ĐỘ DEV SANDBOX DÀNH CHO CỘNG SỰ / LÀM NHÓM:
+        // Khi cộng sự clone code về chưa cấu hình Resend API key hay SMTP, hệ thống tự động chạy chế độ Dev Sandbox
         // Vừa in mã OTP ra Console, vừa hiển thị nút điền nhanh trên web để cộng sự test đăng ký từ A-Z trơn tru.
-        String msg = "[Dev Sandbox] Chưa cấu hình Resend API Key. Đang bật chế độ mô phỏng để cộng sự kiểm thử.";
+        String msg = "[Dev Sandbox] Chưa cấu hình Gmail SMTP hoặc Resend API Key. Đang bật chế độ mô phỏng để cộng sự kiểm thử.";
         System.out.println(">> [EmailService] " + msg);
         return new SendEmailResult(true, msg, false);
+    }
+
+    /**
+     * Gửi email thật qua Gmail SMTP Server.
+     */
+    private SendEmailResult sendViaSmtp(String username, String password, String fromName, String toEmail, String otpCode, String htmlBody) {
+        try {
+            Properties props = new Properties();
+            props.putAll(mailProps);
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.starttls.required", "true");
+            props.put("mail.smtp.host", mailProps.getProperty("mail.smtp.host", "smtp.gmail.com"));
+            props.put("mail.smtp.port", mailProps.getProperty("mail.smtp.port", "587"));
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
+
+            MimeMessage message = new MimeMessage(session);
+            String fromEmail = mailProps.getProperty("mail.from.email", username).trim();
+            message.setFrom(new InternetAddress(fromEmail, fromName, "UTF-8"));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(toEmail));
+            message.setSubject("[UTEE FOOD] Mã OTP xác thực đăng ký: " + otpCode, "UTF-8");
+            message.setContent(htmlBody, "text/html; charset=UTF-8");
+
+            Transport.send(message);
+            System.out.println(">> [Gmail SMTP] ✅ ĐÃ GỬI EMAIL THẬT THÀNH CÔNG TỚI: " + toEmail);
+            return new SendEmailResult(true, "Mã xác thực OTP đã được gửi thật đến hộp thư Gmail (" + toEmail + ") qua Gmail SMTP. Vui lòng kiểm tra Hộp thư đến (hoặc Spam)!", true);
+        } catch (Exception e) {
+            System.err.println(">> [Gmail SMTP] ❌ Lỗi gửi email: " + e.getMessage());
+            return new SendEmailResult(false, "Không thể gửi email qua Gmail SMTP: " + e.getMessage(), true);
+        }
     }
 
     /**
