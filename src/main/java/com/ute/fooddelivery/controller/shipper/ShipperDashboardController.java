@@ -134,10 +134,16 @@ public class ShipperDashboardController extends HttpServlet {
                 req.setAttribute("deliveryHistory", orderDAO.getOrdersByDriver(driver.getId(), statusFilter));
             }
 
-            // Thống kê ví tài xế & Rating tài xế
+            // Thống kê thu nhập & Ví hoạt động tài xế
             Map<String, Object> earnings = orderDAO.getDriverEarnings(driver.getId());
             Map<String, Object> driverRatingStats = reviewDAO.getDriverRatingStats(driver.getId());
-            req.setAttribute("wallet", earnings);
+            double walletBalance = driverDAO.getWalletBalance(driver.getId());
+            List<com.ute.fooddelivery.model.DriverWalletTransaction> walletTransactions = driverDAO.getWalletTransactions(driver.getId(), 30);
+
+            req.setAttribute("earnings", earnings);
+            req.setAttribute("wallet", earnings); // Backwards compatibility for existing views
+            req.setAttribute("walletBalance", walletBalance);
+            req.setAttribute("walletTransactions", walletTransactions);
             req.setAttribute("driverRatingStats", driverRatingStats);
             req.setAttribute("driver", driver);
         }
@@ -178,6 +184,10 @@ public class ShipperDashboardController extends HttpServlet {
             handleAcceptOrder(req, resp, session, user, driver);
         } else if ("declineOrder".equals(action)) {
             handleDeclineOrder(req, resp, user, driver);
+        } else if ("topupWallet".equals(action)) {
+            handleTopupWallet(req, resp, session, user, driver);
+        } else if ("withdrawWallet".equals(action)) {
+            handleWithdrawWallet(req, resp, session, user, driver);
         } else {
             resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
         }
@@ -429,5 +439,70 @@ public class ShipperDashboardController extends HttpServlet {
             session.setAttribute("shipperActive", true);
             session.setAttribute("driverStatus", "BUSY");
         }
+    }
+
+    private void handleTopupWallet(HttpServletRequest req, HttpServletResponse resp, HttpSession session, User user, Driver driver) throws IOException {
+        if (driver == null) {
+            resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
+            return;
+        }
+        try {
+            String amountStr = req.getParameter("amount");
+            double amount = Double.parseDouble(amountStr);
+            if (amount < 10000) {
+                session.setAttribute("flashError", "Số tiền nạp tối thiểu là 10.000 đ!");
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=income");
+                return;
+            }
+            String paymentMethod = req.getParameter("paymentMethod");
+            String note = "Nạp ví hoạt động qua " + (paymentMethod != null && !paymentMethod.trim().isEmpty() ? paymentMethod : "Cổng thanh toán QR");
+            boolean success = driverDAO.topupWallet(driver.getId(), amount, note);
+            if (success) {
+                session.setAttribute("flashSuccess", "Nạp thành công " + String.format("%,.0f", amount) + " đ vào ví hoạt động của bạn!");
+            } else {
+                session.setAttribute("flashError", "Nạp tiền thất bại, vui lòng thử lại sau!");
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error topup wallet: " + e.getMessage());
+            session.setAttribute("flashError", "Số tiền nạp không hợp lệ!");
+        }
+        resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=income");
+    }
+
+    private void handleWithdrawWallet(HttpServletRequest req, HttpServletResponse resp, HttpSession session, User user, Driver driver) throws IOException {
+        if (driver == null) {
+            resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
+            return;
+        }
+        try {
+            String amountStr = req.getParameter("amount");
+            double amount = Double.parseDouble(amountStr);
+            if (amount < 50000) {
+                session.setAttribute("flashError", "Số tiền rút tối thiểu là 50.000 đ!");
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=income");
+                return;
+            }
+            double currentBal = driverDAO.getWalletBalance(driver.getId());
+            if (amount > currentBal) {
+                session.setAttribute("flashError", "Số dư ví hiện tại không đủ để rút số tiền này!");
+                resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=income");
+                return;
+            }
+            String bankName = req.getParameter("bankName");
+            String accountNumber = req.getParameter("accountNumber");
+            String accountName = req.getParameter("accountName");
+            String bankInfo = "Rút về " + (bankName != null ? bankName : "MB Bank") + " STK: " + (accountNumber != null ? accountNumber : "...") + " (" + (accountName != null ? accountName : user.getFullName()) + ")";
+
+            boolean success = driverDAO.withdrawWallet(driver.getId(), amount, bankInfo);
+            if (success) {
+                session.setAttribute("flashSuccess", "Yêu cầu rút " + String.format("%,.0f", amount) + " đ thành công! Hệ thống đang xử lý chuyển khoản.");
+            } else {
+                session.setAttribute("flashError", "Rút tiền thất bại, vui lòng thử lại sau!");
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error withdraw wallet: " + e.getMessage());
+            session.setAttribute("flashError", "Dữ liệu rút tiền không hợp lệ!");
+        }
+        resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?tab=income");
     }
 }

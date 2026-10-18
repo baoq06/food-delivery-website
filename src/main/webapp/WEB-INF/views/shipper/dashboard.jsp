@@ -174,9 +174,9 @@
                         </c:if>
                     </a>
                     <a href="${pageContext.request.contextPath}/shipper/dashboard?tab=income" class="shipper-nav-item ${activeTab eq 'income' ? 'active' : ''}">
-                        <span><i class="fa-solid fa-wallet me-2 text-success" style="width: 22px;"></i> Thu nhập</span>
-                        <c:if test="${not empty wallet and wallet.todayEarnings > 0}">
-                            <span class="shipper-nav-badge" style="background: #dcfce7; color: #15803d;"><fmt:formatNumber value="${wallet.todayEarnings}" pattern="#,###" />đ</span>
+                        <span><i class="fa-solid fa-wallet me-2 text-success" style="width: 22px;"></i> Thu nhập &amp; Ví tiền</span>
+                        <c:if test="${not empty earnings and earnings.todayEarnings > 0}">
+                            <span class="shipper-nav-badge" style="background: #dcfce7; color: #15803d;"><fmt:formatNumber value="${earnings.todayEarnings}" pattern="#,###" />đ</span>
                         </c:if>
                     </a>
                     <a href="${pageContext.request.contextPath}/shipper/history" class="shipper-nav-item ${activeTab eq 'history' ? 'active' : ''}">
@@ -221,34 +221,61 @@
                     });
                 </script>
 
-                <!-- Driver Wallet Box Quick Stats -->
-                <c:if test="${not empty wallet}">
-                    <div class="wallet-stat-card">
-                        <div class="wallet-title">
-                            <i class="fa-solid fa-wallet text-success"></i> Ví Thu Nhập Nhanh
-                        </div>
-
-                        <!-- Today Stats -->
-                        <div class="wallet-stat-item" style="border-left: 4px solid #10ac84;">
-                            <div class="wallet-stat-val text-success">
-                                <fmt:formatNumber value="${wallet.todayEarnings}" pattern="#,###" /> đ
-                            </div>
-                            <p class="wallet-stat-sub">Hôm nay: <strong>${wallet.todayTrips} cuốc xe</strong> hoàn tất</p>
-                        </div>
-
-                        <!-- Total Stats -->
-                        <div class="wallet-stat-item" style="border-left: 4px solid #f05454;">
-                            <div class="wallet-stat-val" style="color: #f05454;">
-                                <fmt:formatNumber value="${wallet.totalEarnings}" pattern="#,###" /> đ
-                            </div>
-                            <p class="wallet-stat-sub">Tổng tích lũy: <strong>${wallet.totalTrips} chuyến giao</strong></p>
-                        </div>
-
-                        <p style="font-size: 0.78rem; color: #94a3b8; margin: 8px 0 0 0; text-align: center;">
-                            *Thù lao cố định 15.000 đ/cuốc giao thành công
-                        </p>
+                <!-- Driver Wallet & Quick Stats -->
+                <div class="wallet-stat-card">
+                    <div class="wallet-title" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span><i class="fa-solid fa-wallet text-primary"></i> Ví Hoạt Động</span>
+                        <c:choose>
+                            <c:when test="${walletBalance >= 50000}">
+                                <span style="font-size: 0.72rem; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 20px;">
+                                    <i class="fa-solid fa-circle-check"></i> Sẵn sàng COD
+                                </span>
+                            </c:when>
+                            <c:otherwise>
+                                <span style="font-size: 0.72rem; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 2px 8px; border-radius: 20px;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> Cần nạp thêm
+                                </span>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
-                </c:if>
+
+                    <!-- Current Operating Wallet Balance -->
+                    <div class="wallet-stat-item" style="border-left: 4px solid #2563eb; background: #f8fafc; padding: 10px 12px; border-radius: 8px;">
+                        <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Số Dư Ví Khả Dụng</div>
+                        <div class="wallet-stat-val" style="color: #1e3a8a; font-size: 1.45rem; margin: 3px 0;">
+                            <fmt:formatNumber value="${walletBalance}" pattern="#,###" /> đ
+                        </div>
+                        <p class="wallet-stat-sub" style="margin: 0; font-size: 0.75rem;">Duy trì tối thiểu 50.000 đ để nhận đơn COD</p>
+                    </div>
+
+                    <!-- Quick Income Today -->
+                    <div class="wallet-stat-item" style="border-left: 4px solid #10ac84; margin-top: 8px; padding: 8px 12px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Thu Nhập Hôm Nay</div>
+                        <div class="wallet-stat-val text-success" style="font-size: 1.2rem; margin: 2px 0;">
+                            <fmt:formatNumber value="${earnings.todayEarnings}" pattern="#,###" /> đ
+                        </div>
+                        <p class="wallet-stat-sub" style="margin: 0; font-size: 0.75rem;">${earnings.todayTrips} cuốc xe hoàn tất</p>
+                    </div>
+
+                    <!-- Total Accumulated Income -->
+                    <div class="wallet-stat-item" style="border-left: 4px solid #f05454; margin-top: 8px; padding: 8px 12px; border-radius: 8px;">
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">Tổng Thu Nhập Tích Lũy</div>
+                        <div class="wallet-stat-val" style="color: #f05454; font-size: 1.2rem; margin: 2px 0;">
+                            <fmt:formatNumber value="${earnings.totalEarnings}" pattern="#,###" /> đ
+                        </div>
+                        <p class="wallet-stat-sub" style="margin: 0; font-size: 0.75rem;">${earnings.totalTrips} chuyến giao</p>
+                    </div>
+
+                    <!-- Quick Action Buttons -->
+                    <div style="display: flex; gap: 6px; margin-top: 12px;">
+                        <button type="button" class="btn btn-sm btn-primary" style="flex: 1; border-radius: 8px; font-weight: 700; font-size: 0.8rem; padding: 7px 4px;" onclick="openTopupModal()">
+                            <i class="fa-solid fa-plus-circle me-1"></i> Nạp Ví
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-success" style="flex: 1; border-radius: 8px; font-weight: 700; font-size: 0.8rem; padding: 7px 4px;" onclick="openWithdrawModal()">
+                            <i class="fa-solid fa-money-bill-transfer me-1"></i> Rút Tiền
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -298,6 +325,27 @@
                         </c:choose>
                     </div>
                 </div>
+            </c:if>
+            <c:if test="${not empty sessionScope.flashSuccess}">
+                <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-3 px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-circle-check fs-5 text-success"></i>
+                    <div>${sessionScope.flashSuccess}</div>
+                </div>
+                <c:remove var="flashSuccess" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashError}">
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-3 px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-triangle-exclamation fs-5 text-danger"></i>
+                    <div>${sessionScope.flashError}</div>
+                </div>
+                <c:remove var="flashError" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.flashWarning}">
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3 py-3 px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-triangle-exclamation fs-5 text-warning"></i>
+                    <div>${sessionScope.flashWarning}</div>
+                </div>
+                <c:remove var="flashWarning" scope="session" />
             </c:if>
 
             <!-- 1. DRIVER MODE TOGGLE BANNER -->
@@ -1068,72 +1116,158 @@
             </c:if>
 
             <!-- ============================================================= -->
-            <!-- TAB 2: THU NHẬP TÀI XẾ (income) -->
+            <!-- TAB 2: THU NHẬP & VÍ HOẠT ĐỘNG TÀI XẾ (income) -->
             <!-- ============================================================= -->
             <c:if test="${activeTab eq 'income'}">
                 <div class="shipper-card">
                     <div class="sec-card-header">
                         <div>
-                            <h3 class="sec-card-title"><i class="fa-solid fa-wallet text-success me-2"></i> Tổng Quan Ví Thu Nhập Tài Xế</h3>
-                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Minh bạch số dư ví, tiền thù lao từng cuốc xe và lịch đối soát tự động</p>
+                            <h3 class="sec-card-title"><i class="fa-solid fa-wallet text-primary me-2"></i> Thu Nhập &amp; Ví Hoạt Động Tài Xế</h3>
+                            <p style="margin: 4px 0 0 0; color: #64748b; font-size: 0.88rem;">Phân định minh bạch giữa <strong>Số dư ví hoạt động</strong> (ký quỹ COD) và <strong>Thu nhập thực nhận</strong> (thù lao giao hàng)</p>
                         </div>
-                        <button type="button" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 22px; background: #10ac84; border-color: #10ac84;" onclick="alert('Hệ thống Utee Express tự động đối soát và chuyển khoản vào 15:00 Thứ 2 và Thứ 5 hàng tuần. Bạn cũng có thể liên kết tài khoản ngân hàng trong Cài đặt.');">
-                            <i class="fa-solid fa-money-bill-transfer me-1"></i> Yêu Cầu Rút Tiền
-                        </button>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 10px 20px;" onclick="openTopupModal()">
+                                <i class="fa-solid fa-plus-circle me-1"></i> Nạp Ví Hoạt Động
+                            </button>
+                            <button type="button" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 22px; background: #10ac84; border-color: #10ac84;" onclick="openWithdrawModal()">
+                                <i class="fa-solid fa-money-bill-transfer me-1"></i> Rút Tiền Về Ngân Hàng
+                            </button>
+                        </div>
                     </div>
 
                     <div class="sec-card-body">
-                        <!-- Stat Grid -->
-                        <div class="income-grid">
-                            <!-- Card 1: Today -->
-                            <div class="income-stat-card" style="border-left: 4px solid #10ac84; background: #f0fdf4;">
-                                <div style="font-size: 0.82rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Thu Nhập Hôm Nay</div>
-                                <div style="font-size: 1.8rem; font-weight: 900; color: #16a34a; margin: 6px 0;">
-                                    <fmt:formatNumber value="${wallet.todayEarnings}" pattern="#,###" /> đ
+                        <!-- BANNER VÍ HOẠT ĐỘNG TÀI XẾ -->
+                        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%); color: #fff; border-radius: 20px; padding: 24px 28px; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.4); position: relative; overflow: hidden;">
+                            <div style="position: absolute; right: 20px; bottom: -15px; opacity: 0.08; font-size: 10rem; pointer-events: none;">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px; position: relative; z-index: 1;">
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                        <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">
+                                            <i class="fa-solid fa-credit-card me-1 text-primary"></i> VÍ HOẠT ĐỘNG SHIPPER
+                                        </span>
+                                        <c:choose>
+                                            <c:when test="${walletBalance >= 50000}">
+                                                <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(52, 211, 153, 0.35); padding: 3px 10px; border-radius: 20px;">
+                                                    <i class="fa-solid fa-circle-check me-1"></i> Đủ điều kiện nhận đơn COD
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="font-size: 0.75rem; font-weight: 700; color: #f87171; background: rgba(239, 68, 68, 0.18); border: 1px solid rgba(248, 113, 113, 0.35); padding: 3px 10px; border-radius: 20px;">
+                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Số dư dưới 50.000 đ - Cần nạp thêm
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                    </div>
+                                    <div style="font-size: 2.5rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; margin: 4px 0 10px 0;">
+                                        <fmt:formatNumber value="${walletBalance}" pattern="#,###" /> <span style="font-size: 1.5rem; font-weight: 700; color: #60a5fa;">đ</span>
+                                    </div>
+                                    <div style="font-size: 0.86rem; color: #cbd5e1; max-width: 620px; line-height: 1.5;">
+                                        Số dư ví hoạt động dùng để ký quỹ nhận các đơn hàng giao đồ ăn thu tiền mặt (COD). Bạn có thể nạp tiền bất cứ lúc nào qua QR hoặc rút về ngân hàng.
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.85rem; color: #64748b;">
-                                    Đã hoàn tất: <strong>${wallet.todayTrips} chuyến giao</strong>
+                                <div style="display: flex; flex-direction: column; gap: 10px; min-width: 180px;">
+                                    <button type="button" class="btn btn-primary" onclick="openTopupModal()" style="border-radius: 12px; font-weight: 700; padding: 12px 20px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+                                        <i class="fa-solid fa-plus-circle me-2"></i> Nạp Ví Hoạt Động
+                                    </button>
+                                    <button type="button" class="btn btn-outline-light" onclick="openWithdrawModal()" style="border-radius: 12px; font-weight: 700; padding: 12px 20px; background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.25);">
+                                        <i class="fa-solid fa-money-bill-transfer me-2"></i> Rút Về Ngân Hàng
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Card 2: Total Accumulation -->
-                            <div class="income-stat-card" style="border-left: 4px solid #f05454; background: #fff5f5;">
-                                <div style="font-size: 0.82rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">Tổng Thu Nhập Tích Lũy</div>
-                                <div style="font-size: 1.8rem; font-weight: 900; color: #f05454; margin: 6px 0;">
-                                    <fmt:formatNumber value="${wallet.totalEarnings}" pattern="#,###" /> đ
+                            <!-- Cơ chế COD vs Online (Khác biệt giữa Ví và Thu nhập) -->
+                            <div style="margin-top: 20px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.12); display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+                                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px 16px; border-left: 3px solid #f87171;">
+                                    <div style="font-size: 0.82rem; font-weight: 700; color: #fca5a5; margin-bottom: 4px;">
+                                        <i class="fa-solid fa-hand-holding-dollar me-1"></i> ĐƠN HÀNG COD (TIỀN MẶT)
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
+                                        Khách trả shipper toàn bộ tiền mặt (món + ship). Hệ thống tự động <strong>trừ tiền COD thu khách vào ví</strong> (thu hộ nhà hàng) và <strong>cộng thù lao giao hàng vào ví</strong>. Đồng thời thù lao được cộng vào mục Thu nhập.
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.85rem; color: #64748b;">
-                                    Tổng cuốc: <strong>${wallet.totalTrips} chuyến hoàn tất</strong>
-                                </div>
-                            </div>
-
-                            <!-- Card 3: Bonus Tier -->
-                            <div class="income-stat-card" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
-                                <div style="font-size: 0.82rem; font-weight: 700; color: #b45309; text-transform: uppercase;">Thưởng Mốc Hoạt Động</div>
-                                <div style="font-size: 1.8rem; font-weight: 900; color: #d97706; margin: 6px 0;">
-                                    +50.000 đ
-                                </div>
-                                <div style="font-size: 0.85rem; color: #b45309;">
-                                    Mục tiêu: Đạt 10 cuốc/ngày (Tiến độ: ${wallet.todayTrips}/10)
+                                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px 16px; border-left: 3px solid #34d399;">
+                                    <div style="font-size: 0.82rem; font-weight: 700; color: #86efac; margin-bottom: 4px;">
+                                        <i class="fa-solid fa-qrcode me-1"></i> ĐƠN HÀNG ONLINE (VNPAY / THẺ)
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.45;">
+                                        Khách đã thanh toán trực tuyến, shipper <strong>không thu tiền mặt</strong> và không bị trừ COD. Hệ thống <strong>cộng trực tiếp thù lao giao hàng vào ví</strong> và tổng thu nhập của bạn.
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        
-                        <!-- DOANH THU & BIỂU ĐỒ TĂNG TRƯỞNG -->
+                        <!-- 4 THẺ THỐNG KÊ THU NHẬP GIAO HÀNG (HÔM NAY, TUẦN NÀY, THÁNG NÀY, TỔNG CỘNG) -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0;">
+                                    <i class="fa-solid fa-chart-pie text-success me-2"></i> Tổng Thu Nhập Theo Thời Gian
+                                </h4>
+                                <span style="font-size: 0.85rem; color: #64748b;">Tổng thù lao nhận được từ các chuyến giao thành công</span>
+                            </div>
+                            <div class="income-grid">
+                                <!-- Card 1: Today -->
+                                <div class="income-stat-card" style="border-left: 4px solid #10ac84; background: #f0fdf4;">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Thu Nhập Hôm Nay</div>
+                                    <div style="font-size: 1.7rem; font-weight: 900; color: #16a34a; margin: 6px 0;">
+                                        <fmt:formatNumber value="${earnings.todayEarnings}" pattern="#,###" /> đ
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #475569;">
+                                        Đã hoàn tất: <strong>${earnings.todayTrips} chuyến giao</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Card 2: This Week -->
+                                <div class="income-stat-card" style="border-left: 4px solid #2563eb; background: #eff6ff;">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #1d4ed8; text-transform: uppercase;">Thu Nhập Tuần Này</div>
+                                    <div style="font-size: 1.7rem; font-weight: 900; color: #2563eb; margin: 6px 0;">
+                                        <fmt:formatNumber value="${earnings.weekEarnings}" pattern="#,###" /> đ
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #475569;">
+                                        Đã hoàn tất: <strong>${earnings.weekTrips} chuyến giao</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Card 3: This Month -->
+                                <div class="income-stat-card" style="border-left: 4px solid #8b5cf6; background: #f5f3ff;">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #6d28d9; text-transform: uppercase;">Thu Nhập Tháng Này</div>
+                                    <div style="font-size: 1.7rem; font-weight: 900; color: #7c3aed; margin: 6px 0;">
+                                        <fmt:formatNumber value="${earnings.monthEarnings}" pattern="#,###" /> đ
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #475569;">
+                                        Đã hoàn tất: <strong>${earnings.monthTrips} chuyến giao</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Card 4: Total Accumulation -->
+                                <div class="income-stat-card" style="border-left: 4px solid #f05454; background: #fff5f5;">
+                                    <div style="font-size: 0.78rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">Tổng Thu Nhập Tích Lũy</div>
+                                    <div style="font-size: 1.7rem; font-weight: 900; color: #f05454; margin: 6px 0;">
+                                        <fmt:formatNumber value="${earnings.totalEarnings}" pattern="#,###" /> đ
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #475569;">
+                                        Tổng cộng: <strong>${earnings.totalTrips} chuyến hoàn tất</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DOANH THU & BIỂU ĐỒ 7 NGÀY GẦN NHẤT -->
                         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
                                 <div>
-                                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 6px 0;">Tổng Quan Thu Nhập Tháng Này</h4>
-                                    <div style="font-size: 0.9rem; color: #64748b;">So sánh doanh thu thực nhận với tháng trước</div>
+                                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 6px 0;">
+                                        <i class="fa-solid fa-chart-line text-primary me-2"></i> Xu Hướng Thu Nhập 7 Ngày Gần Nhất
+                                    </h4>
+                                    <div style="font-size: 0.9rem; color: #64748b;">Biểu đồ thù lao kiếm được theo từng ngày hoạt động thực tế</div>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 10px 16px; text-align: center;">
-                                        <div style="font-size: 0.8rem; font-weight: 700; color: #059669; margin-bottom: 2px;">TỔNG THÁNG NÀY</div>
-                                        <div style="font-size: 1.35rem; font-weight: 800; color: #059669;">5,250,000 đ</div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; justify-content: center; background: #10ac84; color: #fff; border-radius: 50px; padding: 6px 14px; font-weight: 700; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(16, 172, 132, 0.4);">
-                                        <i class="fa-solid fa-arrow-trend-up me-2"></i> Tăng 12%
+                                        <div style="font-size: 0.75rem; font-weight: 700; color: #059669; margin-bottom: 2px;">TỔNG THÁNG NÀY</div>
+                                        <div style="font-size: 1.35rem; font-weight: 800; color: #059669;">
+                                            <fmt:formatNumber value="${earnings.monthEarnings}" pattern="#,###" /> đ
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1150,20 +1284,23 @@
                             document.addEventListener("DOMContentLoaded", function() {
                                 const ctx = document.getElementById('revenueChart');
                                 if (ctx) {
+                                    const chartLabels = ${not empty earnings.chartLabelsJson ? earnings.chartLabelsJson : '["T2", "T3", "T4", "T5", "T6", "T7", "CN"]'};
+                                    const chartData = ${not empty earnings.chartDataJson ? earnings.chartDataJson : '[0, 0, 0, 0, 0, 0, 0]'};
+
                                     new Chart(ctx, {
                                         type: 'line',
                                         data: {
-                                            labels: ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4 (Hiện tại)'],
+                                            labels: chartLabels,
                                             datasets: [{
-                                                label: 'Doanh thu (VNĐ)',
-                                                data: [1200000, 1450000, 1100000, 1500000],
-                                                borderColor: '#3b82f6',
-                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                label: 'Thu nhập (VNĐ)',
+                                                data: chartData,
+                                                borderColor: '#2563eb',
+                                                backgroundColor: 'rgba(37, 99, 235, 0.1)',
                                                 borderWidth: 3,
                                                 fill: true,
-                                                tension: 0.4,
+                                                tension: 0.35,
                                                 pointBackgroundColor: '#fff',
-                                                pointBorderColor: '#3b82f6',
+                                                pointBorderColor: '#2563eb',
                                                 pointBorderWidth: 2,
                                                 pointRadius: 5,
                                                 pointHoverRadius: 7
@@ -1207,22 +1344,94 @@
                             });
                         </script>
 
-<!-- Bank & Payout info card -->
+                        <!-- LỊCH SỬ BIẾN ĐỘNG SỐ DƯ VÍ (WALLET TRANSACTIONS LEDGER) -->
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 22px 24px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(0,0,0,0.03);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <h4 style="font-size: 1.15rem; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;">
+                                        <i class="fa-solid fa-list-check text-primary me-2"></i> Lịch Sử Biến Động Số Dư Ví (Đối Soát Chi Tiết)
+                                    </h4>
+                                    <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
+                                        Ghi nhận chính xác các khoản trừ COD thu khách, cộng thù lao giao hàng, nạp và rút tiền ví
+                                    </p>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="openTopupModal()" style="border-radius: 50px; font-weight: 600; padding: 6px 16px;">
+                                    <i class="fa-solid fa-plus me-1"></i> Nạp thêm ví
+                                </button>
+                            </div>
+
+                            <c:choose>
+                                <c:when test="${empty walletTransactions}">
+                                    <div style="text-align: center; padding: 36px 20px; background: #fafbfc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                                        <i class="fa-solid fa-wallet text-muted mb-2" style="font-size: 2rem;"></i>
+                                        <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Chưa có biến động số dư nào trong ví. Khi bạn giao đơn hoàn tất hoặc nạp/rút tiền, lịch sử chi tiết sẽ hiển thị tại đây.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div style="overflow-x: auto;">
+                                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                                            <thead>
+                                                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+                                                    <th style="padding: 12px 14px; color: #475569;">Thời Gian</th>
+                                                    <th style="padding: 12px 14px; color: #475569;">Loại Giao Dịch</th>
+                                                    <th style="padding: 12px 14px; color: #475569;">Nội Dung Diễn Giải</th>
+                                                    <th style="padding: 12px 14px; color: #475569; text-align: right;">Số Tiền</th>
+                                                    <th style="padding: 12px 14px; color: #475569; text-align: right;">Số Dư Sau GD</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <c:forEach var="tx" items="${walletTransactions}">
+                                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                                        <td style="padding: 12px 14px; color: #64748b; white-space: nowrap;">
+                                                            <fmt:formatDate value="${tx.createdAt}" pattern="dd/MM/yyyy HH:mm" />
+                                                        </td>
+                                                        <td style="padding: 12px 14px; white-space: nowrap;">
+                                                            <span style="display: inline-block; padding: 4px 10px; border-radius: 50px; font-size: 0.78rem; font-weight: 700; background: ${tx.typeBadgeBg}; color: ${tx.typeBadgeColor};">
+                                                                ${tx.typeDisplay}
+                                                            </span>
+                                                        </td>
+                                                        <td style="padding: 12px 14px; color: #334155; font-weight: 500;">
+                                                            ${tx.description}
+                                                            <c:if test="${not empty tx.orderId and tx.orderId > 0}">
+                                                                <span class="badge bg-light text-dark ms-1">#FZ-${tx.orderId}</span>
+                                                            </c:if>
+                                                        </td>
+                                                        <td style="padding: 12px 14px; text-align: right; font-weight: 800; white-space: nowrap; color: ${tx.amount < 0 ? '#dc2626' : '#16a34a'};">
+                                                            ${tx.amount > 0 ? '+' : ''}<fmt:formatNumber value="${tx.amount}" pattern="#,###" /> đ
+                                                        </td>
+                                                        <td style="padding: 12px 14px; text-align: right; font-weight: 700; color: #1e293b; white-space: nowrap;">
+                                                            <fmt:formatNumber value="${tx.balanceAfter}" pattern="#,###" /> đ
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+
+                        <!-- Bank & Payout info card -->
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 22px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                             <div style="display: flex; align-items: center; gap: 14px;">
                                 <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
                                     <i class="fa-solid fa-building-columns"></i>
                                 </div>
                                 <div>
-                                    <h5 style="margin: 0; font-weight: 800; color: #1e293b;">Tài Khoản Nhận Thù Lao Mặc Định</h5>
+                                    <h5 style="margin: 0; font-weight: 800; color: #1e293b;">Tài Khoản Rút Tiền Về Mặc Định</h5>
                                     <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #64748b;">
                                         Ngân hàng: <strong>MB Bank (Quân Đội)</strong> • STK: <strong>9999****8888</strong> • Chủ TK: <strong>${sessionScope.currentUser.fullName.toUpperCase()}</strong>
                                     </p>
                                 </div>
                             </div>
-                            <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.82rem; padding: 6px 12px; border-radius: 50px;">
-                                <i class="fa-solid fa-shield-check me-1"></i> Đã liên kết &amp; Xác thực
-                            </span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.82rem; padding: 6px 12px; border-radius: 50px;">
+                                    <i class="fa-solid fa-shield-check me-1"></i> Đã liên kết &amp; Xác thực
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="openWithdrawModal()" style="border-radius: 50px; font-weight: 700; padding: 6px 16px;">
+                                    <i class="fa-solid fa-money-bill-transfer me-1"></i> Rút tiền
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Recent Earnings Table -->
@@ -1244,7 +1453,8 @@
                                                 <th style="padding: 12px 16px; color: #475569;">Mã Cuốc Xe</th>
                                                 <th style="padding: 12px 16px; color: #475569;">Thời Gian</th>
                                                 <th style="padding: 12px 16px; color: #475569;">Điểm Giao</th>
-                                                <th style="padding: 12px 16px; color: #475569;">COD Thu Hộ</th>
+                                                <th style="padding: 12px 16px; color: #475569; text-align: center;">Hình Thức TT</th>
+                                                <th style="padding: 12px 16px; color: #475569;">COD Thu Khách</th>
                                                 <th style="padding: 12px 16px; color: #475569; text-align: right;">Thù Lao Shipper</th>
                                                 <th style="padding: 12px 16px; color: #475569; text-align: center;">Trạng Thái Ví</th>
                                             </tr>
@@ -1256,15 +1466,38 @@
                                                     <td style="padding: 12px 16px; color: #64748b;">
                                                         <fmt:formatDate value="${item.createdAt}" pattern="dd/MM/yyyy HH:mm" />
                                                     </td>
-                                                    <td style="padding: 12px 16px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    <td style="padding: 12px 16px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                         ${item.address}
                                                     </td>
+                                                    <td style="padding: 12px 16px; text-align: center;">
+                                                        <c:choose>
+                                                            <c:when test="${item.paymentMethod eq 'COD'}">
+                                                                <span class="badge" style="background: #fee2e2; color: #dc2626; border-radius: 6px; padding: 4px 8px; font-size: 0.76rem; font-weight: 700;">
+                                                                    <i class="fa-solid fa-money-bill-wave me-1"></i> COD Tiền mặt
+                                                                </span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge" style="background: #dbeafe; color: #1d4ed8; border-radius: 6px; padding: 4px 8px; font-size: 0.76rem; font-weight: 700;">
+                                                                    <i class="fa-solid fa-credit-card me-1"></i> ${item.paymentMethod}
+                                                                </span>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </td>
                                                     <td style="padding: 12px 16px; font-weight: 700; color: #dc2626;">
-                                                        <fmt:formatNumber value="${item.totalAmount}" pattern="#,###" /> đ
+                                                        <c:choose>
+                                                            <c:when test="${item.paymentMethod eq 'COD'}">
+                                                                <fmt:formatNumber value="${item.totalAmount}" pattern="#,###" /> đ
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span style="color: #94a3b8; font-weight: 500;">0 đ (Đã trả online)</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </td>
                                                     <td style="padding: 12px 16px; font-weight: 800; color: #10ac84; text-align: right;">
                                                         <c:choose>
-                                                            <c:when test="${item.status eq 'DELIVERED'}">+15.000 đ</c:when>
+                                                            <c:when test="${item.status eq 'DELIVERED'}">
+                                                                +<fmt:formatNumber value="${item.shippingFee > 0 ? item.shippingFee : 15000}" pattern="#,###" /> đ
+                                                            </c:when>
                                                             <c:otherwise><span style="color:#94a3b8;">0 đ</span></c:otherwise>
                                                         </c:choose>
                                                     </td>
@@ -1272,7 +1505,7 @@
                                                         <c:choose>
                                                             <c:when test="${item.status eq 'DELIVERED'}">
                                                                 <span class="badge" style="background: #dcfce7; color: #15803d; border-radius: 50px; padding: 4px 10px; font-size: 0.78rem;">
-                                                                    <i class="fa-solid fa-check me-1"></i> Đã vào ví
+                                                                    <i class="fa-solid fa-check me-1"></i> Đã quyết toán
                                                                 </span>
                                                             </c:when>
                                                             <c:when test="${item.status eq 'CANCELLED'}">
@@ -1945,6 +2178,188 @@
     </div>
 </div>
 
+<!-- Modal Nạp Tiền Vào Ví Hoạt Động (Top-up Wallet Modal) -->
+<div id="topupWalletModal" class="modal-overlay" onclick="if(event.target===this) closeTopupModal();" style="z-index: 10500; display: none;">
+    <div class="modal-content" style="max-width: 520px; text-align: left; padding: 28px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <i class="fa-solid fa-plus-circle"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0;">Nạp Tiền Vào Ví Hoạt Động</h3>
+                    <div style="font-size: 0.82rem; color: #64748b;">
+                        Số dư hiện tại: <strong class="text-primary"><fmt:formatNumber value="${walletBalance}" pattern="#,###" /> đ</strong>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeTopupModal()" style="background: transparent; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 8px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <input type="hidden" name="action" value="topupWallet">
+
+            <!-- Chọn nhanh số tiền -->
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 8px;">
+                    Chọn nhanh mệnh giá nạp
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                    <button type="button" class="btn btn-outline-primary topup-preset-btn" onclick="selectTopupPreset(50000)" style="font-weight: 700; border-radius: 10px; padding: 10px;">
+                        50.000 đ
+                    </button>
+                    <button type="button" class="btn btn-outline-primary topup-preset-btn" onclick="selectTopupPreset(100000)" style="font-weight: 700; border-radius: 10px; padding: 10px;">
+                        100.000 đ
+                    </button>
+                    <button type="button" class="btn btn-outline-primary topup-preset-btn active" onclick="selectTopupPreset(200000)" style="font-weight: 700; border-radius: 10px; padding: 10px;">
+                        200.000 đ
+                    </button>
+                    <button type="button" class="btn btn-outline-primary topup-preset-btn" onclick="selectTopupPreset(500000)" style="font-weight: 700; border-radius: 10px; padding: 10px;">
+                        500.000 đ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nhập số tiền tùy chỉnh -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 6px;">
+                    Hoặc nhập số tiền khác (VNĐ) <span style="color: #dc2626;">*</span>
+                </label>
+                <div style="position: relative;">
+                    <input type="number" name="amount" id="topupAmountInput" class="form-control" min="10000" step="5000" value="200000" required style="border-radius: 10px; padding: 12px 45px 12px 14px; font-size: 1.15rem; font-weight: 800; color: #1e3a8a;">
+                    <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #94a3b8;">đ</span>
+                </div>
+                <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Tối thiểu 10.000 đ. Số dư ví dùng để ký quỹ đơn COD và nhận đơn liên tục.
+                </small>
+            </div>
+
+            <!-- Phương thức nạp tiền -->
+            <div style="margin-bottom: 22px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 8px;">
+                    Phương thức thanh toán
+                </label>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1.5px solid #2563eb; background: #eff6ff; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="paymentMethod" value="Chuyển khoản VietQR" checked style="accent-color: #2563eb;">
+                        <i class="fa-solid fa-qrcode text-primary" style="font-size: 1.3rem;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">Chuyển khoản nhanh VietQR 24/7</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Quét mã QR từ mọi ứng dụng ngân hàng, tiền vào ví tức thì</div>
+                        </div>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 10px; cursor: pointer;">
+                        <input type="radio" name="paymentMethod" value="Ví điện tử MoMo" style="accent-color: #2563eb;">
+                        <i class="fa-solid fa-wallet text-danger" style="font-size: 1.3rem;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 0.9rem; color: #1e293b;">Ví MoMo / VNPay</div>
+                            <div style="font-size: 0.75rem; color: #64748b;">Xác thực tiện lợi qua ứng dụng ví điện tử</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <button type="button" onclick="closeTopupModal()" class="btn btn-light" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; border: 1px solid #cbd5e1; color: #475569;">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="btn btn-primary" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);">
+                    <i class="fa-solid fa-check me-2"></i> Xác Nhận Nạp Tiền
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Rút Tiền Về Ngân Hàng (Withdraw Wallet Modal) -->
+<div id="withdrawWalletModal" class="modal-overlay" onclick="if(event.target===this) closeWithdrawModal();" style="z-index: 10500; display: none;">
+    <div class="modal-content" style="max-width: 520px; text-align: left; padding: 28px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #ecfdf5; color: #10ac84; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0;">Rút Tiền Về Ngân Hàng</h3>
+                    <div style="font-size: 0.82rem; color: #64748b;">
+                        Khả dụng: <strong class="text-success"><fmt:formatNumber value="${walletBalance}" pattern="#,###" /> đ</strong>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeWithdrawModal()" style="background: transparent; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 8px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <input type="hidden" name="action" value="withdrawWallet">
+
+            <!-- Thông tin tài khoản ngân hàng nhận tiền -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Tài khoản nhận tiền</div>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">
+                    MB Bank (Quân Đội) • 9999****8888
+                </div>
+                <div style="font-size: 0.85rem; color: #475569; margin-top: 2px;">
+                    Chủ tài khoản: <strong>${sessionScope.currentUser.fullName.toUpperCase()}</strong>
+                </div>
+                <input type="hidden" name="bankName" value="MB Bank">
+                <input type="hidden" name="accountNumber" value="99998888">
+                <input type="hidden" name="accountName" value="${sessionScope.currentUser.fullName}">
+            </div>
+
+            <!-- Chọn nhanh số tiền rút -->
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 8px;">
+                    Mốc tiền rút nhanh
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <button type="button" class="btn btn-outline-success withdraw-preset-btn" onclick="selectWithdrawPreset(100000)" style="font-weight: 700; border-radius: 10px; padding: 8px; font-size: 0.88rem;">
+                        100.000 đ
+                    </button>
+                    <button type="button" class="btn btn-outline-success withdraw-preset-btn active" onclick="selectWithdrawPreset(200000)" style="font-weight: 700; border-radius: 10px; padding: 8px; font-size: 0.88rem;">
+                        200.000 đ
+                    </button>
+                    <button type="button" class="btn btn-outline-success withdraw-preset-btn" onclick="selectWithdrawPreset(${walletBalance > 50000 ? walletBalance - 50000 : 50000})" style="font-weight: 700; border-radius: 10px; padding: 8px; font-size: 0.88rem;">
+                        Rút tối đa
+                    </button>
+                </div>
+            </div>
+
+            <!-- Nhập số tiền rút -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 6px;">
+                    Số tiền cần rút (VNĐ) <span style="color: #dc2626;">*</span>
+                </label>
+                <div style="position: relative;">
+                    <input type="number" name="amount" id="withdrawAmountInput" class="form-control" min="50000" max="${walletBalance}" step="10000" value="200000" required style="border-radius: 10px; padding: 12px 45px 12px 14px; font-size: 1.15rem; font-weight: 800; color: #15803d;">
+                    <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #94a3b8;">đ</span>
+                </div>
+                <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-shield-halved me-1"></i> Tối thiểu 50.000 đ. Khuyến nghị duy trì số dư ví 50.000 đ để tiếp tục nhận đơn COD.
+                </small>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <button type="button" onclick="closeWithdrawModal()" class="btn btn-light" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; border: 1px solid #cbd5e1; color: #475569;">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Xác Nhận Rút Tiền
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Báo Cáo Giao Thất Bại / Bom Hàng Kèm Bằng Chứng (Luôn có sẵn trong DOM) -->
 <div id="reportFailedModal" class="modal-overlay" onclick="if(event.target===this) closeReportFailedModal();" style="z-index: 10500; display: none;">
     <div class="modal-content" style="max-width: 560px; text-align: left; padding: 28px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
@@ -2084,6 +2499,64 @@
             modal.classList.remove('active');
             modal.style.display = 'none';
             document.body.style.overflow = '';
+        }
+    }
+
+    function openTopupModal() {
+        const modal = document.getElementById('topupWalletModal');
+        if (modal) {
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeTopupModal() {
+        const modal = document.getElementById('topupWalletModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function selectTopupPreset(amount) {
+        const input = document.getElementById('topupAmountInput');
+        if (input) {
+            input.value = amount;
+        }
+        document.querySelectorAll('.topup-preset-btn').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
+    }
+
+    function openWithdrawModal() {
+        const modal = document.getElementById('withdrawWalletModal');
+        if (modal) {
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeWithdrawModal() {
+        const modal = document.getElementById('withdrawWalletModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function selectWithdrawPreset(amount) {
+        const input = document.getElementById('withdrawAmountInput');
+        if (input) {
+            input.value = Math.max(50000, Math.round(amount));
+        }
+        document.querySelectorAll('.withdraw-preset-btn').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) {
+            event.target.classList.add('active');
         }
     }
 

@@ -278,6 +278,7 @@ public class OrderDAO {
                         // Tự động kiểm tra phục hồi uy tín COD cho khách hàng nếu hoàn tất đơn
                         if ("DELIVERED".equalsIgnoreCase(status)) {
                             handleCodUnlockOnDeliveredByOrderId(orderId);
+                            settleDriverWalletOnOrderCompletedByOrderId(orderId);
                         }
 
                         // Khi đơn hoàn tất hoặc hủy, giải phóng tài xế về trạng thái AVAILABLE
@@ -389,7 +390,23 @@ public class OrderDAO {
         stats.put("totalEarnings", 0.0);
         stats.put("todayTrips", 0);
         stats.put("todayEarnings", 0.0);
-        
+        stats.put("weekTrips", 0);
+        stats.put("weekEarnings", 0.0);
+        stats.put("monthTrips", 0);
+        stats.put("monthEarnings", 0.0);
+
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate startOfWeek = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        int currentMonth = today.getMonthValue();
+        int currentYear = today.getYear();
+
+        // Chuẩn bị 7 ngày gần nhất để vẽ biểu đồ doanh thu
+        java.time.format.DateTimeFormatter dtf = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+        Map<java.time.LocalDate, Double> last7Earnings = new java.util.LinkedHashMap<>();
+        for (int i = 6; i >= 0; i--) {
+            last7Earnings.put(today.minusDays(i), 0.0);
+        }
+
         String sql = "SELECT DATE(created_at) as order_date, COUNT(order_id) as trips, " +
                      "COALESCE(SUM(COALESCE(shipping_fee, 15000)), 0) as earnings " +
                      "FROM orders WHERE driver_id = ? AND status = 'DELIVERED' GROUP BY DATE(created_at)";
@@ -401,23 +418,65 @@ public class OrderDAO {
                 double totalEarnings = 0.0;
                 int todayTrips = 0;
                 double todayEarnings = 0.0;
-                String todayStr = new java.sql.Date(System.currentTimeMillis()).toString();
-                
+                int weekTrips = 0;
+                double weekEarnings = 0.0;
+                int monthTrips = 0;
+                double monthEarnings = 0.0;
+
                 while (rs.next()) {
                     int trips = rs.getInt("trips");
                     double earn = rs.getDouble("earnings");
-                    String oDate = rs.getString("order_date");
+                    String oDateStr = rs.getString("order_date");
                     totalTrips += trips;
                     totalEarnings += earn;
-                    if (todayStr.equals(oDate)) {
-                        todayTrips += trips;
-                        todayEarnings += earn;
+
+                    if (oDateStr != null && !oDateStr.trim().isEmpty()) {
+                        try {
+                            java.time.LocalDate oDate = java.time.LocalDate.parse(oDateStr.substring(0, 10));
+                            if (oDate.equals(today)) {
+                                todayTrips += trips;
+                                todayEarnings += earn;
+                            }
+                            if (!oDate.isBefore(startOfWeek) && !oDate.isAfter(today)) {
+                                weekTrips += trips;
+                                weekEarnings += earn;
+                            }
+                            if (oDate.getYear() == currentYear && oDate.getMonthValue() == currentMonth) {
+                                monthTrips += trips;
+                                monthEarnings += earn;
+                            }
+                            if (last7Earnings.containsKey(oDate)) {
+                                last7Earnings.put(oDate, earn);
+                            }
+                        } catch (Exception ignored) {}
                     }
                 }
                 stats.put("totalTrips", totalTrips);
                 stats.put("totalEarnings", totalEarnings);
                 stats.put("todayTrips", todayTrips);
                 stats.put("todayEarnings", todayEarnings);
+                stats.put("weekTrips", weekTrips);
+                stats.put("weekEarnings", weekEarnings);
+                stats.put("monthTrips", monthTrips);
+                stats.put("monthEarnings", monthEarnings);
+
+                // Build chart JSON arrays
+                StringBuilder labelsJson = new StringBuilder("[");
+                StringBuilder dataJson = new StringBuilder("[");
+                int idx = 0;
+                for (Map.Entry<java.time.LocalDate, Double> entry : last7Earnings.entrySet()) {
+                    if (idx > 0) {
+                        labelsJson.append(", ");
+                        dataJson.append(", ");
+                    }
+                    labelsJson.append("\"").append(entry.getKey().format(dtf)).append("\"");
+                    dataJson.append(Math.round(entry.getValue()));
+                    idx++;
+                }
+                labelsJson.append("]");
+                dataJson.append("]");
+                stats.put("chartLabelsJson", labelsJson.toString());
+                stats.put("chartDataJson", dataJson.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1597,6 +1656,10 @@ public class OrderDAO {
                             if (!wasDelivered && customerUserId > 0) {
                                 handleCodUnlockOnDelivered(customerUserId, orderId);
                             }
+                            // Quyết toán ví tài xế: trừ COD thu khách và cộng thù lao giao hàng
+                            if (!wasDelivered && driverId > 0) {
+                                settleDriverWalletOnOrderCompleted(orderId, driverId);
+                            }
 
                             // Giải phóng shipper về AVAILABLE nếu không còn đơn SHIPPING nào khác
                             if (driverId > 0) {
@@ -1682,6 +1745,114 @@ public class OrderDAO {
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi truy vấn user_id từ order_id #" + orderId + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Quyết toán số dư ví tài xế khi đơn hoàn tất:
+     * - Nếu đơn COD: Trừ số tiền COD thu hộ của khách vào ví tài xế (khoản thu hộ nhà hàng), và cộng thù lao giao hàng vào ví tài xế.
+     * - Nếu đơn Online (VNPay, Momo, v.v.): Chỉ cộng thù lao giao hàng vào ví tài xế.
+     */
+    public void settleDriverWalletOnOrderCompleted(int orderId, int driverId) {
+        if (driverId <= 0 || orderId <= 0) return;
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return;
+
+            // 1. Kiểm tra idempotency: Nếu đã từng quyết toán ví cho đơn này rồi thì bỏ qua
+            String checkTransSql = "SELECT COUNT(*) FROM driver_wallet_transactions WHERE driver_id = ? AND order_id = ?";
+            try (PreparedStatement psCheck = conn.prepareStatement(checkTransSql)) {
+                psCheck.setInt(1, driverId);
+                psCheck.setInt(2, orderId);
+                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                    if (rsCheck.next() && rsCheck.getInt(1) > 0) {
+                        return; // Đã quyết toán cho đơn này rồi
+                    }
+                }
+            }
+
+            // 2. Lấy thông tin đơn hàng
+            String orderSql = "SELECT total_amount, shipping_fee, payment_method FROM orders WHERE order_id = ?";
+            double totalAmount = 0.0;
+            double shippingFee = 15000.0;
+            String paymentMethod = "COD";
+            try (PreparedStatement psOrder = conn.prepareStatement(orderSql)) {
+                psOrder.setInt(1, orderId);
+                try (ResultSet rsOrder = psOrder.executeQuery()) {
+                    if (rsOrder.next()) {
+                        totalAmount = rsOrder.getDouble("total_amount");
+                        double fee = rsOrder.getDouble("shipping_fee");
+                        if (fee > 0) shippingFee = fee;
+                        String pm = rsOrder.getString("payment_method");
+                        if (pm != null && !pm.trim().isEmpty()) paymentMethod = pm.trim();
+                    } else {
+                        return;
+                    }
+                }
+            }
+
+            DriverDAO driverDAO = new DriverDAO();
+            double currentBalance = driverDAO.getWalletBalance(driverId);
+            boolean isCod = "COD".equalsIgnoreCase(paymentMethod);
+
+            if (isCod) {
+                // Đơn COD:
+                // 1. Khách trả tiền mặt cho shipper -> Trừ tiền thu hộ vào ví shipper
+                double balanceAfterDeduction = currentBalance - totalAmount;
+                driverDAO.updateWalletBalance(driverId, balanceAfterDeduction);
+                driverDAO.recordWalletTransaction(
+                    driverId,
+                    orderId,
+                    "COD_DEDUCTION",
+                    -totalAmount,
+                    balanceAfterDeduction,
+                    "Trừ tiền COD thu khách đơn #FZ-" + orderId
+                );
+
+                // 2. Cộng thù lao giao hàng vào ví shipper
+                double balanceAfterEarning = balanceAfterDeduction + shippingFee;
+                driverDAO.updateWalletBalance(driverId, balanceAfterEarning);
+                driverDAO.recordWalletTransaction(
+                    driverId,
+                    orderId,
+                    "SHIPPING_EARNING",
+                    shippingFee,
+                    balanceAfterEarning,
+                    "Thù lao giao hàng đơn #FZ-" + orderId
+                );
+            } else {
+                // Đơn thanh toán online: Khách đã trả trước, chỉ cộng thù lao giao hàng vào ví
+                double balanceAfterEarning = currentBalance + shippingFee;
+                driverDAO.updateWalletBalance(driverId, balanceAfterEarning);
+                driverDAO.recordWalletTransaction(
+                    driverId,
+                    orderId,
+                    "SHIPPING_EARNING",
+                    shippingFee,
+                    balanceAfterEarning,
+                    "Thù lao giao đơn Online #FZ-" + orderId + " (" + paymentMethod + ")"
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi quyết toán ví tài xế cho đơn #" + orderId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void settleDriverWalletOnOrderCompletedByOrderId(int orderId) {
+        String sql = "SELECT driver_id FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int driverId = rs.getInt("driver_id");
+                    if (driverId > 0) {
+                        settleDriverWalletOnOrderCompleted(orderId, driverId);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm tài xế để quyết toán ví theo mã đơn #" + orderId + ": " + e.getMessage());
         }
     }
 

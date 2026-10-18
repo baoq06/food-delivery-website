@@ -58,6 +58,9 @@ public class Driver implements Serializable {
     @Column(name = "last_location_updated")
     private java.sql.Timestamp lastLocationUpdated;
 
+    @Column(name = "wallet_balance")
+    private Double walletBalance = 500000.0;
+
     private Double distanceToTarget; // Khoảng cách tới Quán ăn (km) - phục vụ hiển thị & thuật toán radar
 
     public Driver() {
@@ -234,5 +237,13 @@ public class Driver implements Serializable {
 
     public void setDistanceToTarget(Double distanceToTarget) {
         this.distanceToTarget = distanceToTarget;
+    }
+
+    public Double getWalletBalance() {
+        return walletBalance != null ? walletBalance : 500000.0;
+    }
+
+    public void setWalletBalance(Double walletBalance) {
+        this.walletBalance = walletBalance;
     }
 }
