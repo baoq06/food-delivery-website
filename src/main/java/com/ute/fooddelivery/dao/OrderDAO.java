@@ -22,9 +22,9 @@ public class OrderDAO {
         if (discountColumnsChecked) return;
         synchronized (OrderDAO.class) {
             if (discountColumnsChecked) return;
-            try (Connection conn = DBContext.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                if (conn != null) {
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn == null) return;
+                try (Statement stmt = conn.createStatement()) {
                     java.sql.DatabaseMetaData meta = conn.getMetaData();
                     boolean hasDiscount = false;
                     boolean hasVoucher = false;
@@ -1405,10 +1405,14 @@ public class OrderDAO {
             for (String rawCode : codes) {
                 String clean = rawCode.trim();
                 if (!clean.isEmpty()) {
-                    userVoucherDAO.restoreVoucher(userId, clean);
-                    voucherDAO.decrementUsedCount(clean);
-                    anyRestored = true;
-                    System.out.println(">> [Voucher Refund] Đã hoàn trả mã voucher [" + clean + "] cho khách hàng user_id=" + userId + " (Đơn #" + orderId + ")");
+                    boolean restored = userVoucherDAO.restoreVoucher(userId, clean);
+                    if (restored) {
+                        voucherDAO.decrementUsedCount(clean);
+                        anyRestored = true;
+                        System.out.println(">> [Voucher Refund] Đã hoàn trả mã voucher [" + clean + "] cho khách hàng user_id=" + userId + " (Đơn #" + orderId + ")");
+                    } else {
+                        System.out.println(">> [Voucher Refund] Bỏ qua hoàn trả mã [" + clean + "] do không tìm thấy bản ghi trong ví của user_id=" + userId);
+                    }
                 }
             }
             return anyRestored;

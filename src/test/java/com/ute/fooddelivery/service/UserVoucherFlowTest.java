@@ -173,4 +173,21 @@ public class UserVoucherFlowTest {
         );
         assertFalse("Không thể thẩm định mã đã hết lượt dùng trong kho", resZero.isValid());
     }
+
+    @Test
+    public void testUnclaimedVoucherCannotBeAppliedByCustomer() {
+        // Cấp mã chào mừng (chỉ có UTEE30, UTEE20, FREESHIP, WELCOME, UTEE15)
+        userVoucherDAO.grantWelcomeVouchers(testUserId);
+
+        // Khách hàng thử áp dụng mã BEPVIET20K (tồn tại trong DB nhưng khách CHƯA lưu vào ví)
+        DualValidationResult resUnclaimed = voucherService.validateTwoVouchers(
+                null, "BEPVIET20K", 100000, 15000, 1, testUserId
+        );
+        assertFalse("Mã chưa lưu vào ví tuyệt đối không được cho phép áp dụng", resUnclaimed.isValid());
+        assertTrue("Thông báo phải nhắc nhở chưa lưu vào ví", resUnclaimed.getMessage().contains("chưa được lưu vào Kho Voucher"));
+
+        // Thử trừ trực tiếp trong ví cũng phải thất bại (trả về false)
+        boolean useResult = userVoucherDAO.useVouchers(testUserId, Arrays.asList("BEPVIET20K"));
+        assertFalse("Trừ voucher chưa có trong ví phải trả về false", useResult);
+    }
 }

@@ -41,15 +41,20 @@ public class VoucherDAO extends DBContext {
                 "KEY `idx_v_rest` (`restaurant_id`), " +
                 "KEY `idx_v_code` (`code`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-        try (Connection conn = getConnection(); Statement st = conn.createStatement()) {
-            st.execute(sql);
-            seedInitialRestaurantVouchers(conn);
+        try (Connection conn = getConnection()) {
+            if (conn != null) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute(sql);
+                }
+                seedInitialRestaurantVouchers(conn);
+            }
         } catch (SQLException e) {
             System.err.println("[VoucherDAO] ensureVoucherTable warning: " + e.getMessage());
         }
     }
 
     private void seedInitialRestaurantVouchers(Connection conn) {
+        if (conn == null) return;
         String countSql = "SELECT COUNT(*) FROM `vouchers`";
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(countSql)) {
             if (rs.next() && rs.getInt(1) == 0) {

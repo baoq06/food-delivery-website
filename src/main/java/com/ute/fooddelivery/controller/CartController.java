@@ -470,11 +470,57 @@ public class CartController extends HttpServlet {
                         shippingVoucherCode, foodVoucherCode, subtotalBill, shippingFee, restaurantId, userId
                 );
 
+                boolean hasVoucherInput = (shippingVoucherCode != null && !shippingVoucherCode.trim().isEmpty())
+                        || (foodVoucherCode != null && !foodVoucherCode.trim().isEmpty());
+                if (hasVoucherInput && !dualResult.isValid()) {
+                    req.setAttribute("checkoutError", dualResult.getMessage());
+                    req.setAttribute("isCodLocked", isCodLocked);
+                    req.setAttribute("boomCount", boomCount);
+                    int codTrustOrders = userDAO.getCodTrustOrders(userId);
+                    req.setAttribute("codTrustOrders", codTrustOrders);
+                    req.setAttribute("stickyReceiverName", receiverName);
+                    req.setAttribute("stickyReceiverPhone", receiverPhone);
+                    req.setAttribute("stickyReceiverAddress", receiverAddress);
+                    req.setAttribute("stickyReceiverNote", receiverNote);
+                    req.setAttribute("stickyPaymentMethod", paymentMethod);
+                    req.setAttribute("shippingVoucherCode", shippingVoucherCode);
+                    req.setAttribute("foodVoucherCode", foodVoucherCode);
+                    doGet(req, resp);
+                    return;
+                }
+
                 double discountAmount = 0.0;
                 String appliedVoucherCode = null;
                 if (dualResult.isValid()) {
                     discountAmount = dualResult.getTotalDiscount();
                     appliedVoucherCode = dualResult.getCombinedCode();
+                }
+
+                List<String> codesToDeduct = new ArrayList<>();
+                if (dualResult.getFreeshipVoucher() != null) {
+                    codesToDeduct.add(dualResult.getFreeshipVoucher().getCode());
+                }
+                if (dualResult.getFoodVoucher() != null) {
+                    codesToDeduct.add(dualResult.getFoodVoucher().getCode());
+                }
+
+                // Trừ số lượng mã trước trong Kho Voucher của người dùng (atomic & transactional)
+                if (!codesToDeduct.isEmpty()) {
+                    boolean deductSuccess = userVoucherDAO.useVouchers(userId, codesToDeduct);
+                    if (!deductSuccess) {
+                        req.setAttribute("checkoutError", "Không thể áp dụng mã ưu đãi: Mã chưa được lưu vào ví hoặc đã hết lượt sử dụng trong kho!");
+                        req.setAttribute("isCodLocked", isCodLocked);
+                        req.setAttribute("boomCount", boomCount);
+                        int codTrustOrders = userDAO.getCodTrustOrders(userId);
+                        req.setAttribute("codTrustOrders", codTrustOrders);
+                        req.setAttribute("stickyReceiverName", receiverName);
+                        req.setAttribute("stickyReceiverPhone", receiverPhone);
+                        req.setAttribute("stickyReceiverAddress", receiverAddress);
+                        req.setAttribute("stickyReceiverNote", receiverNote);
+                        req.setAttribute("stickyPaymentMethod", paymentMethod);
+                        doGet(req, resp);
+                        return;
+                    }
                 }
 
                 double totalBill = Math.max(0, subtotalBill + shippingFee - discountAmount);
@@ -494,22 +540,12 @@ public class CartController extends HttpServlet {
 
                 int orderId = orderService.createOrder(order, items);
                 if (orderId > 0) {
-                    // Trừ số lượng mã tương ứng trong Kho Voucher của người dùng
-                    List<String> codesToDeduct = new ArrayList<>();
-                    if (dualResult.getFreeshipVoucher() != null) {
-                        codesToDeduct.add(dualResult.getFreeshipVoucher().getCode());
-                    }
-                    if (dualResult.getFoodVoucher() != null) {
-                        codesToDeduct.add(dualResult.getFoodVoucher().getCode());
-                    }
-                    if (!codesToDeduct.isEmpty()) {
+                    // Tăng số lượt dùng chung của mã voucher trên toàn hệ thống
+                    for (String c : codesToDeduct) {
                         try {
-                            userVoucherDAO.useVouchers(userId, codesToDeduct);
-                            for (String c : codesToDeduct) {
-                                voucherDAO.incrementUsedCount(c);
-                            }
+                            voucherDAO.incrementUsedCount(c);
                         } catch (Exception e) {
-                            System.err.println("Lỗi khi trừ số lượng voucher trong kho: " + e.getMessage());
+                            System.err.println("Lỗi khi tăng used_count cho voucher " + c + ": " + e.getMessage());
                         }
                     }
 
@@ -564,6 +600,13 @@ public class CartController extends HttpServlet {
                     }
 
                     req.getRequestDispatcher("/WEB-INF/views/client/cart.jsp").forward(req, resp);
+                    return;
+                } else {
+                    if (!codesToDeduct.isEmpty()) {
+                        userVoucherDAO.restoreVouchers(userId, codesToDeduct);
+                    }
+                    req.setAttribute("checkoutError", "Không thể tạo đơn hàng. Vui lòng thử lại sau!");
+                    doGet(req, resp);
                     return;
                 }
             }

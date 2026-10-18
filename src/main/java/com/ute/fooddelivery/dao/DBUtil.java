@@ -64,10 +64,11 @@ public class DBUtil {
                 props.put("jakarta.persistence.jdbc.user", user.trim());
                 props.put("javax.persistence.jdbc.user", user.trim());
             }
-            if (pass != null && !pass.trim().isEmpty()) {
-                props.put("jakarta.persistence.jdbc.password", pass.trim());
-                props.put("javax.persistence.jdbc.password", pass.trim());
+            if (pass == null || pass.trim().isEmpty()) {
+                pass = "ETp7DO4YQ1QUHbng";
             }
+            props.put("jakarta.persistence.jdbc.password", pass.trim());
+            props.put("javax.persistence.jdbc.password", pass.trim());
 
             if (!props.isEmpty()) {
                 factory = Persistence.createEntityManagerFactory("foodDeliveryPU", props);

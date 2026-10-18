@@ -120,6 +120,7 @@ public class VoucherService {
             cleanCode = CODE_ALIASES.get(cleanCode);
         }
         if (userId > 0) {
+            userVoucherDAO.ensureUserHasInitialVouchers(userId);
             UserVoucher uvRecord = userVoucherDAO.getUserVoucherRecord(userId, cleanCode);
             if (uvRecord != null) {
                 if (uvRecord.getQuantity() > 0) {
@@ -150,6 +151,9 @@ public class VoucherService {
                     // Đã hết số lượng mã trong kho -> không cho phép áp dụng
                     return null;
                 }
+            } else {
+                // Khách hàng chưa lưu voucher này vào ví -> Không cho phép áp dụng
+                return null;
             }
         }
         return findVoucherByCode(cleanCode);
@@ -166,6 +170,17 @@ public class VoucherService {
 
         Voucher voucher = findVoucherForUser(inputCode, userId);
         if (voucher == null) {
+            String clean = inputCode.trim().toUpperCase(Locale.ROOT);
+            if (CODE_ALIASES.containsKey(clean)) clean = CODE_ALIASES.get(clean);
+            if (userId > 0) {
+                UserVoucher uv = userVoucherDAO.getUserVoucherRecord(userId, clean);
+                if (uv != null && uv.getQuantity() <= 0) {
+                    return new ValidationResult(false, "Mã ưu đãi " + clean + " đã dùng hết lượt trong Kho Voucher của bạn!", 0.0, "0 đ", null);
+                }
+                if (findVoucherByCode(clean) != null) {
+                    return new ValidationResult(false, "Mã " + clean + " chưa được lưu vào Kho Voucher của bạn. Vui lòng lưu mã trước khi sử dụng!", 0.0, "0 đ", null);
+                }
+            }
             return new ValidationResult(false, "Mã ưu đãi không hợp lệ hoặc đã hết lượt dùng trong kho!", 0.0, "0 đ", null);
         }
 
@@ -225,6 +240,17 @@ public class VoucherService {
         if (hasFreeship) {
             Voucher vShip = findVoucherForUser(freeshipCode, userId);
             if (vShip == null) {
+                String cleanShip = freeshipCode.trim().toUpperCase(Locale.ROOT);
+                if (CODE_ALIASES.containsKey(cleanShip)) cleanShip = CODE_ALIASES.get(cleanShip);
+                if (userId > 0) {
+                    UserVoucher uv = userVoucherDAO.getUserVoucherRecord(userId, cleanShip);
+                    if (uv != null && uv.getQuantity() <= 0) {
+                        return new DualValidationResult(false, "Mã vận chuyển " + cleanShip + " đã dùng hết lượt trong Kho Voucher!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+                    }
+                    if (findVoucherByCode(cleanShip) != null) {
+                        return new DualValidationResult(false, "Mã freeship " + cleanShip + " chưa được lưu vào Kho Voucher của bạn. Vui lòng lưu mã trước khi dùng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+                    }
+                }
                 return new DualValidationResult(false, "Mã vận chuyển không hợp lệ hoặc đã hết lượt dùng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
             }
             if (!vShip.isFreeShip()) {
@@ -253,6 +279,17 @@ public class VoucherService {
         if (hasFood) {
             Voucher vFood = findVoucherForUser(foodCode, userId);
             if (vFood == null) {
+                String cleanFood = foodCode.trim().toUpperCase(Locale.ROOT);
+                if (CODE_ALIASES.containsKey(cleanFood)) cleanFood = CODE_ALIASES.get(cleanFood);
+                if (userId > 0) {
+                    UserVoucher uv = userVoucherDAO.getUserVoucherRecord(userId, cleanFood);
+                    if (uv != null && uv.getQuantity() <= 0) {
+                        return new DualValidationResult(false, "Mã giảm giá món " + cleanFood + " đã dùng hết lượt trong Kho Voucher!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+                    }
+                    if (findVoucherByCode(cleanFood) != null) {
+                        return new DualValidationResult(false, "Mã giảm giá " + cleanFood + " chưa được lưu vào Kho Voucher của bạn. Vui lòng lưu mã trước khi dùng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
+                    }
+                }
                 return new DualValidationResult(false, "Mã giảm giá món ăn không hợp lệ hoặc đã hết lượt dùng!", 0, "0 đ", 0, "0 đ", 0, "0 đ", null, null, "");
             }
             if (vFood.isFreeShip()) {

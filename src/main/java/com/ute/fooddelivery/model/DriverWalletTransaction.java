@@ -59,6 +59,14 @@ public class DriverWalletTransaction implements Serializable {
         this.type = type;
     }
 
+    public String getTransactionType() {
+        return type;
+    }
+
+    public void setTransactionType(String transactionType) {
+        this.type = transactionType;
+    }
+
     public double getAmount() {
         return amount;
     }
