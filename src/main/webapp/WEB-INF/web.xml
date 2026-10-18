@@ -7,6 +7,16 @@
 
     <display-name>Food Delivery Website</display-name>
 
+    <!-- Shipper Security Filter -->
+    <filter>
+        <filter-name>ShipperFilter</filter-name>
+        <filter-class>com.ute.fooddelivery.filter.ShipperFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ShipperFilter</filter-name>
+        <url-pattern>/shipper/*</url-pattern>
+    </filter-mapping>
+
     <welcome-file-list>
         <welcome-file>home</welcome-file>
         <welcome-file>index.jsp</welcome-file>
