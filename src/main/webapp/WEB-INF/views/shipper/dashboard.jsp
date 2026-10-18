@@ -290,7 +290,7 @@
                     <div>
                         <c:choose>
                             <c:when test="${param.msg eq 'boom_reported'}">
-                                <strong>Đã ghi nhận:</strong> Báo cáo khách bom hàng đã được gửi thành công. Hệ thống đã hạn chế phương thức COD của khách.
+                                <strong>Đã ghi nhận:</strong> Báo cáo giao thất bại / bom hàng kèm bằng chứng đã được ghi nhận. Đơn hàng và biên bản đối soát đã được gửi tới Ban Quản Trị và Khách hàng.
                             </c:when>
                             <c:otherwise>
                                 <strong>Thành công:</strong> Thao tác hoàn tất.
@@ -818,28 +818,43 @@
                                                             </c:otherwise>
                                                         </c:choose>
 
-                                                        <!-- Button Báo Sự Cố / Hủy Cuốc / Báo Bom Hàng (chỉ hiện khi chưa giao) -->
+                                                        <!-- Nhóm Nút Báo Sự Cố Trả Đơn / Báo Giao Thất Bại (Bom Hàng) -->
                                                         <c:if test="${not activeOrder.shipperDelivered}">
-                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi thực hiện!'); return false; } const isBoom = this.cancelReason.selectedOptions && this.cancelReason.selectedOptions[0] && this.cancelReason.selectedOptions[0].getAttribute('data-boom') === 'true'; if (isBoom) { this.status.value = 'FAILED_DELIVERY'; return confirm('Xác nhận báo cáo KHÁCH BOM HÀNG cho đơn #FZ-${activeOrder.id}? Hệ thống sẽ ghi nhận vi phạm và KHÓA THANH TOÁN TIỀN MẶT (COD) của khách hàng này.'); } else { this.status.value = 'CANCELLED'; return confirm('Bạn có chắc muốn báo trả/hủy cuốc đơn #FZ-${activeOrder.id}?'); }">
-                                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
-                                                                <input type="hidden" name="action" value="updateOrder">
-                                                                <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                                <input type="hidden" name="status" value="CANCELLED">
-                                                                
-                                                                <select name="cancelReason" class="form-select" style="flex: 1; border-radius: 50px; padding: 10px 16px; font-size: 0.9rem; min-width: 140px; border-color: #cbd5e1; background-color: #f8fafc;">
-                                                                    <option value="">-- Chọn lý do sự cố / hủy / bom hàng --</option>
-                                                                    <option value="Khách bom hàng - gọi nhiều cuộc không bắt máy" data-boom="true" style="color: #dc2626; font-weight: 700;">🚨 Khách bom hàng - Gọi không nghe máy (Khóa COD)</option>
-                                                                    <option value="Khách từ chối nhận món khi giao tới" data-boom="true" style="color: #dc2626; font-weight: 700;">🚨 Khách từ chối nhận món vô lý (Khóa COD)</option>
-                                                                    <option value="Xe bị hỏng / Tai nạn giữa đường">🔧 Xe bị hỏng / Sự cố giao thông (Trả đơn)</option>
-                                                                    <option value="Quán ăn đóng cửa / Hết món">🏪 Quán đóng cửa / Hết món</option>
-                                                                    <option value="Khách đổi địa chỉ quá xa">📍 Khách đổi địa chỉ quá xa</option>
-                                                                    <option value="Lý do cá nhân khác">⚠️ Lý do cá nhân khác</option>
-                                                                </select>
+                                                            <div style="margin-top: 14px; padding: 14px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; width: 100%; box-sizing: border-box;">
+                                                                <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                                                                    <i class="fa-solid fa-triangle-exclamation text-warning"></i>
+                                                                    <span>Sự cố chuyến xe & Hủy đơn</span>
+                                                                </div>
 
-                                                                <button type="submit" class="btn btn-outline-danger flex-shrink-0" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; white-space: nowrap;">
-                                                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Báo Cáo / Khóa COD
+                                                                <!-- Hàng 1: Báo sự cố quán / Trả đơn xe hỏng -->
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0 0 10px 0;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do sự cố trước khi trả đơn!'); return false; } return confirm('Bạn có chắc muốn báo trả cuốc đơn #FZ-${activeOrder.id}? Hệ thống sẽ giải phóng cuốc để tài xế khác tiếp nhận.');">
+                                                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                                                    <input type="hidden" name="action" value="updateOrder">
+                                                                    <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                                    <input type="hidden" name="status" value="CANCELLED">
+                                                                    
+                                                                    <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
+                                                                        <select name="cancelReason" class="form-select" style="flex: 1; min-width: 0; height: 42px; border-radius: 10px; font-size: 0.88rem; font-weight: 500; border: 1.5px solid #cbd5e1; background-color: #fff; color: #1e293b; padding: 0 34px 0 12px; line-height: normal; box-sizing: border-box;">
+                                                                            <option value="">-- Sự cố quán / Trả đơn --</option>
+                                                                            <option value="Xe bị hỏng / Tai nạn giữa đường">🔧 Xe bị hỏng / Sự cố giao thông (Trả đơn)</option>
+                                                                            <option value="Quán ăn đóng cửa / Hết món">🏪 Quán đóng cửa / Hết món (Hủy & hoàn voucher)</option>
+                                                                            <option value="Khách đổi địa chỉ quá xa">📍 Khách đổi địa chỉ quá xa</option>
+                                                                            <option value="Lý do cá nhân khác">⚠️ Lý do cá nhân khác</option>
+                                                                        </select>
+
+                                                                        <button type="submit" class="btn btn-outline-secondary" style="height: 42px; border-radius: 10px; font-weight: 700; padding: 0 16px; font-size: 0.85rem; white-space: nowrap; border: 1.5px solid #cbd5e1; background: #fff; color: #475569; display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0;">
+                                                                            <i class="fa-solid fa-arrow-rotate-left"></i>
+                                                                            <span>Trả Cuốc</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </form>
+
+                                                                <!-- Hàng 2: Nút Kích Hoạt Modal Báo Giao Thất Bại / Bom Hàng Kèm Bằng Chứng -->
+                                                                <button type="button" class="btn btn-outline-danger w-100" onclick="openReportFailedModal('${activeOrder.id}', '${activeOrder.customerName}')" style="height: 42px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: 1.5px solid #ef4444; color: #dc2626; background: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                                                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                                                    <span>Báo Giao Thất Bại / Bom Hàng</span>
                                                                 </button>
-                                                            </form>
+                                                            </div>
                                                         </c:if>
                                                     </div>
                                                 </div>
@@ -1417,6 +1432,14 @@
                                                     <strong>Ghi chú:</strong> <em>"${item.note}"</em>
                                                 </div>
                                             </c:if>
+                                            <c:if test="${not empty item.proofImage}">
+                                                <div class="trip-field" style="font-size: 0.85rem; color: #dc2626; margin-top: 4px;">
+                                                    <strong>Bằng chứng giao thất bại:</strong>
+                                                    <a href="${pageContext.request.contextPath}${item.proofImage}" target="_blank" style="color: #dc2626; font-weight: 700; text-decoration: underline; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                                        <i class="fa-solid fa-image"></i> Xem ảnh chụp bằng chứng
+                                                    </a>
+                                                </div>
+                                            </c:if>
                                         </div>
                                     </div>
 
@@ -1922,17 +1945,230 @@
     </div>
 </div>
 
+<!-- Modal Báo Cáo Giao Thất Bại / Bom Hàng Kèm Bằng Chứng (Luôn có sẵn trong DOM) -->
+<div id="reportFailedModal" class="modal-overlay" onclick="if(event.target===this) closeReportFailedModal();" style="z-index: 10500; display: none;">
+    <div class="modal-content" style="max-width: 560px; text-align: left; padding: 28px 24px; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 800; color: #1e293b; margin: 0;">Báo Cáo Giao Thất Bại / Bom Hàng</h3>
+                    <div style="font-size: 0.82rem; color: #64748b;">
+                        Mã đơn: <strong class="text-danger" id="reportFailedOrderBadge">#FZ-${not empty activeOrder ? activeOrder.id : '---'}</strong> • Khách: <strong id="reportFailedCustomerName">${not empty activeOrder ? activeOrder.customerName : 'Khách hàng'}</strong>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeReportFailedModal()" style="background: transparent; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 8px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Warning Callout Box -->
+        <div style="background: #fffbeb; border: 1px solid #fef3c7; border-left: 4px solid #f59e0b; border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;">
+            <div style="font-weight: 700; color: #b45309; font-size: 0.92rem; margin-bottom: 4px;">
+                <i class="fa-solid fa-shield-halved me-1"></i> CẢNH BÁO QUAN TRỌNG:
+            </div>
+            <p style="font-size: 0.84rem; color: #78350f; margin: 0; line-height: 1.5;">
+                Hành động này sẽ <strong>hạn chế phương thức thanh toán tiền mặt (COD)</strong> của khách hàng và gửi hồ sơ đối soát đến <strong>Ban Quản Trị</strong>. Vui lòng cung cấp hình ảnh chụp cuộc gọi nhỡ (tối thiểu 3 cuộc cách nhau 5-10 phút) hoặc ảnh chụp tại địa chỉ giao hàng để bảo vệ quyền lợi tài xế và tránh khiếu nại oan.
+            </p>
+        </div>
+
+        <!-- Form -->
+        <form id="reportFailedForm" action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" enctype="multipart/form-data" onsubmit="return validateReportFailedForm(this);">
+            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+            <input type="hidden" name="action" value="updateOrder">
+            <input type="hidden" name="status" value="FAILED_DELIVERY">
+            <input type="hidden" name="orderId" id="reportFailedOrderId" value="${not empty activeOrder ? activeOrder.id : ''}">
+
+            <!-- Lý do giao thất bại -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 6px;">
+                    Lý do giao thất bại <span style="color: #dc2626;">*</span>
+                </label>
+                <select name="cancelReason" id="reportFailedReason" class="form-select" required style="width: 100%; height: 44px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.9rem; font-weight: 500; background-color: #fff; color: #1e293b; padding: 0 38px 0 14px; line-height: normal; box-sizing: border-box;">
+                    <option value="">-- Chọn lý do cụ thể --</option>
+                    <option value="Khách hàng không nghe máy (đã gọi nhiều cuộc)">📞 Khách không nghe máy (đã gọi tối thiểu 3 cuộc)</option>
+                    <option value="Khách từ chối nhận món / hủy ngang khi shipper đến">🚫 Khách từ chối nhận món / hủy ngang khi đã đến nơi</option>
+                    <option value="Sai địa chỉ / Không thể tìm thấy người nhận">📍 Sai địa chỉ / Không có người nhận tại địa chỉ</option>
+                    <option value="Khách hẹn dời giờ giao quá lâu (trên 30 phút)">⏳ Khách hẹn dời giờ giao quá lâu (không thể chờ)</option>
+                    <option value="Khách không đủ tiền mặt / không thanh toán COD">💵 Khách không đủ tiền mặt / không chịu thanh toán COD</option>
+                    <option value="Lý do bất khả kháng khác từ phía khách">⚠️ Lý do khác từ phía khách hàng</option>
+                </select>
+            </div>
+
+            <!-- Ghi chú chi tiết của Shipper -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 6px;">
+                    Ghi chú chi tiết & Lịch sử liên hệ <span style="color: #dc2626;">*</span>
+                </label>
+                <textarea name="shipperNote" id="reportFailedNote" rows="3" class="form-control" required placeholder="Ví dụ: Đã đến địa chỉ lúc 11:30. Đã gọi 3 cuộc lúc 11:30, 11:36, 11:42 khách đều tắt máy hoặc không nghe. Chờ tại cổng 15 phút không ai ra..." style="width: 100%; border-radius: 10px; padding: 10px 14px; border: 1.5px solid #cbd5e1; font-size: 0.88rem;"></textarea>
+                <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Ghi chi tiết mốc thời gian gọi điện hoặc tình huống thực tế để làm bằng chứng đối soát khi khách khiếu nại.
+                </small>
+            </div>
+
+            <!-- Upload hình ảnh bằng chứng -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 700; font-size: 0.9rem; color: #334155; margin-bottom: 6px;">
+                    Hình ảnh bằng chứng (Ảnh chụp màn hình cuộc gọi / Ảnh địa chỉ)
+                </label>
+                <div style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 16px; text-align: center; background: #f8fafc; cursor: pointer;" onclick="document.getElementById('proofImageInput').click();">
+                    <input type="file" name="proofImage" id="proofImageInput" accept="image/*" capture="environment" style="display: none;" onchange="previewProofImage(this);">
+                    <div id="proofPlaceholder">
+                        <i class="fa-solid fa-camera text-primary" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <div style="font-weight: 600; font-size: 0.9rem; color: #334155;">Bấm để chụp ảnh hoặc tải ảnh lên</div>
+                        <div style="font-size: 0.78rem; color: #64748b; margin-top: 4px;">Ảnh màn hình cuộc gọi nhỡ (khuyến nghị) hoặc ảnh mặt tiền nhà/địa chỉ giao hàng (JPG, PNG - Tối đa 10MB)</div>
+                    </div>
+                    <div id="proofPreviewContainer" style="display: none; margin-top: 8px; position: relative;">
+                        <img id="proofPreviewImg" src="" alt="Bằng chứng" style="max-height: 180px; max-width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; object-fit: contain;">
+                        <div style="margin-top: 8px;">
+                            <span id="proofFileName" style="font-size: 0.8rem; font-weight: 600; color: #16a34a;"></span>
+                            <button type="button" class="btn btn-sm btn-link text-danger ms-2" onclick="removeProofImage(event)" style="font-size: 0.8rem; text-decoration: none;">
+                                <i class="fa-solid fa-trash me-1"></i> Xóa ảnh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cam kết -->
+            <div style="margin-bottom: 22px; background: #f1f5f9; border-radius: 10px; padding: 10px 14px;">
+                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: #334155; margin: 0; cursor: pointer;">
+                    <input type="checkbox" id="confirmCommitment" required style="margin-top: 3px; cursor: pointer;">
+                    <span>Tôi cam kết thông tin và bằng chứng cung cấp là hoàn toàn chính xác, trung thực. Tôi chịu trách nhiệm trước quy chế tài xế nếu báo cáo sai lệch.</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <button type="button" onclick="closeReportFailedModal()" class="btn btn-light" style="border-radius: 50px; font-weight: 600; padding: 10px 20px; border: 1px solid #cbd5e1; color: #475569;">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 10px 24px; background: #dc2626; border-color: #dc2626; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);">
+                    <i class="fa-solid fa-cloud-arrow-up me-2"></i> Gửi Bằng Chứng & Báo Giao Thất Bại
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    function openReportFailedModal(orderId, customerName) {
+        const modal = document.getElementById('reportFailedModal');
+        if (!modal) {
+            alert('⚠️ CẢNH BÁO QUAN TRỌNG KHI BÁO BOM / GIAO THẤT BẠI:\n\nThao tác này sẽ khóa quyền thanh toán COD của khách hàng và chuyển đơn kiểm tra đến Ban Quản Trị.\nVui lòng đảm bảo bạn có đầy đủ bằng chứng cuộc gọi!');
+            return;
+        }
+        if (orderId) {
+            const inputEl = document.getElementById('reportFailedOrderId');
+            if (inputEl) inputEl.value = orderId;
+            const badgeEl = document.getElementById('reportFailedOrderBadge');
+            if (badgeEl) badgeEl.innerText = '#FZ-' + orderId;
+        }
+        if (customerName) {
+            const custEl = document.getElementById('reportFailedCustomerName');
+            if (custEl) custEl.innerText = customerName;
+        }
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeReportFailedModal() {
+        const modal = document.getElementById('reportFailedModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+
+    function previewProofImage(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Dung lượng ảnh vượt quá 10MB. Vui lòng chọn ảnh nhỏ hơn!');
+                input.value = '';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('proofPreviewImg');
+                const previewContainer = document.getElementById('proofPreviewContainer');
+                const placeholder = document.getElementById('proofPlaceholder');
+                const fileName = document.getElementById('proofFileName');
+                if (previewImg && previewContainer && placeholder) {
+                    previewImg.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    if (fileName) fileName.innerText = '✓ ' + file.name;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeProofImage(event) {
+        if (event) event.stopPropagation();
+        const input = document.getElementById('proofImageInput');
+        const previewContainer = document.getElementById('proofPreviewContainer');
+        const placeholder = document.getElementById('proofPlaceholder');
+        const previewImg = document.getElementById('proofPreviewImg');
+        const fileName = document.getElementById('proofFileName');
+        if (input) input.value = '';
+        if (previewImg) previewImg.src = '';
+        if (fileName) fileName.innerText = '';
+        if (previewContainer) previewContainer.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+    }
+
+    function validateReportFailedForm(form) {
+        const reason = form.cancelReason.value;
+        if (!reason || !reason.trim()) {
+            alert('Vui lòng chọn lý do giao thất bại!');
+            form.cancelReason.focus();
+            return false;
+        }
+        const note = form.shipperNote.value;
+        if (!note || note.trim().length < 5) {
+            alert('Vui lòng nhập ghi chú chi tiết (tối thiểu 5 ký tự, ghi rõ mốc thời gian gọi điện)!');
+            form.shipperNote.focus();
+            return false;
+        }
+        const fileInput = document.getElementById('proofImageInput');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            const proceedWithoutProof = confirm('⚠️ CẢNH BÁO: BẠN CHƯA ĐÍNH KÈM ẢNH BẰNG CHỨNG (Lịch sử cuộc gọi nhỡ / ảnh địa chỉ)!\n\nNếu khách hàng khiếu nại và tài xế không có bằng chứng đối soát, tài xế có thể bị xử lý kỷ luật theo quy chế của hệ thống.\n\nBạn có chắc chắn muốn tiếp tục gửi báo cáo mà không có ảnh bằng chứng?');
+            if (!proceedWithoutProof) {
+                return false;
+            }
+        }
+        const commitment = document.getElementById('confirmCommitment');
+        if (commitment && !commitment.checked) {
+            alert('Vui lòng tích vào ô cam kết trước khi gửi báo cáo!');
+            commitment.focus();
+            return false;
+        }
+        const orderIdVal = document.getElementById('reportFailedOrderId') ? document.getElementById('reportFailedOrderId').value : '';
+        return confirm('⚠️ XÁC NHẬN BÁO CÁO GIAO THẤT BẠI CHO ĐƠN #FZ-' + orderIdVal + '?\n\nHệ thống sẽ:\n1. Tạm khóa quyền thanh toán tiền mặt (COD) của khách hàng.\n2. Gửi hồ sơ và hình ảnh bằng chứng đến Ban Quản Trị để đối soát.\n3. Gửi thông báo cảnh báo đến khách hàng.\n\nBạn có chắc chắn muốn gửi báo cáo này không?');
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
-        // Tách ghi chú "Shipper Trả Đơn" ra khỏi ghi chú khách hàng và format riêng biệt cho đẹp
+        // Tách ghi chú "Shipper Trả Đơn" hoặc "BOM HÀNG" ra khỏi ghi chú khách hàng và format riêng biệt cho đẹp
         document.querySelectorAll('.order-note-container').forEach(el => {
             let html = el.innerHTML;
             const regex = /\[Shipper Trả Đơn:\s*(.*?)\]/g;
             if (regex.test(html)) {
-                // Thay thế chuỗi bằng badge đỏ
                 html = html.replace(regex, '<br><span class="badge bg-danger text-white mt-1" style="font-size: 0.8rem; border-radius: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Chú ý: Shipper trước báo hủy - $1</span>');
-                el.innerHTML = html;
             }
+            const boomRegex = /\[(BOM HÀNG|BOM HÀNG \/ GIAO THẤT BẠI):\s*(.*?)\]/g;
+            if (boomRegex.test(html)) {
+                html = html.replace(boomRegex, '<br><span class="badge bg-dark text-warning mt-1" style="font-size: 0.8rem; border-radius: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Giao thất bại: $2</span>');
+            }
+            el.innerHTML = html;
         });
     });
 </script>

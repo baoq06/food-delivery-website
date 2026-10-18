@@ -708,10 +708,32 @@
                             <div class="form-group">
                                 <label class="option-label">Phương thức thanh toán:</label>
                                 <c:if test="${isCodLocked}">
-                                    <div class="alert alert-warning p-2 mb-2" style="border-radius: 12px; font-size: 0.84rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; display: flex; align-items: flex-start; gap: 8px;">
-                                        <i class="fa-solid fa-triangle-exclamation text-warning mt-1" style="font-size: 1.1rem; flex-shrink: 0;"></i>
-                                        <div>
-                                            <strong>Tạm khóa thanh toán Tiền mặt (COD):</strong> Tài khoản của bạn đã bị giới hạn thanh toán sau do có lịch sử hủy đơn hoặc không nhận hàng (${boomCount} lần). Vui lòng thanh toán trước qua chuyển khoản VietQR để tiếp tục đặt món.
+                                    <div class="alert alert-warning p-3 mb-3" style="border-radius: 12px; font-size: 0.85rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e;">
+                                        <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px;">
+                                            <i class="fa-solid fa-triangle-exclamation text-warning mt-1" style="font-size: 1.2rem; flex-shrink: 0;"></i>
+                                            <div>
+                                                <strong style="font-size: 0.92rem; color: #b45309;">Tạm khóa thanh toán Tiền mặt (COD)</strong>
+                                                <div style="margin-top: 2px; color: #78350f;">
+                                                    Tài khoản đã bị hạn chế phương thức COD do có lịch sử bom hàng / giao thất bại (${boomCount} lần).
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Cơ chế tự động mở lại COD sau 3 đơn -->
+                                        <div style="background: rgba(254, 243, 199, 0.6); padding: 10px 14px; border-radius: 8px; border: 1px dashed #f59e0b; margin-top: 8px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                                <span style="font-weight: 700; color: #92400e; font-size: 0.82rem;">
+                                                    <i class="fa-solid fa-rotate-left me-1 text-warning"></i> Tiến độ phục hồi uy tín:
+                                                </span>
+                                                <span class="badge" style="background: #f59e0b; color: #fff; font-weight: 700; font-size: 0.78rem;">
+                                                    ${not empty codTrustOrders ? codTrustOrders : 0}/3 đơn hoàn thành
+                                                </span>
+                                            </div>
+                                            <div style="background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                                                <div style="background: #10b981; height: 100%; width: ${((not empty codTrustOrders ? codTrustOrders : 0) / 3) * 100}%; border-radius: 4px; transition: width 0.3s ease;"></div>
+                                            </div>
+                                            <div style="font-size: 0.78rem; color: #78350f; line-height: 1.35;">
+                                                💡 <em>Hoàn thành thêm <strong>${3 - (not empty codTrustOrders ? codTrustOrders : 0)}</strong> đơn thanh toán trước (VietQR) để hệ thống tự động kích hoạt lại COD. Nếu bạn bị tài xế báo nhầm, vui lòng liên hệ hotline 1900-6868 hoặc khiếu nại để Admin mở lại ngay!</em>
+                                            </div>
                                         </div>
                                     </div>
                                 </c:if>

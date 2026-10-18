@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
     <jsp:param name="title" value="Bảng Điều Khiển Quản Trị - Utee Admin" />
 </jsp:include>
@@ -50,6 +51,12 @@
                 <span>Đã gỡ cấm (mở khóa) cho quán ăn có số điện thoại <strong><c:out value="${param.phone}" /></strong> thành công!</span>
             </div>
         </c:if>
+        <c:if test="${param.msg eq 'customer_cod_unlocked'}">
+            <div style="background: #f0fdf4; border: 1px solid #22c55e; color: #15803d; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-circle-check" style="font-size: 1.2rem;"></i>
+                <span>Đã mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${not empty param.phone ? 'có SĐT: <strong>'.concat(param.phone).concat('</strong>') : ''} thành công! Hệ thống đã gửi thông báo đến khách hàng.</span>
+            </div>
+        </c:if>
         <c:if test="${param.error eq 'phone_not_found'}">
             <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
@@ -62,7 +69,7 @@
                 <span>Vui lòng nhập số điện thoại hợp lệ để thực hiện thao tác cấm/mở khóa!</span>
             </div>
         </c:if>
-        <c:if test="${param.error eq 'ban_failed' or param.error eq 'unban_failed'}">
+        <c:if test="${param.error eq 'ban_failed' or param.error eq 'unban_failed' or param.error eq 'unlock_failed'}">
             <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
                 <span>Không thể thực hiện thao tác. Vui lòng kiểm tra lại thông tin hoặc thử lại sau!</span>
@@ -88,10 +95,16 @@
             </div>
         </div>
 
-        <div class="nav-tabs-admin" style="margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; display: flex; gap: 4px;">
+        <div class="nav-tabs-admin" style="margin-bottom: 24px; border-bottom: 2px solid #e2e8f0; display: flex; gap: 4px; flex-wrap: wrap;">
             <a href="${pageContext.request.contextPath}/admin/dashboard" style="padding: 12px 24px; text-decoration: none; font-weight: 600; border-radius: 8px 8px 0 0; color: ${empty param.tab or param.tab eq 'dashboard' ? '#fff' : '#64748b'}; background: ${empty param.tab or param.tab eq 'dashboard' ? '#2563eb' : 'transparent'}; border-bottom: ${empty param.tab or param.tab eq 'dashboard' ? 'none' : '2px solid transparent'};"><i class="fa-solid fa-chart-pie"></i> Thống Kê Tổng Quan</a>
             <a href="${pageContext.request.contextPath}/admin/dashboard?tab=shippers" style="padding: 12px 24px; text-decoration: none; font-weight: 600; border-radius: 8px 8px 0 0; color: ${param.tab eq 'shippers' ? '#fff' : '#64748b'}; background: ${param.tab eq 'shippers' ? '#10ac84' : 'transparent'}; border-bottom: ${param.tab eq 'shippers' ? 'none' : '2px solid transparent'};"><i class="fa-solid fa-motorcycle"></i> Quản Lý Tài Xế</a>
             <a href="${pageContext.request.contextPath}/admin/dashboard?tab=restaurants" style="padding: 12px 24px; text-decoration: none; font-weight: 600; border-radius: 8px 8px 0 0; color: ${param.tab eq 'restaurants' ? '#fff' : '#64748b'}; background: ${param.tab eq 'restaurants' ? '#f59e0b' : 'transparent'}; border-bottom: ${param.tab eq 'restaurants' ? 'none' : '2px solid transparent'};"><i class="fa-solid fa-store"></i> Quản Lý Quán Ăn</a>
+            <a href="${pageContext.request.contextPath}/admin/dashboard?tab=customers" style="padding: 12px 24px; text-decoration: none; font-weight: 600; border-radius: 8px 8px 0 0; color: ${param.tab eq 'customers' ? '#fff' : '#64748b'}; background: ${param.tab eq 'customers' ? '#dc2626' : 'transparent'}; border-bottom: ${param.tab eq 'customers' ? 'none' : '2px solid transparent'};">
+                <i class="fa-solid fa-user-shield"></i> Quản Lý Khách Hàng (Mở COD)
+                <c:if test="${lockedCustomerCount > 0}">
+                    <span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; margin-left: 6px; font-weight: 700;">${lockedCustomerCount} bị khóa</span>
+                </c:if>
+            </a>
         </div>
 
         <c:choose>
@@ -468,6 +481,196 @@
                 </div>
             </c:when>
 
+            <c:when test="${param.tab eq 'customers'}">
+                <!-- 1. Mở Khóa COD Khách Hàng Bằng Số Điện Thoại -->
+                <div class="admin-ban-control-card" style="border-left: 5px solid #10b981;">
+                    <div class="admin-ban-control-header">
+                        <div class="admin-ban-title">
+                            <i class="fa-solid fa-lock-open" style="color: #10b981; font-size: 1.25rem;"></i>
+                            <span>Kiểm Soát &amp; Mở Khóa Thanh Toán COD Khách Hàng</span>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #64748b;">
+                            <i class="fa-solid fa-circle-info"></i> Nhập số điện thoại khách hàng để gỡ khóa COD khi có khiếu nại hoặc đối soát
+                        </span>
+                    </div>
+                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="action" value="unlockCustomerCod" />
+                        <div class="admin-phone-input-wrap">
+                            <i class="fa-solid fa-phone"></i>
+                            <input type="text" name="phone" id="quickUnlockCustomerPhone" class="admin-phone-input" placeholder="Nhập số điện thoại khách hàng (ví dụ: 0987654321)..." required />
+                        </div>
+                        <button type="submit" class="btn btn-success" style="padding: 10px 22px; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; background: #10b981; border-color: #10b981;" onclick="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng có số điện thoại này?');">
+                            <i class="fa-solid fa-unlock-keyhole"></i> Mở Khóa COD Ngay
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Bảng Danh Sách Khách Hàng & Thanh Tìm Kiếm -->
+                <div class="admin-table-card mt-2">
+                    <div class="admin-table-header" style="flex-direction: column; align-items: stretch; gap: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 class="table-card-title"><i class="fa-solid fa-users text-primary"></i> Quản Lý Khách Hàng &amp; Phục Hồi Uy Tín COD</h3>
+                                <span class="table-card-sub">Giám sát số lần bom hàng, tiến độ 3 đơn phục hồi tự động và mở khóa COD</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <span id="customerCountBadge" class="badge" style="background: #e0f2fe; color: #0284c7; font-size: 0.9rem; padding: 8px 16px; border-radius: 20px; font-weight: 700;">
+                                    <i class="fa-solid fa-users"></i> Hiển thị: <strong id="customerVisibleCount">${allCustomers.size()}</strong> khách hàng
+                                </span>
+                                <c:if test="${lockedCustomerCount > 0}">
+                                    <span class="badge" style="background: #fee2e2; color: #b91c1c; font-size: 0.9rem; padding: 8px 16px; border-radius: 20px; font-weight: 700;">
+                                        <i class="fa-solid fa-lock"></i> ${lockedCustomerCount} đang bị khóa COD
+                                    </span>
+                                </c:if>
+                                <c:if test="${not empty searchKeyword}">
+                                    <a href="${pageContext.request.contextPath}/admin/dashboard?tab=customers" class="btn btn-outline btn-sm" style="border-radius: 20px;">
+                                        <i class="fa-solid fa-rotate-left"></i> Xem tất cả
+                                    </a>
+                                </c:if>
+                            </div>
+                        </div>
+
+                        <!-- Toolbar Search -->
+                        <div class="admin-toolbar-row" style="margin-bottom: 0;">
+                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="GET" style="display: flex; gap: 10px; flex: 1; max-width: 540px;">
+                                <input type="hidden" name="tab" value="customers" />
+                                <div class="admin-search-wrapper">
+                                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                                    <input type="text" name="search" id="customerSearchInput" class="admin-search-input" value="<c:out value='${searchKeyword}' />" placeholder="Tìm tên khách hàng, số điện thoại, email, username..." autocomplete="off" />
+                                    <button type="button" id="clearCustomerSearch" class="admin-search-clear" title="Xóa tìm kiếm"><i class="fa-solid fa-circle-xmark"></i></button>
+                                </div>
+                                <button type="submit" class="btn btn-primary" style="padding: 0 20px; border-radius: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-magnifying-glass"></i> Tìm
+                                </button>
+                            </form>
+                            <span style="font-size: 0.85rem; color: #64748b;">
+                                <i class="fa-solid fa-wand-magic-sparkles text-warning"></i> Khách hoàn tất đủ <strong>3 đơn hàng</strong> trả trước sẽ được hệ thống tự động mở lại COD.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="admin-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Khách Hàng</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Email</th>
+                                    <th>Địa Chỉ</th>
+                                    <th>Lịch Sử Bom</th>
+                                    <th>Trạng Thái COD</th>
+                                    <th>Tiến Độ Tự Mở (3 Đơn)</th>
+                                    <th>Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customerTableBody">
+                                <c:choose>
+                                    <c:when test="${not empty allCustomers}">
+                                        <c:forEach items="${allCustomers}" var="cust">
+                                            <tr class="cust-row" data-name="${fn:toLowerCase(cust.fullName)}" data-phone="${cust.phone}" data-email="${fn:toLowerCase(cust.email)}">
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                                        <img src="${not empty cust.avatar ? cust.avatar : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;" />
+                                                        <div>
+                                                            <strong style="color: #1e293b;"><c:out value="${cust.fullName}" /></strong>
+                                                            <div style="font-size: 0.8rem; color: #64748b;">@<c:out value="${cust.username}" /> • ID: #${cust.id}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight: 600; color: #0284c7;"><c:out value="${cust.phone}" /></span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-size: 0.85rem; color: #475569;"><c:out value="${cust.email}" /></span>
+                                                </td>
+                                                <td>
+                                                    <span style="font-size: 0.85rem; color: #64748b; max-width: 220px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<c:out value='${cust.address}' />">
+                                                        <c:out value="${not empty cust.address ? cust.address : 'Chưa cập nhật'}" />
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${cust.boomCount > 0}">
+                                                            <span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; font-weight: 700;">
+                                                                <i class="fa-solid fa-triangle-exclamation"></i> ${cust.boomCount} lần
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge" style="background: #f1f5f9; color: #64748b;">0 lần</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${cust.codLocked}">
+                                                            <span class="badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; font-weight: 700; padding: 6px 10px; border-radius: 6px;">
+                                                                <i class="fa-solid fa-lock me-1"></i> BỊ KHÓA COD
+                                                            </span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="badge" style="background: #f0fdf4; color: #15803d; border: 1px solid #86efac; font-weight: 600; padding: 6px 10px; border-radius: 6px;">
+                                                                <i class="fa-solid fa-circle-check me-1"></i> Bình thường
+                                                            </span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${cust.codLocked}">
+                                                            <div style="min-width: 140px;">
+                                                                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 700; margin-bottom: 3px; color: #b45309;">
+                                                                    <span>Tiến độ:</span>
+                                                                    <span>${cust.codTrustOrders}/3 đơn</span>
+                                                                </div>
+                                                                <div style="background: #e2e8f0; height: 6px; border-radius: 3px; overflow: hidden;">
+                                                                    <div style="background: #10b981; height: 100%; width: ${(cust.codTrustOrders / 3) * 100}%; border-radius: 3px;"></div>
+                                                                </div>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span style="font-size: 0.8rem; color: #10b981; font-weight: 600;"><i class="fa-solid fa-shield-check"></i> Đang mở COD</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td>
+                                                    <c:choose>
+                                                        <c:when test="${cust.codLocked}">
+                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unlockCustomerCod&userId=${cust.id}&tab=customers"
+                                                               class="btn btn-sm btn-success"
+                                                               style="background: #10b981; border-color: #10b981; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; color: #fff; text-decoration: none;"
+                                                               onclick="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${cust.fullName} (ID: ${cust.id})?');">
+                                                                <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="text-muted" style="font-size: 0.82rem;"><i class="fa-solid fa-check text-success"></i> Hợp lệ</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr id="emptyCustomerRow">
+                                            <td colspan="8" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                                                <i class="fa-solid fa-users" style="font-size: 2.2rem; margin-bottom: 12px; display: block; color: #cbd5e1;"></i>
+                                                Không tìm thấy khách hàng nào trong hệ thống${not empty searchKeyword ? ' với từ khóa: ' .concat(searchKeyword) : ''}.
+                                            </td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
+                                <tr id="noMatchCustomerRow" style="display: none;">
+                                    <td colspan="8" style="text-align: center; padding: 36px 20px; color: #64748b;">
+                                        <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; margin-bottom: 10px; display: block; color: #cbd5e1;"></i>
+                                        Không tìm thấy khách hàng nào khớp với từ khóa tìm kiếm.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </c:when>
+
             <c:otherwise>
                 <!-- Metric Stat Cards (Real Database Data) -->
                 <div class="admin-stats-grid">
@@ -609,6 +812,13 @@
                                                         </c:when>
                                                         <c:when test="${order.status eq 'CANCELLED'}">
                                                             <span class="badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">Đã hủy</span>
+                                                            <c:if test="${not empty order.proofImage}">
+                                                                <div style="margin-top: 4px;">
+                                                                    <a href="${pageContext.request.contextPath}${order.proofImage}" target="_blank" class="badge" style="background: #ef4444; color: #fff; text-decoration: none; padding: 3px 8px; font-size: 0.72rem; border-radius: 4px;">
+                                                                        <i class="fa-solid fa-camera me-1"></i> Bằng chứng
+                                                                    </a>
+                                                                </div>
+                                                            </c:if>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <span class="badge badge-secondary">${order.status}</span>
@@ -625,7 +835,18 @@
                                                             </a>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-circle-check text-success"></i> Đã xử lý</span>
+                                                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                                                <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-circle-check text-success"></i> Đã xử lý</span>
+                                                                <c:if test="${order.status eq 'CANCELLED' and not empty order.phone}">
+                                                                    <a href="${pageContext.request.contextPath}/admin/dashboard?action=unlockCustomerCod&phone=${order.phone}&tab=customers"
+                                                                       class="btn btn-sm btn-outline-success"
+                                                                       style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"
+                                                                       onclick="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${order.customerName} (SĐT: ${order.phone})?');"
+                                                                       title="Mở lại quyền COD nếu khách bị shipper báo nhầm">
+                                                                        <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
+                                                                    </a>
+                                                                </c:if>
+                                                            </div>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
@@ -759,6 +980,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 restInput.value = '';
                 filterRestaurants();
                 restInput.focus();
+            });
+        }
+    }
+
+    // 4. Real-time Live Filter for Customer Table
+    var custInput = document.getElementById('customerSearchInput');
+    var clearCustBtn = document.getElementById('clearCustomerSearch');
+    if (custInput) {
+        function filterCustomers() {
+            var q = custInput.value.trim().toLowerCase();
+            if (clearCustBtn) {
+                clearCustBtn.style.display = q.length > 0 ? 'block' : 'none';
+            }
+            var rows = document.querySelectorAll('#customerTableBody .cust-row');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var text = (row.getAttribute('data-name') || '') + ' ' + 
+                           (row.getAttribute('data-phone') || '') + ' ' + 
+                           (row.getAttribute('data-email') || '') + ' ' +
+                           row.textContent.toLowerCase();
+                if (!q || text.indexOf(q) !== -1) {
+                    row.style.display = '';
+                    visible++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            var noMatch = document.getElementById('noMatchCustomerRow');
+            if (noMatch) {
+                noMatch.style.display = (visible === 0 && rows.length > 0) ? '' : 'none';
+            }
+            var countEl = document.getElementById('customerVisibleCount');
+            if (countEl) countEl.textContent = visible;
+        }
+
+        custInput.addEventListener('input', filterCustomers);
+        if (custInput.value) filterCustomers();
+
+        if (clearCustBtn) {
+            clearCustBtn.addEventListener('click', function() {
+                custInput.value = '';
+                filterCustomers();
+                custInput.focus();
             });
         }
     }

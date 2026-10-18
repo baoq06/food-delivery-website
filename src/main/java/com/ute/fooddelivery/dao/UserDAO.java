@@ -40,6 +40,16 @@ public class UserDAO {
                             stmt.executeUpdate("ALTER TABLE users ADD COLUMN boom_count INT DEFAULT 0");
                         } catch (SQLException ignore) {}
                     }
+
+                    boolean hasCodTrustOrders = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "users", "cod_trust_orders")) {
+                        if (rs.next()) hasCodTrustOrders = true;
+                    }
+                    if (!hasCodTrustOrders) {
+                        try (java.sql.Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE users ADD COLUMN cod_trust_orders INT DEFAULT 0");
+                        } catch (SQLException ignore) {}
+                    }
                     boomSupportChecked = true;
                 }
             } catch (Exception e) {
@@ -50,7 +60,7 @@ public class UserDAO {
 
     public User login(String account, String password) {
         ensureBoomSupport();
-        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count " +
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count, cod_trust_orders " +
                        "FROM users WHERE (username = ? OR email = ? OR phone = ?) AND password = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -75,6 +85,7 @@ public class UserDAO {
                             try {
                                 u.setCodLocked(rs.getInt("is_cod_locked") == 1);
                                 u.setBoomCount(rs.getInt("boom_count"));
+                                u.setCodTrustOrders(rs.getInt("cod_trust_orders"));
                             } catch (Exception ignored) {}
                             return u;
                         }
@@ -302,7 +313,7 @@ public class UserDAO {
 
     public User getUserById(int id) {
         ensureBoomSupport();
-        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count " +
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count, cod_trust_orders " +
                        "FROM users WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -324,6 +335,7 @@ public class UserDAO {
                             try {
                                 u.setCodLocked(rs.getInt("is_cod_locked") == 1);
                                 u.setBoomCount(rs.getInt("boom_count"));
+                                u.setCodTrustOrders(rs.getInt("cod_trust_orders"));
                             } catch (Exception ignored) {}
                             return u;
                         }
@@ -547,9 +559,30 @@ public class UserDAO {
         return list;
     }
 
+    public List<Integer> getAdminUserIds() {
+        List<Integer> adminIds = new ArrayList<>();
+        String sql = "SELECT user_id FROM users WHERE UPPER(role) = 'ADMIN'";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        adminIds.add(rs.getInt("user_id"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getAdminUserIds: " + e.getMessage());
+        }
+        if (adminIds.isEmpty()) {
+            adminIds.add(1); // Mặc định ID 1 cho quản trị viên hệ thống
+        }
+        return adminIds;
+    }
+
     public boolean recordCustomerBoom(int userId, String reason) {
         ensureBoomSupport();
-        String query = "UPDATE users SET is_cod_locked = 1, boom_count = boom_count + 1 WHERE user_id = ?";
+        String query = "UPDATE users SET is_cod_locked = 1, boom_count = boom_count + 1, cod_trust_orders = 0 WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
@@ -579,13 +612,27 @@ public class UserDAO {
 
     public boolean unlockCustomerCod(int userId) {
         ensureBoomSupport();
-        String query = "UPDATE users SET is_cod_locked = 0 WHERE user_id = ?";
+        String query = "UPDATE users SET is_cod_locked = 0, cod_trust_orders = 0 WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(query)) {
             ps.setInt(1, userId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.err.println("Lỗi khi mở khóa COD cho khách: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean unlockCustomerCodByPhone(String phone) {
+        ensureBoomSupport();
+        if (phone == null || phone.trim().isEmpty()) return false;
+        String query = "UPDATE users SET is_cod_locked = 0, cod_trust_orders = 0 WHERE phone = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, phone.trim());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi mở khóa COD cho khách theo SĐT: " + e.getMessage());
             return false;
         }
     }
@@ -605,5 +652,163 @@ public class UserDAO {
             System.err.println("Lỗi khi lấy số lần bom hàng: " + e.getMessage());
         }
         return 0;
+    }
+
+    public User getUserByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return null;
+        ensureBoomSupport();
+        String query = "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count, cod_trust_orders " +
+                       "FROM users WHERE phone = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setString(1, phone.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User(
+                        rs.getInt("user_id"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone"),
+                        rs.getString("address"),
+                        rs.getString("role"),
+                        rs.getString("avatar")
+                    );
+                    u.setCodLocked(rs.getInt("is_cod_locked") == 1);
+                    u.setBoomCount(rs.getInt("boom_count"));
+                    u.setCodTrustOrders(rs.getInt("cod_trust_orders"));
+                    return u;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getUserByPhone: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public int getCodTrustOrders(int userId) {
+        ensureBoomSupport();
+        String query = "SELECT cod_trust_orders FROM users WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cod_trust_orders");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy tiến độ hoàn thành đơn mở COD: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Ghi nhận đơn hoàn thành thành công (DELIVERED) của khách.
+     * Nếu khách đang bị khóa COD:
+     * - Tăng cod_trust_orders
+     * - Nếu đạt >= 3 đơn: Tự động mở khóa COD (is_cod_locked = 0, cod_trust_orders = 0) và trả về true
+     * - Nếu chưa đạt 3 đơn: Cập nhật và trả về false
+     */
+    public boolean recordCompletedOrderForCodProgress(int userId) {
+        ensureBoomSupport();
+        String checkSql = "SELECT is_cod_locked, cod_trust_orders FROM users WHERE user_id = ?";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                boolean isLocked = false;
+                int currentTrust = 0;
+                try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                    ps.setInt(1, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            isLocked = rs.getInt("is_cod_locked") == 1;
+                            currentTrust = rs.getInt("cod_trust_orders");
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+
+                if (!isLocked) {
+                    return false; // Khách không bị khóa COD, không cần xử lý
+                }
+
+                int nextTrust = currentTrust + 1;
+                if (nextTrust >= 3) {
+                    String unlockSql = "UPDATE users SET is_cod_locked = 0, cod_trust_orders = 0 WHERE user_id = ?";
+                    try (PreparedStatement psUnlock = conn.prepareStatement(unlockSql)) {
+                        psUnlock.setInt(1, userId);
+                        psUnlock.executeUpdate();
+                    }
+                    System.out.println(">> [UserDAO] Khách hàng #" + userId + " đã hoàn tất đủ 3 đơn uy tín. Tự động mở khóa COD thành công!");
+                    return true;
+                } else {
+                    String progressSql = "UPDATE users SET cod_trust_orders = ? WHERE user_id = ?";
+                    try (PreparedStatement psProg = conn.prepareStatement(progressSql)) {
+                        psProg.setInt(1, nextTrust);
+                        psProg.setInt(2, userId);
+                        psProg.executeUpdate();
+                    }
+                    System.out.println(">> [UserDAO] Khách hàng #" + userId + " hoàn tất đơn uy tín thứ " + nextTrust + "/3 để mở khóa COD.");
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi ghi nhận đơn hoàn tất cho tiến độ COD: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Lấy danh sách khách hàng để quản lý và mở khóa COD
+     */
+    public List<User> getCustomersForCodManagement(String search) {
+        ensureBoomSupport();
+        List<User> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT user_id, username, password, name, email, phone, address, role, avatar, is_cod_locked, boom_count, cod_trust_orders " +
+            "FROM users WHERE (role = 'CUSTOMER' OR role IS NULL) "
+        );
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (name LIKE ? OR phone LIKE ? OR email LIKE ? OR username LIKE ?) ");
+        }
+        sql.append("ORDER BY is_cod_locked DESC, boom_count DESC, user_id DESC");
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                    if (search != null && !search.trim().isEmpty()) {
+                        String kw = "%" + search.trim() + "%";
+                        ps.setString(1, kw);
+                        ps.setString(2, kw);
+                        ps.setString(3, kw);
+                        ps.setString(4, kw);
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            User u = new User(
+                                rs.getInt("user_id"),
+                                rs.getString("username"),
+                                rs.getString("password"),
+                                rs.getString("name"),
+                                rs.getString("email"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("role"),
+                                rs.getString("avatar")
+                            );
+                            u.setCodLocked(rs.getInt("is_cod_locked") == 1);
+                            u.setBoomCount(rs.getInt("boom_count"));
+                            u.setCodTrustOrders(rs.getInt("cod_trust_orders"));
+                            list.add(u);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy danh sách khách hàng quản lý COD: " + e.getMessage());
+        }
+        return list;
     }
 }

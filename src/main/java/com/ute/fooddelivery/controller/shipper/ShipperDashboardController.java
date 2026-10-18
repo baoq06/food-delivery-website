@@ -9,12 +9,15 @@ import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.NotificationService;
 import com.ute.fooddelivery.utils.CsrfUtils;
+import com.ute.fooddelivery.utils.UploadUtils;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Part;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -26,6 +29,11 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 @WebServlet(name = "ShipperDashboardController", urlPatterns = {"/shipper/dashboard", "/shipper/history"})
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2,
+    maxFileSize = 1024 * 1024 * 10,
+    maxRequestSize = 1024 * 1024 * 20
+)
 public class ShipperDashboardController extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(ShipperDashboardController.class.getName());
 
@@ -326,27 +334,32 @@ public class ShipperDashboardController extends HttpServlet {
             if (boomReason == null || boomReason.trim().isEmpty()) {
                 boomReason = "Khách hàng không nhận hàng / không liên lạc được khi giao";
             }
+            String shipperNote = req.getParameter("shipperNote");
+
+            // Xử lý upload ảnh chụp bằng chứng (cuộc gọi nhỡ / địa chỉ giao hàng)
+            String proofUrl = null;
+            try {
+                Part proofPart = req.getPart("proofImage");
+                if (proofPart != null && proofPart.getSize() > 0) {
+                    proofUrl = UploadUtils.saveUploadedFile(proofPart, "proofs", req);
+                }
+            } catch (Throwable ex) {
+                LOGGER.warning("Could not process proof image part: " + ex.getMessage());
+            }
+
             Order targetOrder = orderDAO.getOrderById(orderId);
             if (targetOrder != null) {
                 int customerUserId = targetOrder.getUserId();
-                try (Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
-                     PreparedStatement ps = conn.prepareStatement("UPDATE orders SET status = 'CANCELLED', note = CONCAT(IFNULL(note, ''), ' [BOM HÀNG: ', ?, ']') WHERE order_id = ?")) {
-                    ps.setString(1, boomReason.trim());
-                    ps.setInt(2, orderId);
-                    ps.executeUpdate();
-                } catch (Exception ex) {
-                    orderDAO.updateOrderStatus(orderId, "CANCELLED");
-                }
 
-                // Hoàn trả voucher cho khách nếu đơn hàng có áp dụng
-                orderDAO.restoreVouchersForOrder(orderId);
+                // 1. Cập nhật trạng thái đơn CANCELLED kèm ghi chú và ảnh bằng chứng
+                orderDAO.reportOrderFailed(orderId, boomReason, shipperNote, proofUrl);
 
-                // Ghi nhận vi phạm bom hàng và khóa COD của khách hàng
+                // 2. Ghi nhận vi phạm bom hàng và khóa COD của khách hàng
                 userDAO.recordCustomerBoom(customerUserId, boomReason);
 
-                // Gửi thông báo cho khách hàng và chủ quán
+                // 3. Gửi thông báo kiểm tra đến Khách hàng, Chủ quán và Ban Quản Trị
                 Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
-                notificationService.notifyBoomReported(customerUserId, merchantUserId, orderId, boomReason);
+                notificationService.notifyBoomReported(customerUserId, merchantUserId, orderId, boomReason, shipperNote, proofUrl);
             }
 
             if (driver != null) {

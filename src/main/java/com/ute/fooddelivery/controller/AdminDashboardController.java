@@ -24,6 +24,7 @@ public class AdminDashboardController extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final com.ute.fooddelivery.dao.DriverDAO driverDAO = new com.ute.fooddelivery.dao.DriverDAO();
     private final com.ute.fooddelivery.dao.RestaurantDAO restaurantDAO = new com.ute.fooddelivery.dao.RestaurantDAO();
+    private final com.ute.fooddelivery.service.NotificationService notificationService = new com.ute.fooddelivery.service.NotificationService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -156,6 +157,36 @@ public class AdminDashboardController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&error=phone_not_found&phone=" + java.net.URLEncoder.encode(phone, "UTF-8"));
             }
             return;
+        } else if ("unlockCustomerCod".equals(action)) {
+            String userIdParam = req.getParameter("userId");
+            String phoneParam = req.getParameter("phone");
+            boolean ok = false;
+            Integer targetUserId = null;
+
+            if (userIdParam != null && !userIdParam.trim().isEmpty()) {
+                try {
+                    int uId = Integer.parseInt(userIdParam.trim());
+                    targetUserId = uId;
+                    ok = userDAO.unlockCustomerCod(uId);
+                } catch (Exception ignored) {}
+            } else if (phoneParam != null && !phoneParam.trim().isEmpty()) {
+                phoneParam = phoneParam.trim();
+                ok = userDAO.unlockCustomerCodByPhone(phoneParam);
+                User targetUser = userDAO.getUserByPhone(phoneParam);
+                if (targetUser != null) {
+                    targetUserId = targetUser.getId();
+                }
+            }
+
+            if (ok) {
+                if (targetUserId != null && targetUserId > 0) {
+                    notificationService.notifyCodUnlockedByAdmin(targetUserId);
+                }
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&msg=customer_cod_unlocked" + (phoneParam != null ? "&phone=" + java.net.URLEncoder.encode(phoneParam, "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&error=unlock_failed");
+            }
+            return;
         }
 
         // 1. Doanh thu của Admin: 10% giá trị món ăn của các đơn hoàn tất DELIVERED (không tính phí ship)
@@ -208,6 +239,17 @@ public class AdminDashboardController extends HttpServlet {
         List<com.ute.fooddelivery.model.Restaurant> defaultRestaurants = restaurantDAO.getAllRestaurants();
         if (defaultRestaurants == null) defaultRestaurants = new java.util.ArrayList<>();
 
+        List<com.ute.fooddelivery.model.User> defaultCustomers = userDAO.getCustomersForCodManagement(null);
+        if (defaultCustomers == null) defaultCustomers = new java.util.ArrayList<>();
+
+        int lockedCustomerCount = 0;
+        for (User u : defaultCustomers) {
+            if (u.isCodLocked()) {
+                lockedCustomerCount++;
+            }
+        }
+        req.setAttribute("lockedCustomerCount", lockedCustomerCount);
+
         if ("shippers".equals(tab)) {
             if (search != null && !search.trim().isEmpty()) {
                 List<com.ute.fooddelivery.model.Driver> sDrivers = driverDAO.searchDrivers(search.trim());
@@ -217,6 +259,7 @@ public class AdminDashboardController extends HttpServlet {
                 req.setAttribute("allDrivers", defaultDrivers);
             }
             req.setAttribute("allRestaurants", defaultRestaurants);
+            req.setAttribute("allCustomers", defaultCustomers);
         } else if ("restaurants".equals(tab)) {
             if (search != null && !search.trim().isEmpty()) {
                 List<com.ute.fooddelivery.model.Restaurant> sRests = restaurantDAO.searchRestaurants(search.trim());
@@ -226,9 +269,21 @@ public class AdminDashboardController extends HttpServlet {
                 req.setAttribute("allRestaurants", defaultRestaurants);
             }
             req.setAttribute("allDrivers", defaultDrivers);
+            req.setAttribute("allCustomers", defaultCustomers);
+        } else if ("customers".equals(tab)) {
+            if (search != null && !search.trim().isEmpty()) {
+                List<com.ute.fooddelivery.model.User> sCusts = userDAO.getCustomersForCodManagement(search.trim());
+                req.setAttribute("allCustomers", sCusts != null ? sCusts : new java.util.ArrayList<>());
+                req.setAttribute("searchKeyword", search.trim());
+            } else {
+                req.setAttribute("allCustomers", defaultCustomers);
+            }
+            req.setAttribute("allDrivers", defaultDrivers);
+            req.setAttribute("allRestaurants", defaultRestaurants);
         } else {
             req.setAttribute("allDrivers", defaultDrivers);
             req.setAttribute("allRestaurants", defaultRestaurants);
+            req.setAttribute("allCustomers", defaultCustomers);
         }
 
         req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);

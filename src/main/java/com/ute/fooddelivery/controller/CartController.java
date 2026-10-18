@@ -119,8 +119,10 @@ public class CartController extends HttpServlet {
         if (userId > 0) {
             boolean isCodLocked = userDAO.isCustomerCodLocked(userId);
             int boomCount = userDAO.getCustomerBoomCount(userId);
+            int codTrustOrders = userDAO.getCodTrustOrders(userId);
             req.setAttribute("isCodLocked", isCodLocked);
             req.setAttribute("boomCount", boomCount);
+            req.setAttribute("codTrustOrders", codTrustOrders);
 
             List<com.ute.fooddelivery.model.UserVoucher> uvList = userVoucherDAO.getUserVouchers(userId);
             req.setAttribute("userVouchers", uvList);
@@ -420,6 +422,8 @@ public class CartController extends HttpServlet {
                     req.setAttribute("checkoutError", validationError);
                     req.setAttribute("isCodLocked", isCodLocked);
                     req.setAttribute("boomCount", boomCount);
+                    int codTrustOrders = userDAO.getCodTrustOrders(userId);
+                    req.setAttribute("codTrustOrders", codTrustOrders);
                     req.setAttribute("stickyReceiverName", receiverName);
                     req.setAttribute("stickyReceiverPhone", receiverPhone);
                     req.setAttribute("stickyReceiverAddress", receiverAddress);
