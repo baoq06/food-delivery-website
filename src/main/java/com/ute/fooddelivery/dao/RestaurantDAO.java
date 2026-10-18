@@ -41,6 +41,28 @@ public class RestaurantDAO {
         }
     }
 
+    private static volatile boolean locationColumnsChecked = false;
+
+    public static void ensureLocationColumns() {
+        if (locationColumnsChecked) return;
+        synchronized (RestaurantDAO.class) {
+            if (locationColumnsChecked) return;
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn != null) {
+                    try (Statement stmt = conn.createStatement()) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN latitude DOUBLE DEFAULT 10.8505");
+                        } catch (Exception ignored) {}
+                        try {
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN longitude DOUBLE DEFAULT 106.7719");
+                        } catch (Exception ignored) {}
+                    }
+                }
+            } catch (Exception ignored) {}
+            locationColumnsChecked = true;
+        }
+    }
+
     private static String getBaseQuery() {
         boolean withLogo = checkHasLogoColumn();
         return "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, " +
@@ -319,10 +341,18 @@ public class RestaurantDAO {
     }
 
     public int createRestaurant(Restaurant r) {
-        String query = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        if (r == null) return -1;
+        if (r.getAddress() != null && !r.getAddress().trim().isEmpty() && (r.getLatitude() == null || r.getLatitude() == 0)) {
+            double[] coords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(r.getAddress());
+            r.setLatitude(coords[0]);
+            r.setLongitude(coords[1]);
+        }
+        ensureLocationColumns();
+        String queryWithCoords = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String queryWithoutCoords = "INSERT INTO restaurants (user_id, name, description, phone, address, image_url, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
-                try (PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                try (PreparedStatement ps = conn.prepareStatement(queryWithCoords, Statement.RETURN_GENERATED_KEYS)) {
                     if (r.getUserId() != null) {
                         ps.setInt(1, r.getUserId());
                     } else {
@@ -334,12 +364,37 @@ public class RestaurantDAO {
                     ps.setString(5, r.getAddress());
                     ps.setString(6, r.getImageUrl());
                     ps.setString(7, r.getStatus() != null ? r.getStatus() : "OPEN");
+                    ps.setDouble(8, r.getLatitude() != null ? r.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT);
+                    ps.setDouble(9, r.getLongitude() != null ? r.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG);
 
                     int affected = ps.executeUpdate();
                     if (affected > 0) {
                         try (ResultSet rs = ps.getGeneratedKeys()) {
                             if (rs.next()) {
                                 return rs.getInt(1);
+                            }
+                        }
+                    }
+                } catch (SQLException ignore) {
+                    try (PreparedStatement ps = conn.prepareStatement(queryWithoutCoords, Statement.RETURN_GENERATED_KEYS)) {
+                        if (r.getUserId() != null) {
+                            ps.setInt(1, r.getUserId());
+                        } else {
+                            ps.setNull(1, java.sql.Types.INTEGER);
+                        }
+                        ps.setString(2, r.getName());
+                        ps.setString(3, r.getDescription());
+                        ps.setString(4, r.getPhone());
+                        ps.setString(5, r.getAddress());
+                        ps.setString(6, r.getImageUrl());
+                        ps.setString(7, r.getStatus() != null ? r.getStatus() : "OPEN");
+
+                        int affected = ps.executeUpdate();
+                        if (affected > 0) {
+                            try (ResultSet rs = ps.getGeneratedKeys()) {
+                                if (rs.next()) {
+                                    return rs.getInt(1);
+                                }
                             }
                         }
                     }
@@ -352,9 +407,22 @@ public class RestaurantDAO {
     }
 
     public boolean updateRestaurant(Restaurant r) {
+        if (r == null) return false;
+
+        // Tự động phân giải và cập nhật tọa độ GPS khi địa chỉ quán thay đổi
+        if (r.getAddress() != null && !r.getAddress().trim().isEmpty()) {
+            double[] coords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(r.getAddress());
+            r.setLatitude(coords[0]);
+            r.setLongitude(coords[1]);
+        } else if (r.getLatitude() == null || r.getLongitude() == null) {
+            r.setLatitude(com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT);
+            r.setLongitude(com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG);
+        }
+
+        ensureLocationColumns();
         boolean withLogo = checkHasLogoColumn();
-        String queryWithLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, logo_url = ?, status = ? WHERE restaurant_id = ?";
-        String queryWithoutLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ? WHERE restaurant_id = ?";
+        String queryWithLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, logo_url = ?, status = ?, latitude = ?, longitude = ? WHERE restaurant_id = ?";
+        String queryWithoutLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ?, latitude = ?, longitude = ? WHERE restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 if (withLogo) {
@@ -366,11 +434,28 @@ public class RestaurantDAO {
                         ps.setString(5, r.getImageUrl());
                         ps.setString(6, r.getLogoUrl());
                         ps.setString(7, r.getStatus());
-                        ps.setInt(8, r.getId());
+                        ps.setDouble(8, r.getLatitude());
+                        ps.setDouble(9, r.getLongitude());
+                        ps.setInt(10, r.getId());
                         return ps.executeUpdate() > 0;
                     } catch (SQLException ignore) {}
                 }
                 try (PreparedStatement ps = conn.prepareStatement(queryWithoutLogo)) {
+                    ps.setString(1, r.getName());
+                    ps.setString(2, r.getDescription());
+                    ps.setString(3, r.getPhone());
+                    ps.setString(4, r.getAddress());
+                    ps.setString(5, r.getImageUrl());
+                    ps.setString(6, r.getStatus());
+                    ps.setDouble(7, r.getLatitude());
+                    ps.setDouble(8, r.getLongitude());
+                    ps.setInt(9, r.getId());
+                    return ps.executeUpdate() > 0;
+                } catch (SQLException ignore) {}
+
+                // Fallback dự phòng nếu database cũ chưa hỗ trợ latitude/longitude
+                String fallbackQuery = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ? WHERE restaurant_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(fallbackQuery)) {
                     ps.setString(1, r.getName());
                     ps.setString(2, r.getDescription());
                     ps.setString(3, r.getPhone());
