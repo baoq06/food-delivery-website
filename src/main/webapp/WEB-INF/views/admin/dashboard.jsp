@@ -90,21 +90,33 @@
 
         <!-- Admin Header -->
         <div class="admin-header-box">
-            <div>
-                <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Hệ Thống Quản Trị Trung Tâm</span>
-                <h1 class="admin-main-title">Bảng Điều Khiển & Giám Sát Đơn Hàng</h1>
-                <p class="admin-sub">Xin chào, <strong>${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : 'Quản trị viên'}</strong>! Chúc bạn một ngày làm việc hiệu quả.</p>
+            <div class="admin-header-info">
+                <div class="admin-header-badges">
+                    <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Hệ Thống Quản Trị Trung Tâm</span>
+                    <span class="admin-status-pill"><span class="admin-status-dot"></span> Trực tuyến</span>
+                </div>
+                <h1 class="admin-main-title">Bảng Điều Khiển &amp; Giám Sát Đơn Hàng</h1>
+                <p class="admin-sub">
+                    <i class="fa-regular fa-circle-user text-muted"></i>
+                    Xin chào, <strong>${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : 'Quản trị viên'}</strong>! Chúc bạn một ngày làm việc hiệu quả.
+                </p>
             </div>
-            <div class="admin-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div class="admin-actions">
+                <a href="${pageContext.request.contextPath}/foods" class="admin-btn admin-btn-secondary" title="Xem website phía khách hàng">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Xem Website Khách
+                </a>
+
                 <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="margin: 0;" onsubmit="return confirmDeleteAllOrders();">
                     <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     <input type="hidden" name="action" value="deleteAllOrders" />
-                    <button type="submit" class="btn btn-danger" style="background: #dc2626; border-color: #dc2626; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
-                        <i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Đơn (Test)
+                    <button type="submit" class="admin-btn admin-btn-danger-soft" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
+                        <i class="fa-solid fa-trash-can"></i> Xóa Đơn (Test)
                     </button>
                 </form>
-                <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline"><i class="fa-solid fa-eye"></i> Xem Website Khách</a>
-                <a href="${pageContext.request.contextPath}/auth?action=logout" class="btn btn-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng Xuất</a>
+
+                <a href="${pageContext.request.contextPath}/auth?action=logout" class="admin-btn admin-btn-logout" title="Đăng xuất khỏi hệ thống quản trị">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng Xuất
+                </a>
             </div>
         </div>
 

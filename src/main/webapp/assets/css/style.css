@@ -5274,39 +5274,163 @@ button, input, select, textarea {
     justify-content: space-between;
     align-items: center;
     background: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 28px 32px;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-header-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ef4444 0%, #f97316 50%, #3b82f6 100%);
+}
+
+.admin-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-header-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
 }
 
 .admin-badge {
-    background: var(--primary-light);
-    color: var(--primary-color);
-    font-size: 0.82rem;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fee2e2;
+    font-size: 0.76rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 50px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+}
+
+.admin-status-pill {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+    display: inline-block;
 }
 
 .admin-main-title {
-    font-size: 1.8rem;
+    font-size: 1.65rem;
     font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    line-height: 1.25;
+    margin: 0 0 6px 0;
 }
 
 .admin-sub {
-    color: var(--text-muted);
-    font-size: 0.95rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.admin-sub strong {
+    color: #1e293b;
+    font-weight: 700;
 }
 
 .admin-actions {
     display: flex;
-    gap: 12px;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    border: 1px solid transparent;
+}
+
+.admin-btn-secondary {
+    background: #ffffff;
+    color: #334155;
+    border-color: #cbd5e1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.admin-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.admin-btn-danger-soft {
+    background: #fff1f2;
+    color: #e11d48;
+    border-color: #fecdd3;
+}
+
+.admin-btn-danger-soft:hover {
+    background: #e11d48;
+    color: #ffffff;
+    border-color: #e11d48;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.28);
+}
+
+.admin-btn-logout {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+.admin-btn-logout:hover {
+    background: #fee2e2;
+    color: #b91c1c;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
 }
 
 .admin-stats-grid {
@@ -5640,8 +5764,19 @@ button, input, select, textarea {
     }
     .admin-header-box {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
+        align-items: stretch;
+        gap: 18px;
+    }
+    .admin-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .admin-actions .admin-btn,
+    .admin-actions form {
+        flex: 1 1 auto;
+    }
+    .admin-actions form .admin-btn {
+        width: 100%;
     }
 }
 
