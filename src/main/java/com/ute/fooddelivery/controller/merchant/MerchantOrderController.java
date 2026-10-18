@@ -125,6 +125,10 @@ public class MerchantOrderController extends HttpServlet {
                         Integer shipperUserId = orderDAO.getDriverUserIdByOrderId(orderId);
                         Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
                         Integer merchantUserId = restaurant != null ? restaurant.getUserId() : null;
+
+                        // Hoàn trả voucher cho khách hàng khi quán từ chối / hủy đơn
+                        orderDAO.restoreVouchersForOrder(orderId);
+
                         notificationService.notifyOrderCancelled(customerUserId, shipperUserId, merchantUserId, orderId, "Quán hủy đơn");
                     }
                     req.getSession().setAttribute("flashMessage", "Đã cập nhật đơn hàng #" + orderId + " sang trạng thái: " + newStatus);

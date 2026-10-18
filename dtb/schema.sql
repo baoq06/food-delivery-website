@@ -129,6 +129,7 @@ CREATE TABLE `orders` (
     `distance_km` DOUBLE NOT NULL DEFAULT 2.0,
     `discount_amount` DOUBLE NOT NULL DEFAULT 0,
     `voucher_code` VARCHAR(50) DEFAULT NULL,
+    `voucher_refunded` TINYINT(1) DEFAULT 0,
     `payment_method` VARCHAR(20) DEFAULT 'COD', -- 'COD', 'QR', 'CARD'
     `status` VARCHAR(30) DEFAULT 'PENDING', -- 'PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'
     `driver_id` INT DEFAULT NULL,
