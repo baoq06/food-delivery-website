@@ -6,16 +6,17 @@ import java.nio.file.Paths;
 
 public class UpdateDB {
     public static void main(String[] args) {
-        String url = "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/test?sslMode=VERIFY_IDENTITY&sslKeyStore=C:/Users/Admin/keystore.jks&sslKeyStorePassword=changeit&sslTrustStore=C:/Users/Admin/cacerts.jks&sslTrustStorePassword=changeit";
-        String user = "3rP99tMps22F3zH.root";
-        String password = "xxxx"; // I need to read the password from DBContext or TestDB
-
         try {
-            // Wait, let's extract credentials from src/main/resources/db.properties
             java.util.Properties props = new java.util.Properties();
-            props.load(new java.io.FileInputStream("src/main/resources/db.properties"));
+            try (java.io.InputStream in = UpdateDB.class.getClassLoader().getResourceAsStream("db.properties")) {
+                if (in != null) props.load(in);
+            } catch (Exception ignored) {}
+
+            String url = System.getenv("DB_URL") != null ? System.getenv("DB_URL") : props.getProperty("db.url");
+            String user = System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : props.getProperty("db.username");
+            String password = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : props.getProperty("db.password");
             
-            Connection conn = DriverManager.getConnection(props.getProperty("db.url"), props.getProperty("db.username"), props.getProperty("db.password"));
+            Connection conn = DriverManager.getConnection(url, user, password);
             System.out.println("Connected to TiDB for updating reviews table!");
             
             String sql = new String(Files.readAllBytes(Paths.get("dtb/update_reviews.sql")));

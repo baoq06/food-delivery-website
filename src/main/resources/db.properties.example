@@ -1,6 +1,26 @@
-# Database Configuration Template (Copy this file to db.properties and fill in your credentials)
+# ==============================================================================
+# HƯỚNG DẪN CẤU HÌNH CƠ SỞ DỮ LIỆU BẢO MẬT (TiDB Cloud / MySQL)
+# ==============================================================================
+# QUY TẮC BẢO MẬT:
+# 1. TUYỆT ĐỐI KHÔNG commit mật khẩu cơ sở dữ liệu lên Git.
+# 2. Bạn có thể cấu hình theo 1 trong 2 cách an toàn dưới đây:
+#
+# CÁCH 1 (Khuyến nghị cho Staging / Production / Docker / CI-CD):
+#   Cấu hình thông qua biến môi trường của hệ điều hành:
+#   - DB_URL=jdbc:mysql://<TIDB_HOST>:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC
+#   - DB_USERNAME=<TIDB_USERNAME>
+#   - DB_PASSWORD=<TIDB_PASSWORD>
+#   Hệ thống sẽ tự động ưu tiên đọc các biến môi trường này trước.
+#
+# CÁCH 2 (Dành cho môi trường phát triển cục bộ - Local Dev):
+#   Sao chép file này thành "db.properties" (tệp này đã nằm trong .gitignore nên không bị đẩy lên Git)
+#   và điền thông tin kết nối thực tế của bạn.
+# ==============================================================================
+
 db.driver=com.mysql.cj.jdbc.Driver
-db.url=jdbc:mysql://<TIDB_HOST>:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC
-db.username=<TIDB_USERNAME>
-db.password=${DB_PASSWORD:<TIDB_PASSWORD>}
+db.url=jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC
+db.username=4GZ4scbbci9yLyb.root
+
+# Mật khẩu có thể lấy trực tiếp từ biến môi trường DB_PASSWORD hoặc nhập vào file db.properties cục bộ
+db.password=${DB_PASSWORD}
 

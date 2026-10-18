@@ -15,19 +15,52 @@ public class DBContext {
             Properties prop = new Properties();
             HikariConfig config = new HikariConfig();
 
+            // 1. Kiểm tra biến môi trường hệ thống
+            String envDriver = System.getenv("DB_DRIVER");
+            String envUrl = System.getenv("DB_URL");
+            String envUser = System.getenv("DB_USERNAME");
+            String envPass = System.getenv("DB_PASSWORD");
+
+            String driver = envDriver;
+            String url = envUrl;
+            String username = envUser;
+            String password = envPass;
+
+            // 2. Nếu có file cấu hình db.properties, nạp và phân giải (biến môi trường có độ ưu tiên cao hơn)
             if (input != null) {
                 prop.load(input);
-                config.setDriverClassName(resolveProperty(prop.getProperty("db.driver", "com.mysql.cj.jdbc.Driver")));
-                config.setJdbcUrl(resolveProperty(prop.getProperty("db.url")));
-                config.setUsername(resolveProperty(prop.getProperty("db.username")));
-                config.setPassword(resolveProperty(prop.getProperty("db.password")));
-            } else {
-                // Fallback nếu không tìm thấy file cấu hình
-                config.setDriverClassName("com.mysql.cj.jdbc.Driver");
-                config.setJdbcUrl(System.getenv("DB_URL") != null ? System.getenv("DB_URL") : "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC");
-                config.setUsername(System.getenv("DB_USERNAME") != null ? System.getenv("DB_USERNAME") : "4GZ4scbbci9yLyb.root");
-                config.setPassword(System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "ETp7DO4YQ1QUHbng");
+                if (driver == null || driver.trim().isEmpty()) {
+                    driver = resolveProperty(prop.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
+                }
+                if (url == null || url.trim().isEmpty()) {
+                    url = resolveProperty(prop.getProperty("db.url"));
+                }
+                if (username == null || username.trim().isEmpty()) {
+                    username = resolveProperty(prop.getProperty("db.username"));
+                }
+                if (password == null || password.trim().isEmpty()) {
+                    password = resolveProperty(prop.getProperty("db.password"));
+                }
             }
+
+            // 3. Giá trị mặc định an toàn nếu chưa được cấu hình (KHÔNG lưu mật khẩu tĩnh)
+            if (driver == null || driver.trim().isEmpty()) {
+                driver = "com.mysql.cj.jdbc.Driver";
+            }
+            if (url == null || url.trim().isEmpty()) {
+                url = "jdbc:mysql://gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/food_delivery_db?useSSL=true&sslMode=VERIFY_IDENTITY&characterEncoding=UTF-8&serverTimezone=UTC";
+            }
+            if (username == null || username.trim().isEmpty()) {
+                username = "4GZ4scbbci9yLyb.root";
+            }
+            if (password == null || password.trim().isEmpty()) {
+                System.err.println(">> [DBContext - BẢO MẬT] CẢNH BÁO: Chưa cấu hình biến môi trường DB_PASSWORD hoặc db.password!");
+            }
+
+            config.setDriverClassName(driver);
+            config.setJdbcUrl(url);
+            config.setUsername(username);
+            config.setPassword(password != null ? password : "");
 
             // === Cấu hình Pool tối ưu cho Cloud Database ===
             config.setMaximumPoolSize(10);
@@ -49,7 +82,7 @@ public class DBContext {
         }
     }
 
-    private static String resolveProperty(String val) {
+    public static String resolveProperty(String val) {
         if (val == null) {
             return null;
         }

@@ -18,33 +18,55 @@ public class DBUtil {
         EntityManagerFactory factory = null;
         try {
             Map<String, Object> props = new HashMap<>();
+
+            // 1. Kiểm tra biến môi trường hệ thống
+            String envDriver = System.getenv("DB_DRIVER");
+            String envUrl = System.getenv("DB_URL");
+            String envUser = System.getenv("DB_USERNAME");
+            String envPass = System.getenv("DB_PASSWORD");
+
+            String driver = envDriver;
+            String url = envUrl;
+            String user = envUser;
+            String pass = envPass;
+
+            // 2. Nạp từ db.properties và phân giải
             try (InputStream input = DBUtil.class.getClassLoader().getResourceAsStream("db.properties")) {
                 if (input != null) {
                     Properties p = new Properties();
                     p.load(input);
-                    if (p.getProperty("db.url") != null) {
-                        String url = p.getProperty("db.url").trim();
-                        props.put("jakarta.persistence.jdbc.url", url);
-                        props.put("javax.persistence.jdbc.url", url);
+                    if (driver == null || driver.trim().isEmpty()) {
+                        driver = DBContext.resolveProperty(p.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
                     }
-                    if (p.getProperty("db.username") != null) {
-                        String user = p.getProperty("db.username").trim();
-                        props.put("jakarta.persistence.jdbc.user", user);
-                        props.put("javax.persistence.jdbc.user", user);
+                    if (url == null || url.trim().isEmpty()) {
+                        url = DBContext.resolveProperty(p.getProperty("db.url"));
                     }
-                    if (p.getProperty("db.password") != null) {
-                        String pass = p.getProperty("db.password").trim();
-                        props.put("jakarta.persistence.jdbc.password", pass);
-                        props.put("javax.persistence.jdbc.password", pass);
+                    if (user == null || user.trim().isEmpty()) {
+                        user = DBContext.resolveProperty(p.getProperty("db.username"));
                     }
-                    if (p.getProperty("db.driver") != null) {
-                        String driver = p.getProperty("db.driver").trim();
-                        props.put("jakarta.persistence.jdbc.driver", driver);
-                        props.put("javax.persistence.jdbc.driver", driver);
+                    if (pass == null || pass.trim().isEmpty()) {
+                        pass = DBContext.resolveProperty(p.getProperty("db.password"));
                     }
                 }
             } catch (Exception ex) {
                 System.err.println(">> [DBUtil] Khong the doc db.properties: " + ex.getMessage());
+            }
+
+            if (driver != null && !driver.trim().isEmpty()) {
+                props.put("jakarta.persistence.jdbc.driver", driver.trim());
+                props.put("javax.persistence.jdbc.driver", driver.trim());
+            }
+            if (url != null && !url.trim().isEmpty()) {
+                props.put("jakarta.persistence.jdbc.url", url.trim());
+                props.put("javax.persistence.jdbc.url", url.trim());
+            }
+            if (user != null && !user.trim().isEmpty()) {
+                props.put("jakarta.persistence.jdbc.user", user.trim());
+                props.put("javax.persistence.jdbc.user", user.trim());
+            }
+            if (pass != null && !pass.trim().isEmpty()) {
+                props.put("jakarta.persistence.jdbc.password", pass.trim());
+                props.put("javax.persistence.jdbc.password", pass.trim());
             }
 
             if (!props.isEmpty()) {
