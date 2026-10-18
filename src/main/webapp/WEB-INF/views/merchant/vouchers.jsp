@@ -372,7 +372,7 @@
                                     <i class="fa-solid fa-money-bill-wave text-success me-1"></i> Mức giảm <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <input type="number" name="discountValue" id="modalDiscountValue" class="form-control" placeholder="VD: 20000" min="1" required oninput="updateLivePreview()" />
+                                    <input type="number" step="any" name="discountValue" id="modalDiscountValue" class="form-control" placeholder="VD: 20000" min="0.1" required oninput="updateLivePreview()" />
                                     <span class="input-group-text font-weight-bold" id="discountUnit">đ</span>
                                 </div>
                             </div>
@@ -631,12 +631,25 @@
 function toggleDiscountType(type) {
     const maxGroup = document.getElementById('maxDiscountGroup');
     const unit = document.getElementById('discountUnit');
+    const discountInput = document.getElementById('modalDiscountValue');
     if (type === 'PERCENT') {
         maxGroup.style.display = 'block';
         unit.textContent = '%';
+        if (discountInput) {
+            discountInput.placeholder = 'VD: 10 hoặc 10.5';
+            discountInput.max = '100';
+            discountInput.step = 'any';
+            discountInput.min = '0.1';
+        }
     } else {
         maxGroup.style.display = 'none';
         unit.textContent = 'đ';
+        if (discountInput) {
+            discountInput.placeholder = 'VD: 20000';
+            discountInput.removeAttribute('max');
+            discountInput.step = '1000';
+            discountInput.min = '1000';
+        }
     }
 }
 

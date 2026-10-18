@@ -125,7 +125,9 @@ public class MerchantVoucherController extends HttpServlet {
                 }
 
                 Voucher.DiscountType type = "PERCENT".equalsIgnoreCase(discountTypeStr) ? Voucher.DiscountType.PERCENT : Voucher.DiscountType.FIXED;
-                double discountValue = parseDoubleSafe(discountValStr, 0);
+                double discountValue = (type == Voucher.DiscountType.PERCENT) 
+                        ? parsePercentage(discountValStr, 0) 
+                        : parseCurrency(discountValStr, 0);
                 if (discountValue <= 0) {
                     session.setAttribute("flashError", "Mức giảm giá phải lớn hơn 0!");
                     resp.sendRedirect(req.getContextPath() + "/merchant/vouchers");
@@ -137,8 +139,8 @@ public class MerchantVoucherController extends HttpServlet {
                     return;
                 }
 
-                double minOrder = parseDoubleSafe(minOrderStr, 0);
-                double maxDiscount = parseDoubleSafe(maxDiscountStr, 0);
+                double minOrder = parseCurrency(minOrderStr, 0);
+                double maxDiscount = parseCurrency(maxDiscountStr, 0);
                 int usageLimit = parseIntSafe(usageLimitStr, 0);
                 int perUserLimit = Math.max(1, parseIntSafe(perUserLimitStr, 1));
 
@@ -218,15 +220,22 @@ public class MerchantVoucherController extends HttpServlet {
                 }
 
                 Voucher.DiscountType type = "PERCENT".equalsIgnoreCase(discountTypeStr) ? Voucher.DiscountType.PERCENT : Voucher.DiscountType.FIXED;
-                double discountValue = parseDoubleSafe(discountValStr, 0);
+                double discountValue = (type == Voucher.DiscountType.PERCENT) 
+                        ? parsePercentage(discountValStr, 0) 
+                        : parseCurrency(discountValStr, 0);
                 if (discountValue <= 0) {
                     session.setAttribute("flashError", "Mức giảm giá phải lớn hơn 0!");
                     resp.sendRedirect(req.getContextPath() + "/merchant/vouchers");
                     return;
                 }
+                if (type == Voucher.DiscountType.PERCENT && discountValue > 100) {
+                    session.setAttribute("flashError", "Mức giảm theo phần trăm không được vượt quá 100%!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/vouchers");
+                    return;
+                }
 
-                double minOrder = parseDoubleSafe(minOrderStr, 0);
-                double maxDiscount = parseDoubleSafe(maxDiscountStr, 0);
+                double minOrder = parseCurrency(minOrderStr, 0);
+                double maxDiscount = parseCurrency(maxDiscountStr, 0);
                 int usageLimit = parseIntSafe(usageLimitStr, 0);
                 int perUserLimit = Math.max(1, parseIntSafe(perUserLimitStr, 1));
 
@@ -291,10 +300,16 @@ public class MerchantVoucherController extends HttpServlet {
         resp.sendRedirect(req.getContextPath() + "/merchant/vouchers");
     }
 
-    private double parseDoubleSafe(String val, double defaultVal) {
+    /**
+     * Parse số tiền VNĐ:
+     * Loại bỏ các dấu phân cách hàng nghìn (dấu chấm hoặc dấu phẩy) để giữ nguyên mệnh giá số nguyên.
+     * Ví dụ: "50.000" -> 50000.0, "100,000" -> 100000.0, "50000" -> 50000.0
+     */
+    double parseCurrency(String val, double defaultVal) {
         if (val == null || val.trim().isEmpty()) return defaultVal;
         try {
-            return Double.parseDouble(val.trim().replace(",", "").replace(".", ""));
+            String clean = val.trim().replace(",", "").replace(".", "");
+            return Double.parseDouble(clean);
         } catch (Exception e) {
             try {
                 return Double.parseDouble(val.trim());
@@ -302,6 +317,26 @@ public class MerchantVoucherController extends HttpServlet {
                 return defaultVal;
             }
         }
+    }
+
+    /**
+     * Parse giá trị phần trăm (%):
+     * Giữ nguyên dấu thập phân hợp lệ, hỗ trợ cả dấu chấm '.' lẫn dấu phẩy ',' (chuẩn tiếng Việt).
+     * Tuyệt đối KHÔNG xóa dấu chấm/phẩy làm phóng đại giá trị lên gấp 10-100 lần.
+     * Ví dụ: "10.5" -> 10.5, "10,5" -> 10.5, "5.0" -> 5.0, "15%" -> 15.0
+     */
+    double parsePercentage(String val, double defaultVal) {
+        if (val == null || val.trim().isEmpty()) return defaultVal;
+        try {
+            String clean = val.trim().replace("%", "").replace(",", ".");
+            return Double.parseDouble(clean);
+        } catch (Exception e) {
+            return defaultVal;
+        }
+    }
+
+    private double parseDoubleSafe(String val, double defaultVal) {
+        return parseCurrency(val, defaultVal);
     }
 
     private int parseIntSafe(String val, int defaultVal) {
