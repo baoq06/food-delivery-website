@@ -103,8 +103,9 @@ public class MerchantShipperController extends HttpServlet {
                     return;
                 }
 
-                // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
-                if (order.getRestaurantId() != restaurant.getId()) {
+                // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR, an toàn với null)
+                Integer orderRestId = order.getRestaurantId();
+                if (orderRestId == null || orderRestId != restaurant.getId()) {
                     req.getSession().setAttribute("flashError", "Bạn không có quyền thao tác trên đơn hàng của quán khác!");
                     resp.sendRedirect(req.getContextPath() + "/merchant/shippers");
                     return;

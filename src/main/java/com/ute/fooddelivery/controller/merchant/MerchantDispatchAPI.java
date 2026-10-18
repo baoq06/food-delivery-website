@@ -61,7 +61,8 @@ public class MerchantDispatchAPI extends HttpServlet {
                     resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy đơn hàng!\"}");
                     return;
                 }
-                if (order.getRestaurantId() != restaurant.getId()) {
+                Integer orderRestId = order.getRestaurantId();
+                if (orderRestId == null || orderRestId != restaurant.getId()) {
                     resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     resp.getWriter().write("{\"status\":\"error\", \"message\":\"Bạn không có quyền thao tác trên đơn hàng của quán khác!\"}");
                     return;
@@ -141,8 +142,9 @@ public class MerchantDispatchAPI extends HttpServlet {
                 return;
             }
 
-            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
-            if (order.getRestaurantId() != restaurant.getId()) {
+            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR, an toàn với null)
+            Integer orderRestId = order.getRestaurantId();
+            if (orderRestId == null || orderRestId != restaurant.getId()) {
                 resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 resp.getWriter().write("{\"status\":\"error\", \"message\":\"Bạn không có quyền thao tác trên đơn hàng của quán khác!\"}");
                 return;

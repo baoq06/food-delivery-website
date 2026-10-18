@@ -346,7 +346,14 @@ public class OrderDAO {
 
 
     public Order getOrderById(int orderId) {
-        String sql = "SELECT order_id, user_id, customer_name, phone, address, note, proof_image, total_amount, shipping_fee, distance_km, discount_amount, voucher_code, payment_method, status, driver_id, created_at, customer_confirmed, merchant_confirmed, shipper_accepted, shipper_picked_up, shipper_delivered, merchant_completed FROM orders WHERE order_id = ?";
+        String sql = "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, o.proof_image, " +
+                     "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, " +
+                     "       o.payment_method, o.status, o.driver_id, o.created_at, " +
+                     "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, " +
+                     "       o.shipper_delivered, o.merchant_completed, " +
+                     "       (SELECT f.restaurant_id FROM order_items oi JOIN foods f ON oi.food_id = f.food_id WHERE oi.order_id = o.order_id LIMIT 1) AS restaurant_id, " +
+                     "       (SELECT r.name FROM order_items oi JOIN foods f ON oi.food_id = f.food_id JOIN restaurants r ON f.restaurant_id = r.restaurant_id WHERE oi.order_id = o.order_id LIMIT 1) AS restaurant_name " +
+                     "FROM orders o WHERE o.order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -377,6 +384,13 @@ public class OrderDAO {
                             try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
                             try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
                             try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
+                            try {
+                                Object restIdObj = rs.getObject("restaurant_id");
+                                if (restIdObj instanceof Number) {
+                                    order.setRestaurantId(((Number) restIdObj).intValue());
+                                }
+                                order.setRestaurantName(rs.getString("restaurant_name"));
+                            } catch (Exception ignored) {}
                             return order;
                         }
                     }

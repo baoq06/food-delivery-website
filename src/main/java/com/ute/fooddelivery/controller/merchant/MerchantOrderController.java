@@ -92,8 +92,9 @@ public class MerchantOrderController extends HttpServlet {
                 return;
             }
 
-            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
-            if (currentOrder.getRestaurantId() != currentRestaurant.getId()) {
+            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR, an toàn với null)
+            Integer orderRestId = currentOrder.getRestaurantId();
+            if (orderRestId == null || orderRestId != currentRestaurant.getId()) {
                 req.getSession().setAttribute("flashError", "Bạn không có quyền thao tác trên đơn hàng của quán khác!");
                 resp.sendRedirect(redirectUrl);
                 return;
