@@ -41,8 +41,11 @@ public class UserVoucherDAO extends DBContext {
                 "KEY `idx_uv_user` (`user_id`), " +
                 "KEY `idx_uv_code` (`voucher_code`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-        try (Connection conn = getConnection(); Statement st = conn.createStatement()) {
-            st.execute(sql);
+        try (Connection conn = getConnection()) {
+            if (conn == null) return;
+            try (Statement st = conn.createStatement()) {
+                st.execute(sql);
+            }
         } catch (SQLException e) {
             System.err.println("[UserVoucherDAO] ensureUserVoucherTable warning: " + e.getMessage());
         }

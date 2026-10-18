@@ -78,6 +78,13 @@ public class MerchantShipperController extends HttpServlet {
             throws ServletException, IOException {
         Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
         if (restaurant == null) {
+            com.ute.fooddelivery.model.User currentUser = (com.ute.fooddelivery.model.User) req.getSession().getAttribute("currentUser");
+            if (currentUser != null) {
+                restaurant = merchantService.getRestaurantForUser(currentUser.getId());
+            }
+        }
+
+        if (restaurant == null) {
             resp.sendRedirect(req.getContextPath() + "/auth?action=login");
             return;
         }
@@ -88,6 +95,20 @@ public class MerchantShipperController extends HttpServlet {
             if ("assign".equalsIgnoreCase(action)) {
                 int driverId = Integer.parseInt(req.getParameter("driverId"));
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
+
+                Order order = merchantService.getOrderById(orderId);
+                if (order == null) {
+                    req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/shippers");
+                    return;
+                }
+
+                // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
+                if (order.getRestaurantId() != restaurant.getId()) {
+                    req.getSession().setAttribute("flashError", "Bạn không có quyền thao tác trên đơn hàng của quán khác!");
+                    resp.sendRedirect(req.getContextPath() + "/merchant/shippers");
+                    return;
+                }
 
                 if (orderDAO.countPendingAssignedOrders(driverId) >= 3) {
                     req.getSession().setAttribute("flashError", "Tài xế này đã được gán tối đa 3 đơn đang chờ nhận! Vui lòng chọn tài xế khác hoặc đợi tài xế phản hồi.");

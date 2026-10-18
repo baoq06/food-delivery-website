@@ -20,9 +20,9 @@ public class FoodDAO {
         if (comboSupportChecked) return;
         synchronized (FoodDAO.class) {
             if (comboSupportChecked) return;
-            try (Connection conn = DBContext.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                if (conn != null) {
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn == null) return;
+                try (Statement stmt = conn.createStatement()) {
                     DatabaseMetaData meta = conn.getMetaData();
                     // 1. Kiểm tra cột is_combo
                     boolean hasCombo = false;

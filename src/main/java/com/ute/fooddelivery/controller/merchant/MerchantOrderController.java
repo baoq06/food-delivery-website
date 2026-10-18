@@ -58,17 +58,49 @@ public class MerchantOrderController extends HttpServlet {
             redirectUrl = req.getContextPath() + "/merchant/orders";
         }
 
+        Restaurant currentRestaurant = (Restaurant) req.getAttribute("currentRestaurant");
+        if (currentRestaurant == null) {
+            com.ute.fooddelivery.model.User currentUser = (com.ute.fooddelivery.model.User) req.getSession().getAttribute("currentUser");
+            if (currentUser != null) {
+                currentRestaurant = merchantService.getRestaurantForUser(currentUser.getId());
+            }
+        }
+
+        if (currentRestaurant == null) {
+            req.getSession().setAttribute("flashError", "Không tìm thấy thông tin quán ăn của bạn!");
+            resp.sendRedirect(redirectUrl);
+            return;
+        }
+
         try {
+            int orderId = 0;
+            String orderIdStr = req.getParameter("orderId");
+            if (orderIdStr != null && !orderIdStr.trim().isEmpty()) {
+                orderId = Integer.parseInt(orderIdStr.trim());
+            }
+
+            if (orderId <= 0) {
+                req.getSession().setAttribute("flashError", "Mã đơn hàng không hợp lệ!");
+                resp.sendRedirect(redirectUrl);
+                return;
+            }
+
+            Order currentOrder = merchantService.getOrderById(orderId);
+            if (currentOrder == null) {
+                req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
+                resp.sendRedirect(redirectUrl);
+                return;
+            }
+
+            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
+            if (currentOrder.getRestaurantId() != currentRestaurant.getId()) {
+                req.getSession().setAttribute("flashError", "Bạn không có quyền thao tác trên đơn hàng của quán khác!");
+                resp.sendRedirect(redirectUrl);
+                return;
+            }
+
             if ("merchantConfirm".equalsIgnoreCase(action) || "completeOrder".equalsIgnoreCase(action) ||
                 ("updateStatus".equalsIgnoreCase(action) && "DELIVERED".equalsIgnoreCase(req.getParameter("newStatus")))) {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
-                Order currentOrder = merchantService.getOrderById(orderId);
-
-                if (currentOrder == null) {
-                    req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
-                    resp.sendRedirect(redirectUrl);
-                    return;
-                }
 
                 if ("DELIVERED".equalsIgnoreCase(currentOrder.getStatus())) {
                     req.getSession().setAttribute("flashMessage", "Đơn hàng #" + orderId + " đã được hoàn tất thành công!");
@@ -87,15 +119,7 @@ public class MerchantOrderController extends HttpServlet {
                     req.getSession().setAttribute("flashError", "Không thể duyệt hoàn tất đơn hàng!");
                 }
             } else if ("updateStatus".equalsIgnoreCase(action)) {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
                 String newStatus = req.getParameter("newStatus");
-
-                Order currentOrder = merchantService.getOrderById(orderId);
-                if (currentOrder == null) {
-                    req.getSession().setAttribute("flashError", "Không tìm thấy đơn hàng!");
-                    resp.sendRedirect(redirectUrl);
-                    return;
-                }
 
                 // Chỉ khi bàn giao cho shipper đi giao (SHIPPING) mới bắt buộc phải có tài xế đã nhận cuốc
                 if ("SHIPPING".equalsIgnoreCase(newStatus)) {
@@ -123,8 +147,7 @@ public class MerchantOrderController extends HttpServlet {
                     } else if ("CANCELLED".equalsIgnoreCase(newStatus)) {
                         Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
                         Integer shipperUserId = orderDAO.getDriverUserIdByOrderId(orderId);
-                        Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
-                        Integer merchantUserId = restaurant != null ? restaurant.getUserId() : null;
+                        Integer merchantUserId = currentRestaurant.getUserId();
 
                         // Hoàn trả voucher cho khách hàng khi quán từ chối / hủy đơn
                         orderDAO.restoreVouchersForOrder(orderId);
@@ -136,12 +159,10 @@ public class MerchantOrderController extends HttpServlet {
                     req.getSession().setAttribute("flashError", "Không thể cập nhật trạng thái đơn!");
                 }
             } else if ("assignDriver".equalsIgnoreCase(action)) {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
                 int driverId = Integer.parseInt(req.getParameter("driverId"));
 
                 // Chặn gán shipper nếu đơn đã bị khách hủy (CANCELLED)
-                Order currentOrder = merchantService.getOrderById(orderId);
-                if (currentOrder != null && "CANCELLED".equalsIgnoreCase(currentOrder.getStatus())) {
+                if ("CANCELLED".equalsIgnoreCase(currentOrder.getStatus())) {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn hàng đã bị hủy!");
                     resp.sendRedirect(req.getContextPath() + "/merchant/orders");
                     return;
@@ -163,8 +184,8 @@ public class MerchantOrderController extends HttpServlet {
                             notificationService.notifyOrderAssignedToShipper(
                                 driver.getUserId(), 
                                 orderId, 
-                                currentOrder != null ? currentOrder.getTotalAmount() : 0, 
-                                currentOrder != null ? currentOrder.getAddress() : "TP.HCM"
+                                currentOrder.getTotalAmount(), 
+                                currentOrder.getAddress() != null ? currentOrder.getAddress() : "TP.HCM"
                             );
                         }
                     } catch (Exception e) {
@@ -176,10 +197,8 @@ public class MerchantOrderController extends HttpServlet {
                     req.getSession().setAttribute("flashError", "Không thể gán tài xế cho đơn!");
                 }
             } else if ("autoAssignNearest".equalsIgnoreCase(action)) {
-                int orderId = Integer.parseInt(req.getParameter("orderId"));
-                Restaurant restaurant = (Restaurant) req.getAttribute("currentRestaurant");
-                double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
-                double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
+                double restLat = (currentRestaurant.getLatitude() != null) ? currentRestaurant.getLatitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LAT;
+                double restLng = (currentRestaurant.getLongitude() != null) ? currentRestaurant.getLongitude() : com.ute.fooddelivery.utils.GeoLocationUtils.DEFAULT_LNG;
 
                 List<Driver> nearest = driverDAO.findNearestDrivers(restLat, restLng);
                 if (!nearest.isEmpty()) {
@@ -188,12 +207,11 @@ public class MerchantOrderController extends HttpServlet {
                     if (success) {
                         try {
                             if (nearestDriver.getUserId() != null) {
-                                Order curOrder = merchantService.getOrderById(orderId);
                                 notificationService.notifyOrderAssignedToShipper(
                                     nearestDriver.getUserId(),
                                     orderId,
-                                    curOrder != null ? curOrder.getTotalAmount() : 0,
-                                    curOrder != null ? curOrder.getAddress() : "TP.HCM"
+                                    currentOrder.getTotalAmount(),
+                                    currentOrder.getAddress() != null ? currentOrder.getAddress() : "TP.HCM"
                                 );
                             }
                         } catch (Exception ignored) {}

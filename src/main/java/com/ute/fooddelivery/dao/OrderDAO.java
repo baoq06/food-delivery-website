@@ -22,9 +22,9 @@ public class OrderDAO {
         if (discountColumnsChecked) return;
         synchronized (OrderDAO.class) {
             if (discountColumnsChecked) return;
-            try (Connection conn = DBContext.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                if (conn != null) {
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn == null) return;
+                try (Statement stmt = conn.createStatement()) {
                     java.sql.DatabaseMetaData meta = conn.getMetaData();
                     boolean hasDiscount = false;
                     boolean hasVoucher = false;

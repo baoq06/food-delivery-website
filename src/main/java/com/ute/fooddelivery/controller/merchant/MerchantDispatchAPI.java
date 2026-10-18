@@ -48,8 +48,28 @@ public class MerchantDispatchAPI extends HttpServlet {
                 restaurant = restaurantDAO.getRestaurantByUserId(user.getId());
             }
 
-            double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
-            double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
+            if (restaurant == null) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy thông tin quán ăn của bạn!\"}");
+                return;
+            }
+
+            if (orderId > 0) {
+                Order order = orderDAO.getOrderById(orderId);
+                if (order == null) {
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy đơn hàng!\"}");
+                    return;
+                }
+                if (order.getRestaurantId() != restaurant.getId()) {
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    resp.getWriter().write("{\"status\":\"error\", \"message\":\"Bạn không có quyền thao tác trên đơn hàng của quán khác!\"}");
+                    return;
+                }
+            }
+
+            double restLat = (restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
+            double restLng = (restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
 
             // Thuật toán dò tìm tài xế gần quán nhất và không bận đơn nào
             List<Driver> nearestDrivers = driverDAO.findNearestDrivers(restLat, restLng);
@@ -108,17 +128,32 @@ public class MerchantDispatchAPI extends HttpServlet {
                 restaurant = restaurantDAO.getRestaurantByUserId(user.getId());
             }
 
+            if (restaurant == null) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy thông tin quán ăn của bạn!\"}");
+                return;
+            }
+
             Order order = orderDAO.getOrderById(orderId);
-            if (restaurant == null && order != null) {
-                restaurant = restaurantDAO.getRestaurantById(order.getRestaurantId());
+            if (order == null) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Không tìm thấy đơn hàng!\"}");
+                return;
+            }
+
+            // KIỂM TRA CHỦ SỞ HỮU NHÀ HÀNG (Chặn IDOR)
+            if (order.getRestaurantId() != restaurant.getId()) {
+                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Bạn không có quyền thao tác trên đơn hàng của quán khác!\"}");
+                return;
             }
 
             if (driverIdStr != null && !driverIdStr.trim().isEmpty() && !"auto".equalsIgnoreCase(driverIdStr)) {
                 driverId = Integer.parseInt(driverIdStr.trim());
             } else {
                 // Tự động tìm shipper gần quán nhất
-                double restLat = (restaurant != null && restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
-                double restLng = (restaurant != null && restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
+                double restLat = (restaurant.getLatitude() != null) ? restaurant.getLatitude() : GeoLocationUtils.DEFAULT_LAT;
+                double restLng = (restaurant.getLongitude() != null) ? restaurant.getLongitude() : GeoLocationUtils.DEFAULT_LNG;
                 List<Driver> nearest = driverDAO.findNearestDrivers(restLat, restLng);
                 if (!nearest.isEmpty()) {
                     driverId = nearest.get(0).getId();

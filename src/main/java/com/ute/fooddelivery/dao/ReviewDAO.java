@@ -18,9 +18,9 @@ public class ReviewDAO {
         if (columnChecked) return;
         synchronized (ReviewDAO.class) {
             if (columnChecked) return;
-            try (Connection conn = DBContext.getConnection();
-                 Statement stmt = conn.createStatement()) {
-                if (conn != null) {
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn == null) return;
+                try (Statement stmt = conn.createStatement()) {
                     DatabaseMetaData meta = conn.getMetaData();
                     boolean exists = false;
                     try (ResultSet rs = meta.getColumns(null, null, "order_reviews", "image_url")) {

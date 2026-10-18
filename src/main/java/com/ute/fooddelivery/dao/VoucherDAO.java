@@ -41,9 +41,12 @@ public class VoucherDAO extends DBContext {
                 "KEY `idx_v_rest` (`restaurant_id`), " +
                 "KEY `idx_v_code` (`code`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-        try (Connection conn = getConnection(); Statement st = conn.createStatement()) {
-            st.execute(sql);
-            seedInitialRestaurantVouchers(conn);
+        try (Connection conn = getConnection()) {
+            if (conn == null) return;
+            try (Statement st = conn.createStatement()) {
+                st.execute(sql);
+                seedInitialRestaurantVouchers(conn);
+            }
         } catch (SQLException e) {
             System.err.println("[VoucherDAO] ensureVoucherTable warning: " + e.getMessage());
         }
