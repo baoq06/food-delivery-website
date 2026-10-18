@@ -497,10 +497,10 @@
                     <!-- Chế độ chọn liên hoàn 3 cấp (Cascading selects) -->
                     <div class="vn-cascading-section" id="${this.idPrefix}_cascadingSection">
                         <div class="vn-select-grid">
-                            <!-- 1. Tỉnh / Thành phố -->
+                            <!-- 1. Tỉnh / Thành -->
                             <div class="vn-field-item">
                                 <label for="${this.idPrefix}_prov" class="vn-field-label">
-                                    Tỉnh / Thành phố <span class="vn-req">*</span>
+                                    Tỉnh / Thành <span class="vn-req">*</span>
                                 </label>
                                 <div class="vn-select-wrapper">
                                     <select id="${this.idPrefix}_prov" class="vn-form-select">

@@ -1,14 +1,66 @@
 package com.ute.fooddelivery.dao;
 
 import com.ute.fooddelivery.model.Driver;
+import com.ute.fooddelivery.model.DriverWalletTransaction;
 import com.ute.fooddelivery.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DriverDAO {
+
+    public DriverDAO() {
+        ensureDriverWalletSchema();
+    }
+
+    public void ensureDriverWalletSchema() {
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return;
+            // 1. Kiểm tra và bổ sung cột wallet_balance cho bảng drivers nếu chưa có
+            boolean hasWalletCol = false;
+            try (PreparedStatement ps = conn.prepareStatement("SHOW COLUMNS FROM drivers LIKE 'wallet_balance'")) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        hasWalletCol = true;
+                    }
+                }
+            } catch (Exception ignored) {}
+
+            if (!hasWalletCol) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute("ALTER TABLE drivers ADD COLUMN wallet_balance DOUBLE NOT NULL DEFAULT 500000.0");
+                    System.out.println(">> [DriverDAO] Đã thêm cột wallet_balance vào bảng drivers.");
+                } catch (Exception ex) {
+                    System.err.println(">> [DriverDAO] Cảnh báo thêm cột wallet_balance: " + ex.getMessage());
+                }
+            }
+
+            // 2. Tạo bảng driver_wallet_transactions
+            String sqlTable = "CREATE TABLE IF NOT EXISTS `driver_wallet_transactions` (" +
+                    "`id` INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "`driver_id` INT NOT NULL, " +
+                    "`order_id` INT DEFAULT NULL, " +
+                    "`type` VARCHAR(30) NOT NULL, " +
+                    "`amount` DOUBLE NOT NULL, " +
+                    "`balance_after` DOUBLE NOT NULL, " +
+                    "`description` VARCHAR(255) NOT NULL, " +
+                    "`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
+                    "KEY `idx_dwt_driver` (`driver_id`), " +
+                    "KEY `idx_dwt_order` (`order_id`), " +
+                    "KEY `idx_dwt_created` (`created_at`)" +
+                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+            try (Statement st = conn.createStatement()) {
+                st.execute(sqlTable);
+            } catch (Exception ex) {
+                System.err.println(">> [DriverDAO] Cảnh báo tạo bảng driver_wallet_transactions: " + ex.getMessage());
+            }
+        } catch (Exception e) {
+            System.err.println(">> [DriverDAO] Lỗi khởi tạo schema ví tài xế: " + e.getMessage());
+        }
+    }
 
     public List<Driver> getAllDrivers() {
         List<Driver> list = new ArrayList<>();
@@ -169,7 +221,7 @@ public class DriverDAO {
     }
 
     public Driver getDriverById(int id) {
-        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE driver_id = ?";
+        String query = "SELECT * FROM drivers WHERE driver_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -188,7 +240,7 @@ public class DriverDAO {
     }
 
     public Driver getDriverByUserId(int userId) {
-        String query = "SELECT driver_id, user_id, name, phone, status, license_plate, vehicle_type FROM drivers WHERE user_id = ?";
+        String query = "SELECT * FROM drivers WHERE user_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -211,7 +263,7 @@ public class DriverDAO {
         Driver driver = getDriverByUserId(user.getId());
         if (driver != null) return driver;
 
-        String insertSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type) VALUES (?, ?, ?, 'AVAILABLE', '59-X3 999.99', 'Xe máy')";
+        String insertSql = "INSERT INTO drivers (user_id, name, phone, status, license_plate, vehicle_type, wallet_balance) VALUES (?, ?, ?, 'AVAILABLE', '59-X3 999.99', 'Xe máy', 500000.0)";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
@@ -359,6 +411,11 @@ public class DriverDAO {
             driver.setLastLocationUpdated(rs.getTimestamp("last_location_updated"));
         } catch (Exception ignored) {}
 
+        try {
+            double wb = rs.getDouble("wallet_balance");
+            if (!rs.wasNull()) driver.setWalletBalance(wb);
+        } catch (Exception ignored) {}
+
         return driver;
     }
 
@@ -458,6 +515,124 @@ public class DriverDAO {
         });
 
         return candidates;
+    }
+
+    /**
+     * Lấy số dư ví của tài xế
+     */
+    public double getWalletBalance(int driverId) {
+        String query = "SELECT wallet_balance FROM drivers WHERE driver_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, driverId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy số dư ví tài xế #" + driverId + ": " + e.getMessage());
+        }
+        return 500000.0;
+    }
+
+    /**
+     * Cập nhật số dư ví tài xế
+     */
+    public boolean updateWalletBalance(int driverId, double newBalance) {
+        String query = "UPDATE drivers SET wallet_balance = ? WHERE driver_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setDouble(1, newBalance);
+            ps.setInt(2, driverId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật số dư ví tài xế #" + driverId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Ghi nhận 1 giao dịch biến động số dư ví
+     */
+    public boolean recordWalletTransaction(int driverId, Integer orderId, String type, double amount, double balanceAfter, String description) {
+        String query = "INSERT INTO driver_wallet_transactions (driver_id, order_id, type, amount, balance_after, description) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+            ps.setInt(1, driverId);
+            if (orderId != null && orderId > 0) {
+                ps.setInt(2, orderId);
+            } else {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
+            ps.setString(3, type);
+            ps.setDouble(4, amount);
+            ps.setDouble(5, balanceAfter);
+            ps.setString(6, description);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi ghi biến động ví tài xế #" + driverId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Nạp tiền vào ví hoạt động của tài xế
+     */
+    public synchronized boolean topupWallet(int driverId, double amount, String note) {
+        if (amount <= 0) return false;
+        double currentBal = getWalletBalance(driverId);
+        double newBal = currentBal + amount;
+        boolean ok = updateWalletBalance(driverId, newBal);
+        if (ok) {
+            recordWalletTransaction(driverId, null, "TOPUP", amount, newBal, note != null ? note : "Nạp tiền vào ví tài xế");
+        }
+        return ok;
+    }
+
+    /**
+     * Rút tiền từ ví tài xế về tài khoản ngân hàng
+     */
+    public synchronized boolean withdrawWallet(int driverId, double amount, String bankInfo) {
+        if (amount <= 0) return false;
+        double currentBal = getWalletBalance(driverId);
+        if (currentBal < amount) return false;
+        double newBal = currentBal - amount;
+        boolean ok = updateWalletBalance(driverId, newBal);
+        if (ok) {
+            recordWalletTransaction(driverId, null, "WITHDRAW", -amount, newBal, bankInfo != null ? bankInfo : "Rút tiền về tài khoản ngân hàng");
+        }
+        return ok;
+    }
+
+    /**
+     * Lấy danh sách lịch sử biến động số dư ví
+     */
+    public List<DriverWalletTransaction> getWalletTransactions(int driverId, int limit) {
+        List<DriverWalletTransaction> list = new ArrayList<>();
+        String sql = "SELECT * FROM driver_wallet_transactions WHERE driver_id = ? ORDER BY created_at DESC, id DESC LIMIT ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            ps.setInt(2, limit > 0 ? limit : 20);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    int dId = rs.getInt("driver_id");
+                    Integer orderId = rs.getInt("order_id");
+                    if (rs.wasNull()) orderId = null;
+                    String type = rs.getString("type");
+                    double amount = rs.getDouble("amount");
+                    double balAfter = rs.getDouble("balance_after");
+                    String desc = rs.getString("description");
+                    java.sql.Timestamp createdAt = rs.getTimestamp("created_at");
+                    list.add(new DriverWalletTransaction(id, dId, orderId, type, amount, balAfter, desc, createdAt));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy lịch sử giao dịch ví tài xế #" + driverId + ": " + e.getMessage());
+        }
+        return list;
     }
 }
 

@@ -685,8 +685,10 @@
                                 <div id="cartVNAddressPicker"></div>
                                 <input type="hidden" id="receiverAddress" name="receiverAddress" required 
                                        value="<c:out value='${not empty stickyReceiverAddress ? stickyReceiverAddress : sessionScope.currentUser.address}' />">
-                                <div id="shippingDistanceNotice" class="p-2 mt-2 rounded" style="font-size: 0.82rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; display: none;">
-                                    <i class="fa-solid fa-route me-1 text-success"></i> <span id="distText">Đang tính cự ly...</span>
+                                <div id="shippingDistanceNotice" class="mt-2 rounded" style="padding: 10px 14px; font-size: 0.83rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; display: none;">
+                                    <div id="distText">
+                                        <i class="fa-solid fa-route me-1 text-success"></i> Đang tính cự ly...
+                                    </div>
                                 </div>
                             </div>
 
@@ -1263,7 +1265,7 @@
     </div>
 </div>
 
-<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js"></script>
+<script src="${pageContext.request.contextPath}/assets/js/vn-address-picker.js?v=<%= System.currentTimeMillis() %>"></script>
 <script>
 let currentShippingFee = 15000;
 let activeShippingCode = '';
@@ -1605,7 +1607,21 @@ function updateShippingFeeFromAddress(addressText, lat, lng) {
                 const distText = document.getElementById('distText');
                 if (noticeBox && distText) {
                     noticeBox.style.display = 'block';
-                    distText.innerHTML = '<strong>Khoảng cách giao:</strong> ' + data.distanceKm + ' km (Ước tính ' + data.estimatedMinutes + ' phút) &bull; <strong>Cước ship:</strong> ' + data.formattedFee;
+                    distText.innerHTML = 
+                        '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px;">' +
+                            '<span style="display: inline-flex; align-items: center; gap: 6px;">' +
+                                '<i class="fa-solid fa-route text-success"></i>' +
+                                '<strong>Khoảng cách giao:</strong> ' + data.distanceKm + ' km' +
+                            '</span>' +
+                            '<span style="color: #15803d; font-size: 0.78rem; font-weight: 500;">(Ước tính ~' + data.estimatedMinutes + ' phút)</span>' +
+                        '</div>' +
+                        '<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 5px; border-top: 1px dashed #bbf7d0;">' +
+                            '<span style="display: inline-flex; align-items: center; gap: 6px;">' +
+                                '<i class="fa-solid fa-motorcycle text-success"></i>' +
+                                '<strong>Cước ship:</strong>' +
+                            '</span>' +
+                            '<strong style="color: #ea580c; font-size: 0.88rem;">' + data.formattedFee + '</strong>' +
+                        '</div>';
                 }
                 // Nếu đang dùng mã giảm giá, tính lại theo phí ship mới
                 if (activeShippingCode || activeFoodCode) {
