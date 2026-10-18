@@ -69,6 +69,18 @@
                 <span>Vui lòng nhập số điện thoại hợp lệ để thực hiện thao tác cấm/mở khóa!</span>
             </div>
         </c:if>
+        <c:if test="${param.error eq 'csrf_invalid'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-shield-halved" style="font-size: 1.2rem;"></i>
+                <span>Yêu cầu bị từ chối do mã xác thực bảo mật (CSRF Token) không hợp lệ hoặc phiên làm việc đã hết hạn. Vui lòng thử lại!</span>
+            </div>
+        </c:if>
+        <c:if test="${param.error eq 'method_not_allowed'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                <span>Thao tác thay đổi dữ liệu chỉ được phép thực hiện qua giao thức POST an toàn. Hệ thống đã chặn yêu cầu GET trực tiếp!</span>
+            </div>
+        </c:if>
         <c:if test="${param.error eq 'ban_failed' or param.error eq 'unban_failed' or param.error eq 'unlock_failed'}">
             <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
@@ -85,6 +97,7 @@
             </div>
             <div class="admin-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                 <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="margin: 0;" onsubmit="return confirmDeleteAllOrders();">
+                    <input type="hidden" name="csrfToken" value="${csrfToken}" />
                     <input type="hidden" name="action" value="deleteAllOrders" />
                     <button type="submit" class="btn btn-danger" style="background: #dc2626; border-color: #dc2626; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
                         <i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Đơn (Test)
@@ -121,6 +134,7 @@
                         </span>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
                         <input type="hidden" name="action" value="banByPhone" />
                         <input type="hidden" name="targetType" value="SHIPPER" />
                         <div class="admin-phone-input-wrap">
@@ -259,18 +273,26 @@
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${drv.status eq 'BANNED'}">
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unbanDriver&phone=${drv.phone}&driverId=${drv.id}" 
-                                                               class="btn-action-unban"
-                                                               onclick="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho tài xế ${drv.name} (SĐT: ${drv.phone})?');">
-                                                                <i class="fa-solid fa-lock-open"></i> Gỡ cấm
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho tài xế ${drv.name} (SĐT: ${drv.phone})?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="unbanDriver" />
+                                                                <input type="hidden" name="phone" value="${drv.phone}" />
+                                                                <input type="hidden" name="driverId" value="${drv.id}" />
+                                                                <button type="submit" class="btn-action-unban">
+                                                                    <i class="fa-solid fa-lock-open"></i> Gỡ cấm
+                                                                </button>
+                                                            </form>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=banDriver&phone=${drv.phone}&driverId=${drv.id}" 
-                                                               class="btn-action-ban"
-                                                               onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM tài xế ${drv.name} (SĐT: ${drv.phone}) hoạt động?');">
-                                                                <i class="fa-solid fa-ban"></i> Cấm tài xế
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM tài xế ${drv.name} (SĐT: ${drv.phone}) hoạt động?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="banDriver" />
+                                                                <input type="hidden" name="phone" value="${drv.phone}" />
+                                                                <input type="hidden" name="driverId" value="${drv.id}" />
+                                                                <button type="submit" class="btn-action-ban">
+                                                                    <i class="fa-solid fa-ban"></i> Cấm tài xế
+                                                                </button>
+                                                            </form>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
@@ -311,6 +333,7 @@
                         </span>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
                         <input type="hidden" name="action" value="banByPhone" />
                         <input type="hidden" name="targetType" value="RESTAURANT" />
                         <div class="admin-phone-input-wrap">
@@ -442,18 +465,26 @@
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${rest.status eq 'BANNED'}">
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unbanRestaurant&phone=${rest.phone}&restaurantId=${rest.id}" 
-                                                               class="btn-action-unban"
-                                                               onclick="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho quán ăn ${rest.name} (SĐT: ${rest.phone})?');">
-                                                                <i class="fa-solid fa-lock-open"></i> Gỡ cấm
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc chắn muốn GỠ CẤM (mở khóa) cho quán ăn ${rest.name} (SĐT: ${rest.phone})?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="unbanRestaurant" />
+                                                                <input type="hidden" name="phone" value="${rest.phone}" />
+                                                                <input type="hidden" name="restaurantId" value="${rest.id}" />
+                                                                <button type="submit" class="btn-action-unban">
+                                                                    <i class="fa-solid fa-lock-open"></i> Gỡ cấm
+                                                                </button>
+                                                            </form>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=banRestaurant&phone=${rest.phone}&restaurantId=${rest.id}" 
-                                                               class="btn-action-ban"
-                                                               onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM quán ăn ${rest.name} (SĐT: ${rest.phone}) hoạt động?');">
-                                                                <i class="fa-solid fa-ban"></i> Cấm quán
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn CẤM quán ăn ${rest.name} (SĐT: ${rest.phone}) hoạt động?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="banRestaurant" />
+                                                                <input type="hidden" name="phone" value="${rest.phone}" />
+                                                                <input type="hidden" name="restaurantId" value="${rest.id}" />
+                                                                <button type="submit" class="btn-action-ban">
+                                                                    <i class="fa-solid fa-ban"></i> Cấm quán
+                                                                </button>
+                                                            </form>
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </td>
@@ -494,6 +525,7 @@
                         </span>
                     </div>
                     <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" class="admin-ban-form-grid">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
                         <input type="hidden" name="action" value="unlockCustomerCod" />
                         <div class="admin-phone-input-wrap">
                             <i class="fa-solid fa-phone"></i>
@@ -635,12 +667,14 @@
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${cust.codLocked}">
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=unlockCustomerCod&userId=${cust.id}&tab=customers"
-                                                               class="btn btn-sm btn-success"
-                                                               style="background: #10b981; border-color: #10b981; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; color: #fff; text-decoration: none;"
-                                                               onclick="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${cust.fullName} (ID: ${cust.id})?');">
-                                                                <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${cust.fullName} (ID: ${cust.id})?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="unlockCustomerCod" />
+                                                                <input type="hidden" name="userId" value="${cust.id}" />
+                                                                <button type="submit" class="btn btn-sm btn-success" style="background: #10b981; border-color: #10b981; font-weight: 700; padding: 6px 12px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; color: #fff; cursor: pointer;">
+                                                                    <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
+                                                                </button>
+                                                            </form>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <span class="text-muted" style="font-size: 0.82rem;"><i class="fa-solid fa-check text-success"></i> Hợp lệ</span>
@@ -728,6 +762,7 @@
                         </div>
                         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                             <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="margin: 0;" onsubmit="return confirmDeleteAllOrders();">
+                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
                                 <input type="hidden" name="action" value="deleteAllOrders" />
                                 <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-radius: 8px; padding: 7px 14px; background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
                                     <i class="fa-solid fa-trash-can"></i> Xóa tất cả đơn hàng (Test)
@@ -828,23 +863,27 @@
                                                 <td>
                                                     <c:choose>
                                                         <c:when test="${order.status eq 'PENDING'}">
-                                                            <a href="${pageContext.request.contextPath}/admin/dashboard?action=approve&orderId=${order.id}"
-                                                               class="btn-action btn-approve"
-                                                               onclick="return confirm('Bạn có chắc chắn muốn duyệt đơn #${order.id}?');">
-                                                                <i class="fa-solid fa-check"></i> Duyệt
-                                                            </a>
+                                                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Bạn có chắc chắn muốn duyệt đơn #${order.id}?');">
+                                                                <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                <input type="hidden" name="action" value="approve" />
+                                                                <input type="hidden" name="orderId" value="${order.id}" />
+                                                                <button type="submit" class="btn-action btn-approve" style="cursor: pointer; border: none;">
+                                                                    <i class="fa-solid fa-check"></i> Duyệt
+                                                                </button>
+                                                            </form>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                                                 <span class="text-muted" style="font-size: 0.85rem;"><i class="fa-solid fa-circle-check text-success"></i> Đã xử lý</span>
                                                                 <c:if test="${order.status eq 'CANCELLED' and not empty order.phone}">
-                                                                    <a href="${pageContext.request.contextPath}/admin/dashboard?action=unlockCustomerCod&phone=${order.phone}&tab=customers"
-                                                                       class="btn btn-sm btn-outline-success"
-                                                                       style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"
-                                                                       onclick="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${order.customerName} (SĐT: ${order.phone})?');"
-                                                                       title="Mở lại quyền COD nếu khách bị shipper báo nhầm">
-                                                                        <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
-                                                                    </a>
+                                                                    <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="display:inline; margin:0;" onsubmit="return confirm('Mở lại quyền thanh toán Tiền mặt (COD) cho khách hàng ${order.customerName} (SĐT: ${order.phone})?');">
+                                                                        <input type="hidden" name="csrfToken" value="${csrfToken}" />
+                                                                        <input type="hidden" name="action" value="unlockCustomerCod" />
+                                                                        <input type="hidden" name="phone" value="${order.phone}" />
+                                                                        <button type="submit" class="btn btn-sm btn-outline-success" style="font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;" title="Mở lại quyền COD nếu khách bị shipper báo nhầm">
+                                                                            <i class="fa-solid fa-unlock-keyhole"></i> Mở COD
+                                                                        </button>
+                                                                    </form>
                                                                 </c:if>
                                                             </div>
                                                         </c:otherwise>

@@ -6,6 +6,7 @@ import com.ute.fooddelivery.model.Order;
 import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.CategoryService;
 import com.ute.fooddelivery.service.FoodService;
+import com.ute.fooddelivery.utils.CsrfUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -30,162 +31,25 @@ public class AdminDashboardController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        HttpSession session = req.getSession(false);
+        User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+        if (currentUser == null || !currentUser.isAdmin()) {
+            resp.sendRedirect(req.getContextPath() + "/auth?action=login&error=unauthorized");
+            return;
+        }
+
+        // Đảm bảo CSRF token luôn sẵn sàng trong session và request attribute
+        String csrfToken = CsrfUtils.getOrCreateToken(session);
+        req.setAttribute("csrfToken", csrfToken);
+
+        // BẢO MẬT & CHỐNG KÍCH HOẠT NGẦM:
+        // Chặn tuyệt đối mọi thao tác thay đổi dữ liệu/trạng thái qua HTTP GET
         String action = req.getParameter("action");
-        if ("deleteAllOrders".equals(action)) {
-            HttpSession session = req.getSession(false);
-            User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
-            if (currentUser == null || !currentUser.isAdmin()) {
-                resp.sendRedirect(req.getContextPath() + "/auth?action=login");
-                return;
-            }
-
-            boolean ok = orderDAO.deleteAllOrders();
-            if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?msg=all_orders_deleted");
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?error=delete_orders_failed");
-            }
-            return;
-        } else if ("approve".equals(action)) {
-            String orderIdParam = req.getParameter("orderId");
-            if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
-                try {
-                    int orderId = Integer.parseInt(orderIdParam.trim());
-                    orderDAO.updateOrderStatus(orderId, "CONFIRMED");
-                    resp.sendRedirect(req.getContextPath() + "/admin/dashboard?msg=approved");
-                    return;
-                } catch (NumberFormatException e) {
-                    System.err.println("Mã đơn không hợp lệ: " + orderIdParam);
-                }
-            }
-        } else if ("banDriver".equals(action)) {
-            String phone = req.getParameter("phone");
-            String idParam = req.getParameter("driverId");
-            boolean ok = false;
-            if (phone != null && !phone.trim().isEmpty()) {
-                ok = driverDAO.banDriverByPhone(phone.trim());
-            } else if (idParam != null && !idParam.trim().isEmpty()) {
-                try {
-                    int dId = Integer.parseInt(idParam.trim());
-                    ok = driverDAO.updateStatus(dId, "BANNED");
-                } catch (Exception ignored) {}
-            }
-            if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&msg=banned_driver" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&error=ban_failed");
-            }
-            return;
-        } else if ("unbanDriver".equals(action)) {
-            String phone = req.getParameter("phone");
-            String idParam = req.getParameter("driverId");
-            boolean ok = false;
-            if (phone != null && !phone.trim().isEmpty()) {
-                ok = driverDAO.unbanDriverByPhone(phone.trim());
-            } else if (idParam != null && !idParam.trim().isEmpty()) {
-                try {
-                    int dId = Integer.parseInt(idParam.trim());
-                    ok = driverDAO.updateStatus(dId, "OFFLINE");
-                } catch (Exception ignored) {}
-            }
-            if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&msg=unbanned_driver" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&error=unban_failed");
-            }
-            return;
-        } else if ("banRestaurant".equals(action)) {
-            String phone = req.getParameter("phone");
-            String idParam = req.getParameter("restaurantId");
-            boolean ok = false;
-            if (phone != null && !phone.trim().isEmpty()) {
-                ok = restaurantDAO.banRestaurantByPhone(phone.trim());
-            } else if (idParam != null && !idParam.trim().isEmpty()) {
-                try {
-                    int rId = Integer.parseInt(idParam.trim());
-                    ok = restaurantDAO.updateStatus(rId, "BANNED");
-                } catch (Exception ignored) {}
-            }
-            if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&msg=banned_restaurant" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&error=ban_failed");
-            }
-            return;
-        } else if ("unbanRestaurant".equals(action)) {
-            String phone = req.getParameter("phone");
-            String idParam = req.getParameter("restaurantId");
-            boolean ok = false;
-            if (phone != null && !phone.trim().isEmpty()) {
-                ok = restaurantDAO.unbanRestaurantByPhone(phone.trim());
-            } else if (idParam != null && !idParam.trim().isEmpty()) {
-                try {
-                    int rId = Integer.parseInt(idParam.trim());
-                    ok = restaurantDAO.updateStatus(rId, "OPEN");
-                } catch (Exception ignored) {}
-            }
-            if (ok) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&msg=unbanned_restaurant" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&error=unban_failed");
-            }
-            return;
-        } else if ("banByPhone".equals(action)) {
-            String targetType = req.getParameter("targetType");
-            String phone = req.getParameter("phone");
-            String banAction = req.getParameter("banAction");
-            String tab = "SHIPPER".equalsIgnoreCase(targetType) ? "shippers" : "restaurants";
-
-            if (phone == null || phone.trim().isEmpty()) {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&error=empty_phone");
-                return;
-            }
-            phone = phone.trim();
-            boolean isBan = !"UNBAN".equalsIgnoreCase(banAction);
-
-            boolean success = false;
-            if ("SHIPPER".equalsIgnoreCase(targetType)) {
-                success = isBan ? driverDAO.banDriverByPhone(phone) : driverDAO.unbanDriverByPhone(phone);
-            } else {
-                success = isBan ? restaurantDAO.banRestaurantByPhone(phone) : restaurantDAO.unbanRestaurantByPhone(phone);
-            }
-
-            if (success) {
-                String msgKey = (isBan ? "banned_" : "unbanned_") + ("SHIPPER".equalsIgnoreCase(targetType) ? "driver" : "restaurant");
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&msg=" + msgKey + "&phone=" + java.net.URLEncoder.encode(phone, "UTF-8"));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&error=phone_not_found&phone=" + java.net.URLEncoder.encode(phone, "UTF-8"));
-            }
-            return;
-        } else if ("unlockCustomerCod".equals(action)) {
-            String userIdParam = req.getParameter("userId");
-            String phoneParam = req.getParameter("phone");
-            boolean ok = false;
-            Integer targetUserId = null;
-
-            if (userIdParam != null && !userIdParam.trim().isEmpty()) {
-                try {
-                    int uId = Integer.parseInt(userIdParam.trim());
-                    targetUserId = uId;
-                    ok = userDAO.unlockCustomerCod(uId);
-                } catch (Exception ignored) {}
-            } else if (phoneParam != null && !phoneParam.trim().isEmpty()) {
-                phoneParam = phoneParam.trim();
-                ok = userDAO.unlockCustomerCodByPhone(phoneParam);
-                User targetUser = userDAO.getUserByPhone(phoneParam);
-                if (targetUser != null) {
-                    targetUserId = targetUser.getId();
-                }
-            }
-
-            if (ok) {
-                if (targetUserId != null && targetUserId > 0) {
-                    notificationService.notifyCodUnlockedByAdmin(targetUserId);
-                }
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&msg=customer_cod_unlocked" + (phoneParam != null ? "&phone=" + java.net.URLEncoder.encode(phoneParam, "UTF-8") : ""));
-            } else {
-                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&error=unlock_failed");
-            }
+        if (action != null && !action.trim().isEmpty()) {
+            String tab = req.getParameter("tab");
+            String redirectUrl = req.getContextPath() + "/admin/dashboard?error=method_not_allowed"
+                    + (tab != null && !tab.trim().isEmpty() ? "&tab=" + java.net.URLEncoder.encode(tab.trim(), "UTF-8") : "");
+            resp.sendRedirect(redirectUrl);
             return;
         }
 
@@ -293,7 +157,175 @@ public class AdminDashboardController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
         req.setCharacterEncoding("UTF-8");
-        doGet(req, resp);
+
+        HttpSession session = req.getSession(false);
+        User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+        if (currentUser == null || !currentUser.isAdmin()) {
+            resp.sendRedirect(req.getContextPath() + "/auth?action=login&error=unauthorized");
+            return;
+        }
+
+        // BẢO MẬT: Kiểm tra tính hợp lệ của CSRF Token
+        if (!CsrfUtils.validate(req)) {
+            String tab = req.getParameter("tab");
+            String redirectUrl = req.getContextPath() + "/admin/dashboard?error=csrf_invalid"
+                    + (tab != null && !tab.trim().isEmpty() ? "&tab=" + java.net.URLEncoder.encode(tab.trim(), "UTF-8") : "");
+            resp.sendRedirect(redirectUrl);
+            return;
+        }
+
+        String action = req.getParameter("action");
+        if (action == null || action.trim().isEmpty()) {
+            resp.sendRedirect(req.getContextPath() + "/admin/dashboard");
+            return;
+        }
+
+        if ("deleteAllOrders".equals(action)) {
+            boolean ok = orderDAO.deleteAllOrders();
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?msg=all_orders_deleted");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?error=delete_orders_failed");
+            }
+        } else if ("approve".equals(action)) {
+            String orderIdParam = req.getParameter("orderId");
+            if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+                try {
+                    int orderId = Integer.parseInt(orderIdParam.trim());
+                    orderDAO.updateOrderStatus(orderId, "CONFIRMED");
+                    resp.sendRedirect(req.getContextPath() + "/admin/dashboard?msg=approved");
+                    return;
+                } catch (NumberFormatException e) {
+                    System.err.println("Mã đơn không hợp lệ: " + orderIdParam);
+                }
+            }
+            resp.sendRedirect(req.getContextPath() + "/admin/dashboard?error=invalid_order");
+        } else if ("banDriver".equals(action)) {
+            String phone = req.getParameter("phone");
+            String idParam = req.getParameter("driverId");
+            boolean ok = false;
+            if (phone != null && !phone.trim().isEmpty()) {
+                ok = driverDAO.banDriverByPhone(phone.trim());
+            } else if (idParam != null && !idParam.trim().isEmpty()) {
+                try {
+                    int dId = Integer.parseInt(idParam.trim());
+                    ok = driverDAO.updateStatus(dId, "BANNED");
+                } catch (Exception ignored) {}
+            }
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&msg=banned_driver" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&error=ban_failed");
+            }
+        } else if ("unbanDriver".equals(action)) {
+            String phone = req.getParameter("phone");
+            String idParam = req.getParameter("driverId");
+            boolean ok = false;
+            if (phone != null && !phone.trim().isEmpty()) {
+                ok = driverDAO.unbanDriverByPhone(phone.trim());
+            } else if (idParam != null && !idParam.trim().isEmpty()) {
+                try {
+                    int dId = Integer.parseInt(idParam.trim());
+                    ok = driverDAO.updateStatus(dId, "OFFLINE");
+                } catch (Exception ignored) {}
+            }
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&msg=unbanned_driver" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=shippers&error=unban_failed");
+            }
+        } else if ("banRestaurant".equals(action)) {
+            String phone = req.getParameter("phone");
+            String idParam = req.getParameter("restaurantId");
+            boolean ok = false;
+            if (phone != null && !phone.trim().isEmpty()) {
+                ok = restaurantDAO.banRestaurantByPhone(phone.trim());
+            } else if (idParam != null && !idParam.trim().isEmpty()) {
+                try {
+                    int rId = Integer.parseInt(idParam.trim());
+                    ok = restaurantDAO.updateStatus(rId, "BANNED");
+                } catch (Exception ignored) {}
+            }
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&msg=banned_restaurant" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&error=ban_failed");
+            }
+        } else if ("unbanRestaurant".equals(action)) {
+            String phone = req.getParameter("phone");
+            String idParam = req.getParameter("restaurantId");
+            boolean ok = false;
+            if (phone != null && !phone.trim().isEmpty()) {
+                ok = restaurantDAO.unbanRestaurantByPhone(phone.trim());
+            } else if (idParam != null && !idParam.trim().isEmpty()) {
+                try {
+                    int rId = Integer.parseInt(idParam.trim());
+                    ok = restaurantDAO.updateStatus(rId, "OPEN");
+                } catch (Exception ignored) {}
+            }
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&msg=unbanned_restaurant" + (phone != null ? "&phone=" + java.net.URLEncoder.encode(phone.trim(), "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=restaurants&error=unban_failed");
+            }
+        } else if ("banByPhone".equals(action)) {
+            String targetType = req.getParameter("targetType");
+            String phone = req.getParameter("phone");
+            String banAction = req.getParameter("banAction");
+            String tab = "SHIPPER".equalsIgnoreCase(targetType) ? "shippers" : "restaurants";
+
+            if (phone == null || phone.trim().isEmpty()) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&error=empty_phone");
+                return;
+            }
+            phone = phone.trim();
+            boolean isBan = !"UNBAN".equalsIgnoreCase(banAction);
+
+            boolean success = false;
+            if ("SHIPPER".equalsIgnoreCase(targetType)) {
+                success = isBan ? driverDAO.banDriverByPhone(phone) : driverDAO.unbanDriverByPhone(phone);
+            } else {
+                success = isBan ? restaurantDAO.banRestaurantByPhone(phone) : restaurantDAO.unbanRestaurantByPhone(phone);
+            }
+
+            if (success) {
+                String msgKey = (isBan ? "banned_" : "unbanned_") + ("SHIPPER".equalsIgnoreCase(targetType) ? "driver" : "restaurant");
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&msg=" + msgKey + "&phone=" + java.net.URLEncoder.encode(phone, "UTF-8"));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=" + tab + "&error=phone_not_found&phone=" + java.net.URLEncoder.encode(phone, "UTF-8"));
+            }
+        } else if ("unlockCustomerCod".equals(action)) {
+            String userIdParam = req.getParameter("userId");
+            String phoneParam = req.getParameter("phone");
+            boolean ok = false;
+            Integer targetUserId = null;
+
+            if (userIdParam != null && !userIdParam.trim().isEmpty()) {
+                try {
+                    int uId = Integer.parseInt(userIdParam.trim());
+                    targetUserId = uId;
+                    ok = userDAO.unlockCustomerCod(uId);
+                } catch (Exception ignored) {}
+            } else if (phoneParam != null && !phoneParam.trim().isEmpty()) {
+                phoneParam = phoneParam.trim();
+                ok = userDAO.unlockCustomerCodByPhone(phoneParam);
+                User targetUser = userDAO.getUserByPhone(phoneParam);
+                if (targetUser != null) {
+                    targetUserId = targetUser.getId();
+                }
+            }
+
+            if (ok) {
+                if (targetUserId != null && targetUserId > 0) {
+                    notificationService.notifyCodUnlockedByAdmin(targetUserId);
+                }
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&msg=customer_cod_unlocked" + (phoneParam != null ? "&phone=" + java.net.URLEncoder.encode(phoneParam, "UTF-8") : ""));
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?tab=customers&error=unlock_failed");
+            }
+        } else {
+            resp.sendRedirect(req.getContextPath() + "/admin/dashboard?error=invalid_action");
+        }
     }
 }
 
