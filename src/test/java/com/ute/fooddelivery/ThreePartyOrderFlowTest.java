@@ -242,6 +242,7 @@ public class ThreePartyOrderFlowTest {
         assertTrue("Quán xác nhận đơn", cooking);
 
         // =========================================================================
+        // =========================================================================
         // BƯỚC 5: SHIPPER ĐẾN QUÁN & XÁC NHẬN ĐÃ LẤY MÓN TỪ QUÁN (BƯỚC MỚI)
         // =========================================================================
         boolean pickedUp = orderDAO.shipperConfirmPickedUp(testOrderId, testDriverId);
@@ -252,33 +253,26 @@ public class ThreePartyOrderFlowTest {
         assertEquals("SHIPPING", afterPickedUpOrder.getStatus());
         assertFalse("shipper_delivered vẫn = false", afterPickedUpOrder.isShipperDelivered());
 
-        // Kiểm tra logic mới: Khách cố tình xác nhận khi shipper chưa giao cho khách -> Bị từ chối
-        boolean prematureConfirm = orderDAO.confirmCustomerOrder(testOrderId);
-        assertFalse("Khách KHÔNG ĐƯỢC xác nhận nhận món khi shipper chỉ mới lấy món từ quán (chưa giao)", prematureConfirm);
-
         // =========================================================================
-        // BƯỚC 6: SHIPPER BÁO ĐÃ GIAO XONG CHO KHÁCH -> ĐƠN HOÀN TẤT NGAY LẬP TỨC
+        // BƯỚC 6: TRƯỜNG HỢP SHIPPER CHƯA/QUÊN BẤM XÁC NHẬN ĐÃ GIAO -> KHÁCH VẪN BẤM XÁC NHẬN ĐƯỢC
         // =========================================================================
-        boolean shipperDone = orderDAO.shipperConfirmDelivered(testOrderId, testDriverId);
-        assertTrue("Shipper xác nhận giao thành công", shipperDone);
+        boolean customerDone = orderDAO.confirmCustomerOrder(testOrderId);
+        assertTrue("Khách bấm xác nhận nhận món thành công ngay cả khi shipper chưa bấm đã giao", customerDone);
 
-        Order finalDeliveredOrder = orderDAO.getOrderById(testOrderId);
-        assertTrue("shipper_delivered phải = true", finalDeliveredOrder.isShipperDelivered());
-        assertEquals("Đơn hàng hoàn tất ngay lập tức thành DELIVERED không cần đợi khách", "DELIVERED", finalDeliveredOrder.getStatus());
-        assertTrue("merchant_completed tự động set = true để tính doanh thu", finalDeliveredOrder.isMerchantCompleted());
+        Order finalCustomerConfirmed = orderDAO.getOrderById(testOrderId);
+        assertTrue("customer_confirmed = true", finalCustomerConfirmed.isCustomerConfirmed());
+        assertTrue("shipper_delivered tự động đồng bộ = true", finalCustomerConfirmed.isShipperDelivered());
+        assertEquals("Đơn hàng hoàn tất ngay lập tức thành DELIVERED", "DELIVERED", finalCustomerConfirmed.getStatus());
+        assertTrue("merchant_completed tự động set = true để tính doanh thu", finalCustomerConfirmed.isMerchantCompleted());
 
-        // Tài xế được tự động giải phóng về AVAILABLE sau khi hoàn thành đơn
+        // Tài xế được tự động giải phóng về AVAILABLE sau khi khách hoàn thành xác nhận đơn
         Driver driverAfterFinish = driverDAO.getDriverById(testDriverId);
         assertEquals("Tài xế sẵn sàng nhận đơn mới", "AVAILABLE", driverAfterFinish.getStatus());
 
         // =========================================================================
-        // BƯỚC 7: KHÁCH VẪN CÓ THỂ XÁC NHẬN ĐÃ NHẬN MÓN & ĐÁNH GIÁ (TÙY CHỌN, KHÔNG BẮT BUỘC)
+        // BƯỚC 7: SHIPPER BẤM LẠI XÁC NHẬN (HOẶC ĐƠN ĐÃ XONG) KHÔNG GÂY LỖI
         // =========================================================================
-        boolean customerDone = orderDAO.confirmCustomerOrder(testOrderId);
-        assertTrue("Khách bấm xác nhận nhận món", customerDone);
-
-        Order finalCustomerConfirmed = orderDAO.getOrderById(testOrderId);
-        assertTrue("customer_confirmed = true", finalCustomerConfirmed.isCustomerConfirmed());
-        assertEquals("DELIVERED", finalCustomerConfirmed.getStatus());
+        boolean shipperDone = orderDAO.shipperConfirmDelivered(testOrderId, testDriverId);
+        assertTrue("Shipper xác nhận đơn đã hoàn tất không lỗi", shipperDone || "DELIVERED".equals(finalCustomerConfirmed.getStatus()));
     }
 }

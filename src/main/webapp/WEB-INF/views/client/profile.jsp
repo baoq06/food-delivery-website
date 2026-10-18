@@ -747,7 +747,7 @@
                                     </div>
 
                                     <div class="order-actions">
-                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.shipperDelivered or order.status eq 'DELIVERED')}">
+                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
                                             <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline;">
                                                 <input type="hidden" name="action" value="confirm_received">
                                                 <input type="hidden" name="orderId" value="${order.id}">

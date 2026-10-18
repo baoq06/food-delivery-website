@@ -320,13 +320,13 @@
             </div>
         </c:if>
 
-        <c:if test="${param.error eq 'wait_shipper_delivery' or param.error eq 'shipper_not_delivered'}">
+        <c:if test="${param.error eq 'wait_shipper_delivery' or param.error eq 'shipper_not_delivered' or param.error eq 'confirm_failed'}">
             <div class="alert alert-warning alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 12px; border-left: 5px solid #f59e0b; background: #fffbeb;">
                 <div class="d-flex align-items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
                     <div>
-                        <strong class="d-block text-dark">Chưa thể xác nhận lúc này!</strong>
-                        <small class="text-secondary">Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng nhận món từ shipper trước khi bấm xác nhận.</small>
+                        <strong class="d-block text-dark">Chưa thể xác nhận đơn hàng!</strong>
+                        <small class="text-secondary">Không thể thực hiện xác nhận vào lúc này. Vui lòng kiểm tra lại trạng thái đơn hàng của bạn.</small>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -497,30 +497,36 @@
                                 <i class="fa-solid fa-star me-1"></i> Viết đánh giá quán &amp; shipper
                             </a>
                         </c:when>
-                        <c:when test="${order.shipperDelivered or order.status eq 'DELIVERED'}">
-                            <div class="p-2 text-center bg-warning-subtle text-dark rounded-3 small fw-semibold mb-3 border border-warning">
-                                <i class="fa-solid fa-bell text-warning me-1"></i> Shipper đã giao món đến nơi! Vui lòng kiểm tra món và bấm xác nhận bên dưới.
-                            </div>
+                        <c:when test="${order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
+                            <c:choose>
+                                <c:when test="${order.shipperDelivered or order.status eq 'DELIVERED'}">
+                                    <div class="p-2 text-center bg-warning-subtle text-dark rounded-3 small fw-semibold mb-3 border border-warning">
+                                        <i class="fa-solid fa-bell text-warning me-1"></i> Shipper đã giao món đến nơi! Vui lòng kiểm tra món và bấm xác nhận bên dưới.
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="p-2 text-center bg-light text-muted rounded-3 small mb-3 border">
+                                        <i class="fa-solid fa-motorcycle text-primary me-1"></i> Món ăn đang được giao tới bạn. Nếu shipper đã đưa món cho bạn (kể cả khi shipper chưa kịp bấm trên app), bạn có thể bấm xác nhận ngay bên dưới.
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                             <form action="${pageContext.request.contextPath}/order/tracking" method="POST" id="confirmReceivedForm">
                                 <input type="hidden" name="action" value="confirm_received">
                                 <input type="hidden" name="orderId" value="${order.id}">
-                                <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btnConfirmReceived">
+                                <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btnConfirmReceived" title="Xác nhận bạn đã nhận được món ăn từ shipper">
                                     <i class="fa-solid fa-hand-holding-heart me-1"></i> Đã Nhận Được Món Ăn
                                 </button>
                             </form>
                         </c:when>
                         <c:otherwise>
                             <div class="p-3 text-center bg-light rounded-3 text-muted mb-2 border">
-                                <div class="mb-1 text-primary fw-bold">
-                                    <i class="fa-solid fa-motorcycle me-1 fa-bounce"></i> Shipper đang di chuyển giao món
+                                <div class="mb-1 text-secondary fw-bold">
+                                    <i class="fa-solid fa-clock me-1"></i> Đơn hàng đang được xử lý
                                 </div>
                                 <small class="text-secondary d-block">
-                                    Nút xác nhận sẽ mở ngay khi tài xế giao hàng tận nơi và bấm xác nhận đã giao món cho bạn.
+                                    Vui lòng đợi nhà hàng tiếp nhận và giao món cho tài xế.
                                 </small>
                             </div>
-                            <button type="button" class="btn btn-secondary w-100 fw-bold py-2" disabled style="opacity: 0.65; cursor: not-allowed;" title="Vui lòng đợi tài xế giao món tận nơi">
-                                <i class="fa-solid fa-clock me-1"></i> Chờ Shipper Giao Món
-                            </button>
                         </c:otherwise>
                     </c:choose>
                 </div>

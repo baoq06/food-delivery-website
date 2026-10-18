@@ -85,8 +85,8 @@ public class OrderTrackingController extends HttpServlet {
                 int orderId = Integer.parseInt(orderIdStr.trim());
                 if ("confirm_received".equalsIgnoreCase(action)) {
                     Order currentOrder = orderDAO.getOrderById(orderId);
-                    if (currentOrder == null || (!currentOrder.isShipperDelivered() && !"DELIVERED".equalsIgnoreCase(currentOrder.getStatus()))) {
-                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=wait_shipper_delivery");
+                    if (currentOrder == null || "CANCELLED".equalsIgnoreCase(currentOrder.getStatus()) || "PENDING".equalsIgnoreCase(currentOrder.getStatus())) {
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=confirm_failed");
                         return;
                     }
 
@@ -104,7 +104,7 @@ public class OrderTrackingController extends HttpServlet {
                         } catch (Exception ignored) {}
                         resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&success=confirmed");
                     } else {
-                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=wait_shipper_delivery");
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=confirm_failed");
                     }
                     return;
                 }

@@ -243,8 +243,8 @@ public class ProfileController extends HttpServlet {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
                 com.ute.fooddelivery.model.Order targetOrder = oDAO.getOrderById(orderId);
-                if (targetOrder == null || (!targetOrder.isShipperDelivered() && !"DELIVERED".equalsIgnoreCase(targetOrder.getStatus()))) {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=shipper_not_delivered");
+                if (targetOrder == null || "CANCELLED".equalsIgnoreCase(targetOrder.getStatus()) || "PENDING".equalsIgnoreCase(targetOrder.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
                     return;
                 }
 
