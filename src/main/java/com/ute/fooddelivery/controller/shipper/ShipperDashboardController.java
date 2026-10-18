@@ -118,7 +118,22 @@ public class ShipperDashboardController extends HttpServlet {
                     }
                 } else if ("CANCELLED".equalsIgnoreCase(status)) {
                     String cancelReason = req.getParameter("cancelReason");
-                    if (cancelReason != null && !cancelReason.trim().isEmpty()) {
+                    if (cancelReason != null && (cancelReason.contains("Quán đóng cửa") || cancelReason.contains("Hết món"))) {
+                        // Trường hợp quán đóng cửa / hết món: đơn vị không thể tiếp tục -> Hủy đơn và hoàn trả voucher
+                        try (java.sql.Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
+                             java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET status = 'CANCELLED', note = CONCAT(IFNULL(note, ''), ' [HỦY SỰ CỐ QUÁN: ', ?, ']') WHERE order_id = ?")) {
+                            ps.setString(1, cancelReason.trim());
+                            ps.setInt(2, orderId);
+                            ps.executeUpdate();
+                        } catch (Exception ex) {
+                            orderDAO.updateOrderStatus(orderId, "CANCELLED");
+                        }
+                        orderDAO.restoreVouchersForOrder(orderId);
+
+                        Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
+                        Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
+                        notificationService.notifyOrderCancelled(customerUserId, user.getId(), merchantUserId, orderId, "Sự cố: " + cancelReason.trim());
+                    } else if (cancelReason != null && !cancelReason.trim().isEmpty()) {
                         try (java.sql.Connection conn = com.ute.fooddelivery.dao.DBContext.getConnection();
                              java.sql.PreparedStatement ps = conn.prepareStatement("UPDATE orders SET driver_id = NULL, status = 'PENDING', shipper_accepted = 0, shipper_picked_up = 0, note = CONCAT(IFNULL(note, ''), ' [Shipper Trả Đơn: ', ?, ']') WHERE order_id = ?")) {
                             ps.setString(1, cancelReason.trim());
@@ -158,6 +173,9 @@ public class ShipperDashboardController extends HttpServlet {
                         } catch (Exception ex) {
                             orderDAO.updateOrderStatus(orderId, "CANCELLED");
                         }
+
+                        // Hoàn trả voucher cho khách nếu đơn hàng có áp dụng
+                        orderDAO.restoreVouchersForOrder(orderId);
 
                         // Ghi nhận vi phạm bom hàng và khóa COD của khách hàng
                         com.ute.fooddelivery.dao.UserDAO userDAO = new com.ute.fooddelivery.dao.UserDAO();

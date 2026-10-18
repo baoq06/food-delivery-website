@@ -393,6 +393,17 @@ public class Order implements Serializable {
         this.voucherCode = voucherCode;
     }
 
+    @Column(name = "voucher_refunded")
+    private boolean voucherRefunded;
+
+    public boolean isVoucherRefunded() {
+        return voucherRefunded;
+    }
+
+    public void setVoucherRefunded(boolean voucherRefunded) {
+        this.voucherRefunded = voucherRefunded;
+    }
+
     /**
      * Kiểm tra Quán có thể bắt đầu nấu & giao hay chưa:
      * Cần đã gán tài xế VÀ tài xế đó đã bấm chấp nhận giao đơn.

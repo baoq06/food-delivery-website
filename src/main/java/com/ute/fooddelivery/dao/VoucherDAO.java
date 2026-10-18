@@ -326,6 +326,19 @@ public class VoucherDAO extends DBContext {
         }
     }
 
+    public boolean decrementUsedCount(String code) {
+        if (code == null || code.trim().isEmpty()) return false;
+        String cleanCode = code.trim().toUpperCase(Locale.ROOT);
+        String sql = "UPDATE `vouchers` SET `used_count` = GREATEST(0, `used_count` - 1) WHERE UPPER(`code`) = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cleanCode);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("[VoucherDAO] decrementUsedCount error: " + e.getMessage());
+            return false;
+        }
+    }
+
     public int countVouchersByRestaurant(int restaurantId) {
         String sql = "SELECT COUNT(*) FROM `vouchers` WHERE `restaurant_id` = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

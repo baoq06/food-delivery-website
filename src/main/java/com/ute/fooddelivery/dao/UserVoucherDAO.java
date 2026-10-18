@@ -273,6 +273,54 @@ public class UserVoucherDAO extends DBContext {
         return allSuccess;
     }
 
+    public boolean restoreVoucher(int userId, String code) {
+        if (userId <= 0 || code == null || code.trim().isEmpty()) return false;
+        String cleanCode = code.trim().toUpperCase(Locale.ROOT);
+        String sql = "UPDATE `user_vouchers` SET `quantity` = `quantity` + 1 WHERE `user_id` = ? AND UPPER(`voucher_code`) = ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setString(2, cleanCode);
+            int updated = ps.executeUpdate();
+            if (updated > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("[UserVoucherDAO] restoreVoucher update error: " + e.getMessage());
+        }
+
+        // Trường hợp người dùng chưa có dòng voucher này trong kho (hoàn trả dự phòng)
+        try {
+            VoucherDAO voucherDAO = new VoucherDAO();
+            Voucher v = voucherDAO.getVoucherByCode(cleanCode);
+            if (v != null) {
+                addOrIncrementVoucher(userId, cleanCode, v.getTitle(), v.getDescription(),
+                        v.getDiscountType(), v.getDiscountValue(), v.getMinOrderAmount(),
+                        v.getMaxDiscount(), v.isFreeShip(), v.isFreeShip() ? "🛵 FREESHIP" : "ƯU ĐÃI",
+                        v.getRestaurantId(), null, 1);
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("[UserVoucherDAO] restoreVoucher fallback error: " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean restoreVouchers(int userId, List<String> codes) {
+        if (userId <= 0 || codes == null || codes.isEmpty()) return false;
+        boolean allSuccess = true;
+        for (String code : codes) {
+            if (code != null && !code.trim().isEmpty()) {
+                boolean ok = restoreVoucher(userId, code.trim());
+                if (!ok) allSuccess = false;
+            }
+        }
+        return allSuccess;
+    }
+
+    public boolean restoreVouchersForOrder(int orderId) {
+        return new OrderDAO().restoreVouchersForOrder(orderId);
+    }
+
     private UserVoucher mapResultSetToUserVoucher(ResultSet rs) throws SQLException {
         UserVoucher uv = new UserVoucher();
         uv.setId(rs.getInt("id"));

@@ -220,6 +220,7 @@ public class ProfileController extends HttpServlet {
                 boolean cancelled = orderService.cancelOrderByCustomer(orderId, currentUser.getId());
                 if (cancelled) {
                     try {
+                        orderService.restoreVouchersForOrder(orderId);
                         com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
                         com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
                         Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);

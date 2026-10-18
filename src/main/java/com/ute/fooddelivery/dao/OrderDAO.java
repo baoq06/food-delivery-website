@@ -28,11 +28,15 @@ public class OrderDAO {
                     java.sql.DatabaseMetaData meta = conn.getMetaData();
                     boolean hasDiscount = false;
                     boolean hasVoucher = false;
+                    boolean hasVoucherRefunded = false;
                     try (ResultSet rs = meta.getColumns(null, null, "orders", "discount_amount")) {
                         if (rs.next()) hasDiscount = true;
                     }
                     try (ResultSet rs = meta.getColumns(null, null, "orders", "voucher_code")) {
                         if (rs.next()) hasVoucher = true;
+                    }
+                    try (ResultSet rs = meta.getColumns(null, null, "orders", "voucher_refunded")) {
+                        if (rs.next()) hasVoucherRefunded = true;
                     }
 
                     if (!hasDiscount) {
@@ -45,6 +49,12 @@ public class OrderDAO {
                         try {
                             stmt.executeUpdate("ALTER TABLE orders ADD COLUMN voucher_code VARCHAR(50) DEFAULT NULL AFTER discount_amount");
                             System.out.println(">> Đã thêm cột voucher_code vào bảng orders");
+                        } catch (SQLException ignore) {}
+                    }
+                    if (!hasVoucherRefunded) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE orders ADD COLUMN voucher_refunded TINYINT(1) DEFAULT 0 AFTER voucher_code");
+                            System.out.println(">> Đã thêm cột voucher_refunded vào bảng orders");
                         } catch (SQLException ignore) {}
                     }
                 }
@@ -261,6 +271,11 @@ public class OrderDAO {
                             psDriver.setInt(1, orderId);
                             psDriver.executeUpdate();
                         } catch (Exception ignored) {}
+
+                        // Tự động hoàn trả voucher cho khách khi đơn bị hủy
+                        if ("CANCELLED".equalsIgnoreCase(status)) {
+                            restoreVouchersForOrder(orderId);
+                        }
                     }
                     return updated > 0;
                 }
@@ -1151,6 +1166,9 @@ public class OrderDAO {
                             psDriver.setInt(1, orderId);
                             psDriver.executeUpdate();
                         } catch (Exception ignored) {}
+
+                        // Hoàn trả voucher cho khách hàng nếu có
+                        restoreVouchersForOrder(orderId);
                     }
                     return updated > 0;
                 }
@@ -1159,6 +1177,83 @@ public class OrderDAO {
             System.err.println("Lỗi khi khách hàng hủy đơn: " + e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Hoàn trả voucher cho khách hàng và giảm used_count của voucher khi đơn hàng bị hủy
+     * (Khách tự hủy, Quán từ chối, Shipper báo hủy do sự cố / bom hàng).
+     */
+    public boolean restoreVouchersForOrder(int orderId) {
+        if (orderId <= 0) return false;
+        String selectSql = "SELECT user_id, voucher_code, voucher_refunded FROM orders WHERE order_id = ?";
+        int userId = -1;
+        String voucherCode = null;
+        boolean alreadyRefunded = false;
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return false;
+
+            try (PreparedStatement ps = conn.prepareStatement(selectSql)) {
+                ps.setInt(1, orderId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        userId = rs.getInt("user_id");
+                        voucherCode = rs.getString("voucher_code");
+                        try {
+                            alreadyRefunded = rs.getInt("voucher_refunded") == 1;
+                        } catch (Exception ignored) {}
+                    } else {
+                        return false;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng orders chưa có cột voucher_refunded
+                String fallbackSql = "SELECT user_id, voucher_code FROM orders WHERE order_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+                    ps.setInt(1, orderId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            userId = rs.getInt("user_id");
+                            voucherCode = rs.getString("voucher_code");
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (voucherCode == null || voucherCode.trim().isEmpty() || alreadyRefunded || userId <= 0) {
+                return false;
+            }
+
+            // Đánh dấu đã hoàn trả để đảm bảo tính Idempotent (không bị hoàn trùng lặp)
+            String markSql = "UPDATE orders SET voucher_refunded = 1 WHERE order_id = ? AND (voucher_refunded = 0 OR voucher_refunded IS NULL)";
+            try (PreparedStatement psMark = conn.prepareStatement(markSql)) {
+                psMark.setInt(1, orderId);
+                int marked = psMark.executeUpdate();
+                if (marked == 0 && !alreadyRefunded) {
+                    return false;
+                }
+            } catch (SQLException ignored) {}
+
+            UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
+            VoucherDAO voucherDAO = new VoucherDAO();
+            String[] codes = voucherCode.split(",");
+            boolean anyRestored = false;
+            for (String rawCode : codes) {
+                String clean = rawCode.trim();
+                if (!clean.isEmpty()) {
+                    userVoucherDAO.restoreVoucher(userId, clean);
+                    voucherDAO.decrementUsedCount(clean);
+                    anyRestored = true;
+                    System.out.println(">> [Voucher Refund] Đã hoàn trả mã voucher [" + clean + "] cho khách hàng user_id=" + userId + " (Đơn #" + orderId + ")");
+                }
+            }
+            return anyRestored;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi hoàn trả voucher cho đơn hàng #" + orderId + ": " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean assignDriver(int orderId, int driverId) {
