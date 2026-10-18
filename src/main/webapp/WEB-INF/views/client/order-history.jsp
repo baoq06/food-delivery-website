@@ -32,6 +32,18 @@
 </style>
 
 <div class="container order-history-cont">
+    <c:if test="${param.notice eq 'tracking_not_available'}">
+        <div class="alert alert-info alert-dismissible fade show" role="alert" style="border-radius: 12px; border-left: 5px solid #0284c7; background: #f0f9ff;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-circle-info" style="font-size: 1.4rem; color: #0284c7;"></i>
+                <div>
+                    <h6 style="margin: 0; font-weight: 700; color: #0369a1;">Chưa thể xem bản đồ trực tiếp</h6>
+                    <small style="color: #475569;">Bản đồ Live Map chỉ khả dụng khi Quán đã hoàn tất làm món và Shipper đang trên đường đi giao hàng đến bạn.</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
     <h2 class="mb-4"><i class="fa-solid fa-receipt text-primary"></i> Lịch Sử Đơn Hàng</h2>
     
     <c:choose>
@@ -48,7 +60,14 @@
                 <div class="order-card">
                     <div class="order-card-header">
                         <div>
-                            <h5 style="margin:0;">Mã đơn: <strong class="text-danger">#FZ-${order.id}</strong></h5>
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 style="margin:0;">Mã đơn: <strong class="text-danger">#FZ-${order.id}</strong></h5>
+                                <c:if test="${not empty order.restaurantName}">
+                                    <span class="badge bg-light text-dark border" style="font-size: 0.85rem; font-weight: 600;">
+                                        <i class="fa-solid fa-store me-1 text-danger"></i>${order.restaurantName}
+                                    </span>
+                                </c:if>
+                            </div>
                             <small class="text-muted"><fmt:formatDate value="${order.createdAt}" pattern="dd/MM/yyyy HH:mm:ss" /></small>
                         </div>
                         
@@ -115,6 +134,11 @@
                                     <i class="fa-solid fa-motorcycle"></i>
                                 </div>
                                 <span style="font-size: 0.85em; font-weight: 600; color: ${step3Active ? '#333' : '#9e9e9e'}; display: block;">Đang giao hàng</span>
+                                <c:if test="${order.status eq 'SHIPPING'}">
+                                    <a href="${pageContext.request.contextPath}/order/tracking?orderId=${order.id}" class="badge bg-danger text-white text-decoration-none mt-1" style="font-size: 0.72rem; padding: 3px 8px; border-radius: 50px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(239,68,68,0.35);">
+                                        <i class="fa-solid fa-satellite-dish fa-fade"></i> Xem Live Map
+                                    </a>
+                                </c:if>
                             </div>
 
                             <!-- STEP 4: Delivered -->
@@ -161,10 +185,24 @@
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center gap-2">
+                            <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
+                                <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline; margin:0;">
+                                    <input type="hidden" name="action" value="confirm_received">
+                                    <input type="hidden" name="orderId" value="${order.id}">
+                                    <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 8px; font-weight: 700; background: #10ac84; border-color: #10ac84; color: #fff;" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Đã nhận món
+                                    </button>
+                                </form>
+                            </c:if>
+                            <c:if test="${order.status eq 'SHIPPING'}">
+                                <a href="${pageContext.request.contextPath}/order/tracking?orderId=${order.id}" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 700; background: linear-gradient(135deg, #ef4444, #f97316); border: none; animation: pulseTrack 2s infinite;">
+                                    <i class="fa-solid fa-map-location-dot me-1"></i> Theo dõi trực tiếp
+                                </a>
+                            </c:if>
                             <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 600;">
                                 <i class="fa-solid fa-cart-plus me-1"></i> Đặt lại món
                             </a>
-                            <c:if test="${not empty order.restaurantId}">
+                            <c:if test="${not empty order.restaurantId and order.restaurantId > 0}">
                                 <button type="button" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; font-weight: 600;"
                                         data-restaurant-id="${order.restaurantId}"
                                         data-restaurant-name="<c:out value='${order.restaurantName}' escapeXml='true'/>"

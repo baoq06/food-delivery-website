@@ -409,6 +409,19 @@ public class AuthController extends HttpServlet {
                 if (cart == null) {
                     cart = new HashMap<>();
                 }
+                
+                // Nếu giỏ cũ đang chứa món của quán khác, dọn dẹp để ưu tiên món khách vừa chọn
+                int currentRestId = -1;
+                for (CartItem ci : cart.values()) {
+                    if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
+                        currentRestId = ci.getFood().getRestaurantId();
+                        break;
+                    }
+                }
+                if (currentRestId > 0 && food.getRestaurantId() > 0 && currentRestId != food.getRestaurantId()) {
+                    cart.clear();
+                }
+
                 if (cart.containsKey(pendingFoodId)) {
                     CartItem item = cart.get(pendingFoodId);
                     item.setQuantity(item.getQuantity() + qty);

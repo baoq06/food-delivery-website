@@ -48,29 +48,32 @@ public class UploadUtils {
         try {
             // 1. Lưu vào thư mục thực thi của webapp (Tomcat)
             String runtimeUploadDir = req.getServletContext().getRealPath("/assets/uploads/" + subFolder);
+            File runtimeFile = null;
             if (runtimeUploadDir != null) {
                 File runtimeDir = new File(runtimeUploadDir);
                 if (!runtimeDir.exists()) {
                     runtimeDir.mkdirs();
                 }
-                File runtimeFile = new File(runtimeDir, uniqueFileName);
+                runtimeFile = new File(runtimeDir, uniqueFileName);
                 try (InputStream in = part.getInputStream()) {
                     Files.copy(in, runtimeFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 }
             }
 
-            // 2. Lưu vào thư mục source của dự án (để không bị mất khi build lại)
-            String sourcePath = "c:/food-delivery-website/src/main/webapp/assets/uploads/" + subFolder;
-            File sourceDir = new File(sourcePath);
-            if (!sourceDir.exists()) {
-                sourceDir.mkdirs();
-            }
-            File sourceFile = new File(sourceDir, uniqueFileName);
-            // Copy từ runtimeFile hoặc lưu trực tiếp
-            if (runtimeUploadDir != null) {
-                File runtimeFile = new File(runtimeUploadDir, uniqueFileName);
-                if (runtimeFile.exists()) {
-                    Files.copy(runtimeFile.toPath(), sourceFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            // 2. Lưu vào thư mục lưu trữ lâu dài (source directory hoặc UPLOAD_DIR cấu hình bên ngoài)
+            // để không bị mất dữ liệu khi build lại hoặc redeploy.
+            File persistentDir = resolvePersistentUploadDir(req, subFolder);
+            if (persistentDir != null) {
+                if (!persistentDir.exists()) {
+                    persistentDir.mkdirs();
+                }
+                File persistentFile = new File(persistentDir, uniqueFileName);
+                if (runtimeFile != null && runtimeFile.exists()) {
+                    Files.copy(runtimeFile.toPath(), persistentFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                } else {
+                    try (InputStream in = part.getInputStream()) {
+                        Files.copy(in, persistentFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
             }
 
@@ -80,5 +83,65 @@ public class UploadUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Xác định thư mục lưu trữ lâu dài (thư mục upload cấu hình ngoài qua UPLOAD_DIR hoặc
+     * thư mục source 'src/main/webapp/assets/uploads' của dự án trong môi trường phát triển).
+     * Tuyệt đối không gán cứng ký tự ổ đĩa (c:/, d:/...).
+     *
+     * @param req HttpServletRequest để lấy context realPath
+     * @param subFolder Thư mục con
+     * @return File đối tượng thư mục đích, hoặc null nếu không xác định được
+     */
+    public static File resolvePersistentUploadDir(HttpServletRequest req, String subFolder) {
+        String cleanSub = (subFolder != null && !subFolder.trim().isEmpty()) ? subFolder.trim() : "";
+
+        // 1. Kiểm tra cấu hình UPLOAD_DIR từ System Property hoặc Biến môi trường
+        String customUploadDir = System.getProperty("upload.dir");
+        if (customUploadDir == null || customUploadDir.trim().isEmpty()) {
+            customUploadDir = System.getProperty("UPLOAD_DIR");
+        }
+        if (customUploadDir == null || customUploadDir.trim().isEmpty()) {
+            customUploadDir = System.getenv("UPLOAD_DIR");
+        }
+        if (customUploadDir != null && !customUploadDir.trim().isEmpty()) {
+            File baseDir = new File(customUploadDir.trim());
+            return cleanSub.isEmpty() ? baseDir : new File(baseDir, cleanSub);
+        }
+
+        // 2. Xác định động thư mục source từ realPath của servlet context
+        if (req != null && req.getServletContext() != null) {
+            String realPath = req.getServletContext().getRealPath("");
+            if (realPath == null) {
+                realPath = req.getServletContext().getRealPath("/");
+            }
+            if (realPath != null) {
+                File current = new File(realPath);
+                // Duyệt ngược lên các thư mục cha (ví dụ: target/food-delivery-website -> target -> project root)
+                for (int i = 0; i < 5 && current != null; i++) {
+                    File srcDir = new File(current, "src/main/webapp/assets/uploads");
+                    if (srcDir.exists() && srcDir.isDirectory()) {
+                        return cleanSub.isEmpty() ? srcDir : new File(srcDir, cleanSub);
+                    }
+                    current = current.getParentFile();
+                }
+            }
+        }
+
+        // 3. Fallback: Duyệt từ thư mục làm việc hiện tại (user.dir)
+        String userDir = System.getProperty("user.dir");
+        if (userDir != null) {
+            File current = new File(userDir);
+            for (int i = 0; i < 5 && current != null; i++) {
+                File srcDir = new File(current, "src/main/webapp/assets/uploads");
+                if (srcDir.exists() && srcDir.isDirectory()) {
+                    return cleanSub.isEmpty() ? srcDir : new File(srcDir, cleanSub);
+                }
+                current = current.getParentFile();
+            }
+        }
+
+        return null;
     }
 }

@@ -119,6 +119,18 @@ public class Order implements Serializable {
     @Transient
     private String restaurantAddress;
 
+    @Transient
+    private Double restaurantLatitude;
+
+    @Transient
+    private Double restaurantLongitude;
+
+    @Transient
+    private Double customerLatitude;
+
+    @Transient
+    private Double customerLongitude;
+
     public Integer getRestaurantId() { return restaurantId; }
     public void setRestaurantId(Integer restaurantId) { this.restaurantId = restaurantId; }
     public String getRestaurantName() { return restaurantName; }
@@ -127,6 +139,15 @@ public class Order implements Serializable {
     public void setRestaurantImage(String restaurantImage) { this.restaurantImage = restaurantImage; }
     public String getRestaurantAddress() { return restaurantAddress; }
     public void setRestaurantAddress(String restaurantAddress) { this.restaurantAddress = restaurantAddress; }
+
+    public Double getRestaurantLatitude() { return restaurantLatitude; }
+    public void setRestaurantLatitude(Double restaurantLatitude) { this.restaurantLatitude = restaurantLatitude; }
+    public Double getRestaurantLongitude() { return restaurantLongitude; }
+    public void setRestaurantLongitude(Double restaurantLongitude) { this.restaurantLongitude = restaurantLongitude; }
+    public Double getCustomerLatitude() { return customerLatitude; }
+    public void setCustomerLatitude(Double customerLatitude) { this.customerLatitude = customerLatitude; }
+    public Double getCustomerLongitude() { return customerLongitude; }
+    public void setCustomerLongitude(Double customerLongitude) { this.customerLongitude = customerLongitude; }
 
     @Transient
     private List<OrderItem> items = new ArrayList<>();
@@ -370,6 +391,17 @@ public class Order implements Serializable {
 
     public void setVoucherCode(String voucherCode) {
         this.voucherCode = voucherCode;
+    }
+
+    @Column(name = "voucher_refunded")
+    private boolean voucherRefunded;
+
+    public boolean isVoucherRefunded() {
+        return voucherRefunded;
+    }
+
+    public void setVoucherRefunded(boolean voucherRefunded) {
+        this.voucherRefunded = voucherRefunded;
     }
 
     /**

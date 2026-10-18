@@ -107,7 +107,7 @@
         </div>
     </c:if>
     <!-- COD Locked Warning Banner for Customer -->
-    <c:if test="${user.isCodLocked()}">
+    <c:if test="${user.codLocked}">
         <div class="alert alert-warning" style="border-radius: 14px; margin-bottom: 24px; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 14px rgba(245,158,11,0.08); border-left: 5px solid #f59e0b; background: #fffbeb;">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <div style="width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fef3c7; color: #d97706; font-size: 1.3rem;">
@@ -323,7 +323,7 @@
                             <i class="fa-solid fa-coins"></i>
                         </div>
                         <div class="stat-content">
-                            <div class="stat-value">${String.format("%,.0f", totalSpent)} đ</div>
+                            <div class="stat-value"><fmt:formatNumber value="${totalSpent}" pattern="#,###" /> đ</div>
                             <div class="stat-label">Tổng chi tiêu</div>
                         </div>
                     </div>
@@ -709,11 +709,11 @@
                                             <h4 class="order-item-title">${item.foodName}</h4>
                                             <div class="order-item-pricing">
                                                 <span class="order-item-qty">x${item.quantity} phần</span>
-                                                <span class="order-item-unit">${String.format("%,.0f", item.unitPrice)} đ</span>
+                                                <span class="order-item-unit"><fmt:formatNumber value="${item.unitPrice}" pattern="#,###" /> đ</span>
                                             </div>
                                         </div>
                                         <div class="order-item-subtotal">
-                                            ${String.format("%,.0f", item.subtotal)} đ
+                                            <fmt:formatNumber value="${item.subtotal}" pattern="#,###" /> đ
                                         </div>
                                     </div>
                                 </c:forEach>
@@ -740,19 +740,19 @@
                                 <div class="order-total-action-group">
                                     <div class="order-total-block">
                                         <span class="total-label">Tổng thanh toán:</span>
-                                        <span class="total-amount">${String.format("%,.0f", order.totalAmount)} đ</span>
+                                        <span class="total-amount"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###" /> đ</span>
                                         <small class="text-muted d-block" style="font-size: 0.78rem;">
-                                            (Đã gồm phí ship: ${String.format("%,.0f", order.shippingFee != null ? order.shippingFee : 15000)} đ • ${order.distanceKm != null ? order.distanceKm : 2.0} km)
+                                            (Đã gồm phí ship: <fmt:formatNumber value="${order.shippingFee != null and order.shippingFee > 0 ? order.shippingFee : 15000}" pattern="#,###" /> đ • ${order.distanceKm != null ? order.distanceKm : 2.0} km)
                                         </small>
                                     </div>
 
                                     <div class="order-actions">
-                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.status eq 'DELIVERED' or order.status eq 'SHIPPING' or order.shipperDelivered or (order.status eq 'CONFIRMED' and not empty order.driverName) or order.merchantConfirmed)}">
+                                        <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
                                             <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline;">
                                                 <input type="hidden" name="action" value="confirm_received">
                                                 <input type="hidden" name="orderId" value="${order.id}">
-                                                <button type="submit" class="btn btn-success btn-sm ${order.shipperDelivered ? 'shadow-sm' : ''}" style="border-radius: 50px; font-weight: 700; padding: 6px 16px; ${order.shipperDelivered ? 'background: #10ac84; border-color: #10ac84;' : ''}" title="Xác nhận bạn đã nhận được món ăn từ shipper">
-                                                    <i class="fa-solid fa-circle-check me-1"></i> ${order.shipperDelivered ? 'Xác Nhận Đã Nhận Món' : 'Đã nhận được hàng'}
+                                                <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 50px; font-weight: 700; padding: 6px 16px; background: #10ac84; border-color: #10ac84;" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                                    <i class="fa-solid fa-circle-check me-1"></i> Xác Nhận Đã Nhận Món
                                                 </button>
                                             </form>
                                         </c:if>
@@ -764,6 +764,11 @@
                                                     <i class="fa-solid fa-ban"></i> Hủy đơn
                                                 </button>
                                             </form>
+                                        </c:if>
+                                        <c:if test="${order.status eq 'SHIPPING'}">
+                                            <a href="${pageContext.request.contextPath}/order/tracking?orderId=${order.id}" class="btn btn-sm" style="border-radius: 50px; font-weight: 700; padding: 6px 14px; background: linear-gradient(135deg, #ef4444, #f97316); color: #fff; text-decoration: none;" title="Xem bản đồ live shipper di chuyển">
+                                                <i class="fa-solid fa-map-location-dot me-1"></i> Theo dõi trực tiếp
+                                            </a>
                                         </c:if>
                                         <a href="${pageContext.request.contextPath}/foods" class="btn btn-primary btn-sm">
                                             <i class="fa-solid fa-cart-plus"></i> Đặt lại món

@@ -27,5 +27,9 @@ public class OrderService {
     public boolean confirmMerchantOrder(int orderId) {
         return orderDAO.confirmMerchantOrder(orderId);
     }
+
+    public boolean restoreVouchersForOrder(int orderId) {
+        return orderDAO.restoreVouchersForOrder(orderId);
+    }
 }
 

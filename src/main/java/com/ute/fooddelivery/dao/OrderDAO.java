@@ -28,11 +28,15 @@ public class OrderDAO {
                     java.sql.DatabaseMetaData meta = conn.getMetaData();
                     boolean hasDiscount = false;
                     boolean hasVoucher = false;
+                    boolean hasVoucherRefunded = false;
                     try (ResultSet rs = meta.getColumns(null, null, "orders", "discount_amount")) {
                         if (rs.next()) hasDiscount = true;
                     }
                     try (ResultSet rs = meta.getColumns(null, null, "orders", "voucher_code")) {
                         if (rs.next()) hasVoucher = true;
+                    }
+                    try (ResultSet rs = meta.getColumns(null, null, "orders", "voucher_refunded")) {
+                        if (rs.next()) hasVoucherRefunded = true;
                     }
 
                     if (!hasDiscount) {
@@ -45,6 +49,12 @@ public class OrderDAO {
                         try {
                             stmt.executeUpdate("ALTER TABLE orders ADD COLUMN voucher_code VARCHAR(50) DEFAULT NULL AFTER discount_amount");
                             System.out.println(">> Đã thêm cột voucher_code vào bảng orders");
+                        } catch (SQLException ignore) {}
+                    }
+                    if (!hasVoucherRefunded) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE orders ADD COLUMN voucher_refunded TINYINT(1) DEFAULT 0 AFTER voucher_code");
+                            System.out.println(">> Đã thêm cột voucher_refunded vào bảng orders");
                         } catch (SQLException ignore) {}
                     }
                 }
@@ -261,6 +271,11 @@ public class OrderDAO {
                             psDriver.setInt(1, orderId);
                             psDriver.executeUpdate();
                         } catch (Exception ignored) {}
+
+                        // Tự động hoàn trả voucher cho khách khi đơn bị hủy
+                        if ("CANCELLED".equalsIgnoreCase(status)) {
+                            restoreVouchersForOrder(orderId);
+                        }
                     }
                     return updated > 0;
                 }
@@ -868,9 +883,20 @@ public class OrderDAO {
             "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
             "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.image_url, " +
             "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi.order_id, " +
+            "           MIN(f.restaurant_id) AS restaurant_id, " +
+            "           MIN(res.name) AS name, " +
+            "           MIN(res.image_url) AS image_url " +
+            "    FROM order_items oi " +
+            "    JOIN foods f ON oi.food_id = f.food_id " +
+            "    JOIN restaurants res ON f.restaurant_id = res.restaurant_id " +
+            "    GROUP BY oi.order_id " +
+            ") rest ON o.order_id = rest.order_id " +
             "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
             "WHERE o.user_id = ? " +
             "ORDER BY o.created_at DESC";
@@ -906,6 +932,20 @@ public class OrderDAO {
                             try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
                             order.setDriverName(rs.getString("driver_name"));
                             order.setDriverPhone(rs.getString("driver_phone"));
+                            try {
+                                Object restIdObj = rs.getObject("restaurant_id");
+                                if (restIdObj instanceof Number) {
+                                    order.setRestaurantId(((Number) restIdObj).intValue());
+                                }
+                            } catch (Exception ignored) {}
+                            try { order.setRestaurantName(rs.getString("restaurant_name")); } catch (Exception ignored) {}
+                            try {
+                                String restImg = rs.getString("restaurant_image");
+                                if (restImg == null) {
+                                    restImg = rs.getString("image_url");
+                                }
+                                order.setRestaurantImage(restImg);
+                            } catch (Exception ignored) {}
 
                             int reviewId = rs.getInt("review_id");
                             if (!rs.wasNull()) {
@@ -1052,6 +1092,90 @@ public class OrderDAO {
         return null;
     }
 
+    public Order getCustomerOrderForTracking(int orderId, int userId) {
+        String sql = 
+            "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
+            "       o.total_amount, o.shipping_fee, o.distance_km, o.discount_amount, o.voucher_code, o.payment_method, o.status, o.driver_id, o.created_at, " +
+            "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
+            "       d.name AS driver_name, d.phone AS driver_phone, " +
+            "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.address AS restaurant_address, " +
+            "       rest.latitude AS restaurant_lat, rest.longitude AS restaurant_lng " +
+            "FROM orders o " +
+            "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
+            "LEFT JOIN ( " +
+            "    SELECT oi2.order_id, f2.restaurant_id, r2.name, r2.image_url, r2.address, r2.latitude, r2.longitude " +
+            "    FROM order_items oi2 " +
+            "    JOIN foods f2 ON oi2.food_id = f2.food_id " +
+            "    JOIN restaurants r2 ON f2.restaurant_id = r2.restaurant_id " +
+            "    WHERE oi2.order_id = ? LIMIT 1 " +
+            ") rest ON o.order_id = rest.order_id " +
+            "WHERE o.order_id = ? AND (o.user_id = ? OR o.user_id IS NULL)";
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, orderId);
+                    ps.setInt(2, orderId);
+                    ps.setInt(3, userId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            Order order = new Order(
+                                rs.getInt("order_id"),
+                                rs.getInt("user_id"),
+                                rs.getString("customer_name"),
+                                rs.getString("phone"),
+                                rs.getString("address"),
+                                rs.getString("note"),
+                                rs.getDouble("total_amount"),
+                                rs.getString("payment_method"),
+                                rs.getString("status"),
+                                rs.getInt("driver_id"),
+                                rs.getTimestamp("created_at"),
+                                rs.getBoolean("customer_confirmed"),
+                                rs.getBoolean("merchant_confirmed"),
+                                rs.getBoolean("shipper_accepted"),
+                                rs.getBoolean("shipper_delivered"),
+                                rs.getBoolean("merchant_completed")
+                            );
+                            try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
+                            try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
+                            try { order.setDiscountAmount(rs.getDouble("discount_amount")); } catch (Exception ignored) {}
+                            try { order.setVoucherCode(rs.getString("voucher_code")); } catch (Exception ignored) {}
+                            try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
+                            order.setDriverName(rs.getString("driver_name"));
+                            order.setDriverPhone(rs.getString("driver_phone"));
+                            order.setRestaurantId((Integer) rs.getObject("restaurant_id"));
+                            order.setRestaurantName(rs.getString("restaurant_name"));
+                            order.setRestaurantImage(rs.getString("restaurant_image"));
+                            order.setRestaurantAddress(rs.getString("restaurant_address"));
+
+                            double restLat = rs.getDouble("restaurant_lat");
+                            double restLng = rs.getDouble("restaurant_lng");
+                            if (!rs.wasNull() && restLat != 0.0 && restLng != 0.0) {
+                                order.setRestaurantLatitude(restLat);
+                                order.setRestaurantLongitude(restLng);
+                            } else {
+                                double[] restCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(order.getRestaurantAddress());
+                                order.setRestaurantLatitude(restCoords[0]);
+                                order.setRestaurantLongitude(restCoords[1]);
+                            }
+
+                            double[] custCoords = com.ute.fooddelivery.utils.GeoLocationUtils.getCoordinatesForAddress(order.getAddress());
+                            order.setCustomerLatitude(custCoords[0]);
+                            order.setCustomerLongitude(custCoords[1]);
+
+                            order.setItems(getOrderItemsByOrderId(order.getId()));
+                            return order;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy thông tin tracking đơn hàng: " + e.getMessage());
+        }
+        return null;
+    }
+
     public boolean cancelOrderByCustomer(int orderId, int userId) {
         String sql = "UPDATE orders SET status = 'CANCELLED' WHERE order_id = ? AND user_id = ? AND status IN ('PENDING', 'CONFIRMED')";
         try (Connection conn = DBContext.getConnection()) {
@@ -1067,6 +1191,9 @@ public class OrderDAO {
                             psDriver.setInt(1, orderId);
                             psDriver.executeUpdate();
                         } catch (Exception ignored) {}
+
+                        // Hoàn trả voucher cho khách hàng nếu có
+                        restoreVouchersForOrder(orderId);
                     }
                     return updated > 0;
                 }
@@ -1075,6 +1202,83 @@ public class OrderDAO {
             System.err.println("Lỗi khi khách hàng hủy đơn: " + e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Hoàn trả voucher cho khách hàng và giảm used_count của voucher khi đơn hàng bị hủy
+     * (Khách tự hủy, Quán từ chối, Shipper báo hủy do sự cố / bom hàng).
+     */
+    public boolean restoreVouchersForOrder(int orderId) {
+        if (orderId <= 0) return false;
+        String selectSql = "SELECT user_id, voucher_code, voucher_refunded FROM orders WHERE order_id = ?";
+        int userId = -1;
+        String voucherCode = null;
+        boolean alreadyRefunded = false;
+
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return false;
+
+            try (PreparedStatement ps = conn.prepareStatement(selectSql)) {
+                ps.setInt(1, orderId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        userId = rs.getInt("user_id");
+                        voucherCode = rs.getString("voucher_code");
+                        try {
+                            alreadyRefunded = rs.getInt("voucher_refunded") == 1;
+                        } catch (Exception ignored) {}
+                    } else {
+                        return false;
+                    }
+                }
+            } catch (SQLException e) {
+                // Fallback nếu bảng orders chưa có cột voucher_refunded
+                String fallbackSql = "SELECT user_id, voucher_code FROM orders WHERE order_id = ?";
+                try (PreparedStatement ps = conn.prepareStatement(fallbackSql)) {
+                    ps.setInt(1, orderId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            userId = rs.getInt("user_id");
+                            voucherCode = rs.getString("voucher_code");
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            if (voucherCode == null || voucherCode.trim().isEmpty() || alreadyRefunded || userId <= 0) {
+                return false;
+            }
+
+            // Đánh dấu đã hoàn trả để đảm bảo tính Idempotent (không bị hoàn trùng lặp)
+            String markSql = "UPDATE orders SET voucher_refunded = 1 WHERE order_id = ? AND (voucher_refunded = 0 OR voucher_refunded IS NULL)";
+            try (PreparedStatement psMark = conn.prepareStatement(markSql)) {
+                psMark.setInt(1, orderId);
+                int marked = psMark.executeUpdate();
+                if (marked == 0 && !alreadyRefunded) {
+                    return false;
+                }
+            } catch (SQLException ignored) {}
+
+            UserVoucherDAO userVoucherDAO = new UserVoucherDAO();
+            VoucherDAO voucherDAO = new VoucherDAO();
+            String[] codes = voucherCode.split(",");
+            boolean anyRestored = false;
+            for (String rawCode : codes) {
+                String clean = rawCode.trim();
+                if (!clean.isEmpty()) {
+                    userVoucherDAO.restoreVoucher(userId, clean);
+                    voucherDAO.decrementUsedCount(clean);
+                    anyRestored = true;
+                    System.out.println(">> [Voucher Refund] Đã hoàn trả mã voucher [" + clean + "] cho khách hàng user_id=" + userId + " (Đơn #" + orderId + ")");
+                }
+            }
+            return anyRestored;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi hoàn trả voucher cho đơn hàng #" + orderId + ": " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean assignDriver(int orderId, int driverId) {
@@ -1232,7 +1436,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1, shipper_delivered = 1 WHERE order_id = ? AND status != 'CANCELLED' AND status != 'PENDING'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -1248,7 +1452,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId, int userId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1, shipper_delivered = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED' AND status != 'PENDING'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -1270,16 +1474,17 @@ public class OrderDAO {
 
     /**
      * Tự động hoàn tất đơn hàng:
-     * Quy tắc thực tế: CHỈ CẦN SHIPPER BÁO ĐÃ GIAO (shipper_delivered == true) là đơn hoàn tất ngay lập tức!
-     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1.
+     * - Shipper báo đã giao (shipper_delivered == true) HOẶC Khách hàng xác nhận đã nhận món (customer_confirmed == true).
+     * - Trường hợp đơn tới tay khách nhưng shipper quên hoặc chưa bấm thì khách bấm xác nhận đơn vẫn hoàn tất ngay lập tức.
+     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1, shipper_delivered = 1.
      * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
-     * - Khách hàng vẫn có thể bấm "Đã nhận món" sau đó mà không làm nghẽn tiến trình.
      */
     public boolean checkAndAutoCompleteOrder(int orderId) {
         String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 boolean shipDelivered = false;
+                boolean custConfirmed = false;
                 int driverId = 0;
                 String currentStatus = null;
 
@@ -1288,6 +1493,7 @@ public class OrderDAO {
                     try (ResultSet rs = psCheck.executeQuery()) {
                         if (rs.next()) {
                             shipDelivered = rs.getBoolean("shipper_delivered");
+                            custConfirmed = rs.getBoolean("customer_confirmed");
                             driverId = rs.getInt("driver_id");
                             currentStatus = rs.getString("status");
                         }
@@ -1298,9 +1504,9 @@ public class OrderDAO {
                     return false;
                 }
 
-                // Khi Shipper đã xác nhận giao -> Hoàn tất đơn tự động ngay lập tức
-                if (shipDelivered) {
-                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+                // Khi Shipper đã xác nhận giao HOẶC Khách hàng xác nhận đã nhận món -> Hoàn tất đơn tự động ngay lập tức
+                if (shipDelivered || custConfirmed) {
+                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, shipper_delivered = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
                     try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                         psUpdate.setInt(1, orderId);
                         int updated = psUpdate.executeUpdate();
@@ -1540,5 +1746,67 @@ public class OrderDAO {
             System.err.println("Lỗi khi lấy danh sách đơn cho admin: " + e.getMessage());
         }
         return list;
+    }
+
+    /**
+     * Xóa toàn bộ dữ liệu đơn hàng và lịch sử đơn hàng trong hệ thống (dành cho Admin kiểm thử hệ thống).
+     * Bao gồm: Đánh giá đơn (order_reviews), Chi tiết món (order_items), Thông báo đơn (notifications),
+     * Tin nhắn liên quan (chat_messages) và toàn bộ Đơn hàng (orders).
+     * Đồng thời reset trạng thái tài xế BUSY về AVAILABLE và reset AUTO_INCREMENT.
+     */
+    public boolean deleteAllOrders() {
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+            try (Statement stmt = conn.createStatement()) {
+                // 1. Xóa các đánh giá đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM order_reviews");
+                } catch (SQLException ignore) {}
+
+                // 2. Xóa chi tiết các món trong đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM order_items");
+                } catch (SQLException ignore) {}
+
+                // 3. Xóa các thông báo liên quan đến đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM notifications WHERE order_id IS NOT NULL OR type LIKE 'ORDER%'");
+                } catch (SQLException ignore) {}
+
+                // 4. Gỡ liên kết order_id trong bảng tin nhắn chat (nếu có bảng chat)
+                try {
+                    stmt.executeUpdate("UPDATE chat_messages SET order_id = NULL WHERE order_id IS NOT NULL");
+                } catch (SQLException ignore) {}
+
+                // 5. Xóa toàn bộ đơn hàng trong bảng orders
+                stmt.executeUpdate("DELETE FROM orders");
+
+                // 6. Reset AUTO_INCREMENT để đơn mới bắt đầu lại từ #1
+                try {
+                    stmt.executeUpdate("ALTER TABLE order_items AUTO_INCREMENT = 1");
+                    stmt.executeUpdate("ALTER TABLE orders AUTO_INCREMENT = 1");
+                } catch (SQLException ignore) {}
+
+                // 7. Giải phóng tài xế đang bận giao đơn về trạng thái sẵn sàng (AVAILABLE)
+                try {
+                    stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE status = 'BUSY'");
+                } catch (SQLException ignore) {}
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Lỗi khi xóa toàn bộ đơn hàng: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi kết nối khi xóa toàn bộ đơn hàng: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }
