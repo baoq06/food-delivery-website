@@ -1035,7 +1035,7 @@
                                     </div>
 
                                     <div class="vt-footer">
-                                        <button type="button" class="vt-code-chip" onclick="navigator.clipboard.writeText('${v.voucherCode}'); if(window.showToast) window.showToast('✨ Đã sao chép mã ${v.voucherCode}!');" title="Bấm để sao chép mã">
+                                        <button type="button" class="vt-code-chip" onclick="navigator.clipboard.writeText('${v.voucherCode}'); if(window.showToast) window.showToast('✨ Đã sao chép mã ${v.voucherCode}!');" title="Bấm để sao chép mã ${v.voucherCode}">
                                             <span>${v.voucherCode}</span>
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
