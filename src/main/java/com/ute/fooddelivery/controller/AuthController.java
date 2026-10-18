@@ -64,6 +64,17 @@ public class AuthController extends HttpServlet {
             req.setAttribute("cookieRemember", true);
         }
 
+        String error = req.getParameter("error");
+        if ("account_banned".equalsIgnoreCase(error)) {
+            req.setAttribute("errorMessage", "Tài khoản đối tác tài xế của bạn đã bị khóa! Vui lòng liên hệ quản trị viên.");
+        } else if ("unauthorized_shipper".equalsIgnoreCase(error)) {
+            req.setAttribute("errorMessage", "Bạn cần đăng nhập tài khoản Shipper để truy cập!");
+        } else if ("unauthorized_merchant".equalsIgnoreCase(error)) {
+            req.setAttribute("errorMessage", "Bạn cần đăng nhập tài khoản Quán ăn để truy cập!");
+        } else if ("unauthorized".equalsIgnoreCase(error)) {
+            req.setAttribute("errorMessage", "Bạn không có quyền truy cập trang này!");
+        }
+
         req.setAttribute("allUsers", userService.getAllUsers());
         req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
     }

@@ -387,8 +387,32 @@ public class ShipperDashboardController extends HttpServlet {
         try {
             int orderId = Integer.parseInt(req.getParameter("orderId"));
             if (driver != null) {
-                // Nếu đơn chưa gán driver này thì gán trước
-                orderDAO.assignDriver(orderId, driver.getId());
+                // Kiểm tra đơn hàng xem đã được tài xế khác nhận trước đó hay chưa hoặc trạng thái có hợp lệ không
+                Order currentOrder = orderDAO.getOrderById(orderId);
+                if (currentOrder == null) {
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=order_not_found");
+                    return;
+                }
+                // Nếu đơn đã có tài xế khác nhận
+                if (currentOrder.isShipperAccepted() && currentOrder.getDriverId() != null && currentOrder.getDriverId() != driver.getId()) {
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=accept_failed");
+                    return;
+                }
+                // Nếu đơn không còn ở trạng thái cho phép nhận (chỉ nhận khi PENDING hoặc CONFIRMED)
+                if (!"PENDING".equalsIgnoreCase(currentOrder.getStatus()) && !"CONFIRMED".equalsIgnoreCase(currentOrder.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=accept_failed");
+                    return;
+                }
+
+                // Nếu đơn chưa gán driver này thì gán trước (với kiểm tra an toàn chống race condition)
+                if (currentOrder.getDriverId() == null || currentOrder.getDriverId() != driver.getId()) {
+                    boolean assigned = orderDAO.assignDriver(orderId, driver.getId());
+                    if (!assigned) {
+                        resp.sendRedirect(req.getContextPath() + "/shipper/dashboard?error=accept_failed");
+                        return;
+                    }
+                }
+
                 boolean success = orderDAO.shipperAcceptOrder(orderId, driver.getId());
                 if (success) {
                     driver.setStatus("BUSY");
