@@ -320,13 +320,22 @@
             </div>
         </c:if>
 
-        <c:if test="${param.error eq 'wait_shipper_delivery' or param.error eq 'shipper_not_delivered' or param.error eq 'confirm_failed'}">
+        <c:if test="${param.error eq 'wait_shipper_pickup' or param.error eq 'wait_shipper_delivery' or param.error eq 'shipper_not_delivered' or param.error eq 'confirm_failed'}">
             <div class="alert alert-warning alert-dismissible fade show mb-4 shadow-sm" role="alert" style="border-radius: 12px; border-left: 5px solid #f59e0b; background: #fffbeb;">
                 <div class="d-flex align-items-center gap-3">
                     <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
                     <div>
                         <strong class="d-block text-dark">Chưa thể xác nhận đơn hàng!</strong>
-                        <small class="text-secondary">Không thể thực hiện xác nhận vào lúc này. Vui lòng kiểm tra lại trạng thái đơn hàng của bạn.</small>
+                        <small class="text-secondary">
+                            <c:choose>
+                                <c:when test="${param.error eq 'wait_shipper_pickup'}">
+                                    Tài xế shipper chưa lấy món từ quán. Bạn chỉ có thể xác nhận sau khi shipper đã lấy món từ quán!
+                                </c:when>
+                                <c:otherwise>
+                                    Không thể thực hiện xác nhận vào lúc này. Vui lòng kiểm tra lại trạng thái đơn hàng của bạn.
+                                </c:otherwise>
+                            </c:choose>
+                        </small>
                     </div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -497,7 +506,7 @@
                                 <i class="fa-solid fa-star me-1"></i> Viết đánh giá quán &amp; shipper
                             </a>
                         </c:when>
-                        <c:when test="${order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
+                        <c:when test="${order.status ne 'CANCELLED' and (order.shipperPickedUp or order.shipperDelivered or order.status eq 'DELIVERED')}">
                             <c:choose>
                                 <c:when test="${order.shipperDelivered or order.status eq 'DELIVERED'}">
                                     <div class="p-2 text-center bg-warning-subtle text-dark rounded-3 small fw-semibold mb-3 border border-warning">
@@ -506,7 +515,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <div class="p-2 text-center bg-light text-muted rounded-3 small mb-3 border">
-                                        <i class="fa-solid fa-motorcycle text-primary me-1"></i> Món ăn đang được giao tới bạn. Nếu shipper đã đưa món cho bạn (kể cả khi shipper chưa kịp bấm trên app), bạn có thể bấm xác nhận ngay bên dưới.
+                                        <i class="fa-solid fa-motorcycle text-primary me-1"></i> Shipper đã lấy món từ quán và đang trên đường giao đến bạn. Khi nhận được món, hãy bấm xác nhận bên dưới.
                                     </div>
                                 </c:otherwise>
                             </c:choose>
@@ -521,10 +530,25 @@
                         <c:otherwise>
                             <div class="p-3 text-center bg-light rounded-3 text-muted mb-2 border">
                                 <div class="mb-1 text-secondary fw-bold">
-                                    <i class="fa-solid fa-clock me-1"></i> Đơn hàng đang được xử lý
+                                    <i class="fa-solid fa-clock me-1"></i>
+                                    <c:choose>
+                                        <c:when test="${not empty order.driverName}">
+                                            Shipper đang di chuyển đến quán lấy món
+                                        </c:when>
+                                        <c:otherwise>
+                                            Đơn hàng đang được xử lý
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <small class="text-secondary d-block">
-                                    Vui lòng đợi nhà hàng tiếp nhận và giao món cho tài xế.
+                                    <c:choose>
+                                        <c:when test="${not empty order.driverName}">
+                                            Tài xế <strong>${order.driverName}</strong> đang đến quán. Bạn chỉ có thể xác nhận sau khi shipper đã lấy món từ quán.
+                                        </c:when>
+                                        <c:otherwise>
+                                            Vui lòng đợi nhà hàng tiếp nhận và bàn giao món cho tài xế.
+                                        </c:otherwise>
+                                    </c:choose>
                                 </small>
                             </div>
                         </c:otherwise>

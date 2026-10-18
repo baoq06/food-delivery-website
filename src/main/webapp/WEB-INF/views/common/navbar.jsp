@@ -781,7 +781,6 @@
                                         <a href="${pageContext.request.contextPath}/merchant/dashboard" class="text-primary font-weight-bold"><i class="fa-solid fa-store"></i> Kênh Quản Lý Quán Ăn</a>
                                         <a href="${pageContext.request.contextPath}/merchant/foods"><i class="fa-solid fa-bowl-food"></i> Món ăn của quán tôi</a>
                                         <a href="${pageContext.request.contextPath}/merchant/revenue"><i class="fa-solid fa-chart-line"></i> Báo cáo doanh thu</a>
-                                        <a href="${pageContext.request.contextPath}/merchant/shippers"><i class="fa-solid fa-motorcycle"></i> Danh sách shipper</a>
                                         <a href="${pageContext.request.contextPath}/merchant/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng của quán</a>
                                         <a href="${pageContext.request.contextPath}/merchant/profile"><i class="fa-solid fa-gear"></i> Cài đặt quán ăn</a>
                                     </c:if>

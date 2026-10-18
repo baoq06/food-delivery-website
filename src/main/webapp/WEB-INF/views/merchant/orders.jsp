@@ -257,17 +257,37 @@
                                         <td class="col-mo-actions text-end">
                                             <div class="mo-actions-group">
                                                 <c:choose>
-                                                    <%-- BƯỚC 1: ĐƠN MỚI CHƯA GÁN SHIPPER -> QUÁN ĐỒNG Ý NHẬN HOẶC TỪ CHỐI --%>
-                                                    <c:when test="${order.status eq 'PENDING' and empty order.driverName}">
+                                                    <%-- BƯỚC 1: ĐƠN MỚI CHỜ CHẾ BIẾN (PENDING) --%>
+                                                    <c:when test="${order.status eq 'PENDING'}">
                                                         <div class="d-flex align-items-center gap-1 justify-content-end">
-                                                            <button type="button" class="btn-mo-action btn-mo-action-accept-auto" 
-                                                                    data-order-id="${order.id}" 
-                                                                    data-customer="<c:out value='${order.customerName}' />" 
-                                                                    onclick="handleAutoDispatchBtn(this)" 
-                                                                    title="Quán đồng ý nhận đơn và hệ thống tự động tìm kiếm shipper">
-                                                                <i class="fa-solid fa-circle-check"></i>
-                                                                <span>Đồng Ý Nhận</span>
-                                                            </button>
+                                                            <!-- Nút Bắt Đầu Chế Biến: Quán có thể xác nhận đơn và nấu ngay không cần đợi shipper -->
+                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline m-0">
+                                                                <input type="hidden" name="action" value="updateStatus" />
+                                                                <input type="hidden" name="orderId" value="${order.id}" />
+                                                                <input type="hidden" name="newStatus" value="CONFIRMED" />
+                                                                <button type="submit" class="btn-mo-action btn-mo-action-accept" title="Xác nhận đơn và bắt đầu chế biến món ăn">
+                                                                    <i class="fa-solid fa-fire-burner"></i>
+                                                                    <span>Chế Biến</span>
+                                                                </button>
+                                                            </form>
+
+                                                            <!-- Nút Tìm Shipper nếu chưa gán tài xế -->
+                                                            <c:if test="${empty order.driverName}">
+                                                                <button type="button" class="btn-mo-action btn-mo-action-accept-auto" 
+                                                                        data-order-id="${order.id}" 
+                                                                        data-customer="<c:out value='${order.customerName}' />" 
+                                                                        onclick="handleAutoDispatchBtn(this)" 
+                                                                        title="Quán đồng ý nhận đơn và hệ thống tự động tìm kiếm shipper">
+                                                                    <i class="fa-solid fa-motorcycle"></i>
+                                                                    <span>Tìm Xế</span>
+                                                                </button>
+                                                            </c:if>
+                                                            <c:if test="${not empty order.driverName and not order.shipperAccepted}">
+                                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.75rem;" title="Đang chờ tài xế bấm nhận đơn trên ứng dụng">
+                                                                    <i class="fa-solid fa-hourglass-half fa-spin me-1"></i> Chờ <strong>${order.driverName}</strong> nhận...
+                                                                </span>
+                                                            </c:if>
+
                                                             <button type="button" class="btn-mo-action-cancel" 
                                                                     data-order-id="${order.id}" 
                                                                     data-customer="<c:out value='${order.customerName}' />" 
@@ -278,51 +298,58 @@
                                                         </div>
                                                     </c:when>
 
-                                                    <%-- BƯỚC 2: QUÁN ĐÃ ĐỒNG Ý & ĐÃ GÁN SHIPPER, ĐANG CHỜ SHIPPER PHẢN HỒI (NHẬN/TỪ CHỐI) --%>
-                                                    <c:when test="${not empty order.driverName and not order.shipperAccepted and order.status ne 'CANCELLED'}">
+                                                    <%-- BƯỚC 2: ĐANG CHẾ BIẾN (CONFIRMED) -> TÌM SHIPPER HOẶC BÀN GIAO KHI SHIPPER ĐÃ NHẬN --%>
+                                                    <c:when test="${order.status eq 'CONFIRMED'}">
                                                         <div class="d-flex align-items-center gap-1 justify-content-end">
-                                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.78rem;" title="Đang chờ tài xế bấm nhận đơn trên ứng dụng">
-                                                                <i class="fa-solid fa-hourglass-half fa-spin me-1"></i> Chờ <strong>${order.driverName}</strong> nhận...
-                                                            </span>
+                                                            <c:choose>
+                                                                <%-- Chưa có tài xế -> Hiện nút tìm shipper --%>
+                                                                <c:when test="${empty order.driverName}">
+                                                                    <button type="button" class="btn-mo-action btn-mo-action-accept-auto" 
+                                                                            data-order-id="${order.id}" 
+                                                                            data-customer="<c:out value='${order.customerName}' />" 
+                                                                            onclick="handleAutoDispatchBtn(this)" 
+                                                                            title="Quán đang chế biến, bấm để tìm kiếm shipper đón đơn">
+                                                                        <i class="fa-solid fa-motorcycle"></i>
+                                                                        <span>Tìm Shipper</span>
+                                                                    </button>
+                                                                </c:when>
+
+                                                                <%-- Đã gán tài xế nhưng tài xế chưa nhận cuốc -> Hiển thị chờ và cho phép tìm tài xế khác --%>
+                                                                <c:when test="${not order.shipperAccepted}">
+                                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.75rem;" title="Đang chờ tài xế bấm nhận đơn trên ứng dụng">
+                                                                        <i class="fa-solid fa-hourglass-half fa-spin me-1"></i> Chờ <strong>${order.driverName}</strong> nhận...
+                                                                    </span>
+                                                                    <button type="button" class="btn-mo-action btn-mo-action-accept-auto" 
+                                                                            data-order-id="${order.id}" 
+                                                                            data-customer="<c:out value='${order.customerName}' />" 
+                                                                            onclick="handleAutoDispatchBtn(this)" 
+                                                                            title="Tìm lại tài xế khác">
+                                                                        <i class="fa-solid fa-arrows-rotate"></i>
+                                                                    </button>
+                                                                </c:when>
+
+                                                                <%-- Tài xế ĐÃ nhận đơn -> Quán bàn giao cho shipper để chuyển sang SHIPPING --%>
+                                                                <c:otherwise>
+                                                                    <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline m-0">
+                                                                        <input type="hidden" name="action" value="updateStatus" />
+                                                                        <input type="hidden" name="orderId" value="${order.id}" />
+                                                                        <input type="hidden" name="newStatus" value="SHIPPING" />
+                                                                        <button type="submit" class="btn-mo-action btn-mo-action-ship" title="Món đã chuẩn bị xong, bàn giao cho shipper">
+                                                                            <i class="fa-solid fa-truck-fast"></i>
+                                                                            <span>Bàn Giao Shipper</span>
+                                                                        </button>
+                                                                    </form>
+                                                                </c:otherwise>
+                                                            </c:choose>
+
                                                             <button type="button" class="btn-mo-action-cancel" 
                                                                     data-order-id="${order.id}" 
                                                                     data-customer="<c:out value='${order.customerName}' />" 
                                                                     onclick="handleRejectBtn(this)" 
-                                                                    title="Hủy đơn hàng">
+                                                                    title="Hủy đơn hàng này">
                                                                 <i class="fa-solid fa-ban"></i>
                                                             </button>
                                                         </div>
-                                                    </c:when>
-
-                                                    <%-- BƯỚC 3: SHIPPER ĐÃ ĐỒNG Ý NHẬN ĐƠN -> QUÁN CHẾ BIẾN & BÀN GIAO --%>
-                                                    <c:when test="${order.shipperAccepted and (order.status eq 'PENDING' or order.status eq 'CONFIRMED')}">
-                                                        <c:if test="${order.status eq 'PENDING'}">
-                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline">
-                                                                <input type="hidden" name="action" value="updateStatus" />
-                                                                <input type="hidden" name="orderId" value="${order.id}" />
-                                                                <input type="hidden" name="newStatus" value="CONFIRMED" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-accept" title="Tài xế đã nhận cuốc! Bắt đầu chế biến món">
-                                                                    <i class="fa-solid fa-fire-burner"></i> Chế Biến
-                                                                </button>
-                                                            </form>
-                                                        </c:if>
-                                                        <c:if test="${order.status eq 'CONFIRMED'}">
-                                                            <form action="${pageContext.request.contextPath}/merchant/orders" method="POST" class="d-inline">
-                                                                <input type="hidden" name="action" value="updateStatus" />
-                                                                <input type="hidden" name="orderId" value="${order.id}" />
-                                                                <input type="hidden" name="newStatus" value="SHIPPING" />
-                                                                <button type="submit" class="btn-mo-action btn-mo-action-ship" title="Món đã xong, bàn giao cho shipper đi giao">
-                                                                    <i class="fa-solid fa-truck-fast"></i> Bàn Giao Shipper
-                                                                </button>
-                                                            </form>
-                                                        </c:if>
-                                                        <button type="button" class="btn-mo-action-cancel" 
-                                                                data-order-id="${order.id}" 
-                                                                data-customer="<c:out value='${order.customerName}' />" 
-                                                                onclick="handleRejectBtn(this)" 
-                                                                title="Hủy đơn hàng này">
-                                                            <i class="fa-solid fa-ban"></i>
-                                                        </button>
                                                     </c:when>
 
                                                     <%-- BƯỚC 4: ĐANG GIAO HÀNG / HOÀN TẤT --%>

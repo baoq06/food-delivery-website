@@ -136,8 +136,8 @@ public class ProfileController extends HttpServlet {
             req.setAttribute("errorMessage", "Không thể hủy đơn hàng này (đơn đã được giao hoặc không hợp lệ).");
         } else if ("confirm_failed".equals(error)) {
             req.setAttribute("errorMessage", "Không thể xác nhận đơn hàng lúc này.");
-        } else if ("shipper_not_delivered".equals(error)) {
-            req.setAttribute("errorMessage", "Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng đợi nhận món từ shipper trước khi bấm xác nhận!");
+        } else if ("shipper_not_picked_up".equals(error) || "shipper_not_delivered".equals(error)) {
+            req.setAttribute("errorMessage", "Tài xế shipper chưa lấy món từ quán. Bạn chỉ có thể xác nhận sau khi shipper đã lấy món từ quán!");
         }
 
         // Lấy danh sách voucher trong ví của người dùng và tính tổng số lượng voucher
@@ -274,6 +274,12 @@ public class ProfileController extends HttpServlet {
                 com.ute.fooddelivery.model.Order targetOrder = oDAO.getOrderById(orderId);
                 if (targetOrder == null || "CANCELLED".equalsIgnoreCase(targetOrder.getStatus()) || "PENDING".equalsIgnoreCase(targetOrder.getStatus())) {
                     resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
+                    return;
+                }
+
+                // Chỉ cho phép khách xác nhận khi tài xế đã xác nhận lấy món từ quán
+                if (!targetOrder.isShipperPickedUp() && !targetOrder.isShipperDelivered() && !"DELIVERED".equalsIgnoreCase(targetOrder.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=shipper_not_picked_up");
                     return;
                 }
 
