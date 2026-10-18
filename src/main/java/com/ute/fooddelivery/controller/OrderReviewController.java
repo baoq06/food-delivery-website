@@ -41,7 +41,7 @@ public class OrderReviewController extends HttpServlet {
 
         String orderIdStr = req.getParameter("orderId");
         if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders");
+            resp.sendRedirect(req.getContextPath() + "/client/orders");
             return;
         }
 
@@ -49,13 +49,13 @@ public class OrderReviewController extends HttpServlet {
         try {
             orderId = Integer.parseInt(orderIdStr.trim());
         } catch (NumberFormatException e) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders");
+            resp.sendRedirect(req.getContextPath() + "/client/orders");
             return;
         }
 
         Order order = orderDAO.getCustomerOrderForReview(orderId, currentUser.getId());
         if (order == null) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=order_not_found");
+            resp.sendRedirect(req.getContextPath() + "/client/orders?error=order_not_found");
             return;
         }
 
@@ -65,7 +65,7 @@ public class OrderReviewController extends HttpServlet {
                              order.isShipperDelivered();
 
         if (!isEligible) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=order_not_completed");
+            resp.sendRedirect(req.getContextPath() + "/client/orders?error=order_not_completed");
             return;
         }
 
@@ -94,7 +94,7 @@ public class OrderReviewController extends HttpServlet {
 
         String orderIdStr = req.getParameter("orderId");
         if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders");
+            resp.sendRedirect(req.getContextPath() + "/client/orders");
             return;
         }
 
@@ -102,13 +102,13 @@ public class OrderReviewController extends HttpServlet {
         try {
             orderId = Integer.parseInt(orderIdStr.trim());
         } catch (NumberFormatException e) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders");
+            resp.sendRedirect(req.getContextPath() + "/client/orders");
             return;
         }
 
         Order order = orderDAO.getCustomerOrderForReview(orderId, currentUser.getId());
         if (order == null) {
-            resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=order_not_found");
+            resp.sendRedirect(req.getContextPath() + "/client/orders?error=order_not_found");
             return;
         }
 

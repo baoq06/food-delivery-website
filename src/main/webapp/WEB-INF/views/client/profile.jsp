@@ -351,11 +351,11 @@
                     <!-- Quán ăn không được đặt đồ ăn: Không hiển thị tab Lịch sử đơn hàng đã đặt -->
                 </c:when>
                 <c:otherwise>
-                    <button type="button" class="profile-tab-btn ${activeTab eq 'orders' ? 'active' : ''}" onclick="switchTab('orders')">
+                    <a href="${pageContext.request.contextPath}/client/orders" class="profile-tab-btn" style="text-decoration: none;">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         <span>Lịch sử đơn hàng đã đặt</span>
                         <span class="tab-count-badge">${totalOrders}</span>
-                    </button>
+                    </a>
                 </c:otherwise>
             </c:choose>
             <c:if test="${not (user.seller or user.role eq 'SELLER') and not (user.isShipper() and sessionScope.shipperActive)}">

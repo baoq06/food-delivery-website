@@ -44,6 +44,36 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     </c:if>
+    <c:if test="${param.success eq 'order_cancelled'}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fa-solid fa-circle-check me-2"></i> Đã hủy đơn hàng thành công!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    <c:if test="${param.success eq 'order_confirmed'}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fa-solid fa-circle-check me-2"></i> Bạn đã xác nhận nhận hàng thành công! Cảm ơn bạn đã sử dụng dịch vụ.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    <c:if test="${param.error eq 'cancel_failed'}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> Không thể hủy đơn hàng này (đơn đã được giao hoặc không hợp lệ).
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    <c:if test="${param.error eq 'confirm_failed'}">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> Không thể xác nhận đơn hàng lúc này.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    <c:if test="${param.error eq 'shipper_not_delivered'}">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i> Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng đợi nhận món từ shipper trước khi bấm xác nhận!
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
     <h2 class="mb-4"><i class="fa-solid fa-receipt text-primary"></i> Lịch Sử Đơn Hàng</h2>
     
     <c:choose>
@@ -92,22 +122,23 @@
                     <div class="order-timeline-container" style="padding: 30px 20px 20px; margin-bottom: 25px; background: #fafafa; border-radius: 8px;">
                         <h6 style="margin-bottom: 20px; font-weight: 600; color: #444;"><i class="fa-solid fa-route text-primary text-opacity-75"></i> Lịch sử và tiến độ đơn hàng</h6>
                         <div class="timeline" style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; max-width: 100%;">
-                            <!-- Timeline Background Line -->
-                            <div style="position: absolute; top: 18px; left: 12.5%; right: 12.5%; height: 4px; background: #e0e0e0; z-index: 1; border-radius: 2px;"></div>
-                            
                             <!-- Dynamically set progress line based on status -->
                             <c:set var="progressWidth" value="0%" />
-                            <c:if test="${order.status eq 'CONFIRMED'}"><c:set var="progressWidth" value="33.3%" /></c:if>
-                            <c:if test="${order.status eq 'SHIPPING'}"><c:set var="progressWidth" value="66.6%" /></c:if>
+                            <c:if test="${order.status eq 'CONFIRMED'}"><c:set var="progressWidth" value="33.33%" /></c:if>
+                            <c:if test="${order.status eq 'SHIPPING'}"><c:set var="progressWidth" value="66.67%" /></c:if>
                             <c:if test="${order.status eq 'DELIVERED'}"><c:set var="progressWidth" value="100%" /></c:if>
                             
-                            <!-- Cancelled overrides -->
-                            <c:if test="${order.status eq 'CANCELLED'}">
-                                <div style="position: absolute; top: 18px; left: 12.5%; right: 12.5%; height: 4px; background: #ffcdd2; z-index: 2; border-radius: 2px;"></div>
-                            </c:if>
-                            <c:if test="${order.status ne 'CANCELLED'}">
-                                <div style="position: absolute; top: 18px; left: 12.5%; width: ${progressWidth}; height: 4px; background: #4caf50; z-index: 2; border-radius: 2px; transition: width 0.5s ease-in-out;"></div>
-                            </c:if>
+                            <!-- Timeline Track Line (bounded exactly between Step 1 center and Step 4 center) -->
+                            <div style="position: absolute; top: 18px; left: 12.5%; right: 12.5%; height: 4px; background: #e0e0e0; z-index: 1; border-radius: 2px; overflow: hidden;">
+                                <c:choose>
+                                    <c:when test="${order.status eq 'CANCELLED'}">
+                                        <div style="width: 100%; height: 100%; background: #ffcdd2;"></div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div style="width: ${progressWidth}; height: 100%; background: #4caf50; border-radius: 2px; transition: width 0.5s ease-in-out;"></div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
 
                             <!-- STEP 1: Pending -->
                             <div class="timeline-step text-center" style="z-index: 3; position: relative; width: 25%;">
@@ -185,6 +216,15 @@
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center gap-2">
+                            <c:if test="${order.status eq 'PENDING'}">
+                                <form action="${pageContext.request.contextPath}/profile" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng #FZ-${order.id} không?');" style="display:inline; margin:0;">
+                                    <input type="hidden" name="action" value="cancel_order">
+                                    <input type="hidden" name="orderId" value="${order.id}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius: 8px; font-weight: 600;">
+                                        <i class="fa-solid fa-ban me-1"></i> Hủy đơn
+                                    </button>
+                                </form>
+                            </c:if>
                             <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
                                 <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline; margin:0;">
                                     <input type="hidden" name="action" value="confirm_received">

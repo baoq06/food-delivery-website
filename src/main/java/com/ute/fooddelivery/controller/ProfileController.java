@@ -70,6 +70,21 @@ public class ProfileController extends HttpServlet {
             }
         }
 
+        // Chuyển hướng tab=orders sang trang Đơn hàng (/client/orders) để đồng nhất 1 trang duy nhất
+        String tab = req.getParameter("tab");
+        if ("orders".equalsIgnoreCase(tab)) {
+            String success = req.getParameter("success");
+            String error = req.getParameter("error");
+            String redirectUrl = req.getContextPath() + "/client/orders";
+            if (success != null && !success.trim().isEmpty()) {
+                redirectUrl += "?success=" + success.trim();
+            } else if (error != null && !error.trim().isEmpty()) {
+                redirectUrl += "?error=" + error.trim();
+            }
+            resp.sendRedirect(redirectUrl);
+            return;
+        }
+
         // Lấy danh sách đơn hàng của người dùng (nếu là merchant thì không cần tải đơn đặt món)
         List<Order> orders = currentUser.isSeller() ? java.util.Collections.emptyList() : orderService.getOrdersByUserId(currentUser.getId());
 
@@ -229,13 +244,13 @@ public class ProfileController extends HttpServlet {
                         Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);
                         notifSvc.notifyOrderCancelled(currentUser.getId(), shipperUserId, merchantUserId, orderId, "Khách hàng tự hủy đơn");
                     } catch (Exception ignored) {}
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_cancelled");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?success=order_cancelled");
                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=cancel_failed");
                 }
                 return;
             } catch (Exception e) {
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=cancel_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=cancel_failed");
                 return;
             }
         } else if ("confirm_received".equalsIgnoreCase(action)) {
@@ -244,7 +259,7 @@ public class ProfileController extends HttpServlet {
                 com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
                 com.ute.fooddelivery.model.Order targetOrder = oDAO.getOrderById(orderId);
                 if (targetOrder == null || "CANCELLED".equalsIgnoreCase(targetOrder.getStatus()) || "PENDING".equalsIgnoreCase(targetOrder.getStatus())) {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                     return;
                 }
 
@@ -263,13 +278,13 @@ public class ProfileController extends HttpServlet {
                             notifSvc.notifyCustomerConfirmed(shipperUserId, merchantUserId, orderId, currentUser.getFullName());
                         }
                     } catch (Exception ignored) {}
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=order_confirmed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?success=order_confirmed");
                 } else {
-                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                 }
                 return;
             } catch (Exception e) {
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=confirm_failed");
                 return;
             }
         } else if ("rate".equalsIgnoreCase(action) || "add_review".equalsIgnoreCase(action)) {
@@ -305,11 +320,11 @@ public class ProfileController extends HttpServlet {
 
                 com.ute.fooddelivery.dao.ReviewDAO rDAO = new com.ute.fooddelivery.dao.ReviewDAO();
                 rDAO.addReview(review);
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&success=review_added");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?success=review_added");
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
-                resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=review_failed");
+                resp.sendRedirect(req.getContextPath() + "/client/orders?error=review_failed");
                 return;
             }
         }
