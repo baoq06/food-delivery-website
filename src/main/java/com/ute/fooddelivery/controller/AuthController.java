@@ -208,7 +208,20 @@ public class AuthController extends HttpServlet {
 
             // Sticky Form & Validation khi đăng ký
             String validationError = null;
-            if (fullName == null || fullName.trim().isEmpty() ||
+            int errorStep = 4;
+
+            // BẢO MẬT: Bắt buộc kiểm tra cờ xác thực OTP trước khi cho phép lưu tài khoản mới
+            HttpSession currentSession = req.getSession(false);
+            Boolean phoneVerified = currentSession != null ? (Boolean) currentSession.getAttribute("phoneVerified") : null;
+            String regPhone = currentSession != null ? (String) currentSession.getAttribute("regPhone") : null;
+
+            if (phoneVerified == null || !phoneVerified) {
+                validationError = "Số điện thoại chưa được xác thực mã OTP! Vui lòng hoàn thành bước xác thực số điện thoại qua tin nhắn SMS trước khi đăng ký.";
+                errorStep = 2;
+            } else if (phone == null || phone.trim().isEmpty() || regPhone == null || !regPhone.trim().equals(phone.trim())) {
+                validationError = "Số điện thoại đăng ký (" + (phone != null ? phone.trim() : "") + ") không trùng khớp với số điện thoại đã xác thực mã OTP (" + (regPhone != null ? regPhone : "chưa có") + ")! Vui lòng xác thực lại.";
+                errorStep = 2;
+            } else if (fullName == null || fullName.trim().isEmpty() ||
                 username == null || username.trim().isEmpty() ||
                 password == null || password.trim().isEmpty() ||
                 phone == null || phone.trim().isEmpty() ||
@@ -253,7 +266,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("stickyVehicleType", vehicleType);
                 req.setAttribute("redirect", redirect);
                 req.setAttribute("activeTab", "registerTab");
-                req.setAttribute("currentStep", 4);
+                req.setAttribute("currentStep", errorStep);
                 req.setAttribute("allUsers", userService.getAllUsers());
                 req.getRequestDispatcher("/WEB-INF/views/client/login.jsp").forward(req, resp);
                 return;
@@ -353,6 +366,7 @@ public class AuthController extends HttpServlet {
         String otp = String.valueOf(randomNum);
 
         HttpSession session = req.getSession(true);
+        session.removeAttribute("phoneVerified"); // Reset cờ xác thực khi yêu cầu mã OTP mới
         session.setAttribute("regOtp", otp);
         session.setAttribute("regPhone", phone.trim());
         session.setAttribute("regOtpTime", System.currentTimeMillis());
