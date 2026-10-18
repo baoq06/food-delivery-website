@@ -16,6 +16,15 @@ public class EncodingFilter implements Filter {
             throws IOException, ServletException {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
+
+        // Đảm bảo session hiện có luôn có CSRF token để các view JSP có thể dùng
+        if (request instanceof jakarta.servlet.http.HttpServletRequest) {
+            jakarta.servlet.http.HttpServletRequest req = (jakarta.servlet.http.HttpServletRequest) request;
+            jakarta.servlet.http.HttpSession session = req.getSession(false);
+            if (session != null) {
+                com.ute.fooddelivery.utils.CsrfUtils.getOrCreateToken(session);
+            }
+        }
         
         // Không ép Content-Type text/html cho file tĩnh (css, js, ảnh)
         // để trình duyệt không chặn stylesheet theo chính sách bảo mật MIME

@@ -93,14 +93,24 @@
                         <a href="${pageContext.request.contextPath}/shipper/history" class="btn btn-outline btn-sm" style="border-radius: 50px; font-weight: 600;">
                             <i class="fa-solid fa-clock-rotate-left"></i> Chuyến xe đã giao
                         </a>
-                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile" class="btn btn-danger btn-sm" style="border-radius: 50px; font-weight: 600;">
-                            <i class="fa-solid fa-power-off"></i> Tắt nhận đơn (Làm khách)
-                        </a>
+                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; display: inline;">
+                            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                            <input type="hidden" name="action" value="toggleStatus">
+                            <input type="hidden" name="redirect" value="/profile">
+                            <button type="submit" class="btn btn-danger btn-sm" style="border-radius: 50px; font-weight: 600;">
+                                <i class="fa-solid fa-power-off"></i> Tắt nhận đơn (Làm khách)
+                            </button>
+                        </form>
                     </c:when>
                     <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile" class="btn btn-success btn-sm" style="border-radius: 50px; font-weight: 600;">
-                            <i class="fa-solid fa-power-off"></i> Bật nhận đơn ngay
-                        </a>
+                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; display: inline;">
+                            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                            <input type="hidden" name="action" value="toggleStatus">
+                            <input type="hidden" name="redirect" value="/profile">
+                            <button type="submit" class="btn btn-success btn-sm" style="border-radius: 50px; font-weight: 600;">
+                                <i class="fa-solid fa-power-off"></i> Bật nhận đơn ngay
+                            </button>
+                        </form>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -541,9 +551,14 @@
                         <a href="${pageContext.request.contextPath}/shipper/history" class="btn btn-primary btn-order-now" style="background: #10ac84; border-color: #10ac84;">
                             <i class="fa-solid fa-clock-rotate-left"></i> Xem lịch sử các chuyến giao
                         </a>
-                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=/profile?tab=orders" class="btn btn-outline" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
-                            <i class="fa-solid fa-power-off"></i> Tắt chế độ shipper để xem đơn đặt
-                        </a>
+                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; display: inline;">
+                            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                            <input type="hidden" name="action" value="toggleStatus">
+                            <input type="hidden" name="redirect" value="/profile?tab=orders">
+                            <button type="submit" class="btn btn-outline" style="border-radius: 50px; padding: 12px 24px; font-weight: 600;">
+                                <i class="fa-solid fa-power-off"></i> Tắt chế độ shipper để xem đơn đặt
+                            </button>
+                        </form>
                     </div>
                 </div>
             </c:when>

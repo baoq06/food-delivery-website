@@ -256,6 +256,50 @@
         <!-- RIGHT CONTENT AREA -->
         <!-- ================================================================= -->
         <div class="shipper-content">
+            <!-- Alert Messages -->
+            <c:if test="${not empty param.error}">
+                <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 py-3 px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-triangle-exclamation fs-5 text-danger"></i>
+                    <div>
+                        <c:choose>
+                            <c:when test="${param.error eq 'method_not_allowed'}">
+                                <strong>Cảnh báo bảo mật:</strong> Thao tác thay đổi trạng thái đơn hàng bị từ chối do gửi qua phương thức HTTP GET không an toàn. Vui lòng sử dụng các nút bấm trên giao diện.
+                            </c:when>
+                            <c:when test="${param.error eq 'csrf_invalid'}">
+                                <strong>Lỗi bảo mật (CSRF):</strong> Phiên làm việc hoặc mã xác thực không hợp lệ. Vui lòng tải lại trang và thử lại.
+                            </c:when>
+                            <c:when test="${param.error eq 'banned'}">
+                                <strong>Tài khoản bị khóa:</strong> Bạn không thể thực hiện thao tác do tài khoản tài xế đang bị tạm khóa.
+                            </c:when>
+                            <c:when test="${param.error eq 'busy_cannot_toggle'}">
+                                <strong>Không thể đổi trạng thái:</strong> Bạn đang có đơn hàng đang giao. Hãy hoàn tất đơn trước khi tắt nhận đơn.
+                            </c:when>
+                            <c:when test="${param.error eq 'accept_failed'}">
+                                <strong>Không thể nhận đơn:</strong> Đơn hàng đã có tài xế khác nhận hoặc không còn khả dụng.
+                            </c:when>
+                            <c:otherwise>
+                                <strong>Lỗi:</strong> Thao tác không thể hoàn tất (${param.error}).
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </c:if>
+            <c:if test="${not empty param.msg}">
+                <div class="alert alert-success d-flex align-items-center gap-2 mb-3 py-3 px-4 shadow-sm" style="border-radius: 12px; font-weight: 600;">
+                    <i class="fa-solid fa-circle-check fs-5 text-success"></i>
+                    <div>
+                        <c:choose>
+                            <c:when test="${param.msg eq 'boom_reported'}">
+                                <strong>Đã ghi nhận:</strong> Báo cáo khách bom hàng đã được gửi thành công. Hệ thống đã hạn chế phương thức COD của khách.
+                            </c:when>
+                            <c:otherwise>
+                                <strong>Thành công:</strong> Thao tác hoàn tất.
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
+            </c:if>
+
             <!-- 1. DRIVER MODE TOGGLE BANNER -->
             <div class="mode-toggle-banner ${driver.status eq 'AVAILABLE' ? 'available' : (driver.status eq 'BUSY' ? 'busy' : 'offline')}">
                 <div style="display: flex; align-items: center; gap: 16px;">
@@ -311,7 +355,8 @@
                             </button>
                         </c:when>
                         <c:when test="${driver.status eq 'AVAILABLE'}">
-                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;">
+                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0;">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                 <input type="hidden" name="action" value="toggleStatus">
                                 <button type="submit" class="btn btn-danger" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 8px;">
                                     <i class="fa-solid fa-power-off"></i> TẮT NHẬN ĐƠN
@@ -319,7 +364,8 @@
                             </form>
                         </c:when>
                         <c:otherwise>
-                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0;">
+                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0;">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                 <input type="hidden" name="action" value="toggleStatus">
                                 <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3); display: flex; align-items: center; gap: 8px;">
                                     <i class="fa-solid fa-bolt"></i> BẬT MÁY NHẬN ĐƠN NGAY
@@ -579,14 +625,16 @@
                                             </c:if>
                                         </div>
                                         <div class="d-flex gap-3 flex-wrap">
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 2; min-width: 200px;">
+                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="flex: 2; min-width: 200px;">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                 <input type="hidden" name="action" value="acceptOrder">
                                                 <input type="hidden" name="orderId" value="${pOrder.id}">
                                                 <button type="submit" class="btn btn-success w-100 py-2 fw-bold" style="border-radius: 50px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 12px rgba(16, 172, 132, 0.25);">
                                                     <i class="fa-solid fa-check-double me-2"></i> NHẬN ĐƠN #FZ-${pOrder.id}
                                                 </button>
                                             </form>
-                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="flex: 1; min-width: 130px;" onsubmit="return confirm('Bạn có chắc muốn từ chối cuốc xe #FZ-${pOrder.id}? Quán sẽ gán tài xế khác.');">
+                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="flex: 1; min-width: 130px;" onsubmit="return confirm('Bạn có chắc muốn từ chối cuốc xe #FZ-${pOrder.id}? Quán sẽ gán tài xế khác.');">
+                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                 <input type="hidden" name="action" value="declineOrder">
                                                 <input type="hidden" name="orderId" value="${pOrder.id}">
                                                 <button type="submit" class="btn btn-outline-danger w-100 py-2 fw-semibold" style="border-radius: 50px;">
@@ -715,7 +763,8 @@
 
                                                             <%-- BƯỚC 1: NẾU CHƯA LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ LẤY MÓN --%>
                                                             <c:when test="${not activeOrder.shipperPickedUp}">
-                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                                     <input type="hidden" name="action" value="confirmPickedUp">
                                                                     <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                     <button type="submit" class="btn btn-warning w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="return confirm('Xác nhận bạn đã đến quán và nhận đủ món ăn cho đơn #FZ-${activeOrder.id}?');">
@@ -726,7 +775,8 @@
 
                                                             <%-- BƯỚC 2: ĐÃ LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ GIAO CHO KHÁCH (HOÀN TẤT NGAY) --%>
                                                             <c:otherwise>
-                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                                     <input type="hidden" name="action" value="confirmDelivered">
                                                                     <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                     <button type="submit" class="btn btn-success w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.35);" onclick="return confirm('Xác nhận bạn đã giao món ăn tận nơi cho khách #FZ-${activeOrder.id}? Đơn hàng sẽ hoàn tất ngay lập tức.');">
@@ -738,7 +788,8 @@
 
                                                         <!-- Button Báo Sự Cố / Hủy Cuốc / Báo Bom Hàng (chỉ hiện khi chưa giao) -->
                                                         <c:if test="${not activeOrder.shipperDelivered}">
-                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi thực hiện!'); return false; } const isBoom = this.cancelReason.selectedOptions && this.cancelReason.selectedOptions[0] && this.cancelReason.selectedOptions[0].getAttribute('data-boom') === 'true'; if (isBoom) { this.status.value = 'FAILED_DELIVERY'; return confirm('Xác nhận báo cáo KHÁCH BOM HÀNG cho đơn #FZ-${activeOrder.id}? Hệ thống sẽ ghi nhận vi phạm và KHÓA THANH TOÁN TIỀN MẶT (COD) của khách hàng này.'); } else { this.status.value = 'CANCELLED'; return confirm('Bạn có chắc muốn báo trả/hủy cuốc đơn #FZ-${activeOrder.id}?'); }">
+                                                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 8px 0 0 0; display: flex; align-items: stretch; gap: 10px; flex: 1 1 100%; border-top: 1px solid #f1f5f9; padding-top: 12px;" onsubmit="if(!this.cancelReason.value) { alert('Vui lòng chọn lý do trước khi thực hiện!'); return false; } const isBoom = this.cancelReason.selectedOptions && this.cancelReason.selectedOptions[0] && this.cancelReason.selectedOptions[0].getAttribute('data-boom') === 'true'; if (isBoom) { this.status.value = 'FAILED_DELIVERY'; return confirm('Xác nhận báo cáo KHÁCH BOM HÀNG cho đơn #FZ-${activeOrder.id}? Hệ thống sẽ ghi nhận vi phạm và KHÓA THANH TOÁN TIỀN MẶT (COD) của khách hàng này.'); } else { this.status.value = 'CANCELLED'; return confirm('Bạn có chắc muốn báo trả/hủy cuốc đơn #FZ-${activeOrder.id}?'); }">
+                                                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                                                 <input type="hidden" name="action" value="updateOrder">
                                                                 <input type="hidden" name="orderId" value="${activeOrder.id}">
                                                                 <input type="hidden" name="status" value="CANCELLED">
@@ -862,7 +913,8 @@
                                         </div>
                                     </div>
 
-                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                    <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin:0;">
+                                        <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                         <input type="hidden" name="action" value="acceptOrder">
                                         <input type="hidden" name="orderId" id="fOrderId" value="">
                                         <button type="submit" class="btn btn-warning btn-lg" style="width: 100%; border-radius: 50px; font-weight: 800; font-size: 1.2rem; padding: 14px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);">
@@ -928,7 +980,8 @@
                                 Hệ thống ghi nhận bạn đang giao hàng nhưng không tìm thấy dữ liệu đơn hàng nào. Hãy bấm nút dưới đây để hoàn thành ép buộc và mở lại quét đơn.
                             </p>
                             <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin:0;">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                     <input type="hidden" name="action" value="toggleStatus">
                                     <button type="submit" class="btn btn-warning" style="border-radius: 50px; font-weight: 800; padding: 12px 28px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);">
                                         <i class="fa-solid fa-screwdriver-wrench me-2"></i> Fix Lỗi & Hoàn Thành Ảo
@@ -951,7 +1004,8 @@
                                 Bật chế độ nhận đơn để bắt đầu quét tìm các đơn hàng mới nhất xung quanh vị trí của bạn và gia tăng thu nhập mỗi ngày cùng Utee Express.
                             </p>
                             <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin:0;">
+                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin:0;">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                     <input type="hidden" name="action" value="toggleStatus">
                                     <button type="submit" class="btn btn-success" style="border-radius: 50px; font-weight: 700; padding: 12px 28px; background: #10ac84; border-color: #10ac84; box-shadow: 0 4px 14px rgba(16, 172, 132, 0.3);">
                                         <i class="fa-solid fa-bolt me-1"></i> Bật nhận đơn ngay
