@@ -547,6 +547,27 @@ public class UserDAO {
         return list;
     }
 
+    public List<Integer> getAdminUserIds() {
+        List<Integer> adminIds = new ArrayList<>();
+        String sql = "SELECT user_id FROM users WHERE UPPER(role) = 'ADMIN'";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(sql);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        adminIds.add(rs.getInt("user_id"));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi getAdminUserIds: " + e.getMessage());
+        }
+        if (adminIds.isEmpty()) {
+            adminIds.add(1); // Mặc định ID 1 cho quản trị viên hệ thống
+        }
+        return adminIds;
+    }
+
     public boolean recordCustomerBoom(int userId, String reason) {
         ensureBoomSupport();
         String query = "UPDATE users SET is_cod_locked = 1, boom_count = boom_count + 1 WHERE user_id = ?";

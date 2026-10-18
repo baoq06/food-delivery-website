@@ -1,13 +1,16 @@
 package com.ute.fooddelivery.service;
 
 import com.ute.fooddelivery.dao.NotificationDAO;
+import com.ute.fooddelivery.dao.UserDAO;
 import com.ute.fooddelivery.model.Notification;
 
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
 
 public class NotificationService {
     private final NotificationDAO notificationDAO = new NotificationDAO();
+    private final UserDAO userDAO = new UserDAO();
     private final Locale vnLocale = new Locale("vi", "VN");
 
     private String formatMoney(double amount) {
@@ -214,25 +217,64 @@ public class NotificationService {
     }
 
     public void notifyBoomReported(Integer customerUserId, Integer merchantUserId, int orderId, String reason) {
+        notifyBoomReported(customerUserId, merchantUserId, orderId, reason, null, null);
+    }
+
+    public void notifyBoomReported(Integer customerUserId, Integer merchantUserId, int orderId, String reason, String shipperNote, String proofUrl) {
+        String detailReason = (reason != null && !reason.trim().isEmpty()) ? reason.trim() : "Khách không nhận hàng / không liên lạc được";
+        String noteInfo = (shipperNote != null && !shipperNote.trim().isEmpty()) ? " Ghi chú tài xế: " + shipperNote.trim() : "";
+        String proofInfo = (proofUrl != null && !proofUrl.trim().isEmpty()) ? " [Có ảnh bằng chứng]" : "";
+
+        // 1. Thông báo cho Khách hàng với cảnh báo rõ ràng và hướng dẫn khiếu nại kiểm tra bằng chứng nếu nhầm lẫn
         if (customerUserId != null && customerUserId > 0) {
+            String customerMsg = "Đơn hàng #DH-" + orderId + " bị tài xế báo giao không thành công: " + detailReason + "."
+                + noteInfo + proofInfo
+                + " Tài khoản của bạn tạm thời bị khóa phương thức COD. Nếu có nhầm lẫn, vui lòng liên hệ hotline 1900-6868 hoặc gửi khiếu nại để BQT kiểm tra lại bằng chứng cuộc gọi/hình ảnh đối soát.";
             notificationDAO.createNotification(new Notification(
                 customerUserId,
                 orderId,
-                "⚠️ Khóa phương thức tiền mặt (COD)",
-                "Đơn hàng #DH-" + orderId + " bị ghi nhận giao không thành công (" + (reason != null ? reason : "Khách không nhận") + "). Tài khoản của bạn đã bị tạm khóa COD và chuyển sang thanh toán trước.",
+                "⚠️ Cảnh báo: Đơn #DH-" + orderId + " giao thất bại & Khóa COD",
+                customerMsg,
                 "ORDER_CANCELLED",
-                "/client/orders"
+                "/profile?tab=orders"
             ));
         }
+
+        // 2. Thông báo cho Chủ quán (Merchant)
         if (merchantUserId != null && merchantUserId > 0) {
+            String merchantMsg = "Tài xế báo cáo đơn hàng #DH-" + orderId + " giao thất bại: " + detailReason + "."
+                + noteInfo + proofInfo + ". Hệ thống đã ghi nhận vi phạm và hủy đơn theo quy trình.";
             notificationDAO.createNotification(new Notification(
                 merchantUserId,
                 orderId,
-                "⚠️ Đơn hàng #DH-" + orderId + " bị bom hàng",
-                "Tài xế báo cáo đơn hàng #DH-" + orderId + " giao thất bại: " + (reason != null ? reason : "Khách không nhận") + ". Hệ thống đã ghi nhận vi phạm và khóa COD của khách.",
+                "⚠️ Đơn hàng #DH-" + orderId + " báo giao thất bại / Bom hàng",
+                merchantMsg,
                 "ORDER_CANCELLED",
                 "/merchant/orders"
             ));
+        }
+
+        // 3. Thông báo kiểm tra / đối soát gửi đến tất cả Admin
+        try {
+            List<Integer> adminIds = userDAO.getAdminUserIds();
+            String adminMsg = "Tài xế báo giao thất bại / Bom hàng đơn #DH-" + orderId + " (Khách hàng ID: " + customerUserId + "). "
+                + "Lý do: " + detailReason + "." + noteInfo
+                + (proofUrl != null && !proofUrl.trim().isEmpty() ? " Bằng chứng: " + proofUrl : " (Chưa có ảnh đính kèm)")
+                + ". Khách hàng đã bị khóa COD, yêu cầu Admin kiểm tra đối soát nếu phát sinh khiếu nại.";
+            for (Integer adminId : adminIds) {
+                if (adminId != null && adminId > 0) {
+                    notificationDAO.createNotification(new Notification(
+                        adminId,
+                        orderId,
+                        "🚨 Kiểm tra vi phạm Bom hàng đơn #DH-" + orderId,
+                        adminMsg,
+                        "SYSTEM",
+                        "/admin/dashboard"
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gửi thông báo bom hàng đến Admin: " + e.getMessage());
         }
     }
 }

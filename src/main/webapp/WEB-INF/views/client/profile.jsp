@@ -720,6 +720,21 @@
                                         <span><strong>Ghi chú:</strong> "${order.note}"</span>
                                     </div>
                                 </c:if>
+                                <c:if test="${order.status eq 'CANCELLED' and not empty order.proofImage}">
+                                    <div class="delivery-info-item" style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 10px 14px; margin-top: 8px;">
+                                        <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                                        <div>
+                                            <span style="color: #991b1b; font-weight: 700;">Đơn bị báo giao không thành công:</span>
+                                            <div style="font-size: 0.85rem; color: #7f1d1d; margin-top: 2px;">
+                                                Tài xế đã đính kèm ảnh bằng chứng đối soát. 
+                                                <a href="${pageContext.request.contextPath}${order.proofImage}" target="_blank" style="color: #dc2626; font-weight: 700; text-decoration: underline; margin-left: 4px;">
+                                                    <i class="fa-solid fa-image"></i> Xem ảnh bằng chứng
+                                                </a>
+                                                <span style="color: #64748b; margin-left: 6px;">(Hotline khiếu nại kiểm tra: 1900 6868)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:if>
                             </div>
 
                             <!-- Order Items List -->

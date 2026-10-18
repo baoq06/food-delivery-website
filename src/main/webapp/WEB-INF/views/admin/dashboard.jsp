@@ -609,6 +609,13 @@
                                                         </c:when>
                                                         <c:when test="${order.status eq 'CANCELLED'}">
                                                             <span class="badge" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">Đã hủy</span>
+                                                            <c:if test="${not empty order.proofImage}">
+                                                                <div style="margin-top: 4px;">
+                                                                    <a href="${pageContext.request.contextPath}${order.proofImage}" target="_blank" class="badge" style="background: #ef4444; color: #fff; text-decoration: none; padding: 3px 8px; font-size: 0.72rem; border-radius: 4px;">
+                                                                        <i class="fa-solid fa-camera me-1"></i> Bằng chứng
+                                                                    </a>
+                                                                </div>
+                                                            </c:if>
                                                         </c:when>
                                                         <c:otherwise>
                                                             <span class="badge badge-secondary">${order.status}</span>

@@ -86,6 +86,12 @@ public class Order implements Serializable {
     @Column(name = "merchant_completed")
     private boolean merchantCompleted;
 
+    @Column(name = "proof_image")
+    private String proofImage;
+
+    public String getProofImage() { return proofImage; }
+    public void setProofImage(String proofImage) { this.proofImage = proofImage; }
+
     @Transient
     private Review review;
 
