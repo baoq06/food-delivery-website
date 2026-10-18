@@ -879,6 +879,7 @@
 </div>
 
 <!-- Order Success Modal -->
+<c:if test="${orderSuccess}">
 <div id="orderSuccessModal" class="modal-overlay">
     <div class="modal-content vqr-modal-content" style="max-width: ${successPaymentMethod eq 'QR' ? '520px' : '460px'}; max-height: 92vh; overflow-y: auto;">
         <c:choose>
@@ -1070,6 +1071,7 @@
         </c:choose>
     </div>
 </div>
+</c:if>
 
 <!-- Shopee-Style Voucher Modal (Hỗ trợ tối đa 2 mã: 1 Freeship + 1 Giảm Món) -->
 <div id="shopeeVoucherModal" class="shopee-modal-overlay" onclick="handleShopeeOverlayClick(event)">
