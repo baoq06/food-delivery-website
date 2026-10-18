@@ -14,6 +14,8 @@ import java.util.Map;
 public class RestaurantDAO {
     private static volatile boolean logoColumnChecked = false;
     private static volatile boolean hasLogoColumn = false;
+    private static volatile boolean bankColumnsChecked = false;
+    private static volatile boolean hasBankColumns = false;
 
     public static boolean checkHasLogoColumn() {
         if (logoColumnChecked) return hasLogoColumn;
@@ -41,10 +43,43 @@ public class RestaurantDAO {
         }
     }
 
+    public static boolean checkHasBankColumns() {
+        if (bankColumnsChecked) return hasBankColumns;
+        synchronized (RestaurantDAO.class) {
+            if (bankColumnsChecked) return hasBankColumns;
+            try (Connection conn = DBContext.getConnection()) {
+                if (conn != null) {
+                    DatabaseMetaData meta = conn.getMetaData();
+                    try (ResultSet rs = meta.getColumns(null, null, "restaurants", "bank_account_no")) {
+                        if (rs.next()) {
+                            hasBankColumns = true;
+                        }
+                    }
+                    if (!hasBankColumns) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN bank_code VARCHAR(50) DEFAULT 'TCB'");
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN bank_name VARCHAR(100) DEFAULT 'Techcombank'");
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN bank_account_no VARCHAR(50) DEFAULT '1907 2878 4280 15'");
+                            stmt.executeUpdate("ALTER TABLE restaurants ADD COLUMN bank_account_name VARCHAR(150) DEFAULT 'LE HAI DANG'");
+                            hasBankColumns = true;
+                            System.out.println(">> Đã thêm các cột tài khoản ngân hàng (bank_code, bank_name, bank_account_no, bank_account_name) vào bảng restaurants");
+                        } catch (Exception e) {
+                            System.err.println(">> Lỗi thêm cột bank vào restaurants: " + e.getMessage());
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+            bankColumnsChecked = true;
+            return hasBankColumns;
+        }
+    }
+
     private static String getBaseQuery() {
         boolean withLogo = checkHasLogoColumn();
+        boolean withBank = checkHasBankColumns();
         return "SELECT r.restaurant_id, r.user_id, r.name, r.description, r.phone, r.address, r.image_url, " +
                (withLogo ? "r.logo_url, " : "r.image_url AS logo_url, ") +
+               (withBank ? "r.bank_code, r.bank_name, r.bank_account_no, r.bank_account_name, " : "'TCB' AS bank_code, 'Techcombank' AS bank_name, '1907 2878 4280 15' AS bank_account_no, 'LE HAI DANG' AS bank_account_name, ") +
                "r.status, r.latitude, r.longitude, " +
                "       COALESCE(sub_rev.avg_rating, 0.0) AS avg_rating, " +
                "       COALESCE(sub_rev.review_count, 0) AS review_count, " +
@@ -353,31 +388,31 @@ public class RestaurantDAO {
 
     public boolean updateRestaurant(Restaurant r) {
         boolean withLogo = checkHasLogoColumn();
-        String queryWithLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, logo_url = ?, status = ? WHERE restaurant_id = ?";
-        String queryWithoutLogo = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, status = ? WHERE restaurant_id = ?";
+        boolean withBank = checkHasBankColumns();
+        String query = "UPDATE restaurants SET name = ?, description = ?, phone = ?, address = ?, image_url = ?, " +
+                       (withLogo ? "logo_url = ?, " : "") +
+                       (withBank ? "bank_code = ?, bank_name = ?, bank_account_no = ?, bank_account_name = ?, " : "") +
+                       "status = ? WHERE restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
-                if (withLogo) {
-                    try (PreparedStatement ps = conn.prepareStatement(queryWithLogo)) {
-                        ps.setString(1, r.getName());
-                        ps.setString(2, r.getDescription());
-                        ps.setString(3, r.getPhone());
-                        ps.setString(4, r.getAddress());
-                        ps.setString(5, r.getImageUrl());
-                        ps.setString(6, r.getLogoUrl());
-                        ps.setString(7, r.getStatus());
-                        ps.setInt(8, r.getId());
-                        return ps.executeUpdate() > 0;
-                    } catch (SQLException ignore) {}
-                }
-                try (PreparedStatement ps = conn.prepareStatement(queryWithoutLogo)) {
-                    ps.setString(1, r.getName());
-                    ps.setString(2, r.getDescription());
-                    ps.setString(3, r.getPhone());
-                    ps.setString(4, r.getAddress());
-                    ps.setString(5, r.getImageUrl());
-                    ps.setString(6, r.getStatus());
-                    ps.setInt(7, r.getId());
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    int idx = 1;
+                    ps.setString(idx++, r.getName());
+                    ps.setString(idx++, r.getDescription());
+                    ps.setString(idx++, r.getPhone());
+                    ps.setString(idx++, r.getAddress());
+                    ps.setString(idx++, r.getImageUrl());
+                    if (withLogo) {
+                        ps.setString(idx++, r.getLogoUrl());
+                    }
+                    if (withBank) {
+                        ps.setString(idx++, r.getBankCode());
+                        ps.setString(idx++, r.getBankName());
+                        ps.setString(idx++, r.getBankAccountNo());
+                        ps.setString(idx++, r.getBankAccountName());
+                    }
+                    ps.setString(idx++, r.getStatus());
+                    ps.setInt(idx++, r.getId());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -429,6 +464,22 @@ public class RestaurantDAO {
         } catch (Exception ignored) {
             r.setLogoUrl(r.getImageUrl());
         }
+        try {
+            String bCode = rs.getString("bank_code");
+            if (bCode != null && !bCode.trim().isEmpty()) r.setBankCode(bCode.trim());
+        } catch (Exception ignored) {}
+        try {
+            String bName = rs.getString("bank_name");
+            if (bName != null && !bName.trim().isEmpty()) r.setBankName(bName.trim());
+        } catch (Exception ignored) {}
+        try {
+            String bAcc = rs.getString("bank_account_no");
+            if (bAcc != null && !bAcc.trim().isEmpty()) r.setBankAccountNo(bAcc.trim());
+        } catch (Exception ignored) {}
+        try {
+            String bAccName = rs.getString("bank_account_name");
+            if (bAccName != null && !bAccName.trim().isEmpty()) r.setBankAccountName(bAccName.trim());
+        } catch (Exception ignored) {}
         try {
             r.setRating(rs.getDouble("avg_rating"));
             r.setReviewCount(rs.getInt("review_count"));

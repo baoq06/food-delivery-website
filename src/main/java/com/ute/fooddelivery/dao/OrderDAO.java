@@ -877,6 +877,7 @@ public class OrderDAO {
     // =========================================================================
 
     public List<Order> getOrdersByUserId(int userId) {
+        RestaurantDAO.checkHasBankColumns();
         List<Order> list = new ArrayList<>();
         String sql = 
             "SELECT o.order_id, o.user_id, o.customer_name, o.phone, o.address, o.note, " +
@@ -884,6 +885,7 @@ public class OrderDAO {
             "       o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
             "       d.name AS driver_name, d.phone AS driver_phone, " +
             "       rest.restaurant_id, rest.name AS restaurant_name, rest.image_url AS restaurant_image, rest.image_url, " +
+            "       rest.bank_code, rest.bank_name, rest.bank_account_no, rest.bank_account_name, " +
             "       r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment " +
             "FROM orders o " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
@@ -891,7 +893,11 @@ public class OrderDAO {
             "    SELECT oi.order_id, " +
             "           MIN(f.restaurant_id) AS restaurant_id, " +
             "           MIN(res.name) AS name, " +
-            "           MIN(res.image_url) AS image_url " +
+            "           MIN(res.image_url) AS image_url, " +
+            "           MIN(res.bank_code) AS bank_code, " +
+            "           MIN(res.bank_name) AS bank_name, " +
+            "           MIN(res.bank_account_no) AS bank_account_no, " +
+            "           MIN(res.bank_account_name) AS bank_account_name " +
             "    FROM order_items oi " +
             "    JOIN foods f ON oi.food_id = f.food_id " +
             "    JOIN restaurants res ON f.restaurant_id = res.restaurant_id " +
@@ -945,6 +951,22 @@ public class OrderDAO {
                                     restImg = rs.getString("image_url");
                                 }
                                 order.setRestaurantImage(restImg);
+                            } catch (Exception ignored) {}
+                            try {
+                                String bc = rs.getString("bank_code");
+                                if (bc != null && !bc.trim().isEmpty()) order.setRestaurantBankCode(bc.trim());
+                            } catch (Exception ignored) {}
+                            try {
+                                String bn = rs.getString("bank_name");
+                                if (bn != null && !bn.trim().isEmpty()) order.setRestaurantBankName(bn.trim());
+                            } catch (Exception ignored) {}
+                            try {
+                                String bac = rs.getString("bank_account_no");
+                                if (bac != null && !bac.trim().isEmpty()) order.setRestaurantBankAccountNo(bac.trim());
+                            } catch (Exception ignored) {}
+                            try {
+                                String ban = rs.getString("bank_account_name");
+                                if (ban != null && !ban.trim().isEmpty()) order.setRestaurantBankAccountName(ban.trim());
                             } catch (Exception ignored) {}
 
                             int reviewId = rs.getInt("review_id");
