@@ -1411,7 +1411,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1, shipper_delivered = 1 WHERE order_id = ? AND status != 'CANCELLED' AND status != 'PENDING'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -1427,7 +1427,7 @@ public class OrderDAO {
     }
 
     public boolean confirmCustomerOrder(int orderId, int userId) {
-        String sql = "UPDATE orders SET customer_confirmed = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET customer_confirmed = 1, shipper_delivered = 1 WHERE order_id = ? AND (user_id = ? OR user_id IS NULL) AND status != 'CANCELLED' AND status != 'PENDING'";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -1449,16 +1449,17 @@ public class OrderDAO {
 
     /**
      * Tự động hoàn tất đơn hàng:
-     * Quy tắc thực tế: CHỈ CẦN SHIPPER BÁO ĐÃ GIAO (shipper_delivered == true) là đơn hoàn tất ngay lập tức!
-     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1.
+     * - Shipper báo đã giao (shipper_delivered == true) HOẶC Khách hàng xác nhận đã nhận món (customer_confirmed == true).
+     * - Trường hợp đơn tới tay khách nhưng shipper quên hoặc chưa bấm thì khách bấm xác nhận đơn vẫn hoàn tất ngay lập tức.
+     * - Tự động cập nhật status = 'DELIVERED', merchant_completed = 1, merchant_confirmed = 1, shipper_delivered = 1.
      * - Tự động giải phóng tài xế (drivers status = 'AVAILABLE') để tiếp tục nhận chuyến mới.
-     * - Khách hàng vẫn có thể bấm "Đã nhận món" sau đó mà không làm nghẽn tiến trình.
      */
     public boolean checkAndAutoCompleteOrder(int orderId) {
         String checkSql = "SELECT shipper_delivered, customer_confirmed, driver_id, status FROM orders WHERE order_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 boolean shipDelivered = false;
+                boolean custConfirmed = false;
                 int driverId = 0;
                 String currentStatus = null;
 
@@ -1467,6 +1468,7 @@ public class OrderDAO {
                     try (ResultSet rs = psCheck.executeQuery()) {
                         if (rs.next()) {
                             shipDelivered = rs.getBoolean("shipper_delivered");
+                            custConfirmed = rs.getBoolean("customer_confirmed");
                             driverId = rs.getInt("driver_id");
                             currentStatus = rs.getString("status");
                         }
@@ -1477,9 +1479,9 @@ public class OrderDAO {
                     return false;
                 }
 
-                // Khi Shipper đã xác nhận giao -> Hoàn tất đơn tự động ngay lập tức
-                if (shipDelivered) {
-                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
+                // Khi Shipper đã xác nhận giao HOẶC Khách hàng xác nhận đã nhận món -> Hoàn tất đơn tự động ngay lập tức
+                if (shipDelivered || custConfirmed) {
+                    String updateSql = "UPDATE orders SET merchant_completed = 1, merchant_confirmed = 1, shipper_delivered = 1, status = 'DELIVERED' WHERE order_id = ? AND status != 'CANCELLED'";
                     try (PreparedStatement psUpdate = conn.prepareStatement(updateSql)) {
                         psUpdate.setInt(1, orderId);
                         int updated = psUpdate.executeUpdate();

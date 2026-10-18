@@ -118,6 +118,8 @@ public class ProfileController extends HttpServlet {
             req.setAttribute("errorMessage", "Không thể hủy đơn hàng này (đơn đã được giao hoặc không hợp lệ).");
         } else if ("confirm_failed".equals(error)) {
             req.setAttribute("errorMessage", "Không thể xác nhận đơn hàng lúc này.");
+        } else if ("shipper_not_delivered".equals(error)) {
+            req.setAttribute("errorMessage", "Tài xế shipper chưa bấm xác nhận đã giao hàng tận nơi. Vui lòng đợi nhận món từ shipper trước khi bấm xác nhận!");
         }
 
         req.setAttribute("user", currentUser);
@@ -239,10 +241,16 @@ public class ProfileController extends HttpServlet {
         } else if ("confirm_received".equalsIgnoreCase(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
+                com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
+                com.ute.fooddelivery.model.Order targetOrder = oDAO.getOrderById(orderId);
+                if (targetOrder == null || "CANCELLED".equalsIgnoreCase(targetOrder.getStatus()) || "PENDING".equalsIgnoreCase(targetOrder.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/profile?tab=orders&error=confirm_failed");
+                    return;
+                }
+
                 boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
                 if (confirmed) {
                     try {
-                        com.ute.fooddelivery.dao.OrderDAO oDAO = new com.ute.fooddelivery.dao.OrderDAO();
                         com.ute.fooddelivery.service.NotificationService notifSvc = new com.ute.fooddelivery.service.NotificationService();
                         Integer merchantUserId = oDAO.getMerchantUserIdByOrderId(orderId);
                         Integer shipperUserId = oDAO.getDriverUserIdByOrderId(orderId);

@@ -178,6 +178,15 @@
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center gap-2">
+                            <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
+                                <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline; margin:0;">
+                                    <input type="hidden" name="action" value="confirm_received">
+                                    <input type="hidden" name="orderId" value="${order.id}">
+                                    <button type="submit" class="btn btn-success btn-sm shadow-sm" style="border-radius: 8px; font-weight: 700; background: #10ac84; border-color: #10ac84; color: #fff;" title="Xác nhận bạn đã nhận được món ăn từ shipper">
+                                        <i class="fa-solid fa-circle-check me-1"></i> Đã nhận món
+                                    </button>
+                                </form>
+                            </c:if>
                             <c:if test="${order.status eq 'SHIPPING'}">
                                 <a href="${pageContext.request.contextPath}/order/tracking?orderId=${order.id}" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 700; background: linear-gradient(135deg, #ef4444, #f97316); border: none; animation: pulseTrack 2s infinite;">
                                     <i class="fa-solid fa-map-location-dot me-1"></i> Theo dõi trực tiếp
