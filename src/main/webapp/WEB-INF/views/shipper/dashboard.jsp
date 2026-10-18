@@ -713,19 +713,51 @@
                                                                 </div>
                                                             </c:when>
 
-                                                            <%-- BƯỚC 1: NẾU CHƯA LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ LẤY MÓN --%>
+                                                            <%-- BƯỚC 1: NẾU CHƯA LẤY MÓN TỪ QUÁN --%>
                                                             <c:when test="${not activeOrder.shipperPickedUp}">
-                                                                <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
-                                                                    <input type="hidden" name="action" value="confirmPickedUp">
-                                                                    <input type="hidden" name="orderId" value="${activeOrder.id}">
-                                                                    <button type="submit" class="btn btn-warning w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="return confirm('Xác nhận bạn đã đến quán và nhận đủ món ăn cho đơn #FZ-${activeOrder.id}?');">
-                                                                        <i class="fa-solid fa-utensils me-2"></i> 1. XÁC NHẬN ĐÃ LẤY MÓN TỪ QUÁN
-                                                                    </button>
-                                                                </form>
+                                                                <c:choose>
+                                                                    <%-- Quán chưa bấm chế biến món --%>
+                                                                    <c:when test="${activeOrder.status eq 'PENDING' and not activeOrder.merchantConfirmed}">
+                                                                        <div style="flex: 1 1 100%; margin-bottom: 8px;">
+                                                                            <div class="alert alert-warning d-flex align-items-center gap-2 mb-0 py-2 px-3 w-100" style="border-radius: 12px; font-size: 0.88rem; background: #fffbeb; border: 1px solid #fde68a; color: #92400e;">
+                                                                                <i class="fa-solid fa-hourglass-half fa-spin text-warning fs-5"></i>
+                                                                                <div>
+                                                                                    <strong>Quán chưa bấm xác nhận chế biến món!</strong>
+                                                                                    <div class="small">Vui lòng đợi quán nhận đơn và chuẩn bị món ăn trước khi bấm xác nhận lấy món.</div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <button type="button" class="btn btn-secondary w-100" disabled style="border-radius: 50px; font-weight: 700; padding: 12px 24px; opacity: 0.65; cursor: not-allowed;" title="Quán chưa bấm chế biến món ăn">
+                                                                            <i class="fa-solid fa-fire-burner me-2"></i> ĐỢI QUÁN CHẾ BIẾN XONG ĐỂ LẤY MÓN
+                                                                        </button>
+                                                                    </c:when>
+
+                                                                    <%-- Quán đã bấm chế biến món -> Cho phép shipper xác nhận lấy món --%>
+                                                                    <c:otherwise>
+                                                                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
+                                                                            <input type="hidden" name="action" value="confirmPickedUp">
+                                                                            <input type="hidden" name="orderId" value="${activeOrder.id}">
+                                                                            <button type="submit" class="btn btn-warning w-100" style="border-radius: 50px; font-weight: 800; padding: 12px 24px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);" onclick="return confirm('Xác nhận bạn đã đến quán và nhận đủ món ăn cho đơn #FZ-${activeOrder.id}?');">
+                                                                                <i class="fa-solid fa-utensils me-2"></i> 1. XÁC NHẬN ĐÃ LẤY MÓN TỪ QUÁN
+                                                                            </button>
+                                                                        </form>
+                                                                    </c:otherwise>
+                                                                </c:choose>
                                                             </c:when>
 
-                                                            <%-- BƯỚC 2: ĐÃ LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ GIAO CHO KHÁCH (HOÀN TẤT NGAY) --%>
+                                                            <%-- BƯỚC 2: ĐÃ LẤY MÓN TỪ QUÁN -> NÚT XÁC NHẬN ĐÃ GIAO CHO KHÁCH (HOÀN TẤT ĐƠN) --%>
                                                             <c:otherwise>
+                                                                <c:if test="${activeOrder.customerConfirmed}">
+                                                                    <div style="flex: 1 1 100%; margin-bottom: 8px;">
+                                                                        <div class="alert alert-success d-flex align-items-center gap-2 mb-0 py-2 px-3 w-100" style="border-radius: 12px; font-size: 0.88rem; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;">
+                                                                            <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                                                                            <div>
+                                                                                <strong>Khách hàng đã bấm xác nhận đã nhận món!</strong>
+                                                                                <div class="small">Bấm nút bên dưới để xác nhận hoàn tất giao hàng và ghi nhận doanh thu vào ví.</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </c:if>
                                                                 <form action="${pageContext.request.contextPath}/shipper/dashboard" method="GET" style="margin: 0; flex: 1.5; min-width: 240px;">
                                                                     <input type="hidden" name="action" value="confirmDelivered">
                                                                     <input type="hidden" name="orderId" value="${activeOrder.id}">

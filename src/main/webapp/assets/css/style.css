@@ -10161,6 +10161,18 @@ select.form-control,
     transform: translateY(-1px);
 }
 
+.btn-d-action-ship {
+    background: #0284c7;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.btn-d-action-ship:hover {
+    background: #0369a1;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
 .btn-d-action-complete {
     background: #ffffff;
     border: 1.5px solid #10b981;

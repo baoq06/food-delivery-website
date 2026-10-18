@@ -97,17 +97,17 @@ public class MerchantOrderController extends HttpServlet {
                     return;
                 }
 
-                // Nếu chuyển sang CONFIRMED hoặc SHIPPING (Nhận chế biến / Bàn giao shipper)
-                if ("CONFIRMED".equalsIgnoreCase(newStatus) || "SHIPPING".equalsIgnoreCase(newStatus)) {
+                // Chỉ khi bàn giao cho shipper đi giao (SHIPPING) mới bắt buộc phải có tài xế đã nhận cuốc
+                if ("SHIPPING".equalsIgnoreCase(newStatus)) {
                     if (currentOrder.getDriverId() == null || currentOrder.getDriverId() <= 0) {
-                        req.getSession().setAttribute("flashError", "Vui lòng gán tài xế shipper khả dụng trước khi nhận chế biến đơn hàng!");
+                        req.getSession().setAttribute("flashError", "Vui lòng gán tài xế shipper khả dụng trước khi bàn giao đơn hàng!");
                         resp.sendRedirect(redirectUrl);
                         return;
                     }
 
                     // BẮT BUỘC: Đợi shipper xác nhận nhận giao đơn đó
                     if (!currentOrder.isShipperAccepted()) {
-                        req.getSession().setAttribute("flashError", "Chưa thể bắt đầu chế biến: Vui lòng đợi tài xế xác nhận nhận cuốc xe giao đơn này!");
+                        req.getSession().setAttribute("flashError", "Chưa thể bàn giao: Vui lòng đợi tài xế xác nhận nhận cuốc xe giao đơn này!");
                         resp.sendRedirect(redirectUrl);
                         return;
                     }

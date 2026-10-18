@@ -67,6 +67,12 @@ public class ShipperDashboardController extends HttpServlet {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
                 if (driver != null) {
+                    Order currentOrder = orderDAO.getOrderById(orderId);
+                    if (currentOrder != null && "PENDING".equalsIgnoreCase(currentOrder.getStatus()) && !currentOrder.isMerchantConfirmed()) {
+                        session.setAttribute("flashError", "Quán chưa bấm xác nhận chế biến món! Vui lòng đợi quán chuẩn bị món xong mới xác nhận lấy hàng.");
+                        resp.sendRedirect(req.getContextPath() + "/shipper/dashboard");
+                        return;
+                    }
                     boolean success = orderDAO.shipperConfirmPickedUp(orderId, driver.getId());
                     if (success) {
                         driverDAO.updateStatusByUserId(user.getId(), "BUSY");
@@ -77,6 +83,8 @@ public class ShipperDashboardController extends HttpServlet {
                         Integer customerUserId = orderDAO.getCustomerUserIdByOrderId(orderId);
                         Integer merchantUserId = orderDAO.getMerchantUserIdByOrderId(orderId);
                         notificationService.notifyOrderShipping(customerUserId, user.getId(), orderId);
+                    } else {
+                        session.setAttribute("flashError", "Không thể xác nhận lấy món lúc này. Vui lòng đảm bảo quán đã bấm chế biến món ăn!");
                     }
                 }
             } catch (Exception e) {

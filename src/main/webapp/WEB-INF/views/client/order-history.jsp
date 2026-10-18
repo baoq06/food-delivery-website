@@ -178,7 +178,7 @@
                     <!-- Phần đánh giá đơn hàng & Nút thao tác -->
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-3 pt-3 border-top">
                         <div class="d-flex align-items-center gap-2">
-                            <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and order.status ne 'PENDING'}">
+                            <c:if test="${not order.customerConfirmed and order.status ne 'CANCELLED' and (order.shipperPickedUp or order.shipperDelivered or order.status eq 'DELIVERED')}">
                                 <form action="${pageContext.request.contextPath}/profile" method="POST" style="display:inline; margin:0;">
                                     <input type="hidden" name="action" value="confirm_received">
                                     <input type="hidden" name="orderId" value="${order.id}">

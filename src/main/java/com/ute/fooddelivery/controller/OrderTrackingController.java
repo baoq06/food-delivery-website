@@ -90,6 +90,12 @@ public class OrderTrackingController extends HttpServlet {
                         return;
                     }
 
+                    // Chỉ cho phép khách xác nhận khi tài xế đã xác nhận lấy món từ quán
+                    if (!currentOrder.isShipperPickedUp() && !currentOrder.isShipperDelivered() && !"DELIVERED".equalsIgnoreCase(currentOrder.getStatus())) {
+                        resp.sendRedirect(req.getContextPath() + "/order/tracking?orderId=" + orderId + "&error=wait_shipper_pickup");
+                        return;
+                    }
+
                     boolean confirmed = orderService.confirmCustomerOrder(orderId, currentUser.getId());
                     if (confirmed) {
                         try {

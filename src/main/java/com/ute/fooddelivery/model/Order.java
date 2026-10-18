@@ -405,10 +405,18 @@ public class Order implements Serializable {
     }
 
     /**
-     * Kiểm tra Quán có thể bắt đầu nấu & giao hay chưa:
-     * Cần đã gán tài xế VÀ tài xế đó đã bấm chấp nhận giao đơn.
+     * Kiểm tra Quán có thể bắt đầu nấu hay chưa:
+     * Quán có thể nấu ngay khi đơn hợp lệ (chưa bị hủy hay hoàn tất).
      */
     public boolean canStartCooking() {
+        return !"CANCELLED".equalsIgnoreCase(status) && !"DELIVERED".equalsIgnoreCase(status);
+    }
+
+    /**
+     * Kiểm tra Quán có thể bàn giao món cho tài xế đi giao hay chưa:
+     * Cần đã gán tài xế VÀ tài xế đó đã bấm chấp nhận giao đơn.
+     */
+    public boolean canHandoverToShipper() {
         return driverId != null && driverId > 0 && shipperAccepted;
     }
 }
