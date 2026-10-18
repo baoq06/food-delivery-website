@@ -33,6 +33,28 @@
             <div class="checkout-grid">
                 <!-- Left: Cart Items List -->
                 <div class="checkout-left">
+                    <c:if test="${hasMultipleRestaurants}">
+                        <div class="alert-box-danger mb-3" style="padding: 14px 18px; background-color: #fee2e2; border-left: 5px solid #ef4444; border-radius: 12px; color: #991b1b; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <strong>Cảnh báo:</strong> Giỏ hàng chứa món từ nhiều nhà hàng khác nhau. Vui lòng làm mới giỏ hàng để tiếp tục đặt món.
+                                </div>
+                            </div>
+                            <form action="${pageContext.request.contextPath}/cart" method="POST" style="margin: 0;">
+                                <input type="hidden" name="action" value="clear">
+                                <button type="submit" class="btn btn-sm btn-danger" style="border-radius: 8px; font-weight: 700; white-space: nowrap;">
+                                    <i class="fa-solid fa-trash me-1"></i> Làm mới giỏ
+                                </button>
+                            </form>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty sessionScope.cartWarning}">
+                        <div class="alert-box-warning mb-3" style="padding: 12px 16px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; color: #92400e;">
+                            <i class="fa-solid fa-circle-exclamation me-2"></i> ${sessionScope.cartWarning}
+                        </div>
+                        <c:remove var="cartWarning" scope="session" />
+                    </c:if>
                     <!-- Smart Freeship Progress Bar Banner -->
                     <div class="cart-freeship-main-banner ${cartFreeshipRemaining <= 0 ? 'achieved' : ''}">
                         <div class="cf-banner-icon">
@@ -58,8 +80,23 @@
 
                     <div class="checkout-box mt-3">
                         <div class="box-header">
-                            <h3 class="box-title"><i class="fa-solid fa-bag-shopping text-primary"></i> Danh Sách Món Ăn (${sessionScope.cart.size()} món)</h3>
-                            <a href="${pageContext.request.contextPath}/foods" class="continue-link"><i class="fa-solid fa-plus"></i> Thêm món khác</a>
+                            <div>
+                                <h3 class="box-title"><i class="fa-solid fa-bag-shopping text-primary"></i> Danh Sách Món Ăn (${sessionScope.cart.size()} món)</h3>
+                                <c:if test="${not empty cartRestaurantName}">
+                                    <div class="cart-rest-tag mt-1" style="font-size: 0.85rem; color: #ea580c; font-weight: 600;">
+                                        <i class="fa-solid fa-store me-1"></i> Quán: <strong>${cartRestaurantName}</strong>
+                                    </div>
+                                </c:if>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <form action="${pageContext.request.contextPath}/cart" method="POST" onsubmit="return confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?');" style="margin: 0;">
+                                    <input type="hidden" name="action" value="clear">
+                                    <button type="submit" class="continue-link text-muted" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 0.88rem;">
+                                        <i class="fa-solid fa-trash-can"></i> Xóa tất cả
+                                    </button>
+                                </form>
+                                <a href="${pageContext.request.contextPath}/foods" class="continue-link"><i class="fa-solid fa-plus"></i> Thêm món khác</a>
+                            </div>
                         </div>
 
                         <div class="cart-items-wrapper">

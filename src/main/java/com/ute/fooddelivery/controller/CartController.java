@@ -79,19 +79,37 @@ public class CartController extends HttpServlet {
         }
 
         int restaurantId = 1;
+        String cartRestaurantName = "";
+        boolean hasMultipleRestaurants = false;
         if (session != null) {
             @SuppressWarnings("unchecked")
             Map<Integer, CartItem> cart = (Map<Integer, CartItem>) session.getAttribute("cart");
             if (cart != null && !cart.isEmpty()) {
+                int firstRestId = -1;
                 for (CartItem ci : cart.values()) {
                     if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
-                        restaurantId = ci.getFood().getRestaurantId();
-                        break;
+                        int rId = ci.getFood().getRestaurantId();
+                        if (firstRestId == -1) {
+                            firstRestId = rId;
+                            restaurantId = rId;
+                            cartRestaurantName = ci.getFood().getRestaurantName();
+                        } else if (firstRestId != rId) {
+                            hasMultipleRestaurants = true;
+                        }
+                    }
+                }
+                if ((cartRestaurantName == null || cartRestaurantName.trim().isEmpty()) && restaurantId > 0) {
+                    com.ute.fooddelivery.dao.RestaurantDAO rDao = new com.ute.fooddelivery.dao.RestaurantDAO();
+                    com.ute.fooddelivery.model.Restaurant r = rDao.getRestaurantById(restaurantId);
+                    if (r != null) {
+                        cartRestaurantName = r.getName();
                     }
                 }
             }
         }
         req.setAttribute("cartRestaurantId", restaurantId);
+        req.setAttribute("cartRestaurantName", cartRestaurantName);
+        req.setAttribute("hasMultipleRestaurants", hasMultipleRestaurants);
 
         int userId = currentUser != null ? currentUser.getId() : 0;
         if (userId > 0) {
@@ -197,14 +215,72 @@ public class CartController extends HttpServlet {
                     quantity = Integer.parseInt(qtyParam.trim());
                 }
 
-                if (cart.containsKey(foodId)) {
-                    CartItem item = cart.get(foodId);
-                    item.setQuantity(item.getQuantity() + quantity);
-                    addedFoodName = item.getFood().getName();
-                    addedFoodImage = item.getFood().getImage();
-                } else {
-                    Food food = foodService.getFoodById(foodId);
-                    if (food != null) {
+                Food food = foodService.getFoodById(foodId);
+                if (food != null) {
+                    int foodRestaurantId = food.getRestaurantId();
+                    int currentRestaurantId = -1;
+                    String currentRestaurantName = "";
+
+                    // Kiểm tra quán của các món hiện đang có trong giỏ hàng
+                    for (CartItem ci : cart.values()) {
+                        if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
+                            currentRestaurantId = ci.getFood().getRestaurantId();
+                            currentRestaurantName = ci.getFood().getRestaurantName();
+                            break;
+                        }
+                    }
+
+                    // Nếu giỏ hàng đang có món từ một quán khác
+                    boolean confirmSwitch = "true".equalsIgnoreCase(req.getParameter("confirmSwitchRestaurant"))
+                            || "true".equalsIgnoreCase(req.getParameter("clearOld"));
+
+                    if (currentRestaurantId > 0 && foodRestaurantId > 0 && currentRestaurantId != foodRestaurantId) {
+                        if (!confirmSwitch) {
+                            // Chưa có xác nhận: lấy tên 2 quán để hiển thị thông báo xung đột
+                            if (currentRestaurantName == null || currentRestaurantName.trim().isEmpty()) {
+                                com.ute.fooddelivery.dao.RestaurantDAO rDao = new com.ute.fooddelivery.dao.RestaurantDAO();
+                                com.ute.fooddelivery.model.Restaurant curR = rDao.getRestaurantById(currentRestaurantId);
+                                if (curR != null) {
+                                    currentRestaurantName = curR.getName();
+                                }
+                            }
+                            String newRestaurantName = food.getRestaurantName();
+                            if (newRestaurantName == null || newRestaurantName.trim().isEmpty()) {
+                                com.ute.fooddelivery.dao.RestaurantDAO rDao = new com.ute.fooddelivery.dao.RestaurantDAO();
+                                com.ute.fooddelivery.model.Restaurant newR = rDao.getRestaurantById(foodRestaurantId);
+                                if (newR != null) {
+                                    newRestaurantName = newR.getName();
+                                }
+                            }
+
+                            if (isAjax) {
+                                resp.setContentType("application/json;charset=UTF-8");
+                                String safeCur = currentRestaurantName != null ? currentRestaurantName.replace("\"", "\\\"") : "quán khác";
+                                String safeNew = newRestaurantName != null ? newRestaurantName.replace("\"", "\\\"") : "quán mới";
+                                String safeFName = food.getName() != null ? food.getName().replace("\"", "\\\"") : "";
+                                String safeFImg = food.getImage() != null ? food.getImage().replace("\"", "\\\"") : "";
+                                resp.getWriter().write(String.format(
+                                    "{\"success\":false,\"conflict\":true,\"currentRestaurantId\":%d,\"currentRestaurantName\":\"%s\",\"newRestaurantId\":%d,\"newRestaurantName\":\"%s\",\"foodId\":%d,\"foodName\":\"%s\",\"foodImage\":\"%s\",\"quantity\":%d,\"message\":\"Giỏ hàng đang có món từ %s. Bạn có muốn xóa giỏ cũ để đặt món từ %s không?\"}",
+                                    currentRestaurantId, safeCur, foodRestaurantId, safeNew, foodId, safeFName, safeFImg, quantity, safeCur, safeNew
+                                ));
+                                return;
+                            } else {
+                                session.setAttribute("cartWarning", "Giỏ hàng hiện tại đang có món từ " + currentRestaurantName + ". Vui lòng xóa giỏ cũ trước khi đặt món từ " + (food.getRestaurantName() != null ? food.getRestaurantName() : "quán khác") + "!");
+                                resp.sendRedirect(req.getContextPath() + "/cart");
+                                return;
+                            }
+                        } else {
+                            // Khách đã xác nhận: xóa sạch giỏ cũ của quán trước đó
+                            cart.clear();
+                        }
+                    }
+
+                    if (cart.containsKey(foodId)) {
+                        CartItem item = cart.get(foodId);
+                        item.setQuantity(item.getQuantity() + quantity);
+                        addedFoodName = item.getFood().getName();
+                        addedFoodImage = item.getFood().getImage();
+                    } else {
                         cart.put(foodId, new CartItem(food, quantity));
                         addedFoodName = food.getName();
                         addedFoodImage = food.getImage();
@@ -230,6 +306,16 @@ public class CartController extends HttpServlet {
                 return;
             }
 
+            resp.sendRedirect(req.getContextPath() + "/cart");
+            return;
+        } else if ("clear".equalsIgnoreCase(action)) {
+            cart.clear();
+            session.setAttribute("cart", cart);
+            if (isAjax) {
+                resp.setContentType("application/json;charset=UTF-8");
+                resp.getWriter().write("{\"success\":true,\"cartCount\":0,\"totalQuantity\":0,\"totalPrice\":0}");
+                return;
+            }
             resp.sendRedirect(req.getContextPath() + "/cart");
             return;
         } else if ("remove".equalsIgnoreCase(action)) {
@@ -298,7 +384,25 @@ public class CartController extends HttpServlet {
                 boolean isCodLocked = userDAO.isCustomerCodLocked(userId);
                 int boomCount = userDAO.getCustomerBoomCount(userId);
 
-                if (receiverName == null || receiverName.trim().isEmpty() ||
+                // Kiểm tra tính đồng nhất của nhà hàng trong giỏ hàng
+                int restaurantId = -1;
+                boolean hasMultipleRestaurants = false;
+                for (CartItem ci : cart.values()) {
+                    if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
+                        int itemRestId = ci.getFood().getRestaurantId();
+                        if (restaurantId == -1) {
+                            restaurantId = itemRestId;
+                        } else if (restaurantId != itemRestId) {
+                            hasMultipleRestaurants = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (hasMultipleRestaurants) {
+                    validationError = "Giỏ hàng của bạn chứa món từ nhiều nhà hàng khác nhau! Mỗi đơn hàng chỉ được phép đặt từ cùng một nhà hàng. Vui lòng kiểm tra lại giỏ hàng.";
+                    req.setAttribute("hasMultipleRestaurants", true);
+                } else if (receiverName == null || receiverName.trim().isEmpty() ||
                     receiverPhone == null || receiverPhone.trim().isEmpty() ||
                     receiverAddress == null || receiverAddress.trim().isEmpty()) {
                     validationError = "Vui lòng nhập đầy đủ: Họ tên, Số điện thoại và Địa chỉ giao hàng!";
@@ -340,12 +444,8 @@ public class CartController extends HttpServlet {
                     ));
                 }
 
-                int restaurantId = 1;
-                for (CartItem ci : cart.values()) {
-                    if (ci.getFood() != null && ci.getFood().getRestaurantId() > 0) {
-                        restaurantId = ci.getFood().getRestaurantId();
-                        break;
-                    }
+                if (restaurantId <= 0) {
+                    restaurantId = 1;
                 }
 
                 com.ute.fooddelivery.dao.RestaurantDAO restaurantDAO = new com.ute.fooddelivery.dao.RestaurantDAO();

@@ -16304,3 +16304,133 @@ select.form-control,
     flex-shrink: 0;
 }
 
+/* ==========================================================================
+   Restaurant Conflict Modal (Xác nhận đổi nhà hàng khi thêm món)
+   ========================================================================== */
+.restaurant-conflict-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 9999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.restaurant-conflict-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.restaurant-conflict-dialog {
+    background: #ffffff;
+    border-radius: 20px;
+    max-width: 440px;
+    width: 100%;
+    padding: 28px 24px 22px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    transform: scale(0.92) translateY(12px);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.restaurant-conflict-backdrop.active .restaurant-conflict-dialog {
+    transform: scale(1) translateY(0);
+}
+
+.restaurant-conflict-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.restaurant-conflict-icon-circle {
+    width: 68px;
+    height: 68px;
+    background: #fff7ed;
+    border: 2px solid #ffedd5;
+    color: #ea580c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.85rem;
+    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.15);
+}
+
+.restaurant-conflict-title {
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 10px;
+}
+
+.restaurant-conflict-desc {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #64748b;
+    margin-bottom: 22px;
+}
+
+.restaurant-conflict-desc strong {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.restaurant-conflict-desc strong.text-primary {
+    color: #ea580c !important;
+}
+
+.restaurant-conflict-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.restaurant-conflict-actions .btn {
+    flex: 1;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.btn-conflict-cancel {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.btn-conflict-cancel:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.btn-conflict-confirm {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+}
+
+.btn-conflict-confirm:hover {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+}
+
+

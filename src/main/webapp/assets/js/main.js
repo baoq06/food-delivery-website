@@ -655,7 +655,81 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 680);
     }
 
-    function handleAjaxAddToCart(foodId, quantity, sourceImgEl, callback) {
+    function showRestaurantConflictModal(config) {
+        let modal = document.getElementById("restaurantConflictModal");
+        if (!modal) {
+            modal = document.createElement("div");
+            modal.id = "restaurantConflictModal";
+            modal.className = "restaurant-conflict-backdrop";
+            document.body.appendChild(modal);
+        }
+
+        const curName = config.currentRestaurantName || "quán khác";
+        const newName = config.newRestaurantName || "quán này";
+
+        modal.innerHTML = `
+            <div class="restaurant-conflict-dialog">
+                <div class="restaurant-conflict-icon-wrapper">
+                    <div class="restaurant-conflict-icon-circle">
+                        <i class="fa-solid fa-store-slash"></i>
+                    </div>
+                </div>
+                <h3 class="restaurant-conflict-title">Tạo giỏ hàng mới?</h3>
+                <p class="restaurant-conflict-desc">
+                    Giỏ hàng của bạn đang có món từ <strong class="text-dark">${curName}</strong>.<br>
+                    Thêm món từ <strong class="text-primary">${newName}</strong> sẽ làm mới giỏ hàng và xóa các món hiện tại.
+                </p>
+                <div class="restaurant-conflict-actions">
+                    <button type="button" class="btn btn-conflict-cancel" id="btnCancelSwitchRest">
+                        <i class="fa-solid fa-xmark me-1"></i> Giữ giỏ cũ
+                    </button>
+                    <button type="button" class="btn btn-conflict-confirm" id="btnConfirmSwitchRest">
+                        <i class="fa-solid fa-cart-arrow-down me-1"></i> Tạo giỏ mới
+                    </button>
+                </div>
+            </div>
+        `;
+
+        requestAnimationFrame(() => {
+            modal.classList.add("active");
+        });
+
+        function closeModal() {
+            modal.classList.remove("active");
+            document.removeEventListener("keydown", handleKeydown);
+        }
+
+        function handleKeydown(e) {
+            if (e.key === "Escape") {
+                closeModal();
+            }
+        }
+        document.addEventListener("keydown", handleKeydown);
+
+        const btnCancel = modal.querySelector("#btnCancelSwitchRest");
+        if (btnCancel) {
+            btnCancel.onclick = () => {
+                closeModal();
+                showToast("Đã giữ nguyên giỏ hàng hiện tại.");
+            };
+        }
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+
+        const btnConfirm = modal.querySelector("#btnConfirmSwitchRest");
+        if (btnConfirm) {
+            btnConfirm.onclick = () => {
+                closeModal();
+                handleAjaxAddToCart(config.foodId, config.quantity, config.sourceImgEl, config.callback, true);
+            };
+        }
+    }
+
+    function handleAjaxAddToCart(foodId, quantity, sourceImgEl, callback, confirmSwitch = false) {
         const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1)) || "";
         const cartUrl = `${contextPath}/cart`;
 
@@ -664,6 +738,9 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("foodId", foodId);
         formData.append("quantity", quantity);
         formData.append("ajax", "true");
+        if (confirmSwitch) {
+            formData.append("confirmSwitchRestaurant", "true");
+        }
 
         fetch(cartUrl, {
             method: "POST",
@@ -685,6 +762,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 setTimeout(() => {
                     window.location.href = data.loginUrl || `${contextPath}/auth?action=login`;
                 }, 1400);
+                return;
+            }
+
+            if (data.conflict) {
+                showRestaurantConflictModal({
+                    currentRestaurantName: data.currentRestaurantName,
+                    newRestaurantName: data.newRestaurantName,
+                    foodId: data.foodId || foodId,
+                    quantity: data.quantity || quantity,
+                    sourceImgEl: sourceImgEl,
+                    callback: callback
+                });
                 return;
             }
 
@@ -848,21 +937,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const btn = ajaxForm.querySelector(".btn-add-cart, .btn-add-full, button[type='submit']");
-            let originalHtml = "";
-
-            if (btn) {
-                originalHtml = btn.innerHTML;
-                btn.classList.add("btn-added");
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Đã thêm!</span>';
-            }
+            const originalHtml = btn ? btn.innerHTML : "";
 
             handleAjaxAddToCart(foodId, quantity, imgEl, () => {
-                setTimeout(() => {
-                    if (btn) {
+                if (btn) {
+                    btn.classList.add("btn-added");
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Đã thêm!</span>';
+                    setTimeout(() => {
                         btn.classList.remove("btn-added");
                         btn.innerHTML = originalHtml || '<i class="fa-solid fa-cart-plus"></i> <span>Đặt món</span>';
-                    }
-                }, 1200);
+                    }, 1200);
+                }
             });
         }
     });
