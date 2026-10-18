@@ -90,6 +90,7 @@ public class AuthController extends HttpServlet {
             if (user != null) {
                 HttpSession session = req.getSession();
                 session.setAttribute("currentUser", user);
+                com.ute.fooddelivery.utils.CsrfUtils.refreshToken(session);
 
                 // Thêm món ăn chờ (nếu trước đó khách chưa đăng nhập đã bấm đặt món)
                 processPendingFood(session);

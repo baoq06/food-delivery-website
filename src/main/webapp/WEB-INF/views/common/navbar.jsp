@@ -354,13 +354,18 @@
                     <c:when test="${isShipper}">
                         <div style="display: inline-flex; align-items: center; gap: 10px;">
                             <span><i class="fa-solid fa-headset text-primary"></i> Hotline tài xế: <strong>1900 6869</strong></span>
-                            <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=${pageContext.request.requestURI}" 
-                               class="topbar-toggle-shipper-btn ${isShipperActive ? 'online' : 'offline'}"
-                               title="${isShipperActive ? 'Bấm để TẮT nhận đơn và chuyển sang chế độ Khách đặt món' : 'Bấm để BẬT chế độ nhận đơn'}">
-                                <span class="shipper-pulse-dot"></span>
-                                <span>${isShipperActive ? 'Đang Nhận Đơn' : 'Đang Nghỉ'}</span>
-                                <i class="fa-solid fa-power-off"></i>
-                            </a>
+                            <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0; display: inline-flex;">
+                                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                <input type="hidden" name="action" value="toggleStatus">
+                                <input type="hidden" name="redirect" value="${pageContext.request.requestURI}">
+                                <button type="submit" class="topbar-toggle-shipper-btn ${isShipperActive ? 'online' : 'offline'}"
+                                        title="${isShipperActive ? 'Bấm để TẮT nhận đơn và chuyển sang chế độ Khách đặt món' : 'Bấm để BẬT chế độ nhận đơn'}"
+                                        style="cursor: pointer;">
+                                    <span class="shipper-pulse-dot"></span>
+                                    <span>${isShipperActive ? 'Đang Nhận Đơn' : 'Đang Nghỉ'}</span>
+                                    <i class="fa-solid fa-power-off"></i>
+                                </button>
+                            </form>
                         </div>
                     </c:when>
                     <c:otherwise>
@@ -721,11 +726,15 @@
 
                                     <c:if test="${isShipper}">
                                         <!-- Công tắc Bật/Tắt chế độ Shipper trực quan trong Menu -->
-                                        <a href="${pageContext.request.contextPath}/shipper/dashboard?action=toggleStatus&redirect=${pageContext.request.requestURI}" 
-                                           style="background:${isShipperActive ? '#fff5f5' : '#f0fff4'}; font-weight: 600; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; margin: 4px 8px; padding: 10px 14px; text-decoration: none;">
-                                            <span><i class="fa-solid fa-power-off ${isShipperActive ? 'text-danger' : 'text-success'}"></i> ${isShipperActive ? 'Tắt Nhận Đơn' : 'Bật Nhận Đơn'}</span>
-                                            <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; background:${isShipperActive ? '#fee2e2' : '#dcfce7'}; color:${isShipperActive ? '#dc2626' : '#16a34a'}; font-weight: bold;">${isShipperActive ? 'BẬT' : 'TẮT'}</span>
-                                        </a>
+                                        <form action="${pageContext.request.contextPath}/shipper/dashboard" method="POST" style="margin: 0;">
+                                            <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
+                                            <input type="hidden" name="action" value="toggleStatus">
+                                            <input type="hidden" name="redirect" value="${pageContext.request.requestURI}">
+                                            <button type="submit" style="width: calc(100% - 16px); background:${isShipperActive ? '#fff5f5' : '#f0fff4'}; font-weight: 600; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; margin: 4px 8px; padding: 10px 14px; text-decoration: none; border: none; cursor: pointer; text-align: left;">
+                                                <span><i class="fa-solid fa-power-off ${isShipperActive ? 'text-danger' : 'text-success'}"></i> ${isShipperActive ? 'Tắt Nhận Đơn' : 'Bật Nhận Đơn'}</span>
+                                                <span style="font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; background:${isShipperActive ? '#fee2e2' : '#dcfce7'}; color:${isShipperActive ? '#dc2626' : '#16a34a'}; font-weight: bold;">${isShipperActive ? 'BẬT' : 'TẮT'}</span>
+                                            </button>
+                                        </form>
                                         <div class="dropdown-divider"></div>
                                         <a href="${pageContext.request.contextPath}/shipper/dashboard" class="text-primary font-weight-bold">
                                             <i class="fa-solid fa-gauge-high"></i> Bảng điều khiển tài xế
