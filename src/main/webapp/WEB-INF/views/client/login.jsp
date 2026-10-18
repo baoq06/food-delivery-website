@@ -10,6 +10,247 @@
     .topbar, .navbar, .footer { display: none !important; }
     .main-content { padding: 0 !important; margin: 0 !important; min-height: 100vh !important; }
     body { background: #ffffff !important; overflow-x: hidden; }
+
+    /* Stepper 4 bước đăng ký */
+    .auth-wizard-stepper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        margin: 6px 0 16px 0;
+        padding: 0 4px;
+    }
+    .auth-wizard-stepper::before {
+        content: '';
+        position: absolute;
+        top: 14px;
+        left: 20px;
+        right: 20px;
+        height: 3px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+    .stepper-progress-fill {
+        position: absolute;
+        top: 14px;
+        left: 20px;
+        height: 3px;
+        background: linear-gradient(90deg, #ea580c, #f97316);
+        z-index: 2;
+        transition: width 0.35s ease;
+        width: 0%;
+    }
+    .stepper-node {
+        position: relative;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .stepper-circle {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #ffffff;
+        border: 2px solid #cbd5e1;
+        color: #94a3b8;
+        font-size: 0.76rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.25s ease;
+    }
+    .stepper-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+        white-space: nowrap;
+        transition: color 0.25s ease;
+    }
+    .stepper-node.active .stepper-circle {
+        border-color: #ea580c;
+        background: #ea580c;
+        color: #ffffff;
+        box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
+    }
+    .stepper-node.active .stepper-label {
+        color: #ea580c;
+        font-weight: 700;
+    }
+    .stepper-node.completed .stepper-circle {
+        border-color: #10b981;
+        background: #10b981;
+        color: #ffffff;
+    }
+    .stepper-node.completed .stepper-label {
+        color: #059669;
+    }
+
+    /* Email Box & Chip */
+    .auth-email-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+    .auth-email-input-wrap {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.22s ease;
+        position: relative;
+    }
+    .auth-email-input-wrap:focus-within {
+        border-color: #ea580c;
+        box-shadow: 0 0 0 3.5px rgba(234, 88, 12, 0.14);
+    }
+    .auth-email-icon-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: #fff7ed;
+        color: #ea580c;
+        font-size: 1.05rem;
+        border-right: 1px solid #fed7aa;
+        flex-shrink: 0;
+    }
+    .auth-email-field {
+        flex: 1;
+        height: 44px;
+        border: none;
+        outline: none;
+        padding: 0 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #1e293b;
+        background: transparent;
+    }
+    .auth-email-suggestion-chip {
+        margin-right: 8px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .auth-email-suggestion-chip:hover {
+        background: #ea580c;
+        color: #ffffff;
+        border-color: #ea580c;
+    }
+
+    /* Verified Credentials Strip ở Bước 4 */
+    .auth-verified-credentials-strip {
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+        border: 1.5px solid #86efac;
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .verified-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .verified-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    .verified-text {
+        font-size: 0.82rem;
+        color: #166534;
+        min-width: 0;
+    }
+    .verified-badge {
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        border: 1px solid #86efac;
+    /* Tự động co giãn theo nội dung, loại bỏ hoàn toàn giới hạn 480px / 380px gây đè chữ */
+    .auth-tab-view {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        display: none;
+    }
+    .auth-tab-view.active {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+    }
+
+    .auth-wizard-step {
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    .auth-wizard-step.active {
+        display: flex !important;
+    }
+
+    /* Đảm bảo Switch Tab Footer nằm ngay dưới form, có khoảng cách rõ ràng, không đè lên nút hay card */
+    .auth-tab-switch-footer {
+        margin-top: 18px !important;
+        padding-top: 14px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        position: relative !important;
+        clear: both !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    /* Tối ưu khoảng cách cho các nút điều hướng Wizard (Quay lại / Tiếp tục) */
+    .auth-step-nav-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        margin-top: 16px !important;
+        margin-bottom: 6px !important;
+    }
+
+    /* Card lợi ích ở Bước 2 gọn gàng, tinh tế */
+    .auth-phone-benefits {
+        margin-top: 8px !important;
+        margin-bottom: 4px !important;
+        padding: 9px 12px !important;
+        gap: 6px !important;
+    }
+    .auth-phone-benefit-item {
+        font-size: 0.8rem !important;
+        gap: 8px !important;
+    }
 </style>
 
 <div class="auth-fullscreen-split">
@@ -344,8 +585,30 @@
                     <input type="hidden" name="action" value="register">
                     <input type="hidden" name="redirect" value="<c:out value='${not empty param.redirect ? param.redirect : redirect}' />">
                     <input type="hidden" name="accountType" id="wizardAccountType" value="<c:out value='${not empty stickyAccountType ? stickyAccountType : \"CUSTOMER\"}' />">
+                    <input type="hidden" name="email" id="wizardSubmittedEmail" value="<c:out value='${stickyRegEmail}' />">
                     <input type="hidden" name="phone" id="wizardSubmittedPhone" value="<c:out value='${stickyRegPhone}' />">
                     <input type="hidden" name="address" id="wizardSubmittedAddress" value="<c:out value='${stickyRegAddress}' />">
+
+                    <!-- Stepper Bar 4 Bước Đăng Ký -->
+                    <div class="auth-wizard-stepper">
+                        <div class="stepper-progress-fill" id="stepperProgressBar"></div>
+                        <div class="stepper-node active" id="stepIndicator1">
+                            <div class="stepper-circle">1</div>
+                            <span class="stepper-label">Vai trò</span>
+                        </div>
+                        <div class="stepper-node" id="stepIndicator2">
+                            <div class="stepper-circle">2</div>
+                            <span class="stepper-label">Email OTP</span>
+                        </div>
+                        <div class="stepper-node" id="stepIndicator3">
+                            <div class="stepper-circle">3</div>
+                            <span class="stepper-label">Xác nhận</span>
+                        </div>
+                        <div class="stepper-node" id="stepIndicator4">
+                            <div class="stepper-circle">4</div>
+                            <span class="stepper-label">Thông tin</span>
+                        </div>
+                    </div>
 
                     <!-- ==============================================
                          BƯỚC 1: CHỌN LOẠI USER (Role Selection)
@@ -360,7 +623,7 @@
                             <!-- Role 1: Customer -->
                             <div class="auth-role-card ${empty stickyAccountType || stickyAccountType eq 'CUSTOMER' ? 'selected' : ''}" 
                                  id="roleCardCustomer" onclick="selectRole('CUSTOMER')">
-                                <div class="auth-role-icon-box role-icon-customer">
+                                 <div class="auth-role-icon-box role-icon-customer">
                                     <i class="fa-solid fa-user"></i>
                                 </div>
                                 <div class="auth-role-info">
@@ -415,15 +678,39 @@
                     </div>
 
                     <!-- ==============================================
-                         BƯỚC 2: NHẬP SỐ ĐIỆN THOẠI
+                         BƯỚC 2: NHẬP EMAIL (GMAIL) VÀ SỐ ĐIỆN THOẠI
                          ============================================== -->
                     <div class="auth-wizard-step" id="wizardStep2">
                         <p class="auth-step-instruction">
-                            Nhập số điện thoại chính chủ của bạn. Hệ thống sẽ gửi một mã xác thực OTP 6 số qua SMS:
+                            <i class="fa-solid fa-envelope-circle-check text-primary mr-1"></i>
+                            Nhập địa chỉ Email (Gmail) để nhận mã xác thực OTP 6 số kích hoạt tài khoản:
                         </p>
 
-                        <div class="auth-phone-box">
-                            <label class="auth-field-label" for="wizardPhoneInput">Số điện thoại di động *</label>
+                        <!-- Box 1: Email Input (Gmail) -->
+                        <div class="auth-email-box">
+                            <label class="auth-field-label" for="wizardEmailInput">Địa chỉ Email (Gmail) nhận mã OTP *</label>
+                            <div class="auth-email-input-wrap">
+                                <div class="auth-email-icon-box">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <input type="email" id="wizardEmailInput" class="auth-email-field"
+                                       placeholder="vidu@gmail.com"
+                                       value="<c:out value='${stickyRegEmail}' />"
+                                       autocomplete="email"
+                                       oninput="clearStepError('step2Error')">
+                                <button type="button" class="auth-email-suggestion-chip" onclick="appendEmailDomain('@gmail.com')" title="Điền nhanh đuôi @gmail.com">
+                                    <span>+ @gmail.com</span>
+                                </button>
+                            </div>
+                            <div class="auth-phone-hint">
+                                <i class="fa-solid fa-shield-halved text-success"></i>
+                                <span>Mã OTP 6 số sẽ được gửi trực tiếp đến hộp thư Gmail này (hiệu lực 5 phút).</span>
+                            </div>
+                        </div>
+
+                        <!-- Box 2: Số điện thoại liên hệ -->
+                        <div class="auth-phone-box" style="margin-top: 10px;">
+                            <label class="auth-field-label" for="wizardPhoneInput">Số điện thoại liên hệ nhận món *</label>
                             <div class="auth-phone-input-wrap">
                                 <div class="auth-phone-prefix">
                                     <span style="font-weight: 800; font-size: 0.74rem; background: #fee2e2; color: #dc2626; padding: 2px 5px; border-radius: 4px; line-height: 1;">VN</span>
@@ -437,28 +724,20 @@
                                        oninput="clearStepError('step2Error')">
                             </div>
                             <div class="auth-phone-hint">
-                                <i class="fa-solid fa-shield-halved text-success"></i>
-                                <span>Dùng để xác thực danh tính và thông báo trạng thái đơn hàng.</span>
+                                <i class="fa-solid fa-phone text-primary"></i>
+                                <span>Dùng để tài xế liên hệ khi giao hàng và xác minh đơn hàng.</span>
                             </div>
                         </div>
 
-                        <!-- Step 2 Benefit Highlights to maintain consistent visual height -->
+                        <!-- Lợi ích bảo mật qua Gmail -->
                         <div class="auth-phone-benefits">
                             <div class="auth-phone-benefit-item">
-                                <i class="fa-solid fa-circle-check"></i>
-                                <span>Xác thực OTP tức thì hoàn toàn miễn phí qua tin nhắn SMS</span>
-                            </div>
-                            <div class="auth-phone-benefit-item">
-                                <i class="fa-solid fa-lock"></i>
-                                <span>Bảo vệ tài khoản với công nghệ bảo mật 2 lớp hiện đại</span>
-                            </div>
-                            <div class="auth-phone-benefit-item">
-                                <i class="fa-solid fa-bell"></i>
-                                <span>Nhận cập nhật lộ trình giao hàng thời gian thực</span>
+                                <i class="fa-solid fa-shield-halved text-success"></i>
+                                <span>Mã OTP 6 số gửi tức thì qua Gmail, bảo mật 2 lớp an toàn</span>
                             </div>
                         </div>
 
-                        <!-- Step 2 Error alert if invalid phone -->
+                        <!-- Error alert nếu nhập sai -->
                         <div id="step2Error" class="auth-error-banner" style="display:none; margin-bottom: 12px;">
                             <div class="auth-error-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
                             <div class="auth-error-msg" id="step2ErrorMsg"></div>
@@ -470,35 +749,63 @@
                                 <span>Quay lại</span>
                             </button>
                             <button type="button" class="auth-primary-submit-btn" id="btnSendOtp" onclick="handleSendOtpClick()">
-                                <span>Gửi mã OTP qua SMS</span>
+                                <span>Gửi mã OTP qua Gmail</span>
                                 <i class="fa-solid fa-paper-plane"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- ==============================================
-                         BƯỚC 3: XÁC THỰC MÃ OTP (6 SỐ)
+                         BƯỚC 3: XÁC THỰC MÃ OTP (6 SỐ QUA GMAIL)
                          ============================================== -->
                     <div class="auth-wizard-step" id="wizardStep3">
                         <div class="auth-otp-box">
                             <div class="auth-otp-phone-display">
-                                Mã xác thực OTP 6 số đã được gửi tới số: 
-                                <span class="auth-otp-phone-number" id="step3PhoneDisplay">...</span>
+                                <i class="fa-solid fa-paper-plane text-primary me-1"></i> Mã xác thực OTP 6 số đã được gửi tới: 
+                                <strong class="auth-otp-phone-number text-danger" id="step3EmailDisplay">...</strong>
                                 <a href="javascript:void(0)" onclick="goToStep(2)" class="auth-otp-edit-phone">
-                                    <i class="fa-solid fa-pen"></i> Đổi số
+                                    <i class="fa-solid fa-pen"></i> Đổi email
                                 </a>
                             </div>
 
-                            <!-- Simulated SMS Push Notification Toast for Demo/Testing -->
+                            <!-- Thông báo gửi thật thành công qua Gmail -->
+                            <div class="real-email-notice-card" id="realEmailNoticeCard" style="display:none; align-items: flex-start; gap: 12px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; text-align: left; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.08);">
+                                <div style="width: 38px; height: 38px; min-width: 38px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; margin-top: 2px;">
+                                    <i class="fa-solid fa-envelope-circle-check"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 700; color: #15803d; font-size: 0.9rem;">
+                                        <i class="fa-solid fa-circle-check"></i> Đã gửi thư xác thực tới Gmail!
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #166534; margin-top: 3px; line-height: 1.45;">
+                                        Mã OTP 6 số đã được chuyển đến hòm thư <strong id="realEmailTargetDisplay" style="color:#0f172a;"></strong>.<br>
+                                        Vui lòng mở ứng dụng <strong>Gmail</strong>, kiểm tra <strong>Hộp thư đến</strong> hoặc mục <strong>Thư rác / Spam</strong> để lấy mã.
+                                    </div>
+                                    <div style="margin-top: 8px;">
+                                        <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="display: inline-flex; align-items: center; gap: 6px; background: #16a34a; color: #ffffff; border-radius: 8px; font-weight: 600; font-size: 0.78rem; text-decoration: none; padding: 5px 12px; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Gmail lấy mã OTP
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Toast mô phỏng Gmail Push Notification (chỉ hiển thị khi chạy chế độ Dev Sandbox cho cộng sự) -->
                             <div class="simulated-sms-banner" id="simulatedSmsToast" style="display:none;">
-                                <div class="simulated-sms-icon"><i class="fa-solid fa-comment-sms"></i></div>
+                                <div class="simulated-sms-icon" style="background: #ea4335; color: #fff;">
+                                    <i class="fa-solid fa-code"></i>
+                                </div>
                                 <div class="simulated-sms-body">
                                     <div class="simulated-sms-header">
-                                        <span class="simulated-sms-sender"><i class="fa-solid fa-shield-check"></i> UTEE FOOD OTP</span>
-                                        <span class="simulated-sms-time">Vừa xong</span>
+                                        <span class="simulated-sms-sender">
+                                            <i class="fa-solid fa-laptop-code text-warning"></i> DEV SANDBOX (DÀNH CHO CỘNG SỰ TEST)
+                                        </span>
+                                        <span class="simulated-sms-time">Vừa tạo</span>
                                     </div>
                                     <div class="simulated-sms-text">
-                                        Mã OTP đăng ký của bạn là: <strong id="simulatedOtpCode" style="color:#fbbf24; font-size:1.15rem; letter-spacing:2px;">------</strong> (Hiệu lực 5 phút).
+                                        Mã OTP kiểm thử: <strong id="simulatedOtpCode" style="color:#fbbf24; font-size:1.2rem; letter-spacing:3px;">------</strong> (Hiệu lực 5 phút).
+                                    </div>
+                                    <div style="font-size: 0.76rem; color: #cbd5e1; margin-top: 4px;">
+                                        * Hệ thống đang chạy chế độ Sandbox do máy chưa cấu hình API gửi thật. Bạn có thể bấm nút bên dưới để test nhanh:
                                     </div>
                                     <button type="button" class="simulated-sms-fill-btn" onclick="fillQuickOtp()">
                                         <i class="fa-solid fa-bolt"></i>
@@ -507,7 +814,7 @@
                                 </div>
                             </div>
 
-                            <p style="font-size: 0.84rem; color: #64748b; margin-bottom: 8px;">Nhập 6 chữ số:</p>
+                            <p style="font-size: 0.84rem; color: #64748b; margin-bottom: 8px;">Nhập 6 chữ số mã xác thực:</p>
 
                             <!-- 6 Digit OTP Inputs -->
                             <div class="auth-otp-inputs" id="otpInputsContainer">
@@ -522,7 +829,7 @@
                             <div class="auth-otp-resend-row">
                                 <span id="otpCountdownWrap">Gửi lại mã sau <strong id="otpTimerText" class="auth-otp-timer-badge">60s</strong></span>
                                 <button type="button" id="btnResendOtp" class="auth-otp-resend-btn" style="display:none;" onclick="handleSendOtpClick()">
-                                    <i class="fa-solid fa-rotate-right mr-1"></i> Gửi lại mã OTP
+                                    <i class="fa-solid fa-rotate-right mr-1"></i> Gửi lại mã qua Gmail
                                 </button>
                             </div>
 
@@ -552,6 +859,20 @@
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-shrink: 0;">
                             <span class="auth-step-instruction" style="margin-bottom: 0;">Điền thông tin tài khoản:</span>
                             <span class="auth-role-badge" id="step4RoleBadge" style="font-size: 0.74rem; padding: 3px 8px;">Khách hàng</span>
+                        </div>
+
+                        <!-- Thông tin Email & SĐT đã xác thực -->
+                        <div class="auth-verified-credentials-strip">
+                            <div class="verified-left">
+                                <div class="verified-icon">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <div class="verified-text">
+                                    <div style="font-size:0.75rem; color:#15803d; font-weight:600;">Email kích hoạt OTP:</div>
+                                    <strong style="font-size:0.9rem; color:#14532d;" id="step4VerifiedEmailDisplay"><c:out value="${not empty stickyRegEmail ? stickyRegEmail : 'chua_xac_thuc@gmail.com'}" /></strong>
+                                </div>
+                            </div>
+                            <span class="verified-badge"><i class="fa-solid fa-shield-check"></i> Đã xác thực</span>
                         </div>
 
                         <div class="auth-step4-scroll-body">
@@ -1004,22 +1325,54 @@ function showStepError(errorId, msgId, message) {
     if (el) el.style.display = 'flex';
 }
 
-// BƯỚC 2 -> 3: Gửi mã OTP qua SMS
+function appendEmailDomain(domain) {
+    const emailInput = document.getElementById('wizardEmailInput');
+    if (!emailInput) return;
+    let val = emailInput.value.trim();
+    if (!val) {
+        emailInput.value = 'user' + domain;
+        emailInput.focus();
+        return;
+    }
+    if (val.includes('@')) {
+        val = val.substring(0, val.indexOf('@'));
+    }
+    emailInput.value = val + domain;
+    clearStepError('step2Error');
+    emailInput.focus();
+}
+
+// BƯỚC 2 -> 3: Gửi mã OTP qua Gmail
 function handleSendOtpClick() {
     clearStepError('step2Error');
     clearStepError('step3Error');
+    const emailInput = document.getElementById('wizardEmailInput');
     const phoneInput = document.getElementById('wizardPhoneInput');
+
+    const email = emailInput ? emailInput.value.trim() : '';
     const phone = phoneInput ? phoneInput.value.trim() : '';
 
+    if (!email) {
+        showStepError('step2Error', 'step2ErrorMsg', 'Vui lòng nhập địa chỉ Email (Gmail) của bạn!');
+        if (emailInput) emailInput.focus();
+        return;
+    }
+
+    if (!/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+        showStepError('step2Error', 'step2ErrorMsg', 'Địa chỉ Email không hợp lệ! Vui lòng nhập đúng định dạng (ví dụ: vidu@gmail.com).');
+        if (emailInput) emailInput.focus();
+        return;
+    }
+
     if (!phone) {
-        showStepError('step2Error', 'step2ErrorMsg', 'Vui lòng nhập số điện thoại của bạn!');
-        phoneInput.focus();
+        showStepError('step2Error', 'step2ErrorMsg', 'Vui lòng nhập số điện thoại liên hệ của bạn!');
+        if (phoneInput) phoneInput.focus();
         return;
     }
 
     if (!/^0[0-9]{9,10}$/.test(phone)) {
         showStepError('step2Error', 'step2ErrorMsg', 'Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số bắt đầu bằng số 0.');
-        phoneInput.focus();
+        if (phoneInput) phoneInput.focus();
         return;
     }
 
@@ -1027,10 +1380,10 @@ function handleSendOtpClick() {
     const originalText = btn ? btn.innerHTML : '';
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang gửi mã...</span>';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang gửi mã qua Gmail...</span>';
     }
 
-    fetch('${pageContext.request.contextPath}/auth?action=send_otp&phone=' + encodeURIComponent(phone))
+    fetch('${pageContext.request.contextPath}/auth?action=send_otp&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone))
         .then(response => response.json())
         .then(data => {
             if (btn) {
@@ -1039,15 +1392,41 @@ function handleSendOtpClick() {
             }
             if (data.success) {
                 lastSentOtp = data.otp || '';
+                document.getElementById('wizardSubmittedEmail').value = email;
                 document.getElementById('wizardSubmittedPhone').value = phone;
-                document.getElementById('step3PhoneDisplay').innerText = phone;
+
+                const emailDisplay = document.getElementById('step3EmailDisplay');
+                if (emailDisplay) emailDisplay.innerText = email;
+
+                const step4EmailDisplay = document.getElementById('step4VerifiedEmailDisplay');
+                if (step4EmailDisplay) step4EmailDisplay.innerText = email;
                 
-                // Hiển thị simulated SMS banner
+                // Xử lý hiển thị thông báo gửi email thật vs giả lập
                 const smsBanner = document.getElementById('simulatedSmsToast');
                 const smsCode = document.getElementById('simulatedOtpCode');
-                if (smsBanner && smsCode) {
-                    smsCode.innerText = lastSentOtp;
-                    smsBanner.style.display = 'flex';
+                const realBanner = document.getElementById('realEmailNoticeCard');
+                const realTarget = document.getElementById('realEmailTargetDisplay');
+
+                if (data.isReal) {
+                    // GỬI THẬT TỪ GMAIL: Ẩn hoàn toàn toast lộ mã trên màn hình, chỉ dẫn mở Gmail
+                    if (smsBanner) smsBanner.style.display = 'none';
+                    if (realBanner) {
+                        if (realTarget) realTarget.innerText = email;
+                        realBanner.style.display = 'flex';
+                    }
+                } else if (data.otp) {
+                    // Chế độ dev / fallback offline: hiển thị banner giả lập kèm nút điền nhanh
+                    if (realBanner) realBanner.style.display = 'none';
+                    if (smsBanner && smsCode) {
+                        smsCode.innerText = lastSentOtp;
+                        smsBanner.style.display = 'flex';
+                    }
+                } else {
+                    if (smsBanner) smsBanner.style.display = 'none';
+                    if (realBanner) {
+                        if (realTarget) realTarget.innerText = email;
+                        realBanner.style.display = 'flex';
+                    }
                 }
 
                 // Reset OTP inputs
@@ -1064,7 +1443,7 @@ function handleSendOtpClick() {
 
                 goToStep(3);
             } else {
-                showStepError('step2Error', 'step2ErrorMsg', data.message || 'Không thể gửi mã OTP. Vui lòng thử lại!');
+                showStepError('step2Error', 'step2ErrorMsg', data.message || 'Không thể gửi mã OTP. Vui lòng kiểm tra lại!');
             }
         })
         .catch(err => {
@@ -1072,7 +1451,7 @@ function handleSendOtpClick() {
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
-            showStepError('step2Error', 'step2ErrorMsg', 'Lỗi kết nối máy chủ. Vui lòng thử lại!');
+            showStepError('step2Error', 'step2ErrorMsg', 'Lỗi kết nối máy chủ khi gửi mã. Vui lòng thử lại!');
         });
 }
 
@@ -1189,6 +1568,11 @@ function handleVerifyOtpClick() {
                 btn.innerHTML = originalText;
             }
             if (data.success) {
+                if (data.email) {
+                    const step4EmailDisplay = document.getElementById('step4VerifiedEmailDisplay');
+                    if (step4EmailDisplay) step4EmailDisplay.innerText = data.email;
+                    document.getElementById('wizardSubmittedEmail').value = data.email;
+                }
                 goToStep(4);
             } else {
                 showStepError('step3Error', 'step3ErrorMsg', data.message || 'Mã OTP không chính xác!');
@@ -1250,6 +1634,13 @@ function validateFinalRegisterForm() {
     const username = document.getElementById('regUsername').value.trim();
     const password = document.getElementById('regPassword').value;
     const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+    const email = document.getElementById('wizardSubmittedEmail').value.trim();
+    if (!email || !/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+        showStepError('step4Error', 'step4ErrorMsg', 'Địa chỉ email chưa được xác thực! Vui lòng quay lại Bước 2 để nhận mã OTP.');
+        goToStep(2);
+        return false;
+    }
 
     if (!fullName || !username || !password || !confirmPassword) {
         showStepError('step4Error', 'step4ErrorMsg', 'Vui lòng điền đầy đủ các thông tin có dấu sao (*)!');

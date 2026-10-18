@@ -3645,15 +3645,14 @@ button, input, select, textarea {
 .auth-tab-view {
     display: none;
     animation: authFadeUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    height: 480px;
-    min-height: 480px;
-    max-height: 480px;
+    min-height: 420px;
+    height: auto;
 }
 
 .auth-tab-view.active {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
 }
 
 .auth-form-body {
@@ -4264,10 +4263,13 @@ button, input, select, textarea {
 /* Switch Tab Footer */
 .auth-tab-switch-footer {
     text-align: center;
-    margin-top: auto;
-    padding-top: 10px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px dashed #e2e8f0;
     font-size: 0.86rem;
     color: var(--text-muted);
+    position: relative;
+    clear: both;
 }
 
 .auth-switch-link {
@@ -4454,14 +4456,14 @@ button, input, select, textarea {
     color: #10b981;
 }
 
-/* Wizard Step Panels - Height locked to strictly 380px */
+/* Wizard Step Panels - Height flexible */
 .auth-wizard-step {
     display: none;
-    height: 380px;
-    min-height: 380px;
-    max-height: 380px;
+    min-height: auto;
+    height: auto;
+    max-height: none;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     animation: authFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

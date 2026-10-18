@@ -1,0 +1,12 @@
+# ==============================================================================
+# CẤU HÌNH GỬI EMAIL OTP THẬT QUA RESEND GLOBAL REST API
+# Hướng dẫn lấy Resend API Key miễn phí (3.000 email/tháng):
+# 1. Truy cập https://resend.com -> Bấm "Sign In with Google"
+# 2. Vào mục "API Keys" -> Bấm "Create API Key"
+# 3. Dán mã API key (dạng re_...) vào dòng resend.api.key bên dưới:
+# ==============================================================================
+resend.api.key=re_your_api_key_here
+
+# Thông tin thương hiệu hiển thị trên Email
+mail.from.email=onboarding@resend.dev
+mail.from.name=Utee Food Delivery
