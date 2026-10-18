@@ -346,11 +346,18 @@
                 <div class="stat-icon-wrap icon-red">
                     <i class="fa-solid fa-award"></i>
                 </div>
-                <div class="stat-info">
+                <div class="stat-info" style="min-width: 0;">
                     <span class="stat-title">Điểm Hạnh Kiểm &amp; Sao</span>
-                    <h3 class="stat-val text-primary">100đ • ${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0} ⭐</h3>
-                    <span class="stat-sub text-success">
-                        <i class="fa-solid fa-circle-check"></i> Hạng Xuất Sắc 🏆 (${driverRatingStats != null ? driverRatingStats['reviewCount'] : 0} đánh giá)
+                    <h3 class="stat-val text-primary" style="white-space: nowrap; font-size: 1.35rem; display: flex; align-items: center; gap: 6px;">
+                        <span>100đ</span>
+                        <span style="color: #cbd5e1; font-size: 0.95rem; font-weight: 400;">•</span>
+                        <span style="display: inline-flex; align-items: center; gap: 4px;">
+                            ${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0}
+                            <i class="fa-solid fa-star text-warning" style="font-size: 0.85em;"></i>
+                        </span>
+                    </h3>
+                    <span class="stat-sub text-success" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; font-size: 0.78rem;">
+                        <i class="fa-solid fa-circle-check"></i> Hạng Xuất Sắc (${driverRatingStats != null ? driverRatingStats['reviewCount'] : 0} đánh giá)
                     </span>
                 </div>
             </div>
@@ -1428,7 +1435,10 @@
                         <div class="admin-stat-card">
                             <div class="stat-info">
                                 <span class="stat-title">ĐÁNH GIÁ TRUNG BÌNH</span>
-                                <h3 class="stat-val" style="color: #f59e0b;">${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0} ⭐</h3>
+                                <h3 class="stat-val" style="color: #f59e0b; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+                                    ${driverRatingStats != null ? driverRatingStats['avgRating'] : 5.0} 
+                                    <i class="fa-solid fa-star text-warning" style="font-size: 0.85em;"></i>
+                                </h3>
                                 <span class="stat-sub">Từ thực khách &amp; Quán ăn</span>
                             </div>
                         </div>

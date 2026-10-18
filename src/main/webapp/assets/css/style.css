@@ -6902,6 +6902,7 @@ a,
     font-weight: 800;
     color: #0f172a;
     line-height: 1.2;
+    white-space: nowrap;
 }
 
 .stat-sub {
