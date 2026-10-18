@@ -28,6 +28,7 @@ import java.util.Map;
 public class AuthController extends HttpServlet {
     private final UserService userService = new UserService();
     private final FoodService foodService = new FoodService();
+    private final com.ute.fooddelivery.service.EmailService emailService = new com.ute.fooddelivery.service.EmailService();
     private static final int REMEMBER_ME_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
     @Override
@@ -135,9 +136,22 @@ public class AuthController extends HttpServlet {
             String password = req.getParameter("password");
             String confirmPassword = req.getParameter("confirmPassword");
             String fullName = req.getParameter("fullName");
+            String email = req.getParameter("email");
             String phone = req.getParameter("phone");
             String address = req.getParameter("address");
             String accountType = req.getParameter("accountType"); // "CUSTOMER", "SELLER" hoặc "SHIPPER"
+
+            // Lấy email từ session nếu request param chưa truyền
+            HttpSession checkSession = req.getSession(false);
+            if ((email == null || email.trim().isEmpty()) && checkSession != null) {
+                String sessEmail = (String) checkSession.getAttribute("verifiedEmail");
+                if (sessEmail == null) {
+                    sessEmail = (String) checkSession.getAttribute("regEmail");
+                }
+                if (sessEmail != null) {
+                    email = sessEmail;
+                }
+            }
 
             if (accountType == null || accountType.trim().isEmpty()) {
                 accountType = "CUSTOMER";
@@ -227,6 +241,10 @@ public class AuthController extends HttpServlet {
                 phone == null || phone.trim().isEmpty() ||
                 address == null || address.trim().isEmpty()) {
                 validationError = "Vui lòng điền đầy đủ các thông tin bắt buộc (*)!";
+            } else if (email == null || email.trim().isEmpty() || !email.trim().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                validationError = "Địa chỉ email không hợp lệ! Vui lòng nhập địa chỉ Gmail/Email chính xác.";
+            } else if (userService.isEmailExists(email.trim())) {
+                validationError = "Địa chỉ email '" + email.trim() + "' đã được sử dụng! Vui lòng chọn email khác.";
             } else if (confirmPassword != null && !password.equals(confirmPassword)) {
                 validationError = "Mật khẩu xác nhận không trùng khớp với mật khẩu đã nhập!";
             } else if (password.trim().length() < 6) {
@@ -255,6 +273,7 @@ public class AuthController extends HttpServlet {
                 req.setAttribute("errorMessage", validationError);
                 req.setAttribute("stickyRegFullName", fullName);
                 req.setAttribute("stickyRegUsername", username);
+                req.setAttribute("stickyRegEmail", email);
                 req.setAttribute("stickyRegPhone", phone);
                 req.setAttribute("stickyRegAddress", address);
                 req.setAttribute("stickyAccountType", accountType);
@@ -276,7 +295,7 @@ public class AuthController extends HttpServlet {
             if (isSellerReg) role = "SELLER";
             if (isShipperReg) role = "SHIPPER";
 
-            User newUser = new User(0, username.trim(), password, fullName.trim(), username.trim() + "@gmail.com", phone.trim(), address.trim(), role, avatarUrl);
+            User newUser = new User(0, username.trim(), password, fullName.trim(), email.trim(), phone.trim(), address.trim(), role, avatarUrl);
             boolean created;
             if (isSellerReg) {
                 created = userService.registerSeller(newUser, restaurantName.trim(), address.trim(), restaurantDesc, openTime, closeTime, restaurantLogo, restaurantBanner);
@@ -287,8 +306,9 @@ public class AuthController extends HttpServlet {
             }
 
             if (!created) {
-                req.setAttribute("errorMessage", "Đăng ký không thành công! Tên đăng nhập hoặc số điện thoại có thể đã tồn tại trong hệ thống.");
+                req.setAttribute("errorMessage", "Đăng ký không thành công! Tên đăng nhập, email hoặc số điện thoại có thể đã tồn tại trong hệ thống.");
                 req.setAttribute("stickyRegFullName", fullName);
+                req.setAttribute("stickyRegEmail", email);
                 req.setAttribute("stickyRegPhone", phone);
                 req.setAttribute("stickyRegAddress", address);
                 req.setAttribute("stickyAccountType", accountType);
@@ -323,7 +343,11 @@ public class AuthController extends HttpServlet {
 
             // Xóa session OTP
             session.removeAttribute("regOtp");
+            session.removeAttribute("regEmail");
             session.removeAttribute("regPhone");
+            session.removeAttribute("regOtpTime");
+            session.removeAttribute("emailVerified");
+            session.removeAttribute("verifiedEmail");
             session.removeAttribute("phoneVerified");
 
             // Thêm món ăn chờ (nếu trước đó khách chưa đăng nhập đã bấm đặt món)
@@ -349,31 +373,64 @@ public class AuthController extends HttpServlet {
 
     private void handleSendOtp(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json;charset=UTF-8");
+        String email = req.getParameter("email");
         String phone = req.getParameter("phone");
-        if (phone == null || !phone.trim().matches("^0[0-9]{9,10}$")) {
-            resp.getWriter().write("{\"success\":false,\"message\":\"Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại Việt Nam 10 chữ số (bắt đầu bằng 0).\"}");
+
+        if (email == null || !email.trim().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            resp.getWriter().write("{\"success\":false,\"message\":\"Địa chỉ email không hợp lệ! Vui lòng nhập địa chỉ Gmail/Email chính xác (ví dụ: vidu@gmail.com).\"}");
             return;
         }
 
-        // Kiểm tra số điện thoại đã tồn tại trong hệ thống chưa
-        if (userService.isPhoneExists(phone.trim())) {
-            resp.getWriter().write("{\"success\":false,\"message\":\"Số điện thoại " + phone.trim() + " đã được đăng ký tài khoản! Vui lòng đăng nhập hoặc sử dụng số khác.\"}");
+        String cleanEmail = email.trim().toLowerCase();
+
+        // Kiểm tra email đã tồn tại trong hệ thống chưa
+        if (userService.isEmailExists(cleanEmail)) {
+            resp.getWriter().write(String.format("{\"success\":false,\"message\":\"Địa chỉ email '%s' đã được đăng ký tài khoản! Vui lòng đăng nhập hoặc sử dụng email khác.\"}", cleanEmail));
             return;
+        }
+
+        // Nếu có gửi kèm số điện thoại thì kiểm tra số điện thoại
+        if (phone != null && !phone.trim().isEmpty()) {
+            String cleanPhone = phone.trim();
+            if (!cleanPhone.matches("^0[0-9]{9,10}$")) {
+                resp.getWriter().write("{\"success\":false,\"message\":\"Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số bắt đầu bằng số 0.\"}");
+                return;
+            }
+            if (userService.isPhoneExists(cleanPhone)) {
+                resp.getWriter().write(String.format("{\"success\":false,\"message\":\"Số điện thoại '%s' đã được đăng ký tài khoản! Vui lòng sử dụng số khác.\"}", cleanPhone));
+                return;
+            }
         }
 
         // Sinh mã OTP ngẫu nhiên 6 chữ số
-        int randomNum = (int) (Math.random() * 900000) + 100000;
-        String otp = String.valueOf(randomNum);
+        String otp = com.ute.fooddelivery.service.EmailService.generateOtp();
 
         HttpSession session = req.getSession(true);
         session.removeAttribute("phoneVerified"); // Reset cờ xác thực khi yêu cầu mã OTP mới
         session.setAttribute("regOtp", otp);
-        session.setAttribute("regPhone", phone.trim());
+        session.setAttribute("regEmail", cleanEmail);
+        if (phone != null && !phone.trim().isEmpty()) {
+            session.setAttribute("regPhone", phone.trim());
+        }
         session.setAttribute("regOtpTime", System.currentTimeMillis());
 
-        System.out.println(">> [SMS GATEWAY SIMULATOR] Gửi OTP " + otp + " tới số điện thoại " + phone.trim());
+        // Gửi email qua Gmail SMTP
+        com.ute.fooddelivery.service.EmailService.SendEmailResult sendResult = emailService.sendOtpEmail(cleanEmail, otp);
 
-        resp.getWriter().write(String.format("{\"success\":true,\"otp\":\"%s\",\"phone\":\"%s\",\"message\":\"Mã xác thực OTP đã được gửi thành công đến số %s\"}", otp, phone.trim(), phone.trim()));
+        if (sendResult.isSuccess()) {
+            if (sendResult.isRealSmtp()) {
+                // Gửi thật thành công qua Resend / Brevo / Gmail SMTP: không để lộ mã OTP trong JSON trả về
+                String safeMsg = sendResult.getMessage().replace("\"", "\\\"").replace("\n", " ");
+                resp.getWriter().write(String.format("{\"success\":true,\"isReal\":true,\"email\":\"%s\",\"message\":\"%s\"}", cleanEmail, safeMsg));
+            } else {
+                // Chế độ Dev Sandbox (dành cho cộng sự chưa cấu hình API): gửi kèm OTP để hiển thị nút điền nhanh
+                resp.getWriter().write(String.format("{\"success\":true,\"isReal\":false,\"otp\":\"%s\",\"email\":\"%s\",\"message\":\"%s\"}", otp, cleanEmail, sendResult.getMessage()));
+            }
+        } else {
+            // Gửi email thất bại (sai API key hoặc lỗi mạng)
+            String safeMsg = sendResult.getMessage().replace("\"", "\\\"").replace("\n", " ");
+            resp.getWriter().write(String.format("{\"success\":false,\"isReal\":false,\"message\":\"%s\"}", safeMsg));
+        }
     }
 
     private void handleVerifyOtp(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -386,6 +443,7 @@ public class AuthController extends HttpServlet {
         }
 
         String sessionOtp = (String) session.getAttribute("regOtp");
+        String regEmail = (String) session.getAttribute("regEmail");
         Long otpTime = (Long) session.getAttribute("regOtpTime");
 
         if (sessionOtp == null || otpTime == null) {
@@ -400,8 +458,10 @@ public class AuthController extends HttpServlet {
         }
 
         if (inputOtp != null && inputOtp.trim().equals(sessionOtp)) {
+            session.setAttribute("emailVerified", true);
+            session.setAttribute("verifiedEmail", regEmail);
             session.setAttribute("phoneVerified", true);
-            resp.getWriter().write("{\"success\":true,\"message\":\"Xác thực số điện thoại thành công!\"}");
+            resp.getWriter().write(String.format("{\"success\":true,\"message\":\"Xác thực email thành công!\",\"email\":\"%s\"}", regEmail != null ? regEmail : ""));
         } else {
             resp.getWriter().write("{\"success\":false,\"message\":\"Mã xác thực OTP không chính xác. Vui lòng kiểm tra lại!\"}");
         }

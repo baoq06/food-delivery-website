@@ -146,6 +146,29 @@ public class UserDAO {
         return false;
     }
 
+    public boolean isEmailExists(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        String cleanEmail = email.trim().toLowerCase();
+        String query = "SELECT 1 FROM users WHERE LOWER(email) = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn != null) {
+                try (PreparedStatement ps = conn.prepareStatement(query)) {
+                    ps.setString(1, cleanEmail);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra email tồn tại: " + e.getMessage());
+        }
+        return false;
+    }
+
     public boolean isUsernameExists(String username) {
         if (username == null || username.trim().isEmpty()) {
             return false;

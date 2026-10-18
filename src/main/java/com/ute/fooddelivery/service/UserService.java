@@ -18,6 +18,10 @@ public class UserService {
         return userDAO.isPhoneExists(phone);
     }
 
+    public boolean isEmailExists(String email) {
+        return userDAO.isEmailExists(email);
+    }
+
     public boolean isUsernameExists(String username) {
         return userDAO.isUsernameExists(username);
     }
