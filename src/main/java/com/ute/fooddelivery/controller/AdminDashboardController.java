@@ -3,6 +3,7 @@ package com.ute.fooddelivery.controller;
 import com.ute.fooddelivery.dao.OrderDAO;
 import com.ute.fooddelivery.dao.UserDAO;
 import com.ute.fooddelivery.model.Order;
+import com.ute.fooddelivery.model.User;
 import com.ute.fooddelivery.service.CategoryService;
 import com.ute.fooddelivery.service.FoodService;
 import jakarta.servlet.ServletException;
@@ -10,6 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,22 @@ public class AdminDashboardController extends HttpServlet {
             throws ServletException, IOException {
 
         String action = req.getParameter("action");
-        if ("approve".equals(action)) {
+        if ("deleteAllOrders".equals(action)) {
+            HttpSession session = req.getSession(false);
+            User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+            if (currentUser == null || !currentUser.isAdmin()) {
+                resp.sendRedirect(req.getContextPath() + "/auth?action=login");
+                return;
+            }
+
+            boolean ok = orderDAO.deleteAllOrders();
+            if (ok) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?msg=all_orders_deleted");
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard?error=delete_orders_failed");
+            }
+            return;
+        } else if ("approve".equals(action)) {
             String orderIdParam = req.getParameter("orderId");
             if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
                 try {
@@ -147,16 +164,27 @@ public class AdminDashboardController extends HttpServlet {
 
         // 2. Thống kê đơn hàng thực tế
         Map<String, Integer> orderStats = orderDAO.getOrderStatusCounts();
+        if (orderStats == null) {
+            orderStats = new java.util.HashMap<>();
+        }
 
-        // 3. Thống kê món ăn & danh mục thực tế
-        int foodCount = foodService.getAllFoods().size();
-        int categoryCount = categoryService.getAllCategories().size();
+        // 3. Thống kê món ăn & danh mục thực tế (an toàn null-pointer)
+        List<com.ute.fooddelivery.model.Food> allFoods = foodService.getAllFoods();
+        int foodCount = allFoods != null ? allFoods.size() : 0;
+        List<com.ute.fooddelivery.model.Category> allCategories = categoryService.getAllCategories();
+        int categoryCount = allCategories != null ? allCategories.size() : 0;
 
         // 4. Thống kê tài khoản người dùng thực tế
         Map<String, Integer> userStats = userDAO.getUserStats();
+        if (userStats == null) {
+            userStats = new java.util.HashMap<>();
+        }
 
         // 5. Danh sách đơn đặt hàng thực tế gần đây
         List<Order> recentOrders = orderDAO.getRecentOrdersForAdmin(20);
+        if (recentOrders == null) {
+            recentOrders = new java.util.ArrayList<>();
+        }
 
         req.setAttribute("adminRevenue", adminRevenue);
         req.setAttribute("totalRevenue", adminRevenue);
@@ -174,25 +202,33 @@ public class AdminDashboardController extends HttpServlet {
             search = req.getParameter("q"); // Hỗ trợ cả param q
         }
 
+        List<com.ute.fooddelivery.model.Driver> defaultDrivers = driverDAO.getAllDrivers();
+        if (defaultDrivers == null) defaultDrivers = new java.util.ArrayList<>();
+
+        List<com.ute.fooddelivery.model.Restaurant> defaultRestaurants = restaurantDAO.getAllRestaurants();
+        if (defaultRestaurants == null) defaultRestaurants = new java.util.ArrayList<>();
+
         if ("shippers".equals(tab)) {
             if (search != null && !search.trim().isEmpty()) {
-                req.setAttribute("allDrivers", driverDAO.searchDrivers(search.trim()));
+                List<com.ute.fooddelivery.model.Driver> sDrivers = driverDAO.searchDrivers(search.trim());
+                req.setAttribute("allDrivers", sDrivers != null ? sDrivers : new java.util.ArrayList<>());
                 req.setAttribute("searchKeyword", search.trim());
             } else {
-                req.setAttribute("allDrivers", driverDAO.getAllDrivers());
+                req.setAttribute("allDrivers", defaultDrivers);
             }
-            req.setAttribute("allRestaurants", restaurantDAO.getAllRestaurants());
+            req.setAttribute("allRestaurants", defaultRestaurants);
         } else if ("restaurants".equals(tab)) {
             if (search != null && !search.trim().isEmpty()) {
-                req.setAttribute("allRestaurants", restaurantDAO.searchRestaurants(search.trim()));
+                List<com.ute.fooddelivery.model.Restaurant> sRests = restaurantDAO.searchRestaurants(search.trim());
+                req.setAttribute("allRestaurants", sRests != null ? sRests : new java.util.ArrayList<>());
                 req.setAttribute("searchKeyword", search.trim());
             } else {
-                req.setAttribute("allRestaurants", restaurantDAO.getAllRestaurants());
+                req.setAttribute("allRestaurants", defaultRestaurants);
             }
-            req.setAttribute("allDrivers", driverDAO.getAllDrivers());
+            req.setAttribute("allDrivers", defaultDrivers);
         } else {
-            req.setAttribute("allDrivers", driverDAO.getAllDrivers());
-            req.setAttribute("allRestaurants", restaurantDAO.getAllRestaurants());
+            req.setAttribute("allDrivers", defaultDrivers);
+            req.setAttribute("allRestaurants", defaultRestaurants);
         }
 
         req.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(req, resp);

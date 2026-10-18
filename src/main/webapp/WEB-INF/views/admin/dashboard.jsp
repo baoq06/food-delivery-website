@@ -8,6 +8,18 @@
 <div class="admin-dashboard-container">
     <div class="container section">
         <!-- Feedback Alerts -->
+        <c:if test="${param.msg eq 'all_orders_deleted'}">
+            <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-circle-check text-success" style="font-size: 1.2rem;"></i>
+                <span>Đã xóa toàn bộ đơn hàng và lịch sử đơn trong hệ thống thành công! Dữ liệu đã sạch để kiểm thử các đơn mới.</span>
+            </div>
+        </c:if>
+        <c:if test="${param.error eq 'delete_orders_failed'}">
+            <div style="background: #fff1f2; border: 1px solid #f43f5e; color: #be123c; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                <span>Không thể xóa đơn hàng. Vui lòng kiểm tra lại kết nối cơ sở dữ liệu!</span>
+            </div>
+        </c:if>
         <c:if test="${param.msg eq 'approved'}">
             <div style="background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; font-weight: 600;">
                 <i class="fa-solid fa-circle-check text-success" style="font-size: 1.2rem;"></i>
@@ -64,7 +76,13 @@
                 <h1 class="admin-main-title">Bảng Điều Khiển & Giám Sát Đơn Hàng</h1>
                 <p class="admin-sub">Xin chào, <strong>${sessionScope.currentUser != null ? sessionScope.currentUser.fullName : 'Quản trị viên'}</strong>! Chúc bạn một ngày làm việc hiệu quả.</p>
             </div>
-            <div class="admin-actions">
+            <div class="admin-actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="margin: 0;" onsubmit="return confirmDeleteAllOrders();">
+                    <input type="hidden" name="action" value="deleteAllOrders" />
+                    <button type="submit" class="btn btn-danger" style="background: #dc2626; border-color: #dc2626; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
+                        <i class="fa-solid fa-trash-can"></i> Xóa Tất Cả Đơn (Test)
+                    </button>
+                </form>
                 <a href="${pageContext.request.contextPath}/foods" class="btn btn-outline"><i class="fa-solid fa-eye"></i> Xem Website Khách</a>
                 <a href="${pageContext.request.contextPath}/auth?action=logout" class="btn btn-danger"><i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng Xuất</a>
             </div>
@@ -505,7 +523,15 @@
                             <h3 class="table-card-title"><i class="fa-solid fa-clock-rotate-left text-primary"></i> Đơn Đặt Hàng Gần Đây Cần Xử Lý</h3>
                             <span class="table-card-sub">Dữ liệu được cập nhật trực tiếp từ cơ sở dữ liệu</span>
                         </div>
-                        <button class="btn btn-primary btn-sm" onclick="window.location.href='${pageContext.request.contextPath}/admin/dashboard'"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <form action="${pageContext.request.contextPath}/admin/dashboard" method="POST" style="margin: 0;" onsubmit="return confirmDeleteAllOrders();">
+                                <input type="hidden" name="action" value="deleteAllOrders" />
+                                <button type="submit" class="btn btn-danger btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 700; border-radius: 8px; padding: 7px 14px; background: #dc2626; color: #fff; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);" title="Xóa toàn bộ đơn hàng và lịch sử đơn để làm sạch dữ liệu test">
+                                    <i class="fa-solid fa-trash-can"></i> Xóa tất cả đơn hàng (Test)
+                                </button>
+                            </form>
+                            <button class="btn btn-primary btn-sm" onclick="window.location.href='${pageContext.request.contextPath}/admin/dashboard'"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -737,6 +763,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+function confirmDeleteAllOrders() {
+    return confirm("CẢNH BÁO QUAN TRỌNG DÀNH CHO ADMIN TEST:\n\nBạn có chắc chắn muốn XÓA TOÀN BỘ đơn hàng và lịch sử đơn trong hệ thống không?\n\n• Toàn bộ đơn hàng, chi tiết món ăn, đánh giá và thông báo đơn sẽ bị xóa sạch hoàn toàn.\n• Trạng thái tài xế bận giao hàng sẽ được chuyển về sẵn sàng.\n• Mã đơn mới sau khi xóa sẽ được đếm lại từ đầu (#1).\n\nThao tác này dùng để làm sạch dữ liệu kiểm thử và KHÔNG THỂ HOÀN TÁC!");
+}
 </script>
 
 <jsp:include page="/WEB-INF/views/common/footer.jsp" />

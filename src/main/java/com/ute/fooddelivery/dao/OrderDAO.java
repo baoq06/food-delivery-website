@@ -1625,4 +1625,66 @@ public class OrderDAO {
         }
         return list;
     }
+
+    /**
+     * Xóa toàn bộ dữ liệu đơn hàng và lịch sử đơn hàng trong hệ thống (dành cho Admin kiểm thử hệ thống).
+     * Bao gồm: Đánh giá đơn (order_reviews), Chi tiết món (order_items), Thông báo đơn (notifications),
+     * Tin nhắn liên quan (chat_messages) và toàn bộ Đơn hàng (orders).
+     * Đồng thời reset trạng thái tài xế BUSY về AVAILABLE và reset AUTO_INCREMENT.
+     */
+    public boolean deleteAllOrders() {
+        try (Connection conn = DBContext.getConnection()) {
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+            try (Statement stmt = conn.createStatement()) {
+                // 1. Xóa các đánh giá đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM order_reviews");
+                } catch (SQLException ignore) {}
+
+                // 2. Xóa chi tiết các món trong đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM order_items");
+                } catch (SQLException ignore) {}
+
+                // 3. Xóa các thông báo liên quan đến đơn hàng
+                try {
+                    stmt.executeUpdate("DELETE FROM notifications WHERE order_id IS NOT NULL OR type LIKE 'ORDER%'");
+                } catch (SQLException ignore) {}
+
+                // 4. Gỡ liên kết order_id trong bảng tin nhắn chat (nếu có bảng chat)
+                try {
+                    stmt.executeUpdate("UPDATE chat_messages SET order_id = NULL WHERE order_id IS NOT NULL");
+                } catch (SQLException ignore) {}
+
+                // 5. Xóa toàn bộ đơn hàng trong bảng orders
+                stmt.executeUpdate("DELETE FROM orders");
+
+                // 6. Reset AUTO_INCREMENT để đơn mới bắt đầu lại từ #1
+                try {
+                    stmt.executeUpdate("ALTER TABLE order_items AUTO_INCREMENT = 1");
+                    stmt.executeUpdate("ALTER TABLE orders AUTO_INCREMENT = 1");
+                } catch (SQLException ignore) {}
+
+                // 7. Giải phóng tài xế đang bận giao đơn về trạng thái sẵn sàng (AVAILABLE)
+                try {
+                    stmt.executeUpdate("UPDATE drivers SET status = 'AVAILABLE' WHERE status = 'BUSY'");
+                } catch (SQLException ignore) {}
+
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                System.err.println("Lỗi khi xóa toàn bộ đơn hàng: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi kết nối khi xóa toàn bộ đơn hàng: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
