@@ -598,8 +598,8 @@ public class OrderDAO {
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
             "  AND MONTH(o.created_at) = ? " +
-            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.status = 'DELIVERED' " +
+            "  AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) " +
             "GROUP BY DAY(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -642,8 +642,8 @@ public class OrderDAO {
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
             "  AND YEAR(o.created_at) = ? " +
-            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.status = 'DELIVERED' " +
+            "  AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) " +
             "GROUP BY MONTH(o.created_at) " +
             "ORDER BY period_key ASC";
 
@@ -684,8 +684,8 @@ public class OrderDAO {
             "JOIN order_items oi ON o.order_id = oi.order_id " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "WHERE f.restaurant_id = ? " +
-            "  AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 " +
+            "  AND o.status = 'DELIVERED' " +
+            "  AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) " +
             "GROUP BY YEAR(o.created_at) " +
             "ORDER BY period_key DESC";
 
@@ -726,8 +726,8 @@ public class OrderDAO {
             "JOIN order_items oi ON o.order_id = oi.order_id " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
-            "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.shipper_delivered = 1 "
+            "WHERE f.restaurant_id = ? AND o.status = 'DELIVERED' " +
+            "  AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) "
         );
 
         if ("DAY".equalsIgnoreCase(type) && month != null && day != null) {
@@ -800,8 +800,8 @@ public class OrderDAO {
             "FROM order_items oi " +
             "JOIN foods f ON oi.food_id = f.food_id " +
             "JOIN orders o ON oi.order_id = o.order_id " +
-            "WHERE f.restaurant_id = ? AND o.status NOT IN ('CANCELLED', 'PENDING') " +
-            "  AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 " +
+            "WHERE f.restaurant_id = ? AND o.status = 'DELIVERED' " +
+            "  AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) " +
             "GROUP BY f.food_id, f.name, f.image_url, f.price " +
             "ORDER BY total_qty DESC " +
             "LIMIT ?";
@@ -841,8 +841,8 @@ public class OrderDAO {
 
         String sql = 
             "SELECT " +
-            "  COALESCE(SUM(CASE WHEN o.status NOT IN ('CANCELLED', 'PENDING') AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
-            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND o.status NOT IN ('CANCELLED', 'PENDING') AND o.merchant_completed = 1 AND o.customer_confirmed = 1 AND o.shipper_delivered = 1 THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
+            "  COALESCE(SUM(CASE WHEN (o.status = 'DELIVERED' OR o.status = 'COMPLETED') AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) THEN oi.subtotal ELSE 0 END), 0) AS total_revenue, " +
+            "  COALESCE(SUM(CASE WHEN DATE(o.created_at) = CURDATE() AND (o.status = 'DELIVERED' OR o.status = 'COMPLETED') AND (o.merchant_completed = 1 OR o.shipper_delivered = 1) THEN oi.subtotal ELSE 0 END), 0) AS today_revenue, " +
             "  COUNT(DISTINCT o.order_id) AS total_orders, " +
             "  COUNT(DISTINCT CASE WHEN o.status = 'DELIVERED' OR o.status = 'COMPLETED' THEN o.order_id END) AS delivered_orders, " +
             "  COUNT(DISTINCT CASE WHEN o.status = 'PENDING' THEN o.order_id END) AS pending_orders " +
