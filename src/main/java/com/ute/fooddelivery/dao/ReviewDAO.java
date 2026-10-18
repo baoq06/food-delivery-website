@@ -129,6 +129,21 @@ public class ReviewDAO {
         return null;
     }
 
+    // Kiểm tra đơn hàng đã được đánh giá hay chưa
+    public boolean isOrderReviewed(int orderId) {
+        String sql = "SELECT 1 FROM order_reviews WHERE order_id = ? LIMIT 1";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi kiểm tra order đã review chưa: " + e.getMessage());
+        }
+        return false;
+    }
+
     /**
      * Thống kê rating trung bình và số lượng đánh giá của Tài xế (Shipper)
      * Công thức: AVG(driver_rating) cho tất cả các đơn mà tài xế này đã giao.

@@ -42,9 +42,10 @@ public class UserVoucherDAO extends DBContext {
                 "KEY `idx_uv_code` (`voucher_code`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
         try (Connection conn = getConnection()) {
-            if (conn == null) return;
-            try (Statement st = conn.createStatement()) {
-                st.execute(sql);
+            if (conn != null) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute(sql);
+                }
             }
         } catch (SQLException e) {
             System.err.println("[UserVoucherDAO] ensureUserVoucherTable warning: " + e.getMessage());
@@ -205,13 +206,17 @@ public class UserVoucherDAO extends DBContext {
         return list;
     }
 
-    private void ensureUserHasInitialVouchers(int userId) {
+    public void ensureUserHasInitialVouchers(int userId) {
+        if (userId <= 0) return;
         String countSql = "SELECT COUNT(*) FROM `user_vouchers` WHERE `user_id` = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(countSql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next() && rs.getInt(1) == 0) {
-                    grantWelcomeVouchers(userId);
+        try (Connection conn = getConnection()) {
+            if (conn == null) return;
+            try (PreparedStatement ps = conn.prepareStatement(countSql)) {
+                ps.setInt(1, userId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        grantWelcomeVouchers(userId);
+                    }
                 }
             }
         } catch (SQLException ignored) {}
@@ -266,46 +271,58 @@ public class UserVoucherDAO extends DBContext {
 
     public boolean useVouchers(int userId, List<String> codes) {
         if (userId <= 0 || codes == null || codes.isEmpty()) return false;
-        boolean allSuccess = true;
-        for (String code : codes) {
-            if (code != null && !code.trim().isEmpty()) {
-                boolean ok = useVoucher(userId, code.trim());
-                if (!ok) allSuccess = false;
+        String sql = "UPDATE `user_vouchers` SET `quantity` = `quantity` - 1 WHERE `user_id` = ? AND UPPER(`voucher_code`) = UPPER(?) AND `quantity` > 0";
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                for (String code : codes) {
+                    if (code == null || code.trim().isEmpty()) continue;
+                    ps.setInt(1, userId);
+                    ps.setString(2, code.trim());
+                    int updated = ps.executeUpdate();
+                    if (updated <= 0) {
+                        conn.rollback();
+                        return false;
+                    }
+                }
+            }
+            conn.commit();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("[UserVoucherDAO] useVouchers transaction error: " + e.getMessage());
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException ignored) {}
             }
         }
-        return allSuccess;
     }
 
     public boolean restoreVoucher(int userId, String code) {
         if (userId <= 0 || code == null || code.trim().isEmpty()) return false;
         String cleanCode = code.trim().toUpperCase(Locale.ROOT);
         String sql = "UPDATE `user_vouchers` SET `quantity` = `quantity` + 1 WHERE `user_id` = ? AND UPPER(`voucher_code`) = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            ps.setString(2, cleanCode);
-            int updated = ps.executeUpdate();
-            if (updated > 0) {
-                return true;
+        try (Connection conn = getConnection()) {
+            if (conn == null) return false;
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, userId);
+                ps.setString(2, cleanCode);
+                int updated = ps.executeUpdate();
+                return updated > 0;
             }
         } catch (SQLException e) {
             System.err.println("[UserVoucherDAO] restoreVoucher update error: " + e.getMessage());
+            return false;
         }
-
-        // Trường hợp người dùng chưa có dòng voucher này trong kho (hoàn trả dự phòng)
-        try {
-            VoucherDAO voucherDAO = new VoucherDAO();
-            Voucher v = voucherDAO.getVoucherByCode(cleanCode);
-            if (v != null) {
-                addOrIncrementVoucher(userId, cleanCode, v.getTitle(), v.getDescription(),
-                        v.getDiscountType(), v.getDiscountValue(), v.getMinOrderAmount(),
-                        v.getMaxDiscount(), v.isFreeShip(), v.isFreeShip() ? "🛵 FREESHIP" : "ƯU ĐÃI",
-                        v.getRestaurantId(), null, 1);
-                return true;
-            }
-        } catch (Exception e) {
-            System.err.println("[UserVoucherDAO] restoreVoucher fallback error: " + e.getMessage());
-        }
-        return false;
     }
 
     public boolean restoreVouchers(int userId, List<String> codes) {

@@ -54,7 +54,8 @@ public class DBContext {
                 username = "4GZ4scbbci9yLyb.root";
             }
             if (password == null || password.trim().isEmpty()) {
-                System.err.println(">> [DBContext - BẢO MẬT] CẢNH BÁO: Chưa cấu hình biến môi trường DB_PASSWORD hoặc db.password!");
+                System.err.println(">> [DBContext - BẢO MẬT] CẢNH BÁO: Chưa cấu hình biến môi trường DB_PASSWORD hoặc db.password! Đang dùng fallback cục bộ.");
+                password = "ETp7DO4YQ1QUHbng";
             }
 
             config.setDriverClassName(driver);

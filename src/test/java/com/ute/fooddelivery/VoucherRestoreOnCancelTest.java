@@ -173,4 +173,42 @@ public class VoucherRestoreOnCancelTest {
             ps.executeUpdate();
         } catch (Exception ignored) {}
     }
+
+    @Test
+    public void testOrderCancelledWithoutPriorVoucherDoesNotGiftVoucher() {
+        String testCode = "BEPVIET20K";
+        // Đảm bảo user chưa từng có voucher này trong ví
+        cleanTestUserVoucher(testCode);
+        assertNull("Khách chưa lưu mã này vào ví", userVoucherDAO.getUserVoucherRecord(testUserId, testCode));
+
+        // Giả lập đơn hàng có mã này bị hủy
+        Order order = new Order();
+        order.setUserId(testUserId);
+        order.setCustomerName("Khách Hàng Test Không Tặng Voucher");
+        order.setPhone("0912345678");
+        order.setAddress("1 Võ Văn Ngân, Thủ Đức");
+        order.setVoucherCode(testCode);
+        order.setDiscountAmount(20000.0);
+        order.setTotalAmount(80000.0);
+
+        List<OrderItem> items = new ArrayList<>();
+        items.add(new OrderItem(validFoodId, "Món Test 3", "test.jpg", 1, 100000.0, 100000.0));
+        int oId = orderDAO.createOrder(order, items);
+        assertTrue(oId > 0);
+
+        // Hủy đơn hàng
+        boolean updated = orderDAO.updateOrderStatus(oId, "CANCELLED");
+        assertTrue(updated);
+
+        // Kiểm tra ví: Khách tuyệt đối KHÔNG được tự động tặng mã này vào ví!
+        UserVoucher uvWallet = userVoucherDAO.getUserVoucherRecord(testUserId, testCode);
+        assertNull("Hủy đơn không được tự động cấp mới voucher vào ví khách hàng", uvWallet);
+
+        // Dọn dẹp
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement("DELETE FROM orders WHERE order_id = ?")) {
+            ps.setInt(1, oId);
+            ps.executeUpdate();
+        } catch (Exception ignored) {}
+    }
 }

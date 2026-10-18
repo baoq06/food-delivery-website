@@ -42,9 +42,10 @@ public class VoucherDAO extends DBContext {
                 "KEY `idx_v_code` (`code`)" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
         try (Connection conn = getConnection()) {
-            if (conn == null) return;
-            try (Statement st = conn.createStatement()) {
-                st.execute(sql);
+            if (conn != null) {
+                try (Statement st = conn.createStatement()) {
+                    st.execute(sql);
+                }
                 seedInitialRestaurantVouchers(conn);
             }
         } catch (SQLException e) {
@@ -53,6 +54,7 @@ public class VoucherDAO extends DBContext {
     }
 
     private void seedInitialRestaurantVouchers(Connection conn) {
+        if (conn == null) return;
         String countSql = "SELECT COUNT(*) FROM `vouchers`";
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(countSql)) {
             if (rs.next() && rs.getInt(1) == 0) {
