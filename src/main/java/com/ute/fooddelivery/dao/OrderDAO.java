@@ -281,12 +281,14 @@ public class OrderDAO {
                             settleDriverWalletOnOrderCompletedByOrderId(orderId);
                         }
 
-                        // Khi đơn hoàn tất hoặc hủy, giải phóng tài xế về trạng thái AVAILABLE
-                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
-                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                            psDriver.setInt(1, orderId);
-                            psDriver.executeUpdate();
-                        } catch (Exception ignored) {}
+                        // Khi đơn hoàn tất hoặc hủy, giải phóng tài xế về trạng thái AVAILABLE nếu không còn đơn nào khác đang giao
+                        Integer driverId = getDriverIdByOrderId(orderId);
+                        if (driverId != null && driverId > 0) {
+                            boolean hasOtherActiveOrders = hasActiveOrders(driverId, orderId);
+                            if (!hasOtherActiveOrders) {
+                                new DriverDAO().updateStatus(driverId, "AVAILABLE");
+                            }
+                        }
 
                         // Tự động hoàn trả voucher cho khách khi đơn bị hủy
                         if ("CANCELLED".equalsIgnoreCase(status)) {
@@ -323,11 +325,13 @@ public class OrderDAO {
                     ps.setInt(3, orderId);
                     int updated = ps.executeUpdate();
                     if (updated > 0) {
-                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
-                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                            psDriver.setInt(1, orderId);
-                            psDriver.executeUpdate();
-                        } catch (Exception ignored) {}
+                        Integer driverId = getDriverIdByOrderId(orderId);
+                        if (driverId != null && driverId > 0) {
+                            boolean hasOtherActiveOrders = hasActiveOrders(driverId, orderId);
+                            if (!hasOtherActiveOrders) {
+                                new DriverDAO().updateStatus(driverId, "AVAILABLE");
+                            }
+                        }
 
                         restoreVouchersForOrder(orderId);
                         return true;
@@ -1322,12 +1326,14 @@ public class OrderDAO {
                     ps.setInt(2, userId);
                     int updated = ps.executeUpdate();
                     if (updated > 0) {
-                        // Giải phóng tài xế nếu có
-                        String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = (SELECT driver_id FROM orders WHERE order_id = ?)";
-                        try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                            psDriver.setInt(1, orderId);
-                            psDriver.executeUpdate();
-                        } catch (Exception ignored) {}
+                        // Giải phóng tài xế nếu có và không còn đơn nào khác đang giao
+                        Integer driverId = getDriverIdByOrderId(orderId);
+                        if (driverId != null && driverId > 0) {
+                            boolean hasOtherActiveOrders = hasActiveOrders(driverId, orderId);
+                            if (!hasOtherActiveOrders) {
+                                new DriverDAO().updateStatus(driverId, "AVAILABLE");
+                            }
+                        }
 
                         // Hoàn trả voucher cho khách hàng nếu có
                         restoreVouchersForOrder(orderId);
@@ -1667,23 +1673,9 @@ public class OrderDAO {
 
                             // Giải phóng shipper về AVAILABLE nếu không còn đơn SHIPPING nào khác
                             if (driverId > 0) {
-                                boolean hasOtherShipping = false;
-                                String sqlCheckOther = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND status = 'SHIPPING' AND order_id != ?";
-                                try (PreparedStatement psOther = conn.prepareStatement(sqlCheckOther)) {
-                                    psOther.setInt(1, driverId);
-                                    psOther.setInt(2, orderId);
-                                    try (ResultSet rsOther = psOther.executeQuery()) {
-                                        if (rsOther.next() && rsOther.getInt(1) > 0) {
-                                            hasOtherShipping = true;
-                                        }
-                                    }
-                                } catch (Exception ignored) {}
-                                if (!hasOtherShipping) {
-                                    String sqlFreeDriver = "UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?";
-                                    try (PreparedStatement psDriver = conn.prepareStatement(sqlFreeDriver)) {
-                                        psDriver.setInt(1, driverId);
-                                        psDriver.executeUpdate();
-                                    } catch (Exception ignored) {}
+                                boolean hasOtherActiveOrders = hasActiveOrders(driverId, orderId);
+                                if (!hasOtherActiveOrders) {
+                                    new DriverDAO().updateStatus(driverId, "AVAILABLE");
                                 }
                             }
                             return true;
@@ -1710,10 +1702,11 @@ public class OrderDAO {
                 handleCodUnlockOnDeliveredByOrderId(orderId);
                 Order o = getOrderById(orderId);
                 if (o != null && o.getDriverId() != null && o.getDriverId() > 0) {
-                    try (PreparedStatement psDriver = conn.prepareStatement("UPDATE drivers SET status = 'AVAILABLE' WHERE driver_id = ?")) {
-                        psDriver.setInt(1, o.getDriverId());
-                        psDriver.executeUpdate();
-                    } catch (Exception ignored) {}
+                    int driverId = o.getDriverId();
+                    boolean hasOtherActiveOrders = hasActiveOrders(driverId, orderId);
+                    if (!hasOtherActiveOrders) {
+                        new DriverDAO().updateStatus(driverId, "AVAILABLE");
+                    }
                 }
                 return true;
             }
@@ -1721,6 +1714,44 @@ public class OrderDAO {
             System.err.println("Lỗi khi chủ quán hoàn tất đơn: " + e.getMessage());
         }
         return false;
+    }
+
+    public boolean hasActiveOrders(int driverId, int currentOrderId) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE driver_id = ? AND status = 'SHIPPING' AND order_id != ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, driverId);
+            ps.setInt(2, currentOrderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra active orders của driver #" + driverId + ": " + e.getMessage());
+        }
+        return false;
+    }
+
+    public boolean hasActiveOrders(int driverId) {
+        return hasActiveOrders(driverId, -1);
+    }
+
+    public Integer getDriverIdByOrderId(int orderId) {
+        String sql = "SELECT driver_id FROM orders WHERE order_id = ?";
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int driverId = rs.getInt("driver_id");
+                    return rs.wasNull() ? null : driverId;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi lấy driver_id theo mã đơn #" + orderId + ": " + e.getMessage());
+        }
+        return null;
     }
 
     private void handleCodUnlockOnDelivered(int customerUserId, int orderId) {

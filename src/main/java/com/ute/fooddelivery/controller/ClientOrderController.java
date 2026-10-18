@@ -64,8 +64,18 @@ public class ClientOrderController extends HttpServlet {
         if ("rate".equals(action)) {
             try {
                 int orderId = Integer.parseInt(req.getParameter("orderId"));
+                Order order = orderDAO.getOrderById(orderId);
+                if (order == null || order.getUserId() != currentUser.getId() || !"DELIVERED".equals(order.getStatus())) {
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=invalid_order");
+                    return;
+                }
+                if (reviewDAO.isOrderReviewed(orderId)) {
+                    resp.sendRedirect(req.getContextPath() + "/client/orders?error=already_reviewed");
+                    return;
+                }
+
                 String dIdStr = req.getParameter("driverId");
-                Integer driverId = (dIdStr != null && !dIdStr.trim().isEmpty() && !"0".equals(dIdStr.trim())) ? Integer.parseInt(dIdStr.trim()) : null;
+                Integer driverId = (dIdStr != null && !dIdStr.trim().isEmpty() && !"0".equals(dIdStr.trim())) ? Integer.parseInt(dIdStr.trim()) : order.getDriverId();
                 
                 String foodRStr = req.getParameter("foodRating");
                 String driverRStr = req.getParameter("driverRating");
@@ -85,6 +95,7 @@ public class ClientOrderController extends HttpServlet {
                 review.setOrderId(orderId);
                 review.setCustomerId(currentUser.getId());
                 review.setDriverId(driverId);
+                review.setRestaurantId(order.getRestaurantId());
                 review.setFoodRating(foodRating);
                 review.setFoodComment(foodComment);
                 review.setDriverRating(driverRating);
