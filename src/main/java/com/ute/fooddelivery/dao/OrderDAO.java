@@ -579,67 +579,7 @@ public class OrderDAO {
     }
 
     public List<Order> getOrdersByUser(int userId) {
-        String sql = "SELECT o.order_id, o.customer_name, o.address, o.phone, o.total_amount, o.shipping_fee, o.distance_km, o.status, o.created_at, " +
-                     "o.driver_id, d.name AS driver_name, d.phone AS driver_phone, " +
-                     "o.customer_confirmed, o.merchant_confirmed, o.shipper_accepted, o.shipper_picked_up, o.shipper_delivered, o.merchant_completed, " +
-                     "r.review_id, r.rating, r.comment, r.food_rating, r.food_comment, r.driver_rating, r.driver_comment, r.image_url " +
-                     "FROM orders o " +
-                     "LEFT JOIN drivers d ON o.driver_id = d.driver_id " +
-                     "LEFT JOIN order_reviews r ON o.order_id = r.order_id " +
-                     "WHERE o.user_id = ? " +
-                     "ORDER BY o.created_at DESC";
-        List<Order> orders = new ArrayList<>();
-        try (Connection conn = DBContext.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order order = new Order();
-                    order.setId(rs.getInt("order_id"));
-                    order.setCustomerName(rs.getString("customer_name"));
-                    order.setAddress(rs.getString("address"));
-                    order.setPhone(rs.getString("phone"));
-                    order.setTotalAmount(rs.getDouble("total_amount"));
-                    try { order.setShippingFee(rs.getDouble("shipping_fee")); } catch (Exception ignored) {}
-                    try { order.setDistanceKm(rs.getDouble("distance_km")); } catch (Exception ignored) {}
-                    order.setStatus(rs.getString("status"));
-                    order.setCreatedAt(rs.getTimestamp("created_at"));
-                    order.setCustomerConfirmed(rs.getBoolean("customer_confirmed"));
-                    order.setMerchantConfirmed(rs.getBoolean("merchant_confirmed"));
-                    order.setShipperAccepted(rs.getBoolean("shipper_accepted"));
-                    try { order.setShipperPickedUp(rs.getBoolean("shipper_picked_up")); } catch (Exception ignored) {}
-                    order.setShipperDelivered(rs.getBoolean("shipper_delivered"));
-                    order.setMerchantCompleted(rs.getBoolean("merchant_completed"));
-                    order.setDriverId(rs.getInt("driver_id"));
-                    if (rs.wasNull()) {
-                         order.setDriverId(null);
-                    } else {
-                         order.setDriverName(rs.getString("driver_name"));
-                         order.setDriverPhone(rs.getString("driver_phone"));
-                    }
-                    
-                    int reviewId = rs.getInt("review_id");
-                    if (!rs.wasNull()) {
-                        com.ute.fooddelivery.model.Review review = new com.ute.fooddelivery.model.Review();
-                        review.setReviewId(reviewId);
-                        review.setOrderId(order.getId());
-                        review.setRating(rs.getInt("rating"));
-                        review.setComment(rs.getString("comment"));
-                        review.setFoodRating((Integer) rs.getObject("food_rating"));
-                        review.setFoodComment(rs.getString("food_comment"));
-                        review.setDriverRating((Integer) rs.getObject("driver_rating"));
-                        review.setDriverComment(rs.getString("driver_comment"));
-                        try { review.setImageUrl(rs.getString("image_url")); } catch (Exception ignored) {}
-                        order.setReview(review);
-                    }
-                    
-                    orders.add(order);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return orders;
+        return getOrdersByUserId(userId);
     }
 
     public List<Order> getOrdersByDriver(int driverId, String statusFilter) {
@@ -1448,11 +1388,15 @@ public class OrderDAO {
             System.err.println("Không thể gán đơn #" + orderId + " cho shipper #" + driverId + ": Shipper đã đạt tối đa 3 đơn chờ nhận!");
             return false;
         }
-        String sql = "UPDATE orders SET driver_id = ?, shipper_accepted = 0 WHERE order_id = ? AND status != 'CANCELLED'";
+        String sql = "UPDATE orders SET driver_id = ?, shipper_accepted = 0 " +
+                     "WHERE order_id = ? " +
+                     "  AND status IN ('PENDING', 'CONFIRMED') " +
+                     "  AND (driver_id IS NULL OR driver_id = ? OR shipper_accepted = 0)";
         try (Connection conn = DBContext.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, driverId);
             ps.setInt(2, orderId);
+            ps.setInt(3, driverId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             System.err.println("Lỗi khi gán shipper cho đơn #" + orderId + ": " + e.getMessage());

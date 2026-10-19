@@ -64,11 +64,22 @@ public class ShipperFilter implements Filter {
             return;
         }
 
-        // 3. Tự động gắn thông tin đối tác tài xế vào request attribute
+        // 3. Tự động gắn thông tin đối tác tài xế vào request attribute và kiểm tra trạng thái cấm (BANNED)
         try {
             Driver driver = driverDAO.getOrCreateDriverForUser(currentUser);
             req.setAttribute("currentDriver", driver);
             req.setAttribute("driver", driver);
+
+            if (!currentUser.isAdmin() && driver != null && "BANNED".equalsIgnoreCase(driver.getStatus())) {
+                if (isApiRequest) {
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    resp.setContentType("application/json;charset=UTF-8");
+                    resp.getWriter().write("{\"success\":false,\"message\":\"Tài khoản đối tác tài xế của bạn đã bị khóa! Vui lòng liên hệ quản trị viên.\"}");
+                    return;
+                }
+                resp.sendRedirect(req.getContextPath() + "/auth?action=login&error=account_banned");
+                return;
+            }
         } catch (Exception ex) {
             System.err.println(">> [ShipperFilter] Lỗi nạp thông tin Driver: " + ex.getMessage());
         }

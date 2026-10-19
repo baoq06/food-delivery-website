@@ -100,7 +100,7 @@ public class MerchantFoodController extends HttpServlet {
             if (imageFilePart != null && imageFilePart.getSize() > 0) {
                 String savedRelPath = UploadUtils.saveUploadedFile(imageFilePart, "foods", req);
                 if (savedRelPath != null) {
-                    uploadedImageUrl = req.getContextPath() + savedRelPath;
+                    uploadedImageUrl = savedRelPath;
                 }
             }
 
