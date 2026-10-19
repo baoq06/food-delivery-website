@@ -550,7 +550,12 @@
                                                 <i class="fa-solid fa-layer-group me-1"></i> ${item.food.comboItems}
                                             </div>
                                         </c:if>
-                                        <div class="cart-item-unit-price">${String.format("%,.0f", item.food.price)} đ / phần</div>
+                                        <c:if test="${not empty item.selectedOptions}">
+                                            <div style="font-size: 0.78rem; color: #0284c7; background: #f0f9ff; border: 1px solid #bae6fd; padding: 2px 8px; border-radius: 6px; display: inline-block; margin: 3px 0 4px 0; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-plus me-1 text-primary"></i> Tùy chọn: ${item.selectedOptions}
+                                            </div>
+                                        </c:if>
+                                        <div class="cart-item-unit-price">${String.format("%,.0f", item.unitPrice)} đ / phần</div>
                                     </div>
                                     
                                     <div class="cart-item-qty">

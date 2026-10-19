@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <jsp:include page="/WEB-INF/views/common/header.jsp">
     <jsp:param name="title" value="${food != null ? food.name : 'Chi tiết món ăn'} - Utee" />
 </jsp:include>
@@ -16,6 +17,159 @@
         <h1 class="page-title">${food != null ? food.name : 'Chi Tiết Món Ăn'}</h1>
     </div>
 </div>
+
+<style>
+/* ========================================================
+   FOOD DETAIL ADDONS / OPTIONS UI STYLES
+   ======================================================== */
+.food-detail-addons-block {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin: 18px 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+.addons-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 12px;
+}
+.addons-icon-pill {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+    color: #ea580c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+.addons-subtext {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: block;
+    margin-top: 2px;
+}
+.addons-list-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.addon-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    transition: all 0.22s ease;
+    user-select: none;
+}
+.addon-card:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+.addon-card.selected {
+    background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+    border-color: #f97316;
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.12);
+}
+.addon-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+.addon-checkbox-indicator {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid #cbd5e1;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 0.72rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+.addon-card.selected .addon-checkbox-indicator {
+    background: #ea580c;
+    border-color: #ea580c;
+}
+.addon-info {
+    display: flex;
+    flex-direction: column;
+}
+.addon-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1e293b;
+    line-height: 1.25;
+}
+.addon-card.selected .addon-title {
+    color: #ea580c;
+}
+.addon-price {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #ea580c;
+    margin-top: 2px;
+}
+.addon-stepper {
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+.addon-card.selected .addon-stepper {
+    border-color: #f97316;
+}
+.addon-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #334155;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    line-height: 1;
+}
+.addon-btn.addon-plus {
+    color: #ea580c;
+    background: #fff7ed;
+    font-size: 0.85rem;
+}
+.addon-btn:hover {
+    background: #e2e8f0;
+}
+.addon-btn.addon-plus:hover {
+    background: #fed7aa;
+}
+.addon-qty-display {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.92rem;
+    color: #0f172a;
+}
+.addon-card.selected .addon-qty-display {
+    color: #ea580c;
+}
+</style>
 
 <div class="container section">
     <c:choose>
@@ -108,14 +262,17 @@
                                         Tiết kiệm ${String.format("%,.0f", food.savingsAmount)} đ (-${food.savingsPercent}%)
                                     </span>
                                 </div>
-                                <span class="detail-currency" style="color: #ea580c;">${String.format("%,.0f", food.price)}</span>
+                                <span class="detail-currency" id="detailPriceDisplay" style="color: #ea580c;">${String.format("%,.0f", food.price)}</span>
                                 <span class="currency-symbol" style="color: #ea580c;">VNĐ</span>
                             </c:when>
                             <c:otherwise>
-                                <span class="detail-currency">${String.format("%,.0f", food.price)}</span>
+                                <span class="detail-currency" id="detailPriceDisplay">${String.format("%,.0f", food.price)}</span>
                                 <span class="currency-symbol">VNĐ</span>
                             </c:otherwise>
                         </c:choose>
+                        <span id="optionsPriceAddonBadge" style="display: none; font-size: 0.82rem; color: #ea580c; background: #fff7ed; border: 1px solid #fed7aa; padding: 2px 10px; border-radius: 20px; font-weight: 700; margin-left: 8px; vertical-align: middle;">
+                            +0 đ món thêm
+                        </span>
                         <span class="tax-included">(Đã bao gồm VAT)</span>
                     </div>
 
@@ -191,6 +348,54 @@
                                     </div>
                                 </div>
 
+                                <!-- Tùy chọn món thêm / Topping (Add-ons: Mì thêm, Cơm thêm, Trứng thêm...) -->
+                                <c:if test="${food.hasOptions()}">
+                                    <div class="order-option-group food-detail-addons-block">
+                                        <div class="addons-header">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="addons-icon-pill">
+                                                    <i class="fa-solid fa-circle-plus"></i>
+                                                </div>
+                                                <div>
+                                                    <label class="option-label mb-0" style="font-size: 1.02rem; font-weight: 700; color: #1e293b;">
+                                                        Món ăn kèm & Tùy chọn thêm
+                                                    </label>
+                                                    <span class="addons-subtext">Bấm <strong>+1</strong> để chọn món thêm (giá tiền tự động cộng tương ứng)</span>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-light text-primary border" style="font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                                ${food.options.size()} tùy chọn
+                                            </span>
+                                        </div>
+
+                                        <div class="addons-list-grid">
+                                            <c:forEach items="${food.options}" var="opt" varStatus="st">
+                                                <div class="addon-card" id="addonCard_${st.index}" data-index="${st.index}" data-name="<c:out value='${opt.name}' />" data-price="${opt.price}">
+                                                    <div class="addon-card-left" onclick="changeOptionQty(${st.index}, 1)" style="cursor: pointer;" title="Bấm để thêm 1 ${opt.name}">
+                                                        <div class="addon-checkbox-indicator">
+                                                            <i class="fa-solid fa-check"></i>
+                                                        </div>
+                                                        <div class="addon-info">
+                                                            <span class="addon-title">${opt.name}</span>
+                                                            <span class="addon-price">+<fmt:formatNumber value="${opt.price}" type="number" /> VNĐ</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="addon-stepper">
+                                                        <button type="button" class="addon-btn addon-minus" onclick="changeOptionQty(${st.index}, -1)" title="Bớt 1">-</button>
+                                                        <span class="addon-qty-display" id="addonQty_${st.index}">0</span>
+                                                        <button type="button" class="addon-btn addon-plus" onclick="changeOptionQty(${st.index}, 1)" title="Thêm 1">+1</button>
+                                                    </div>
+                                                </div>
+                                            </c:forEach>
+                                        </div>
+
+                                        <!-- Hidden Inputs for Form Submission -->
+                                        <input type="hidden" name="selectedOptions" id="selectedOptionsInput" value="">
+                                        <input type="hidden" name="unitPrice" id="unitPriceInput" value="${food.price}">
+                                        <input type="hidden" name="optionsTotal" id="optionsTotalInput" value="0">
+                                    </div>
+                                </c:if>
+
                                 <!-- Special Request / Notes -->
                                 <div class="order-option-group">
                                     <label for="orderNote" class="option-label">Ghi chú cho nhà bếp (tùy chọn):</label>
@@ -215,8 +420,12 @@
                                             </button>
                                         </c:when>
                                         <c:otherwise>
-                                            <button type="submit" class="btn btn-primary btn-lg btn-add-full">
-                                                <i class="fa-solid fa-bag-shopping"></i> Thêm Vào Giỏ Hàng
+                                            <button type="submit" class="btn btn-primary btn-lg btn-add-full" id="btnAddToCart">
+                                                <i class="fa-solid fa-bag-shopping me-1"></i>
+                                                <span id="btnAddToCartText">Thêm Vào Giỏ Hàng</span>
+                                                <span id="btnAddToCartPrice" style="background: rgba(255,255,255,0.28); padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 0.95rem; margin-left: 8px;">
+                                                    ${String.format("%,.0f", food.price)} đ
+                                                </span>
                                             </button>
                                         </c:otherwise>
                                     </c:choose>
@@ -610,12 +819,96 @@
         <button type="button" class="btn btn-primary btn-add-full" onclick="document.querySelector('.detail-order-form') ? document.querySelector('.detail-order-form').submit() : null;">
             <i class="fa-solid fa-cart-plus me-1"></i>
             <span>Thêm vào giỏ</span>
+            <span id="mobileStickyBtnPrice" style="background: rgba(255,255,255,0.28); padding: 2px 8px; border-radius: 20px; font-size: 0.82rem; margin-left: 6px; font-weight: 800;">
+                ${String.format("%,.0f", food.price)} đ
+            </span>
         </button>
     </div>
 </c:if>
 
 <script>
 document.body.classList.add('page-food-detail');
+
+const BASE_FOOD_PRICE = ${food != null ? food.price : 0};
+const optionQuantities = {};
+
+function changeOptionQty(index, delta) {
+    const qtySpan = document.getElementById('addonQty_' + index);
+    const card = document.getElementById('addonCard_' + index);
+    if (!qtySpan || !card) return;
+
+    let curQty = optionQuantities[index] || 0;
+    curQty = Math.max(0, curQty + delta);
+    optionQuantities[index] = curQty;
+    qtySpan.innerText = curQty;
+
+    if (curQty > 0) {
+        card.classList.add('selected');
+    } else {
+        card.classList.remove('selected');
+    }
+
+    recalcTotalPrice();
+}
+
+function recalcTotalPrice() {
+    let optionsAddonTotal = 0;
+    const selectedTexts = [];
+    const cards = document.querySelectorAll('.addon-card');
+
+    cards.forEach(card => {
+        const idx = card.getAttribute('data-index');
+        const name = card.getAttribute('data-name');
+        const price = parseFloat(card.getAttribute('data-price')) || 0;
+        const qty = optionQuantities[idx] || 0;
+
+        if (qty > 0) {
+            optionsAddonTotal += price * qty;
+            const formattedPrice = new Intl.NumberFormat('vi-VN').format(price) + ' đ';
+            selectedTexts.push(name + ' (+' + formattedPrice + ') x' + qty);
+        }
+    });
+
+    const qtyInput = document.getElementById('detailQty');
+    const mainQty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+    const unitPrice = BASE_FOOD_PRICE + optionsAddonTotal;
+    const grandTotal = unitPrice * mainQty;
+
+    // 1. Update Unit & Displayed Price
+    const priceDisplay = document.getElementById('detailPriceDisplay');
+    if (priceDisplay) {
+        priceDisplay.innerText = new Intl.NumberFormat('vi-VN').format(unitPrice);
+    }
+
+    // 2. Addon Badge
+    const badge = document.getElementById('optionsPriceAddonBadge');
+    if (badge) {
+        if (optionsAddonTotal > 0) {
+            badge.innerText = '+' + new Intl.NumberFormat('vi-VN').format(optionsAddonTotal) + ' đ tùy chọn';
+            badge.style.display = 'inline-flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // 3. CTA Buttons
+    const formattedGrand = new Intl.NumberFormat('vi-VN').format(grandTotal) + ' đ';
+    const btnPrice = document.getElementById('btnAddToCartPrice');
+    if (btnPrice) btnPrice.innerText = formattedGrand;
+
+    const mobPrice = document.getElementById('mobileStickyBtnPrice');
+    if (mobPrice) mobPrice.innerText = formattedGrand;
+
+    // 4. Update Form Hidden Inputs
+    const optInput = document.getElementById('selectedOptionsInput');
+    if (optInput) optInput.value = selectedTexts.join(', ');
+
+    const uPriceInput = document.getElementById('unitPriceInput');
+    if (uPriceInput) uPriceInput.value = unitPrice;
+
+    const optTotInput = document.getElementById('optionsTotalInput');
+    if (optTotInput) optTotInput.value = optionsAddonTotal;
+}
 
 function toggleDetailNote(chipEl, noteText) {
     const input = document.getElementById('orderNote');
@@ -644,9 +937,11 @@ function increaseQty() {
         if (val < 50) {
             input.value = val + 1;
             if (stickyQty) stickyQty.innerText = input.value;
+            recalcTotalPrice();
         }
     }
 }
+
 function decreaseQty() {
     const input = document.getElementById('detailQty');
     const stickyQty = document.getElementById('mobileStickyQty');
@@ -655,6 +950,7 @@ function decreaseQty() {
         if (val > 1) {
             input.value = val - 1;
             if (stickyQty) stickyQty.innerText = input.value;
+            recalcTotalPrice();
         }
     }
 }

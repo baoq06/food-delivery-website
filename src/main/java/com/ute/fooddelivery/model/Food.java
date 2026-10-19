@@ -1,5 +1,7 @@
 package com.ute.fooddelivery.model;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -54,6 +56,12 @@ public class Food implements Serializable {
 
     @Column(name = "combo_items")
     private String comboItems;
+
+    @Column(name = "options_json")
+    private String optionsJson;
+
+    @Transient
+    private List<FoodOption> options;
 
     @Transient
     private double rating;
@@ -274,5 +282,51 @@ public class Food implements Serializable {
             }
         }
         return items;
+    }
+
+    public String getOptionsJson() {
+        return optionsJson;
+    }
+
+    public void setOptionsJson(String optionsJson) {
+        this.optionsJson = optionsJson;
+        this.options = null; // force reload on getOptions()
+    }
+
+    public List<FoodOption> getOptions() {
+        if (options == null) {
+            if (optionsJson != null && !optionsJson.trim().isEmpty()) {
+                try {
+                    options = new Gson().fromJson(optionsJson, new TypeToken<List<FoodOption>>() {}.getType());
+                } catch (Exception e) {
+                    options = new ArrayList<>();
+                }
+            } else {
+                options = new ArrayList<>();
+            }
+        }
+        return options;
+    }
+
+    public void setOptions(List<FoodOption> options) {
+        this.options = options;
+        if (options != null && !options.isEmpty()) {
+            this.optionsJson = new Gson().toJson(options);
+        } else {
+            this.optionsJson = null;
+        }
+    }
+
+    public boolean hasOptions() {
+        List<FoodOption> list = getOptions();
+        return list != null && !list.isEmpty();
+    }
+
+    public boolean isHasOptions() {
+        return hasOptions();
+    }
+
+    public boolean getHasOptions() {
+        return hasOptions();
     }
 }

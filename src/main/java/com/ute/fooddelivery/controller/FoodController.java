@@ -26,51 +26,65 @@ public class FoodController extends HttpServlet {
 
         if ("/food-detail".equals(path)) {
             String idParam = req.getParameter("id");
+            Food food = null;
             if (idParam != null && !idParam.trim().isEmpty()) {
                 try {
                     int id = Integer.parseInt(idParam.trim());
-                    Food food = foodService.getFoodById(id);
-                    req.setAttribute("food", food);
-
-                    if (food != null) {
-                        // Dọn dẹp cookie dùng chung cũ nếu còn sót
-                        CookieUtils.cleanLegacyRecentFoods(req, resp);
-
-                        // Cập nhật Cookie danh sách ID món ăn xem gần đây theo từng tài khoản riêng biệt
-                        String cookieName = CookieUtils.getRecentFoodsCookieName(req);
-                        String recentCookie = CookieUtils.getCookieValue(req, cookieName);
-                        List<Integer> idList = CookieUtils.parseIdList(recentCookie);
-                        idList.remove(Integer.valueOf(id)); // Đưa món hiện tại lên đầu
-                        idList.add(0, id);
-                        if (idList.size() > 6) {
-                            idList = idList.subList(0, 6);
-                        }
-                        CookieUtils.addCookie(resp, cookieName, CookieUtils.formatIdList(idList), RECENT_COOKIE_AGE);
-
-                        // Lấy danh sách các món xem gần đây khác để hiển thị gợi ý
-                        List<Integer> otherIds = new ArrayList<>(idList);
-                        otherIds.remove(Integer.valueOf(id));
-                        if (!otherIds.isEmpty()) {
-                            List<Food> recentFoods = foodService.getFoodsByIds(otherIds);
-                            req.setAttribute("recentFoods", recentFoods);
-                        }
-
-                        // Lấy các món ăn khác của cùng quán ăn đó (Same Restaurant Foods)
-                        if (food.getRestaurantId() > 0) {
-                            List<Food> restaurantFoods = foodService.getFoodsByRestaurant(food.getRestaurantId(), food.getId(), 4);
-                            req.setAttribute("restaurantFoods", restaurantFoods);
-                        }
-
-                        // Lấy các món ăn đề xuất cùng loại / thể loại (Similar Category Foods)
-                        if (food.getCategoryId() > 0) {
-                            List<Food> similarFoods = foodService.getSimilarFoodsByCategory(food.getCategoryId(), food.getId(), 4);
-                            req.setAttribute("similarFoods", similarFoods);
-                        }
-                    }
+                    food = foodService.getFoodById(id);
                 } catch (NumberFormatException e) {
                     System.err.println("ID món không hợp lệ: " + idParam);
                 }
             }
+
+            // Tự động điều hướng đến món ăn đầu tiên có sẵn nếu không có ID hoặc ID không tồn tại
+            if (food == null) {
+                List<Food> allFoods = foodService.getAllFoods();
+                if (allFoods != null && !allFoods.isEmpty()) {
+                    resp.sendRedirect(req.getContextPath() + "/food-detail?id=" + allFoods.get(0).getId());
+                    return;
+                } else {
+                    resp.sendRedirect(req.getContextPath() + "/foods");
+                    return;
+                }
+            }
+
+            int id = food.getId();
+            req.setAttribute("food", food);
+
+            // Dọn dẹp cookie dùng chung cũ nếu còn sót
+            CookieUtils.cleanLegacyRecentFoods(req, resp);
+
+            // Cập nhật Cookie danh sách ID món ăn xem gần đây theo từng tài khoản riêng biệt
+            String cookieName = CookieUtils.getRecentFoodsCookieName(req);
+            String recentCookie = CookieUtils.getCookieValue(req, cookieName);
+            List<Integer> idList = CookieUtils.parseIdList(recentCookie);
+            idList.remove(Integer.valueOf(id)); // Đưa món hiện tại lên đầu
+            idList.add(0, id);
+            if (idList.size() > 6) {
+                idList = idList.subList(0, 6);
+            }
+            CookieUtils.addCookie(resp, cookieName, CookieUtils.formatIdList(idList), RECENT_COOKIE_AGE);
+
+            // Lấy danh sách các món xem gần đây khác để hiển thị gợi ý
+            List<Integer> otherIds = new ArrayList<>(idList);
+            otherIds.remove(Integer.valueOf(id));
+            if (!otherIds.isEmpty()) {
+                List<Food> recentFoods = foodService.getFoodsByIds(otherIds);
+                req.setAttribute("recentFoods", recentFoods);
+            }
+
+            // Lấy các món ăn khác của cùng quán ăn đó (Same Restaurant Foods)
+            if (food.getRestaurantId() > 0) {
+                List<Food> restaurantFoods = foodService.getFoodsByRestaurant(food.getRestaurantId(), food.getId(), 4);
+                req.setAttribute("restaurantFoods", restaurantFoods);
+            }
+
+            // Lấy các món ăn đề xuất cùng loại / thể loại (Similar Category Foods)
+            if (food.getCategoryId() > 0) {
+                List<Food> similarFoods = foodService.getSimilarFoodsByCategory(food.getCategoryId(), food.getId(), 4);
+                req.setAttribute("similarFoods", similarFoods);
+            }
+
             req.getRequestDispatcher("/WEB-INF/views/client/food-detail.jsp").forward(req, resp);
         } else {
             String catParam = req.getParameter("cat");

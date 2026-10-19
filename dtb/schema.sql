@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS `foods` (
     `is_combo` TINYINT(1) DEFAULT 0,
     `original_price` DOUBLE DEFAULT NULL,
     `combo_items` TEXT DEFAULT NULL,
+    `options_json` TEXT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `fk_foods_restaurants`
         FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`restaurant_id`)

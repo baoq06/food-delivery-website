@@ -16,6 +16,10 @@ public class FoodDAO {
 
     private static volatile boolean comboSupportChecked = false;
 
+    static {
+        ensureComboSupport();
+    }
+
     public static void ensureComboSupport() {
         if (comboSupportChecked) return;
         synchronized (FoodDAO.class) {
@@ -64,6 +68,17 @@ public class FoodDAO {
                                 "('Combo & Set Tiết Kiệm', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80', 'Các set ăn và combo tiết kiệm giá tốt nhất')");
                         }
                     } catch (Exception ignore) {}
+
+                    // 5. Kiểm tra cột options_json
+                    boolean hasOptions = false;
+                    try (ResultSet rs = meta.getColumns(null, null, "foods", "options_json")) {
+                        if (rs.next()) hasOptions = true;
+                    }
+                    if (!hasOptions) {
+                        try {
+                            stmt.executeUpdate("ALTER TABLE foods ADD COLUMN options_json TEXT NULL DEFAULT NULL");
+                        } catch (SQLException ignore) {}
+                    }
                 }
             } catch (Exception e) {
                 System.err.println("Lưu ý khi kiểm tra hỗ trợ combo: " + e.getMessage());
@@ -77,7 +92,7 @@ public class FoodDAO {
         "       f.category_id, c.name AS category_name, " +
         "       f.restaurant_id, r.name AS restaurant_name, " +
         "       COALESCE(f.is_combo, 0) AS is_combo, " +
-        "       f.original_price, f.combo_items, " +
+        "       f.original_price, f.combo_items, f.options_json, " +
         "       COALESCE(sub.avg_rating, 0.0) AS avg_rating, " +
         "       COALESCE(sub.review_count, 0) AS review_count, " +
         "       COALESCE(sub_sales.total_sold, 0) AS total_sold " +
@@ -280,8 +295,8 @@ public class FoodDAO {
 
     public boolean insertFood(Food food) {
         ensureComboSupport();
-        String query = "INSERT INTO foods (name, description, price, image_url, category_id, restaurant_id, is_available, is_combo, original_price, combo_items) " +
-                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO foods (name, description, price, image_url, category_id, restaurant_id, is_available, is_combo, original_price, combo_items, options_json) " +
+                       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
                 try (PreparedStatement ps = conn.prepareStatement(query)) {
@@ -300,6 +315,7 @@ public class FoodDAO {
                         ps.setNull(9, java.sql.Types.DOUBLE);
                     }
                     ps.setString(10, food.getComboItems());
+                    ps.setString(11, food.getOptionsJson());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -612,7 +628,7 @@ public class FoodDAO {
 
     public boolean updateFood(Food food) {
         ensureComboSupport();
-        String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ?, is_combo = ?, original_price = ?, combo_items = ? " +
+        String query = "UPDATE foods SET name = ?, description = ?, price = ?, image_url = ?, category_id = ?, is_available = ?, is_combo = ?, original_price = ?, combo_items = ?, options_json = ? " +
                        "WHERE food_id = ? AND restaurant_id = ?";
         try (Connection conn = DBContext.getConnection()) {
             if (conn != null) {
@@ -630,8 +646,9 @@ public class FoodDAO {
                         ps.setNull(8, java.sql.Types.DOUBLE);
                     }
                     ps.setString(9, food.getComboItems());
-                    ps.setInt(10, food.getId());
-                    ps.setInt(11, food.getRestaurantId());
+                    ps.setString(10, food.getOptionsJson());
+                    ps.setInt(11, food.getId());
+                    ps.setInt(12, food.getRestaurantId());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -737,6 +754,10 @@ public class FoodDAO {
                 food.setOriginalPrice(orig);
             }
             food.setComboItems(rs.getString("combo_items"));
+        } catch (Exception ignored) {}
+
+        try {
+            food.setOptionsJson(rs.getString("options_json"));
         } catch (Exception ignored) {}
 
         return food;

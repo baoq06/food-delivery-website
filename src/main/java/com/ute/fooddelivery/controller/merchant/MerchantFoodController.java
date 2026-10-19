@@ -115,6 +115,7 @@ public class MerchantFoodController extends HttpServlet {
                 String origPriceStr = req.getParameter("originalPrice");
                 Double originalPrice = (origPriceStr != null && !origPriceStr.trim().isEmpty()) ? Double.parseDouble(origPriceStr.trim()) : null;
                 String comboItems = req.getParameter("comboItems");
+                String optionsJson = req.getParameter("optionsJson");
 
                 if (uploadedImageUrl != null) {
                     imageUrl = uploadedImageUrl;
@@ -143,6 +144,7 @@ public class MerchantFoodController extends HttpServlet {
                     newFood.setCombo(isCombo);
                     newFood.setOriginalPrice(originalPrice);
                     newFood.setComboItems(comboItems != null ? comboItems.trim() : null);
+                    newFood.setOptionsJson(optionsJson != null && !optionsJson.trim().isEmpty() ? optionsJson.trim() : null);
 
                     boolean success = merchantService.addFood(newFood);
                     if (success) {
@@ -163,6 +165,7 @@ public class MerchantFoodController extends HttpServlet {
                 String origPriceStr = req.getParameter("originalPrice");
                 Double originalPrice = (origPriceStr != null && !origPriceStr.trim().isEmpty()) ? Double.parseDouble(origPriceStr.trim()) : null;
                 String comboItems = req.getParameter("comboItems");
+                String optionsJson = req.getParameter("optionsJson");
 
                 if (uploadedImageUrl != null) {
                     imageUrl = uploadedImageUrl;
@@ -183,6 +186,7 @@ public class MerchantFoodController extends HttpServlet {
                 food.setCombo(isCombo);
                 food.setOriginalPrice(originalPrice);
                 food.setComboItems(comboItems != null ? comboItems.trim() : null);
+                food.setOptionsJson(optionsJson != null && !optionsJson.trim().isEmpty() ? optionsJson.trim() : null);
 
                 boolean success = merchantService.updateFood(food);
                 if (success) {

@@ -281,13 +281,36 @@ public class CartController extends HttpServlet {
                         }
                     }
 
+                    String selectedOptions = req.getParameter("selectedOptions");
+                    String unitPriceParam = req.getParameter("unitPrice");
+                    double unitPrice = food.getPrice();
+                    if (unitPriceParam != null && !unitPriceParam.trim().isEmpty()) {
+                        try {
+                            double parsed = Double.parseDouble(unitPriceParam.trim());
+                            if (parsed >= food.getPrice()) {
+                                unitPrice = parsed;
+                            }
+                        } catch (Exception ignored) {}
+                    }
+
                     if (cart.containsKey(foodId)) {
                         CartItem item = cart.get(foodId);
                         item.setQuantity(item.getQuantity() + quantity);
+                        if (selectedOptions != null && !selectedOptions.trim().isEmpty()) {
+                            if (item.getSelectedOptions() != null && !item.getSelectedOptions().isEmpty()) {
+                                if (!item.getSelectedOptions().contains(selectedOptions.trim())) {
+                                    item.setSelectedOptions(item.getSelectedOptions() + "; " + selectedOptions.trim());
+                                }
+                            } else {
+                                item.setSelectedOptions(selectedOptions.trim());
+                            }
+                            item.setUnitPrice(unitPrice);
+                        }
                         addedFoodName = item.getFood().getName();
                         addedFoodImage = item.getFood().getImage();
                     } else {
-                        cart.put(foodId, new CartItem(food, quantity));
+                        CartItem newItem = new CartItem(food, quantity, selectedOptions, unitPrice);
+                        cart.put(foodId, newItem);
                         addedFoodName = food.getName();
                         addedFoodImage = food.getImage();
                     }
@@ -442,12 +465,16 @@ public class CartController extends HttpServlet {
                 List<OrderItem> items = new ArrayList<>();
                 for (CartItem ci : cart.values()) {
                     subtotalBill += ci.getTotalPrice();
+                    String displayName = ci.getFood().getName();
+                    if (ci.getSelectedOptions() != null && !ci.getSelectedOptions().trim().isEmpty()) {
+                        displayName += " (" + ci.getSelectedOptions().trim() + ")";
+                    }
                     items.add(new OrderItem(
                         ci.getFood().getId(),
-                        ci.getFood().getName(),
+                        displayName,
                         ci.getFood().getImage(),
                         ci.getQuantity(),
-                        ci.getFood().getPrice(),
+                        ci.getUnitPrice(),
                         ci.getTotalPrice()
                     ));
                 }

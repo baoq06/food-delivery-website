@@ -101,6 +101,14 @@
                                                     <i class="fa-solid fa-layer-group me-1"></i> ${food.comboItems}
                                                 </div>
                                             </c:if>
+                                            <c:if test="${not empty food.options}">
+                                                <div style="font-size: 0.76rem; color: #0284c7; margin-top: 3px;">
+                                                    <i class="fa-solid fa-circle-plus me-1 text-primary"></i> ${food.options.size()} tùy chọn: 
+                                                    <c:forEach items="${food.options}" var="opt" varStatus="optSt">
+                                                        <span style="font-weight: 600;">${opt.name}</span> (+<fmt:formatNumber value="${opt.price}" type="number" />đ)${!optSt.last ? ', ' : ''}
+                                                    </c:forEach>
+                                                </div>
+                                            </c:if>
                                             <small class="text-muted mt-1" style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 360px; line-height: 1.35;">
                                                 ${empty food.description ? 'Chưa có mô tả chi tiết' : food.description}
                                             </small>
@@ -154,6 +162,7 @@
                                                         data-combo="${food.combo}"
                                                         data-original-price="${food.originalPrice != null ? food.originalPrice : ''}"
                                                         data-combo-items="<c:out value='${food.comboItems}' />"
+                                                        data-options-json="<c:out value='${food.optionsJson}' />"
                                                         onclick="handleEditFoodClick(this)"
                                                         title="Chỉnh sửa món">
                                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -337,6 +346,38 @@
                             </div>
                         </div>
 
+                        <!-- Tùy chọn món thêm (Add-ons / Toppings: Mì thêm, Cơm thêm, Trứng thêm...) -->
+                        <div class="mf-field-group">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="mf-field-label mb-0">
+                                    <span><i class="fa-solid fa-circle-plus text-primary me-1"></i> Tùy chọn món thêm (Topping)</span>
+                                </label>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addFoodOptionRow('', '')" style="border-radius: 20px; font-weight: 700; font-size: 0.8rem; padding: 3px 12px;">
+                                    <i class="fa-solid fa-plus me-1"></i> Thêm tùy chọn
+                                </button>
+                            </div>
+                            <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 8px;">
+                                Quán có thể tạo các món thêm (ví dụ mì thêm, cơm thêm, trứng thêm...) và định giá tiền tăng tùy chọn:
+                            </p>
+
+                            <!-- Gợi ý thêm nhanh -->
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem; border-radius: 6px; font-weight: 600;" onclick="addFoodOptionRow('Mì thêm', 10000)">+ Mì thêm (10k)</button>
+                                <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem; border-radius: 6px; font-weight: 600;" onclick="addFoodOptionRow('Cơm thêm', 5000)">+ Cơm thêm (5k)</button>
+                                <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem; border-radius: 6px; font-weight: 600;" onclick="addFoodOptionRow('Trứng thêm', 5000)">+ Trứng thêm (5k)</button>
+                                <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem; border-radius: 6px; font-weight: 600;" onclick="addFoodOptionRow('Thịt thêm', 15000)">+ Thịt thêm (15k)</button>
+                                <button type="button" class="btn btn-sm btn-light border py-1 px-2" style="font-size: 0.75rem; border-radius: 6px; font-weight: 600;" onclick="addFoodOptionRow('Rau thêm', 5000)">+ Rau thêm (5k)</button>
+                            </div>
+
+                            <input type="hidden" name="optionsJson" id="foodOptionsJson" value="" />
+                            <div id="foodOptionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Dynamic rows rendered here -->
+                            </div>
+                            <div id="noOptionsNotice" class="text-center py-3 text-muted" style="background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 10px; font-size: 0.82rem;">
+                                <i class="fa-solid fa-utensils me-1 text-primary"></i> Món này chưa có tùy chọn thêm. Bấm <strong>"+ Thêm tùy chọn"</strong> hoặc chọn gợi ý bên trên để thêm.
+                            </div>
+                        </div>
+
                         <!-- Trạng thái mở bán (Interactive Card Switch) -->
                         <div class="mf-field-group mb-0">
                             <label class="mf-field-label">Trạng thái kinh doanh</label>
@@ -491,7 +532,74 @@
         const isCombo = btn.getAttribute('data-combo');
         const origPrice = btn.getAttribute('data-original-price');
         const comboItems = btn.getAttribute('data-combo-items');
-        openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems);
+        const optionsJson = btn.getAttribute('data-options-json');
+        openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems, optionsJson);
+    }
+
+    function addFoodOptionRow(name, price) {
+        const container = document.getElementById('foodOptionsList');
+        const emptyNotice = document.getElementById('noOptionsNotice');
+        if (emptyNotice) emptyNotice.style.display = 'none';
+
+        const row = document.createElement('div');
+        row.className = 'food-option-input-row';
+        row.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 8px 10px; transition: border-color 0.2s;';
+        const safeName = (name ? String(name).replace(/"/g, '&quot;') : '');
+        const safePrice = (price !== undefined && price !== null && price !== '') ? price : '';
+
+        row.innerHTML = 
+            '<div style="flex: 2; position: relative;">' +
+                '<input type="text" class="mf-control opt-name-input" placeholder="Tên tùy chọn (VD: Mì thêm, Trứng thêm...)" ' +
+                       'value="' + safeName + '" ' +
+                       'style="font-size: 0.88rem; padding: 6px 10px;" oninput="syncFoodOptionsToJson()" />' +
+            '</div>' +
+            '<div style="flex: 1.5; position: relative;">' +
+                '<input type="number" class="mf-control opt-price-input" placeholder="Giá tăng (VNĐ)" ' +
+                       'value="' + safePrice + '" min="0" step="1000" ' +
+                       'style="font-size: 0.88rem; padding: 6px 10px;" oninput="syncFoodOptionsToJson()" />' +
+            '</div>' +
+            '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeFoodOptionRow(this)" title="Xóa tùy chọn này" style="border-radius: 6px; padding: 6px 10px;">' +
+                '<i class="fa-solid fa-trash-can"></i>' +
+            '</button>';
+        container.appendChild(row);
+        syncFoodOptionsToJson();
+        const inputName = row.querySelector('.opt-name-input');
+        if (inputName && !name) inputName.focus();
+    }
+
+    function removeFoodOptionRow(btn) {
+        const row = btn.closest('.food-option-input-row');
+        if (row) {
+            row.remove();
+            syncFoodOptionsToJson();
+        }
+    }
+
+    function syncFoodOptionsToJson() {
+        const container = document.getElementById('foodOptionsList');
+        if (!container) return;
+        const rows = container.querySelectorAll('.food-option-input-row');
+        const emptyNotice = document.getElementById('noOptionsNotice');
+        const options = [];
+
+        rows.forEach(row => {
+            const nameInput = row.querySelector('.opt-name-input');
+            const priceInput = row.querySelector('.opt-price-input');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const price = priceInput ? parseFloat(priceInput.value) || 0 : 0;
+            if (name.length > 0) {
+                options.push({ name: name, price: price });
+            }
+        });
+
+        if (emptyNotice) {
+            emptyNotice.style.display = rows.length === 0 ? 'block' : 'none';
+        }
+
+        const jsonInput = document.getElementById('foodOptionsJson');
+        if (jsonInput) {
+            jsonInput.value = options.length > 0 ? JSON.stringify(options) : '';
+        }
     }
 
     function openAddFoodModal() {
@@ -511,6 +619,11 @@
         toggleComboFields(false);
         document.getElementById('foodOriginalPrice').value = '';
         document.getElementById('foodComboItems').value = '';
+
+        // Options reset
+        const optContainer = document.getElementById('foodOptionsList');
+        if (optContainer) optContainer.innerHTML = '';
+        syncFoodOptionsToJson();
 
         // Availability reset
         setAvailability(true);
@@ -545,7 +658,7 @@
         document.getElementById('foodName').focus();
     }
 
-    function openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems) {
+    function openEditFoodModal(id, name, price, categoryId, imageUrl, desc, isAvailable, isCombo, origPrice, comboItems, optionsJson) {
         document.getElementById('modalTitle').innerHTML = 'Chỉnh Sửa Món Ăn';
         document.getElementById('modalSubtitle').innerText = 'Cập nhật thông tin, giá bán và hình ảnh cho món #' + id;
         document.getElementById('modalHeaderIcon').innerHTML = '<i class="fa-solid fa-pen-to-square text-primary"></i>';
@@ -564,6 +677,21 @@
         toggleComboFields(isComboBool);
         document.getElementById('foodOriginalPrice').value = origPrice || '';
         document.getElementById('foodComboItems').value = comboItems || '';
+
+        // Options populate
+        const optContainer = document.getElementById('foodOptionsList');
+        if (optContainer) optContainer.innerHTML = '';
+        if (optionsJson && optionsJson.trim().length > 2) {
+            try {
+                const parsedOpts = JSON.parse(optionsJson);
+                if (Array.isArray(parsedOpts)) {
+                    parsedOpts.forEach(o => addFoodOptionRow(o.name, o.price));
+                }
+            } catch (e) {
+                console.error("Lỗi đọc optionsJson:", e);
+            }
+        }
+        syncFoodOptionsToJson();
 
         // Availability
         setAvailability(isAvailable !== false && isAvailable !== 'false');
@@ -777,6 +905,7 @@
     }
 
     function handleFormSubmit() {
+        syncFoodOptionsToJson();
         const name = document.getElementById('foodName').value;
         const price = document.getElementById('foodPrice').value;
         if (!name || name.trim().length === 0) {
