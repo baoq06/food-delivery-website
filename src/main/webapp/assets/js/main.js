@@ -724,12 +724,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (btnConfirm) {
             btnConfirm.onclick = () => {
                 closeModal();
-                handleAjaxAddToCart(config.foodId, config.quantity, config.sourceImgEl, config.callback, true);
+                handleAjaxAddToCart(config.foodId, config.quantity, config.sourceImgEl, config.callback, true, config.extraData);
             };
         }
     }
 
-    function handleAjaxAddToCart(foodId, quantity, sourceImgEl, callback, confirmSwitch = false) {
+    function handleAjaxAddToCart(foodId, quantity, sourceImgEl, callback, confirmSwitch = false, extraData = {}) {
         const contextPath = window.location.pathname.substring(0, window.location.pathname.indexOf("/", 1)) || "";
         const cartUrl = `${contextPath}/cart`;
 
@@ -740,6 +740,20 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("ajax", "true");
         if (confirmSwitch) {
             formData.append("confirmSwitchRestaurant", "true");
+        }
+        if (extraData) {
+            if (extraData.selectedOptions) {
+                formData.append("selectedOptions", extraData.selectedOptions);
+            }
+            if (extraData.unitPrice) {
+                formData.append("unitPrice", extraData.unitPrice);
+            }
+            if (extraData.optionsTotal) {
+                formData.append("optionsTotal", extraData.optionsTotal);
+            }
+            if (extraData.note) {
+                formData.append("note", extraData.note);
+            }
         }
 
         fetch(cartUrl, {
@@ -772,7 +786,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     foodId: data.foodId || foodId,
                     quantity: data.quantity || quantity,
                     sourceImgEl: sourceImgEl,
-                    callback: callback
+                    callback: callback,
+                    extraData: extraData
                 });
                 return;
             }
@@ -928,6 +943,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const quantityInput = ajaxForm.querySelector('input[name="quantity"]');
             const quantity = (quantityInput ? quantityInput.value : 1) || 1;
 
+            const selectedOptionsInput = ajaxForm.querySelector('input[name="selectedOptions"]');
+            const selectedOptions = selectedOptionsInput ? selectedOptionsInput.value : '';
+
+            const unitPriceInput = ajaxForm.querySelector('input[name="unitPrice"]');
+            const unitPrice = unitPriceInput ? unitPriceInput.value : '';
+
+            const optionsTotalInput = ajaxForm.querySelector('input[name="optionsTotal"]');
+            const optionsTotal = optionsTotalInput ? optionsTotalInput.value : '';
+
+            const noteInput = ajaxForm.querySelector('input[name="note"]');
+            const note = noteInput ? noteInput.value : '';
+
+            const extraData = {
+                selectedOptions: selectedOptions,
+                unitPrice: unitPrice,
+                optionsTotal: optionsTotal,
+                note: note
+            };
+
             let imgEl = null;
             const card = ajaxForm.closest(".food-card");
             if (card) {
@@ -948,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         btn.innerHTML = originalHtml || '<i class="fa-solid fa-cart-plus"></i> <span>Đặt món</span>';
                     }, 1200);
                 }
-            });
+            }, false, extraData);
         }
     });
 

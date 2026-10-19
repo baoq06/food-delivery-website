@@ -816,7 +816,7 @@
             <span id="mobileStickyQty" style="font-weight: 800; min-width: 32px; text-align: center; font-size: 1rem; color: var(--text-main);">1</span>
             <button type="button" class="stepper-btn" onclick="increaseQty()">+</button>
         </div>
-        <button type="button" class="btn btn-primary btn-add-full" onclick="document.querySelector('.detail-order-form') ? document.querySelector('.detail-order-form').submit() : null;">
+        <button type="button" class="btn btn-primary btn-add-full" onclick="var f = document.querySelector('.detail-order-form'); if (f) { f.requestSubmit ? f.requestSubmit() : f.submit(); }">
             <i class="fa-solid fa-cart-plus me-1"></i>
             <span>Thêm vào giỏ</span>
             <span id="mobileStickyBtnPrice" style="background: rgba(255,255,255,0.28); padding: 2px 8px; border-radius: 20px; font-size: 0.82rem; margin-left: 6px; font-weight: 800;">
@@ -831,6 +831,10 @@ document.body.classList.add('page-food-detail');
 
 const BASE_FOOD_PRICE = ${food != null ? food.price : 0};
 const optionQuantities = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    recalcTotalPrice();
+});
 
 function changeOptionQty(index, delta) {
     const qtySpan = document.getElementById('addonQty_' + index);

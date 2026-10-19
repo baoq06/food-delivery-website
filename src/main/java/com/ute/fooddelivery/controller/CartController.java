@@ -297,13 +297,7 @@ public class CartController extends HttpServlet {
                         CartItem item = cart.get(foodId);
                         item.setQuantity(item.getQuantity() + quantity);
                         if (selectedOptions != null && !selectedOptions.trim().isEmpty()) {
-                            if (item.getSelectedOptions() != null && !item.getSelectedOptions().isEmpty()) {
-                                if (!item.getSelectedOptions().contains(selectedOptions.trim())) {
-                                    item.setSelectedOptions(item.getSelectedOptions() + "; " + selectedOptions.trim());
-                                }
-                            } else {
-                                item.setSelectedOptions(selectedOptions.trim());
-                            }
+                            item.setSelectedOptions(selectedOptions.trim());
                             item.setUnitPrice(unitPrice);
                         }
                         addedFoodName = item.getFood().getName();
